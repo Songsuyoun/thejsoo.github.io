@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카페24 HTML 코드 생성기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #f9f9fb;
+    --surface: #ffffff;
+    --surface2: #f5f5f7;
+    --border: #e8e8ee;
+    --accent: #c0667a;
+    --accent2: #e8a0b0;
+    --text: #2a2a35;
+    --text2: #8888a0;
+    --green: #3cba6f;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #ffffff 0%, #fdf3f5 50%, #faeef1 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: #2a2a35; }
+  header p { font-size: 13px; color: #8888a0; margin-top: 3px; }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    header { padding: 20px 20px; }
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--surface2);
+  }
+  .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .badge-blue { background: rgba(108,107,255,0.2); color: #a5a4ff; }
+  .badge-pink { background: rgba(255,107,157,0.2); color: #ff9ec5; }
+  .badge-green { background: rgba(74,222,128,0.15); color: #4ade80; }
+
+  /* ── FORM SECTION ── */
+  .form-section { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .field-group { display: flex; flex-direction: column; gap: 7px; }
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .input-row { display: flex; gap: 10px; }
+  .input-row input { flex: 1; }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(224,92,138,0.15);
+  }
+  input::placeholder { color: var(--text2); }
+
+  /* ── IMAGE ROW ── */
+  .img-list { display: flex; flex-direction: column; gap: 8px; }
+  .img-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: border-color 0.2s;
+  }
+  .img-row:hover { border-color: #3e3e55; }
+  .img-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    min-width: 22px;
+    font-weight: 600;
+  }
+  .img-row input[type="text"] {
+    background: transparent;
+    border: none;
+    padding: 4px 0;
+    font-size: 13px;
+    flex: 1;
+    box-shadow: none;
+  }
+  .img-row input:focus { box-shadow: none; border: none; }
+  .color-input {
+    font-size: 13px;
+    color: var(--text2);
+    width: 80px !important;
+    text-align: center;
+  }
+
+  .btn-row-action {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .btn-sm {
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-add {
+    background: rgba(224,92,138,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(224,92,138,0.3);
+  }
+  .btn-add:hover { background: rgba(224,92,138,0.2); }
+  .btn-del {
+    background: rgba(255,80,80,0.1);
+    color: #ff7070;
+    border: 1px solid rgba(255,80,80,0.2);
+    padding: 5px 8px;
+  }
+  .btn-del:hover { background: rgba(255,80,80,0.2); }
+
+  /* ── MAIN BUTTON ── */
+  .btn-generate {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), #f06fa0);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-generate:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(224,92,138,0.35);
+  }
+  .btn-generate:active { transform: none; }
+
+  /* ── OUTPUT ── */
+  .output-wrap { position: relative; }
+  .output-area {
+    min-height: 400px;
+    overflow: visible;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    word-break: break-all;
+  }
+
+  /* syntax highlight tokens */
+  .hl-tag      { color: #c0667a; }          /* < > / 태그명 */
+  .hl-attr     { color: #b07d3a; }          /* 속성명 */
+  .hl-value    { color: #4a8f6a; }          /* 속성값 */
+  .hl-comment  { color: #999; font-style: italic; }
+  .hl-text     { color: #444; }
+
+  /* 배경색 구분 라인 */
+  .line-page   { background: #fffde6; display: block; border-radius: 3px; padding: 0 4px; margin: 1px 0; }
+  .line-detail { background: #e8f4fd; display: block; border-radius: 3px; padding: 0 4px; margin: 1px 0; }
+  .line-normal { display: block; padding: 0 4px; margin: 1px 0; color: #555; }
+
+  .output-actions {
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .btn-copy {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-copy:hover { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .btn-copy.copied { background: rgba(74,222,128,0.1); border-color: var(--green); color: var(--green); }
+
+  .placeholder {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text2);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  .placeholder-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.5; }
+
+  /* ── DETAIL COL HEADER ── */
+  .detail-col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+  .col-label-num { font-size: 11px; font-weight: 700; color: var(--text2); min-width: 22px; text-align: center; }
+  .col-label-name { font-size: 11px; font-weight: 700; color: var(--text2); flex: 1; }
+  .col-label-color { font-size: 11px; font-weight: 700; color: var(--text2); width: 110px; }
+
+  /* ── DETAIL ROW ── */
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    transition: border-color 0.2s;
+  }
+  .detail-row:hover { border-color: var(--accent2); }
+  .detail-row .img-num { min-width: 22px; text-align: center; }
+  .detail-row .name-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 3px 0;
+    font-size: 13px;
+    box-shadow: none;
+  }
+  .detail-row .name-input:focus { box-shadow: none; border: none; }
+  .detail-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .detail-row .color-input {
+    width: 110px !important;
+    background: transparent;
+    border: none;
+    padding: 3px 6px;
+    font-size: 13px;
+    color: var(--accent);
+    box-shadow: none;
+  }
+  .detail-row .color-input:focus { box-shadow: none; border: none; }
+  .detail-row .color-input::placeholder { color: var(--text2); font-size: 12px; }
+  .preview-section { padding: 20px; }
+  .url-preview {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    word-break: break-all;
+    line-height: 1.7;
+  }
+  .url-preview span { color: var(--accent); }
+  .url-preview .highlight { color: var(--accent2); }
+
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    align-items: center;
+  }
+  .output-actions-top {
+    display: flex;
+    gap: 8px;
+    padding: 0 12px;
+  }
+  .tab {
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text2);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* tip text */
+  .tip {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 5px;
+    padding-left: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🏷️</div>
+  <div>
+    <h1>카페24 HTML 코드 생성기</h1>
+    <p>상품 상세페이지 이미지 코드를 자동으로 생성합니다</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LEFT: INPUT -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+
+    <!-- 기본 정보 -->
+    <div class="card">
+      <div class="card-header">
+        <span>⚙️</span> 기본 정보
+      </div>
+      <div class="form-section">
+        <div class="field-group">
+          <div class="field-label">날짜 코드</div>
+          <input type="text" id="dateCode" placeholder="예) 260320" maxlength="10" />
+          <div class="tip">※ 오늘 날짜 자동입력 (수정 가능)</div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">카페24 상품 코드</div>
+          <input type="text" id="productCode" placeholder="예) P000BGPY" style="text-transform:uppercase;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 상세페이지 이미지 -->
+    <div class="card">
+      <div class="card-header">
+        <span>🖼️</span> 상세페이지 이미지
+        <span class="badge badge-blue">/web/page/</span>
+      </div>
+      <div class="form-section">
+        <div class="field-group">
+          <div class="field-label">이미지 파일명 목록</div>
+          <div class="tip">파일명만 입력 (예: 1, 2, 1-1, main)</div>
+        </div>
+        <div class="img-list" id="pageImgList"></div>
+        <div class="btn-row-action">
+          <button class="btn-sm btn-add" onclick="addRow('pageImgList', false)">+ 이미지 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 디테일컷 이미지 -->
+    <div class="card">
+      <div class="card-header">
+        <span>🎨</span> 디테일컷 이미지
+        <span class="badge badge-pink">/web/detail/</span>
+      </div>
+      <div class="form-section">
+        <div class="detail-col-header">
+          <span class="col-label-num">#</span>
+          <span class="col-label-name">파일명</span>
+          <span class="col-label-color">색상 텍스트 <span style="font-weight:400;opacity:0.6">(선택)</span></span>
+          <span style="width:30px;"></span>
+        </div>
+        <div class="img-list" id="detailImgList"></div>
+        <div class="btn-row-action">
+          <button class="btn-sm btn-add" onclick="addDetailRow()">+ 이미지 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generate" onclick="generate()">
+      ✨ HTML 코드 생성하기
+    </button>
+
+  </div>
+
+  <!-- RIGHT: OUTPUT -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+
+    <!-- 경로 미리보기 -->
+    <div class="card">
+      <div class="card-header">
+        <span>🔍</span> 경로 미리보기
+      </div>
+      <div class="preview-section">
+        <div class="url-preview" id="pathPreview">
+          날짜코드와 상품번호를 입력하면<br>경로가 표시됩니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 생성된 코드 -->
+    <div class="card" style="flex: 1;">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('full')" id="tab-full">📋 전체</button>
+        <button class="tab" onclick="switchTab('page')" id="tab-page">📄 상세페이지 이미지</button>
+        <button class="tab" onclick="switchTab('detail')" id="tab-detail">🎨 디테일컷</button>
+        <div style="flex:1;"></div>
+        <div class="output-actions-top" id="outputActions" style="display:none;">
+          <button class="btn-copy" onclick="copyActive()" id="btnCopy">📋 복사</button>
+          <button class="btn-copy" onclick="copyAll()" id="btnCopyAll">📋 전체 복사</button>
+        </div>
+      </div>
+
+      <div class="tab-content active" id="content-full">
+        <div class="placeholder" id="placeholder-full">
+          <div class="placeholder-icon">📋</div>
+          코드를 생성하면 여기에 표시됩니다
+        </div>
+        <div class="output-area" id="output-full" style="display:none;"></div>
+      </div>
+
+      <div class="tab-content" id="content-page">
+        <div class="placeholder" id="placeholder-page">
+          <div class="placeholder-icon">🖼️</div>
+          코드를 생성하면 여기에 표시됩니다
+        </div>
+        <div class="output-area" id="output-page" style="display:none;"></div>
+      </div>
+
+      <div class="tab-content" id="content-detail">
+        <div class="placeholder" id="placeholder-detail">
+          <div class="placeholder-icon">🎨</div>
+          코드를 생성하면 여기에 표시됩니다
+        </div>
+        <div class="output-area" id="output-detail" style="display:none;"></div>
+      </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let pageRows = [];
+let detailRows = [];
+
+function init() {
+  // 오늘 날짜 자동입력 (YYMMDD)
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  document.getElementById('dateCode').value = yy + mm + dd;
+
+  // 상세페이지 기본 1개
+  addRow('pageImgList', false);
+  // 디테일컷 기본 5개
+  for (let i = 0; i < 5; i++) addDetailRow();
+  updatePathPreview();
+}
+
+function addDetailRow() {
+  const list = document.getElementById('detailImgList');
+  const idx = list.children.length + 1;
+  const row = document.createElement('div');
+  row.className = 'detail-row';
+
+  const num = document.createElement('span');
+  num.className = 'img-num';
+  num.textContent = idx;
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'name-input';
+  nameInput.placeholder = `파일명 (예: ${idx})`;
+  nameInput.value = String(idx);
+
+  const divider = document.createElement('span');
+  divider.className = 'detail-divider';
+
+  const colorInput = document.createElement('input');
+  colorInput.type = 'text';
+  colorInput.className = 'color-input';
+  colorInput.placeholder = '예: 차콜';
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn-sm btn-del';
+  delBtn.textContent = '✕';
+  delBtn.onclick = () => { row.remove(); reindex('detailImgList'); };
+
+  row.appendChild(num);
+  row.appendChild(nameInput);
+  row.appendChild(divider);
+  row.appendChild(colorInput);
+  row.appendChild(delBtn);
+  list.appendChild(row);
+}
+
+function addRow(listId, hasColor) {
+  const list = document.getElementById(listId);
+  const idx = list.children.length + 1;
+  const row = document.createElement('div');
+  row.className = 'img-row';
+
+  const num = document.createElement('span');
+  num.className = 'img-num';
+  num.textContent = idx;
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = `파일명 (예: ${idx})`;
+  nameInput.value = String(idx);
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn-sm btn-del';
+  delBtn.textContent = '✕';
+  delBtn.onclick = () => { row.remove(); reindex(listId); };
+
+  row.appendChild(num);
+  row.appendChild(nameInput);
+
+  if (hasColor) {
+    const colorInput = document.createElement('input');
+    colorInput.type = 'text';
+    colorInput.className = 'color-input';
+    colorInput.placeholder = '색상 (선택)';
+    row.appendChild(colorInput);
+  }
+
+  row.appendChild(delBtn);
+  list.appendChild(row);
+}
+
+function reindex(listId) {
+  const list = document.getElementById(listId);
+  Array.from(list.children).forEach((row, i) => {
+    row.querySelector('.img-num').textContent = i + 1;
+  });
+}
+
+function getRows(listId, hasColor) {
+  const list = document.getElementById(listId);
+  return Array.from(list.children).map(row => {
+    if (hasColor) {
+      const nameInput = row.querySelector('.name-input');
+      const colorInput = row.querySelector('.color-input');
+      return {
+        name: nameInput ? nameInput.value.trim() : '',
+        color: colorInput ? colorInput.value.trim() : ''
+      };
+    } else {
+      const inputs = row.querySelectorAll('input');
+      return { name: inputs[0] ? inputs[0].value.trim() : '', color: '' };
+    }
+  }).filter(r => r.name);
+}
+
+function updatePathPreview() {
+  const date = document.getElementById('dateCode').value.trim() || '______';
+  const prod = (document.getElementById('productCode').value.trim() || '________').toUpperCase();
+  document.getElementById('pathPreview').innerHTML =
+    `상세페이지: /web/<span>page</span>/<span class="highlight">${date}</span>/<span class="highlight">${prod}</span>/파일명.jpg\n디테일컷 : /web/<span>detail</span>/<span class="highlight">${date}</span>/<span class="highlight">${prod}</span>/파일명.jpg`;
+}
+
+document.getElementById('dateCode').addEventListener('input', updatePathPreview);
+document.getElementById('productCode').addEventListener('input', updatePathPreview);
+
+function generate() {
+  const date = document.getElementById('dateCode').value.trim();
+  const prod = document.getElementById('productCode').value.trim().toUpperCase();
+
+  if (!date || !prod) {
+    alert('날짜 코드와 카페24 상품 코드를 입력해주세요!');
+    return;
+  }
+
+  const pageRows = getRows('pageImgList', false);
+  const detailRows = getRows('detailImgList', true);
+
+  // 상세페이지 코드
+  let pageCode = pageRows.map(r => `<img src="/web/page/${date}/${prod}/${r.name}.jpg" /><br>`).join('\n');
+
+  // 디테일컷 코드
+  let detailCode = detailRows.map(r => {
+    let html = `<p><span class="rte-attach" style="display: block;"><img src="/web/detail/${date}/${prod}/${r.name}.jpg" /></span></p>`;
+    if (r.color) html += `${r.color}<br><br>`;
+    else html += `<br>`;
+    return html;
+  }).join('\n');
+
+  // 전체 코드 (기본 틀 유지)
+  const pageImgCode = pageRows.map(r => `\t<img src="/web/page/${date}/${prod}/${r.name}.jpg" /><br>`).join('\n');
+  const detailImgCode = detailRows.map(r => {
+    let html = `\t\t<p><span class="rte-attach" style="display: block;"><img src="/web/detail/${date}/${prod}/${r.name}.jpg" /></span></p>`;
+    if (r.color) html += `${r.color}<br><br>`;
+    else html += `<br>`;
+    return html;
+  }).join('\n');
+
+  let fullCode = `<!-- [OPENEDITOR] -->
+<div id="sizetable" style="text-align: center;">
+\t<link rel="stylesheet" href="http://skin-mobile6--shop1.s0474.cafe24.com/detailtest.css" type="text/css" media="screen">
+\t<!--상세페이지 이미지 넣기-->
+\t<!--※예시) <img src="http://s0474.jpg3.kr/made/3531180/0.jpg" /> -->
+${pageImgCode}
+\t<p>
+\t\t<!--디테일 컷 이미지 넣기-->
+${detailImgCode}
+\t</p>
+</div>`;
+
+  // 출력
+  setOutput('page', pageCode);
+  setOutput('detail', detailCode);
+  setOutput('full', fullCode);
+
+  document.getElementById('outputActions').style.display = 'flex';
+  switchTab('full');
+}
+
+// 복사용 원본 코드 저장
+const rawCode = {};
+
+function highlightHTML(code) {
+  // escape
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  return code.split('\n').map(line => {
+    const trimmed = line.trim();
+    let lineClass = 'line-normal';
+
+    // 배경색 판단
+    if (
+      /web\/page\//.test(line) ||
+      /상세페이지 이미지/.test(line) ||
+      /s0474\.jpg3\.kr\/made/.test(line)
+    ) {
+      lineClass = 'line-page';
+    } else if (
+      /web\/detail\//.test(line) ||
+      /디테일 컷/.test(line) ||
+      /rte-attach/.test(line)
+    ) {
+      lineClass = 'line-detail';
+    }
+
+    // 문법 색상 처리
+    let hl = '';
+    if (/^<!--/.test(trimmed)) {
+      // 주석
+      hl = `<span class="hl-comment">${esc(line)}</span>`;
+    } else {
+      // 태그 파싱: 태그명/꺽쇠, 속성명=값, 나머지 텍스트
+      hl = esc(line)
+        // 태그 열기/닫기 꺽쇠 + 태그명
+        .replace(/(&lt;\/?)([\w\d-]+)/g, '<span class="hl-tag">$1$2</span>')
+        // 꺽쇠 닫기
+        .replace(/(\/?&gt;)/g, '<span class="hl-tag">$1</span>')
+        // 속성명
+        .replace(/\s([\w-]+)=&quot;/g, ' <span class="hl-attr">$1</span>=&quot;')
+        // 속성값
+        .replace(/=&quot;([^&]*)&quot;/g, '=<span class="hl-value">&quot;$1&quot;</span>')
+        // 일반 텍스트(태그 밖)
+        .replace(/(&gt;)([^&<]+)(&lt;)/g, '$1<span class="hl-text">$2</span>$3');
+    }
+
+    return `<span class="${lineClass}">${hl}</span>`;
+  }).join('\n');
+}
+
+function setOutput(type, code) {
+  const placeholder = document.getElementById(`placeholder-${type}`);
+  const output = document.getElementById(`output-${type}`);
+  if (code && code.trim()) {
+    rawCode[type] = code;
+    placeholder.style.display = 'none';
+    output.style.display = 'block';
+    output.innerHTML = highlightHTML(code);
+  } else {
+    rawCode[type] = '';
+    placeholder.style.display = 'block';
+    output.style.display = 'none';
+  }
+}
+
+function switchTab(type) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(`tab-${type}`).classList.add('active');
+  document.getElementById(`content-${type}`).classList.add('active');
+}
+
+function copyActive() {
+  const activeTab = document.querySelector('.tab.active').id.replace('tab-', '');
+  const code = rawCode[activeTab];
+  if (!code) { alert('먼저 코드를 생성해주세요'); return; }
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('btnCopy');
+    btn.textContent = '✅ 복사됨!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 복사'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function copyAll() {
+  const code = rawCode['full'];
+  if (!code) { alert('먼저 코드를 생성해주세요'); return; }
+  const oneLiner = code.replace(/\r?\n/g, '').replace(/\t/g, '').replace(/\s{2,}/g, ' ');
+  navigator.clipboard.writeText(oneLiner).then(() => {
+    const btn = document.getElementById('btnCopyAll');
+    btn.textContent = '✅ 복사됨!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 전체 복사'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
