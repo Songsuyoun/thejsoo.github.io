@@ -121,6 +121,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 .btn-import svg { flex-shrink: 0; }
 .btn-config-sheet { display: flex; align-items: center; gap: 5px; padding: 7px 12px; font-size: 12px; font-family: inherit; background: #fff; color: #888; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
 .btn-config-sheet:hover { border-color: #bbb; color: #555; }
+.btn-open-sheet { display: flex; align-items: center; gap: 5px; padding: 7px 12px; font-size: 12px; font-family: inherit; background: #fff; color: #1a73e8; border: 1px solid #c5d9f7; border-radius: 8px; cursor: pointer; transition: all 0.15s; text-decoration: none; font-weight: 600; white-space: nowrap; }
+.btn-open-sheet:hover { background: #e8f0fe; border-color: #1a73e8; }
 
 /* ── 시트 선택 모달 ── */
 .sheet-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1001; align-items: center; justify-content: center; padding: 20px; }
@@ -204,6 +206,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     연결 설정
   </button>
+  <a class="btn-open-sheet" href="https://docs.google.com/spreadsheets/d/1dN88i8_YCbhg9gY-bX95wzYCfFAFYZBSTmTCnK9XQHA" target="_blank">
+    <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    구글 시트 열기
+  </a>
 </div>
 
 <div class="layout">

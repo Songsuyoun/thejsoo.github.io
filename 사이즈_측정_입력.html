@@ -39,6 +39,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", "Apple SD
 .header-title { font-size: 15px; font-weight: 700; }
 .header-date { font-size: 11px; color: #999; margin-top: 1px; }
 .btn-setting { background: rgba(255,255,255,0.12); border: none; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; flex-shrink: 0; }
+.header-title-row { display: flex; align-items: center; gap: 8px; }
+.btn-sheet-link { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 3px 9px; color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; text-decoration: none; font-family: inherit; transition: background 0.15s; white-space: nowrap; }
+.btn-sheet-link:active { background: rgba(255,255,255,0.28); }
 
 /* ─── 페이지 컨테이너 ─── */
 .page { padding: 14px 14px 0; max-width: 480px; margin: 0 auto; }
@@ -198,7 +201,16 @@ textarea:focus { border-color: var(--border-focus); background: #fff; }
       </svg>
     </div>
     <div>
-      <div class="header-title">사이즈 측정 입력</div>
+      <div class="header-title-row">
+        <span class="header-title">사이즈 측정 입력</span>
+        <a class="btn-sheet-link" href="https://docs.google.com/spreadsheets/d/1dN88i8_YCbhg9gY-bX95wzYCfFAFYZBSTmTCnK9XQHA" target="_blank">
+          <svg width="11" height="11" viewBox="0 0 20 20" fill="none">
+            <rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          구글 시트 열기
+        </a>
+      </div>
       <div class="header-date" id="header-date"></div>
     </div>
   </div>
@@ -293,6 +305,7 @@ textarea:focus { border-color: var(--border-focus); background: #fff; }
 //  상수 & 상태
 // ═══════════════════════════════════════════
 let SCRIPT_URL = localStorage.getItem('thejsoo_script_url') || 'https://script.google.com/macros/s/AKfycbxJorWS_vIVR7lYxV8zYaVbpIZT8EYjAftPOcz4T2Hh6fKhxg0P8SAgoHpv30RaVMBBRg/exec';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dN88i8_YCbhg9gY-bX95wzYCfFAFYZBSTmTCnK9XQHA';
 
 const TYPES = {
   '상의':             ['어깨','가슴','암홀','팔길이','소매','밑단','총길이'],
