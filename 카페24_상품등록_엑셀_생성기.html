@@ -84,7 +84,7 @@ td.cd input,td.cd select,td.cd textarea{background:var(--pl)!important;}
   <div class="ht">더제이수 카페24 <span style="color:#FF4444;">상품 등록</span> 엑셀 생성기</div>
   <div class="ha">
     <button class="btn bg" onclick="openSupModal()">공급사 관리</button>
-    <span class="cp">총 <b id="cnt">3</b>개</span>
+    <span class="cp">상품 <b id="cnt">3</b>개</span><span class="cp">공급사 <b id="supTotalCnt">-</b>개</span>
     <button class="btn bp" onclick="dlCSV()">CSV 다운로드</button>
   </div>
 </header>
@@ -122,8 +122,8 @@ td.cd input,td.cd select,td.cd textarea{background:var(--pl)!important;}
       <td>숫자만</td><td>자동계산</td><td>검색 후 선택</td><td>자동입력</td>
       <td>Enter로 추가</td><td>Enter로 추가</td><td>클릭하여 편집</td>
       <td>Enter로 추가</td><td>예: 울6% 아크릴 94%</td>
-      <td>있음/없음/보통</td><td>있음/없음/보통</td><td>있음/없음</td>
-      <td>한국/중국 제조</td><td>있음/없음</td><td></td>
+      <td>있음/없음/보통</td><td>있음/없음/보통</td><td>있음/없음/부분안감</td>
+      <td>한국/중국 제조</td><td>있음/없음/부분안감</td><td></td>
     </tr>
   </thead>
   <tbody id="tbody"></tbody>
@@ -152,33 +152,50 @@ td.cd input,td.cd select,td.cd textarea{background:var(--pl)!important;}
 
 <!-- 공급사 관리 모달 -->
 <div class="modal-bg" id="supModal">
-  <div class="modal-box" style="width:480px;max-width:92vw;">
+  <div class="modal-box" style="width:560px;max-width:94vw;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div>
-        <div style="font-size:16px;font-weight:700;">공급사 목록 관리</div>
-        <div style="font-size:12px;color:#888;margin-top:3px;">현재 <b id="supCnt">0</b>개 등록됨</div>
+        <div style="font-size:16px;font-weight:700;">공급사 관리 <span style="font-size:11px;color:#888;font-weight:400;">구글 시트 연동</span></div>
+        <div style="font-size:12px;color:#888;margin-top:3px;">총 <b id="supCnt">-</b>개 등록됨</div>
       </div>
       <button onclick="closeSupModal()" style="background:transparent;border:none;font-size:22px;cursor:pointer;color:#aaa;">×</button>
     </div>
-    <div style="background:#F7F5F2;border-radius:8px;padding:14px;margin-bottom:16px;font-size:12px;color:#666;line-height:1.8;">
-      📋 <b>업로드 형식 (CSV)</b><br>
-      1행: <code style="background:#eee;padding:1px 5px;border-radius:3px;">공급사명,공급사코드</code><br>
-      2행~: <code style="background:#eee;padding:1px 5px;border-radius:3px;">님프,S0000CXR</code><br>
-      <span style="color:#2D6A4F;font-weight:600;">중복 공급사명은 자동 제외됩니다.</span>
+
+    <!-- GAS URL 설정 -->
+    <div style="background:#F7F5F2;border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;gap:8px;align-items:center;">
+      <span style="font-size:11px;color:#888;white-space:nowrap;">GAS URL</span>
+      <input type="text" id="gasUrl" style="flex:1;font-size:11px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;" placeholder="https://script.google.com/macros/s/.../exec">
+      <button onclick="saveGasUrl()" style="font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:600;padding:5px 12px;border-radius:4px;cursor:pointer;background:var(--accent);color:#fff;border:none;white-space:nowrap;">저장</button>
     </div>
-    <div id="supDropZone" style="border:2px dashed #E0DDD8;border-radius:8px;padding:22px;text-align:center;margin-bottom:14px;cursor:pointer;"
-      ondragover="event.preventDefault();this.style.borderColor='#2D6A4F'"
-      ondragleave="this.style.borderColor='#E0DDD8'"
-      ondrop="supDrop(event)"
-      onclick="document.getElementById('supFile').click()">
-      <div style="font-size:26px;margin-bottom:6px;">📂</div>
-      <div style="font-size:13px;font-weight:600;">CSV 파일을 끌어다 놓거나 클릭하여 선택</div>
-      <div style="font-size:11px;color:#888;margin-top:3px;">.csv 파일만 지원</div>
+
+    <!-- 검색 -->
+    <div style="position:relative;margin-bottom:12px;">
+      <input type="text" id="supSearchInput" placeholder="공급사명 검색..."
+        style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;"
+        oninput="filterSupList(this.value)">
     </div>
-    <input type="file" id="supFile" accept=".csv" style="display:none" onchange="supLoad(this)">
-    <div id="supMsg" style="display:none;padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:14px;"></div>
+
+    <!-- 목록 -->
+    <div id="supListWrap" style="border:1px solid #eee;border-radius:8px;max-height:240px;overflow-y:auto;margin-bottom:14px;">
+      <div id="supListBody" style="font-size:12px;">
+        <div style="text-align:center;padding:20px;color:#aaa;">구글 시트 URL을 입력하고 저장하세요</div>
+      </div>
+    </div>
+
+    <!-- 신규 추가 -->
+    <div style="background:#F7F5F2;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#1A1A1A;">새 공급사 추가</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="newSupName" placeholder="공급사명" style="flex:2;padding:7px 10px;border:1px solid #ddd;border-radius:5px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+        <input type="text" id="newSupCode" placeholder="공급사코드 (예: S0000XXX)" style="flex:2;padding:7px 10px;border:1px solid #ddd;border-radius:5px;font-size:12px;font-family:'DM Mono',monospace;outline:none;">
+        <button onclick="addSupToSheet()" style="font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;padding:7px 16px;border-radius:5px;cursor:pointer;background:var(--green);color:#fff;border:none;white-space:nowrap;">추가</button>
+      </div>
+    </div>
+
+    <div id="supMsg" style="display:none;padding:9px 14px;border-radius:6px;font-size:12px;margin-bottom:12px;"></div>
+
     <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button onclick="supReset()" style="font-family:'Noto Sans KR',sans-serif;font-size:12px;padding:8px 14px;border-radius:5px;cursor:pointer;background:transparent;border:1px solid #ddd;color:#888;">기본 목록 초기화</button>
+      <button onclick="loadSupFromSheet()" style="font-family:'Noto Sans KR',sans-serif;font-size:12px;padding:8px 14px;border-radius:5px;cursor:pointer;background:transparent;border:1px solid #ddd;color:#555;">🔄 새로고침</button>
       <button onclick="closeSupModal()" style="font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;padding:8px 18px;border-radius:5px;cursor:pointer;background:#1A1A1A;color:#fff;border:none;">닫기</button>
     </div>
   </div>
@@ -187,8 +204,8 @@ td.cd input,td.cd select,td.cd textarea{background:var(--pl)!important;}
 <div class="toast" id="toast"></div>
 
 <script>
-const SP=[{"name":"자체공급","code":"S0000000"},{"name":"딴스타일","code":"S0000BYJ"},{"name":"아몽","code":"S0000BYU"},{"name":"탱고","code":"S0000BZL"},{"name":"메리피엔","code":"S0000BZU"},{"name":"젤리","code":"S0000CAF"},{"name":"동대문여자","code":"S0000CAN"},{"name":"어썸플레인","code":"S0000CBI"},{"name":"페이버","code":"S0000CCB"},{"name":"플레이마켓","code":"S0000CCV"},{"name":"트렁크","code":"S0000CDY"},{"name":"런던레이스","code":"S0000CED"},{"name":"해피원","code":"S0000CEP"},{"name":"라비","code":"S0000CER"},{"name":"프렌치시크","code":"S0000CEW"},{"name":"바인야드","code":"S0000CEX"},{"name":"프롬디","code":"S0000CEZ"},{"name":"러브앤헤이트","code":"S0000CFA"},{"name":"리얼펄리","code":"S0000CFD"},{"name":"슈슈","code":"S0000CFI"},{"name":"JJ2","code":"S0000CFK"},{"name":"셀럽","code":"S0000CFS"},{"name":"선데이(Sunday)","code":"S0000CFX"},{"name":"에이블랙","code":"S0000CGG"},{"name":"더블제이","code":"S0000CHG"},{"name":"커버","code":"S0000CHP"},{"name":"틴트","code":"S0000CIF"},{"name":"어텐션","code":"S0000CIN"},{"name":"애플앤딜리셔스","code":"S0000CIV"},{"name":"제이나인(J-nine)","code":"S0000CJB"},{"name":"투유","code":"S0000CJD"},{"name":"디뮤어(구.보니)","code":"S0000CJJ"},{"name":"아스카","code":"S0000CJO"},{"name":"허버","code":"S0000CJQ"},{"name":"어라운드110","code":"S0000CJR"},{"name":"팍써","code":"S0000CJW"},{"name":"타히티","code":"S0000CKH"},{"name":"언커먼","code":"S0000CKK"},{"name":"쥬드(Jude)","code":"S0000CKR"},{"name":"세러데이","code":"S0000CLJ"},{"name":"레트로드레스","code":"S0000CLP"},{"name":"제이윤","code":"S0000CLQ"},{"name":"포마드","code":"S0000CLR"},{"name":"시스터","code":"S0000CLT"},{"name":"알떼로","code":"S0000CLU"},{"name":"탱크걸","code":"S0000CLW"},{"name":"코발트블루","code":"S0000CLY"},{"name":"니키식스","code":"S0000CME"},{"name":"502스타일","code":"S0000CMG"},{"name":"블루베어","code":"S0000CMH"},{"name":"웨이팅","code":"S0000CMI"},{"name":"알렌","code":"S0000CMJ"},{"name":"라스텔라","code":"S0000CMK"},{"name":"서우","code":"S0000CML"},{"name":"퀸스래빗","code":"S0000CMM"},{"name":"코코리","code":"S0000CMN"},{"name":"마요네즈","code":"S0000CMO"},{"name":"랑스","code":"S0000CMP"},{"name":"맨하탄","code":"S0000CMQ"},{"name":"꼬모","code":"S0000CMR"},{"name":"러브 유 쏘머치","code":"S0000CMS"},{"name":"찜","code":"S0000CMT"},{"name":"디에이","code":"S0000CMU"},{"name":"여자","code":"S0000CMV"},{"name":"스톤베이지","code":"S0000CMX"},{"name":"아크로(구.슈퍼진)","code":"S0000CMY"},{"name":"아임블링","code":"S0000CMZ"},{"name":"페이지원","code":"S0000CNA"},{"name":"데어바이","code":"S0000CNC"},{"name":"알로에","code":"S0000CND"},{"name":"스내피","code":"S0000CNE"},{"name":"코코마티니","code":"S0000CNG"},{"name":"스타일닷컴","code":"S0000CNH"},{"name":"빌리지","code":"S0000CNI"},{"name":"슈퍼비","code":"S0000CNJ"},{"name":"클라시코","code":"S0000CNK"},{"name":"아이보리","code":"S0000CNL"},{"name":"어나더페이지","code":"S0000CNN"},{"name":"주스트","code":"S0000CNO"},{"name":"핑거","code":"S0000CNP"},{"name":"바이미니","code":"S0000CNQ"},{"name":"이프유(SW컴퍼니)","code":"S0000CNR"},{"name":"오렌지","code":"S0000CNS"},{"name":"트웬티","code":"S0000CNU"},{"name":"린제이","code":"S0000CNW"},{"name":"에브리썬데이","code":"S0000CNX"},{"name":"로코코","code":"S0000CNZ"},{"name":"아메바","code":"S0000COB"},{"name":"달팡","code":"S0000COD"},{"name":"마카롱","code":"S0000COE"},{"name":"애니짱","code":"S0000COG"},{"name":"레터링","code":"S0000COI"},{"name":"더메인","code":"S0000COK"},{"name":"플로우","code":"S0000COM"},{"name":"더풀하우스","code":"S0000COO"},{"name":"잭슨","code":"S0000COP"},{"name":"로와드(구:다올)","code":"S0000COQ"},{"name":"드클로즈","code":"S0000COR"},{"name":"다모아","code":"S0000COS"},{"name":"바이진","code":"S0000COU"},{"name":"로프트","code":"S0000COV"},{"name":"모이라이","code":"S0000COX"},{"name":"광덕","code":"S0000CPA"},{"name":"플라워웨이브","code":"S0000CPB"},{"name":"언니","code":"S0000CPC"},{"name":"JJ","code":"S0000CPE"},{"name":"솔트(SOLT)","code":"S0000CPG"},{"name":"vip","code":"S0000CPH"},{"name":"유엔미","code":"S0000CPJ"},{"name":"수앤수","code":"S0000CPL"},{"name":"리리","code":"S0000CPN"},{"name":"헵번(Hepburn)","code":"S0000CPP"},{"name":"로얄치즈","code":"S0000CPQ"},{"name":"어니스티","code":"S0000CPS"},{"name":"페니엘(PENIEL)","code":"S0000CPU"},{"name":"러빗","code":"S0000CPW"},{"name":"그리핑","code":"S0000CPY"},{"name":"J플러스","code":"S0000CQA"},{"name":"머머링","code":"S0000CQB"},{"name":"돈나팔(구.코나)","code":"S0000CQD"},{"name":"드래이핑","code":"S0000CQF"},{"name":"오즈브릿지","code":"S0000CQH"},{"name":"르마레","code":"S0000CQJ"},{"name":"알로하","code":"S0000CQL"},{"name":"아보카도","code":"S0000CQN"},{"name":"포커페이스","code":"S0000CQP"},{"name":"오뚜기","code":"S0000CQQ"},{"name":"디얼그레이","code":"S0000CQS"},{"name":"어바웃","code":"S0000CQU"},{"name":"멜로즈","code":"S0000CQW"},{"name":"블러셔","code":"S0000CQX"},{"name":"일미리","code":"S0000CQY"},{"name":"도리","code":"S0000CRA"},{"name":"쏠제이","code":"S0000CRC"},{"name":"바르셀로나","code":"S0000CRD"},{"name":"드레스 마피아","code":"S0000CRF"},{"name":"이오(EO)","code":"S0000CRG"},{"name":"더블린","code":"S0000CRH"},{"name":"더코인","code":"S0000CRJ"},{"name":"홍언니","code":"S0000CRL"},{"name":"메종 드 신드롬","code":"S0000CRN"},{"name":"야투","code":"S0000CRP"},{"name":"리미티드","code":"S0000CRQ"},{"name":"주리(Joori)","code":"S0000CRS"},{"name":"싹수","code":"S0000CRU"},{"name":"무드베이지","code":"S0000CRV"},{"name":"멜론","code":"S0000CRX"},{"name":"에이미컴퍼니","code":"S0000CRZ"},{"name":"어나더","code":"S0000CSB"},{"name":"모다(Moda)","code":"S0000CSD"},{"name":"도리33(Dory33)","code":"S0000CSF"},{"name":"지스페이스(G SPACE)","code":"S0000CSH"},{"name":"플럼(PLUM)","code":"S0000CSJ"},{"name":"두림","code":"S0000CSL"},{"name":"딸래미","code":"S0000CSM"},{"name":"언더브라운","code":"S0000CSN"},{"name":"더메인 컴퍼니","code":"S0000CSP"},{"name":"비바이숑","code":"S0000CSQ"},{"name":"바이라니(BY.RANI)","code":"S0000CSS"},{"name":"프라나","code":"S0000CST"},{"name":"코코제이바닛시","code":"S0000CSU"},{"name":"벌스데이","code":"S0000CSW"},{"name":"르오브(구.베르디)","code":"S0000CSX"},{"name":"반하나(BanHana)","code":"S0000CSZ"},{"name":"링(RING)","code":"S0000CTA"},{"name":"레드제이(RedJ)","code":"S0000CTC"},{"name":"이너프","code":"S0000CTD"},{"name":"언커버(uncover)","code":"S0000CTF"},{"name":"노이","code":"S0000CTG"},{"name":"핑크코튼","code":"S0000CTH"},{"name":"럭키그라운드","code":"S0000CTJ"},{"name":"중국사입건","code":"S0000CTL"},{"name":"시즈닝","code":"S0000CTO"},{"name":"마이션","code":"S0000CTR"},{"name":"유니엘","code":"S0000CTT"},{"name":"리썸","code":"S0000CTV"},{"name":"비앤부","code":"S0000CTX"},{"name":"웬디웬즈데이","code":"S0000CTZ"},{"name":"성부사","code":"S0000CUB"},{"name":"블랙비","code":"S0000CUD"},{"name":"히스토리","code":"S0000CUF"},{"name":"블링","code":"S0000CUG"},{"name":"베리굿","code":"S0000CUH"},{"name":"로이","code":"S0000CUJ"},{"name":"리뉴얼디자인","code":"S0000CUL"},{"name":"피그쓰리","code":"S0000CUM"},{"name":"HAY(헤이)","code":"S0000CUO"},{"name":"커밍제이","code":"S0000CUQ"},{"name":"럽럽","code":"S0000CUS"},{"name":"어라운드랜드","code":"S0000CUU"},{"name":"얼로우","code":"S0000CUW"},{"name":"난","code":"S0000CUX"},{"name":"룸잉","code":"S0000CUY"},{"name":"세라비","code":"S0000CUZ"},{"name":"아크미","code":"S0000CVA"},{"name":"테이크","code":"S0000CVD"},{"name":"아임파인땡큐","code":"S0000CVF"},{"name":"허즈비","code":"S0000CVG"},{"name":"리블리","code":"S0000CVH"},{"name":"앤드꼬모","code":"S0000CVI"},{"name":"라미제이","code":"S0000CVK"},{"name":"퍼스트런","code":"S0000CVM"},{"name":"와썹","code":"S0000CVN"},{"name":"더플레인","code":"S0000CVO"},{"name":"사운드","code":"S0000CVP"},{"name":"에이원","code":"S0000CVQ"},{"name":"PEARL(펄)","code":"S0000CVS"},{"name":"언토이","code":"S0000CVT"},{"name":"에임","code":"S0000CVU"},{"name":"지오","code":"S0000CVW"},{"name":"브라운페이퍼","code":"S0000CVY"},{"name":"블랙레이디","code":"S0000CWA"},{"name":"레인드롭","code":"S0000CWC"},{"name":"리브레","code":"S0000CWD"},{"name":"쿨피스","code":"S0000CWE"},{"name":"심플먼트","code":"S0000CWG"},{"name":"그루브","code":"S0000CWH"},{"name":"브리즈","code":"S0000CWJ"},{"name":"러브유쏘머치","code":"S0000CWK"},{"name":"OUR","code":"S0000CWM"},{"name":"제이앨리스","code":"S0000CWO"},{"name":"아라모드","code":"S0000CWP"},{"name":"웨어러블","code":"S0000CWR"},{"name":"크라네","code":"S0000CWT"},{"name":"라운드제이","code":"S0000CWV"},{"name":"어게인어스","code":"S0000CWX"},{"name":"네오","code":"S0000CWZ"},{"name":"어라이크","code":"S0000CXB"},{"name":"담다","code":"S0000CXD"},{"name":"에드프로덕트(구.앤써)","code":"S0000CXF"},{"name":"바이붐","code":"S0000CXH"},{"name":"두즈므아","code":"S0000CXJ"},{"name":"심플베이지","code":"S0000CXL"},{"name":"SOO&JUNE(수앤준)","code":"S0000CXM"},{"name":"온텀","code":"S0000CXO"},{"name":"샘스","code":"S0000CXQ"},{"name":"님프","code":"S0000CXR"},{"name":"슬로우피플","code":"S0000CXT"},{"name":"수드(SOODE)","code":"S0000CXV"},{"name":"인어드(In.ad)","code":"S0000CXX"},{"name":"메르제","code":"S0000CXY"},{"name":"번영사","code":"S0000CYA"},{"name":"메인스트릿","code":"S0000CYC"},{"name":"블랙비(BLACK BEE)","code":"S0000CYE"},{"name":"그라찌","code":"S0000CYF"},{"name":"가가컴퍼니","code":"S0000CYH"},{"name":"딜라잇","code":"S0000CYJ"},{"name":"누벨","code":"S0000CYL"},{"name":"온오프","code":"S0000CYN"},{"name":"더라인","code":"S0000CYP"},{"name":"드라이플라워","code":"S0000CYR"},{"name":"러스티(LUSTY)","code":"S0000CYT"},{"name":"디코드","code":"S0000CYV"},{"name":"덴(Than)","code":"S0000CYX"},{"name":"팔팔(PALPAL)","code":"S0000CYZ"},{"name":"아울(OWL)","code":"S0000CZD"},{"name":"골드마인(GOLD MINE)","code":"S0000CZF"},{"name":"아워(OUR)","code":"S0000CZH"},{"name":"리쥬네브케이","code":"S0000CZJ"},{"name":"셀렉트","code":"S0000CZK"},{"name":"제인(JaNE)","code":"S0000CZM"},{"name":"비마인","code":"S0000CZN"},{"name":"말파(Marfa)","code":"S0000CZP"},{"name":"애플비","code":"S0000CZT"},{"name":"어나더슬릭","code":"S0000CZV"},{"name":"클로스","code":"S0000CZX"},{"name":"펀치","code":"S0000CZZ"},{"name":"르에이","code":"S0000DAB"},{"name":"커스텀케이","code":"S0000DAF"},{"name":"엠디(MD)","code":"S0000DAH"},{"name":"더블유","code":"S0000DAJ"},{"name":"패키지","code":"S0000DAL"},{"name":"림쏭","code":"S0000DAN"},{"name":"유스","code":"S0000DAP"},{"name":"홀릭","code":"S0000DAR"},{"name":"마리엠","code":"S0000DAT"},{"name":"제이그레이","code":"S0000DAU"},{"name":"모모코","code":"S0000DAV"},{"name":"코쿤","code":"S0000DAX"},{"name":"메인스테이","code":"S0000DAY"},{"name":"언더스탠딩","code":"S0000DAZ"},{"name":"모리바이시스","code":"S0000DBB"},{"name":"라이브포레버","code":"S0000DBD"},{"name":"슬릭","code":"S0000DBF"},{"name":"무이","code":"S0000DBH"},{"name":"러브샷","code":"S0000DBJ"},{"name":"파인","code":"S0000DBL"},{"name":"크롱","code":"S0000DBN"},{"name":"델리게이트","code":"S0000DBP"},{"name":"블럭","code":"S0000DBR"},{"name":"에딘버러","code":"S0000DBT"},{"name":"커먼","code":"S0000DBV"},{"name":"마블","code":"S0000DBW"},{"name":"퍼플","code":"S0000DBY"},{"name":"블루레이크","code":"S0000DCA"},{"name":"오블리크","code":"S0000DCC"},{"name":"지오디(GOD)","code":"S0000DCE"},{"name":"헤이빌리","code":"S0000DCG"},{"name":"헤이노크","code":"S0000DCH"},{"name":"럭키스토어","code":"S0000DCJ"},{"name":"코너","code":"S0000DCL"},{"name":"스토리태그","code":"S0000DCN"},{"name":"르블랑","code":"S0000DCP"},{"name":"허쉬","code":"S0000DCR"},{"name":"비브르","code":"S0000DCT"},{"name":"라운지베라","code":"S0000DCV"},{"name":"노리타","code":"S0000DCW"},{"name":"일분의이","code":"S0000DCX"},{"name":"바이슈가","code":"S0000DCZ"},{"name":"마고","code":"S0000DDD"},{"name":"잇썸","code":"S0000DDF"},{"name":"드레스웰","code":"S0000DDI"},{"name":"오브제","code":"S0000DDK"},{"name":"더뉴","code":"S0000DDL"},{"name":"블룸","code":"S0000DDP"},{"name":"슈슈서울","code":"S0000DDR"},{"name":"로이에","code":"S0000DDT"},{"name":"레이브","code":"S0000DDV"},{"name":"멜티드","code":"S0000DDW"},{"name":"러브헤이","code":"S0000DDY"},{"name":"마인디","code":"S0000DEA"},{"name":"필로소피","code":"S0000DEC"},{"name":"탭페이지","code":"S0000DEE"},{"name":"베리베리","code":"S0000DEG"},{"name":"제이(J)","code":"S0000DEI"},{"name":"애플트리","code":"S0000DEK"},{"name":"플라밍고","code":"S0000DEM"},{"name":"베러","code":"S0000DEO"},{"name":"미니진","code":"S0000DEQ"},{"name":"미엘","code":"S0000DEU"},{"name":"목화씨","code":"S0000DEW"},{"name":"네온히치","code":"S0000DFA"},{"name":"미코","code":"S0000DFC"},{"name":"노크노크","code":"S0000DFE"},{"name":"비커밍","code":"S0000DFG"},{"name":"어모먼트","code":"S0000DFI"},{"name":"지니","code":"S0000DFK"},{"name":"코스바이JR","code":"S0000DFM"},{"name":"이니셜","code":"S0000DFO"},{"name":"시클리","code":"S0000DFQ"},{"name":"캐스터네츠","code":"S0000DFS"},{"name":"미드나잇선","code":"S0000DFU"},{"name":"타이밍","code":"S0000DFW"},{"name":"드마르","code":"S0000DFY"},{"name":"몬트(MONT)","code":"S0000DGA"},{"name":"폼스튜디오","code":"S0000DGC"},{"name":"라쏭","code":"S0000DGE"},{"name":"해시","code":"S0000DGG"},{"name":"어뮤즈","code":"S0000DGI"},{"name":"REBAS(리바스)","code":"S0000DGJ"},{"name":"로지(ROSY)","code":"S0000DGL"},{"name":"랜느","code":"S0000DGM"},{"name":"AHOY","code":"S0000DGO"},{"name":"시에스타","code":"S0000DGQ"},{"name":"로그먼트","code":"S0000DGS"},{"name":"트릴리언","code":"S0000DGW"},{"name":"쇼퍼홀릭","code":"S0000DGX"},{"name":"아호이","code":"S0000DGZ"},{"name":"뉴엠디","code":"S0000DHA"},{"name":"티팜","code":"S0000DHE"},{"name":"더스티밀러","code":"S0000DHG"},{"name":"무드랩","code":"S0000DHI"},{"name":"대영상사","code":"S0000DHK"},{"name":"무이모나","code":"S0000DHM"},{"name":"더블유네이비","code":"S0000DHR"},{"name":"호시","code":"S0000DHT"},{"name":"그립","code":"S0000DHV"},{"name":"헤르모드","code":"S0000DHX"},{"name":"제이스토리","code":"S0000DHY"},{"name":"버블언더","code":"S0000DIA"},{"name":"아이린","code":"S0000DIC"},{"name":"에르메","code":"S0000DIE"},{"name":"캔들","code":"S0000DIG"},{"name":"온앤온","code":"S0000DII"},{"name":"글로우","code":"S0000DIK"},{"name":"만식슈","code":"S0000DIO"},{"name":"그레이","code":"S0000DIS"},{"name":"포러데이","code":"S0000DIU"},{"name":"두잇","code":"S0000DIX"},{"name":"비바엘","code":"S0000DIY"},{"name":"프리티영띵","code":"S0000DJA"},{"name":"포니테일","code":"S0000DJE"},{"name":"파니니","code":"S0000DJG"},{"name":"아도라","code":"S0000DJJ"},{"name":"레뜨왈","code":"S0000DJL"},{"name":"허니허니","code":"S0000DJN"},{"name":"아베끄","code":"S0000DJP"},{"name":"온도","code":"S0000DJR"},{"name":"알유핫","code":"S0000DJT"},{"name":"보라킴","code":"S0000DJW"},{"name":"앤드미크","code":"S0000DJY"},{"name":"아리키시","code":"S0000DKA"},{"name":"미엘르","code":"S0000DKC"},{"name":"디다크","code":"S0000DKE"},{"name":"블루걸","code":"S0000DKF"},{"name":"코즈캣","code":"S0000DKH"},{"name":"사라","code":"S0000DKI"},{"name":"바니플라워","code":"S0000DKK"},{"name":"아델","code":"S0000DKM"},{"name":"모던바이실","code":"S0000DKO"},{"name":"밍키","code":"S0000DKQ"},{"name":"와와","code":"S0000DKR"},{"name":"블러드무드","code":"S0000DKT"},{"name":"도버","code":"S0000DKU"},{"name":"미쓰진","code":"S0000DKW"},{"name":"밀도","code":"S0000DKY"},{"name":"우윤","code":"S0000DLA"},{"name":"부(BOO)","code":"S0000DLC"},{"name":"온업","code":"S0000DLE"},{"name":"브링","code":"S0000DLG"},{"name":"립플레이스","code":"S0000DLI"},{"name":"로잉","code":"S0000DLK"},{"name":"드폰드","code":"S0000DLM"},{"name":"엑시토","code":"S0000DLO"},{"name":"블랭크","code":"S0000DLQ"},{"name":"위즈원","code":"S0000DLS"},{"name":"아지트","code":"S0000DLT"},{"name":"르테일러","code":"S0000DLV"},{"name":"어반스테이","code":"S0000DLX"},{"name":"마스","code":"S0000DLZ"},{"name":"무이비엔(muybien)","code":"S0000DMD"},{"name":"프롬비","code":"S0000DMJ"},{"name":"위즈투(WIZ2)","code":"S0000DML"},{"name":"안스탠드(AN STAND)","code":"S0000DMO"},{"name":"클린(CLEAN)","code":"S0000DMQ"},{"name":"더바바라(THEBABARA)","code":"S0000DMX"},{"name":"유아뷰티풀","code":"S0000DMY"},{"name":"내티(NATTY)","code":"S0000DMZ"},{"name":"무드온","code":"S0000DNG"},{"name":"앙버터","code":"S0000DNK"},{"name":"필모그래피","code":"S0000DNQ"},{"name":"해크니","code":"S0000DNW"},{"name":"어썸","code":"S0000DOA"},{"name":"C.P.R","code":"S0000DOE"},{"name":"너울","code":"S0000DOQ"},{"name":"르뽀렘","code":"S0000DOS"},{"name":"글로우앤님프","code":"S0000DPD"},{"name":"스타일스크랩","code":"S0000DPE"},{"name":"드고유","code":"S0000DPF"},{"name":"보람","code":"S0000DPG"},{"name":"J2(제이투)","code":"S0000DPH"},{"name":"스랍","code":"S0000DPI"},{"name":"크림","code":"S0000DPL"},{"name":"촘촘","code":"S0000DPO"},{"name":"프릴","code":"S0000DQD"},{"name":"올제","code":"S0000DQG"},{"name":"하프(HALFF)","code":"S0000DQK"},{"name":"리디아(LYDIA)","code":"S0000DQL"},{"name":"소프(SOAF)","code":"S0000DQM"},{"name":"드라이블루","code":"S0000DQO"},{"name":"베른(bern)","code":"S0000DQQ"},{"name":"노블(NOBLE)","code":"S0000DQV"},{"name":"르마스터피스","code":"S0000DQY"},{"name":"몬코(monco)","code":"S0000DRE"},{"name":"링오브노이","code":"S0000DRG"},{"name":"부티크로즈","code":"S0000DRI"},{"name":"벨르(Belle)","code":"S0000DRN"},{"name":"스토리(story)","code":"S0000DRO"},{"name":"티니(TINI)","code":"S0000DRS"},{"name":"로하트","code":"S0000DRW"},{"name":"몰디브","code":"S0000DRX"},{"name":"브론즈","code":"S0000DRY"},{"name":"마이영","code":"S0000DSA"},{"name":"바운드(bound)","code":"S0000DSC"},{"name":"에픽(EPIC)","code":"S0000DSD"},{"name":"하라(HARA)","code":"S0000DSE"},{"name":"코이(coii)","code":"S0000DSF"},{"name":"코지하우스","code":"S0000DSM"},{"name":"레어썸","code":"S0000DSQ"},{"name":"ELLA(엘라)","code":"S0000DST"},{"name":"HAVE(해브)","code":"S0000DSV"},{"name":"메인(MAIN)","code":"S0000DSZ"},{"name":"더모드나인","code":"S0000DTJ"},{"name":"메이빈","code":"S0000DTR"},{"name":"티엔","code":"S0000DTQ"},{"name":"엠오엘MOL","code":"S0000DTO"},{"name":"LOVEUS","code":"S0000DTP"},{"name":"티케","code":"S0000DTM"},{"name":"오스로","code":"S0000DTL"},{"name":"더레스트(THE REST)","code":"S0000DTK"}];
-let SUPPLIERS = [...SP];
+const SP=[];
+let SUPPLIERS = [];
 let rid = 0, tags = {};
 let _descId = null, _supIdx = {};
 
@@ -215,7 +232,7 @@ function addRow() {
     `<td class="cd" style="min-width:130px"><input type="text" id="fab${id}"></td>`+
     `<td class="cd" style="min-width:82px"><select id="el${id}"><option value="">—</option><option>있음</option><option>없음</option><option>보통</option></select></td>`+
     `<td class="cd" style="min-width:82px"><select id="tr${id}"><option value="">—</option><option>있음</option><option>없음</option><option>보통</option></select></td>`+
-    `<td class="cd" style="min-width:75px"><select id="ln${id}"><option value="">—</option><option>있음</option><option>없음</option></select></td>`+
+    `<td class="cd" style="min-width:75px"><select id="ln${id}"><option value="">—</option><option>있음</option><option>없음</option><option>부분안감</option></select></td>`+
     `<td class="cd" style="min-width:100px"><select id="ctr${id}"><option value="">—</option><option>한국 제조</option><option>중국 제조</option></select></td>`+
     `<td class="cd" style="min-width:80px"><select id="zip${id}"><option value="">—</option><option>없음</option><option>있음</option></select></td>`+
     `<td><button class="db" onclick="delRow(${id})">×</button></td>`;
@@ -335,51 +352,85 @@ function saveDesc() {
 }
 
 // ── 공급사 관리 모달 ──
+// ── 공급사 관리 (구글 시트 연동) ──
+let _gasUrl = 'https://script.google.com/macros/s/AKfycbyGukuJglyqT09xTcebnwhykjpN6hOWt1XYI9azmje09jnSo6VO132scBFp3RSSA0Ff/exec';
+let _supAllList = [];
+
 function openSupModal() {
-  document.getElementById('supCnt').textContent = SUPPLIERS.length;
   document.getElementById('supMsg').style.display = 'none';
+  document.getElementById('supSearchInput').value = '';
+  // 저장된 GAS URL 복원
+  document.getElementById('gasUrl').value = _gasUrl;
   document.getElementById('supModal').style.display = 'flex';
+  loadSupFromSheet();
 }
 function closeSupModal() {
   document.getElementById('supModal').style.display = 'none';
 }
-function supDrop(e) {
-  e.preventDefault();
-  document.getElementById('supDropZone').style.borderColor = '#E0DDD8';
-  const file = e.dataTransfer.files[0];
-  if (file?.name.endsWith('.csv')) supParse(file);
-  else showSupMsg('❌ CSV 파일만 업로드 가능합니다.', false);
+function saveGasUrl() {
+  const url = document.getElementById('gasUrl').value.trim();
+  if (!url) { showSupMsg('❌ URL을 입력하세요.', false); return; }
+  _gasUrl = url;
+  localStorage.setItem('gasUrl', url);
+  showSupMsg('✅ URL 저장됨. 목록을 불러옵니다...', true);
+  loadSupFromSheet();
 }
-function supLoad(input) {
-  if (input.files[0]) supParse(input.files[0]);
-  input.value = '';
+function loadSupFromSheet() {
+  if (!_gasUrl) { showSupMsg('⚠️ GAS URL을 먼저 입력해주세요.', false); return; }
+  document.getElementById('supListBody').innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">불러오는 중...</div>';
+  fetch(_gasUrl + '?action=list')
+    .then(r => r.json())
+    .then(data => {
+      if (data.result !== 'ok') { showSupMsg('❌ 오류: ' + data.message, false); return; }
+      _supAllList = data.list || [];
+      // SUPPLIERS 업데이트
+      SUPPLIERS = [..._supAllList];
+      const badge = document.getElementById('supTotalCnt');
+      if (badge) badge.textContent = _supAllList.length;
+      document.getElementById('supCnt').textContent = _supAllList.length;
+      renderSupList(_supAllList);
+    })
+    .catch(err => showSupMsg('❌ 연결 오류: ' + err.message, false));
 }
-function supParse(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result.replace(/^\uFEFF/, '');
-    const lines = text.split(/\r?\n/).filter(l => l.trim());
-    if (lines.length < 2) { showSupMsg('❌ 데이터가 없습니다.', false); return; }
-    let added = 0, skipped = 0;
-    const existing = new Set(SUPPLIERS.map(s => s.name));
-    const start = (lines[0].includes('공급사명') || lines[0].toLowerCase().includes('name')) ? 1 : 0;
-    for (let i = start; i < lines.length; i++) {
-      const parts = lines[i].split(',');
-      if (parts.length < 2) continue;
-      const name = parts[0].trim().replace(/^"|"$/g,'');
-      const code = parts[1].trim().replace(/^"|"$/g,'');
-      if (!name || !code) continue;
-      if (existing.has(name)) { skipped++; continue; }
-      SUPPLIERS.push({name, code});
-      existing.add(name);
-      added++;
-    }
-    document.getElementById('supCnt').textContent = SUPPLIERS.length;
-    showSupMsg(added > 0
-      ? `✅ ${added}개 추가됨${skipped ? ` (${skipped}개 중복 제외)` : ''}`
-      : '⚠️ 추가된 공급사 없음 (모두 중복)', added > 0);
-  };
-  reader.readAsText(file, 'UTF-8');
+function renderSupList(list) {
+  if (!list.length) {
+    document.getElementById('supListBody').innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">등록된 공급사가 없습니다.</div>';
+    return;
+  }
+  document.getElementById('supListBody').innerHTML = list.map((s,i) =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f5f5f5;${i%2===0?'background:#FAFAF8':''}">
+      <span style="font-size:12px;">${s.name}</span>
+      <span style="font-family:monospace;font-size:11px;color:#888;">${s.code}</span>
+    </div>`
+  ).join('');
+}
+function filterSupList(q) {
+  const filtered = q
+    ? _supAllList.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || s.code.toLowerCase().includes(q.toLowerCase()))
+    : _supAllList;
+  renderSupList(filtered);
+}
+function addSupToSheet() {
+  if (!_gasUrl) { showSupMsg('⚠️ GAS URL을 먼저 입력해주세요.', false); return; }
+  const name = document.getElementById('newSupName').value.trim();
+  const code = document.getElementById('newSupCode').value.trim();
+  if (!name || !code) { showSupMsg('❌ 공급사명과 코드를 모두 입력하세요.', false); return; }
+  showSupMsg('추가 중...', true);
+  fetch(`${_gasUrl}?action=add&name=${encodeURIComponent(name)}&code=${encodeURIComponent(code)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.result === 'ok') {
+        showSupMsg(`✅ ${name} 추가 완료!`, true);
+        document.getElementById('newSupName').value = '';
+        document.getElementById('newSupCode').value = '';
+        loadSupFromSheet();
+      } else if (data.result === 'duplicate') {
+        showSupMsg('⚠️ 이미 존재하는 공급사명입니다.', false);
+      } else {
+        showSupMsg('❌ 오류: ' + data.message, false);
+      }
+    })
+    .catch(err => showSupMsg('❌ 연결 오류: ' + err.message, false));
 }
 function showSupMsg(msg, ok) {
   const el = document.getElementById('supMsg');
@@ -388,11 +439,6 @@ function showSupMsg(msg, ok) {
   el.style.color = ok ? '#1B5E20' : '#856404';
   el.style.border = '1px solid ' + (ok ? '#C8E6C9' : '#FFEAA7');
   el.textContent = msg;
-}
-function supReset() {
-  SUPPLIERS = [...SP];
-  document.getElementById('supCnt').textContent = SUPPLIERS.length;
-  showSupMsg(`✅ 기본 목록으로 초기화 (${SP.length}개)`, true);
 }
 
 // ── 설명 조합 ──
@@ -485,6 +531,18 @@ function toast(msg) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeDesc(); closeSupModal(); }
 });
+
+// 페이지 로드 시 공급사 수 즉시 불러오기
+fetch(_gasUrl + '?action=list')
+  .then(r => r.json())
+  .then(data => {
+    if (data.result === 'ok') {
+      SUPPLIERS = data.list || [];
+      const badge = document.getElementById('supTotalCnt');
+      if (badge) badge.textContent = SUPPLIERS.length;
+    }
+  })
+  .catch(() => {});
 
 addRow(); addRow(); addRow();
 </script>
