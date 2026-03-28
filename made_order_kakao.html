@@ -7,339 +7,68 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #F5F3EF;
-    --surface: #FFFFFF;
-    --surface2: #F0EDE8;
-    --border: #E2DDD7;
-    --text: #1A1714;
-    --text-muted: #8A837A;
-    --kakao: #FEE500;
-    --kakao-text: #3C1E1E;
-    --accent: #C8A882;
-    --accent-dark: #9A7A58;
-    --success: #4A8C5C;
-    --tag-bg: #EDE8E2;
+    --bg: #F5F3EF; --surface: #FFFFFF; --surface2: #F0EDE8; --border: #E2DDD7;
+    --text: #1A1714; --text-muted: #8A837A; --kakao: #FEE500; --kakao-text: #3C1E1E;
+    --accent: #C8A882; --success: #4A8C5C; --tag-bg: #EDE8E2; --excel: #1D6F42;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  .page-wrap {
-    max-width: 860px;
-    margin: 0 auto;
-  }
-
-  /* 헤더 */
-  .header {
-    background: var(--text);
-    padding: 2rem 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-brand {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .header-brand .label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    color: var(--accent);
-    text-transform: uppercase;
-  }
-  .header-brand .title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -0.02em;
-  }
-  .header-meta {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: #666;
-    text-align: right;
-    line-height: 1.6;
-  }
-
-  /* 업로드 존 */
-  .upload-section {
-    padding: 2.5rem 2.5rem 0;
-  }
-  .drop-zone {
-    border: 1.5px dashed var(--border);
-    border-radius: 16px;
-    padding: 2.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--surface);
-    position: relative;
-  }
-  .drop-zone:hover, .drop-zone.dragover {
-    border-color: var(--accent);
-    background: #FAF7F3;
-  }
-  .drop-zone input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-  .drop-icon {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 1rem;
-    background: var(--tag-bg);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-  }
-  .drop-title {
-    font-size: 15px;
-    font-weight: 500;
-    margin-bottom: 6px;
-  }
-  .drop-sub {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* 상태 바 */
-  .status-bar {
-    margin: 0;
-    padding: 0.875rem 1.25rem;
-    background: var(--surface2);
-    border-radius: 10px;
-    font-size: 13px;
-    color: var(--text-muted);
-    display: none;
-    align-items: center;
-    gap: 10px;
-    font-family: 'DM Mono', monospace;
-  }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .page-wrap { max-width: 860px; margin: 0 auto; }
+  .header { background: var(--text); padding: 1.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header-brand { display: flex; flex-direction: column; gap: 2px; }
+  .header-brand .label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; }
+  .header-brand .title { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+  .header-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: #666; text-align: right; line-height: 1.6; }
+  .upload-section { padding: 2rem 2.5rem 0; }
+  .drop-zone { border: 1.5px dashed var(--border); border-radius: 16px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface); position: relative; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: #FAF7F3; }
+  .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop-icon { width: 44px; height: 44px; margin: 0 auto 0.75rem; background: var(--tag-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .drop-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .drop-sub { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .status-bar { margin: 0; padding: 0.75rem 1.25rem; background: var(--surface2); border-radius: 10px; font-size: 13px; color: var(--text-muted); display: none; align-items: center; gap: 10px; font-family: 'DM Mono', monospace; }
   .status-bar.visible { display: flex; }
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-    animation: pulse 1.2s ease-in-out infinite;
-  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 1.2s ease-in-out infinite; }
   .status-dot.done { background: var(--success); animation: none; }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  /* 결과 영역 */
-  .results {
-    padding: 2rem 2.5rem 3rem;
-    display: none;
-  }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+  .results { padding: 1.5rem 2.5rem 3rem; display: none; }
   .results.visible { display: block; }
-
-  .results-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-  }
-  .results-summary h2 {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-muted);
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.05em;
-  }
-  .copy-all-btn {
-    background: var(--text);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-family: 'Noto Sans KR', sans-serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: opacity 0.15s;
-  }
-  .copy-all-btn:hover { opacity: 0.85; }
-
-  /* 공급사 카드 */
-  .supplier-grid {
-    display: grid;
-    gap: 1rem;
-  }
-  .supplier-card {
-    background: var(--surface);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    animation: fadeUp 0.3s ease both;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .card-header {
-    padding: 1.125rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-  .card-header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .supplier-name {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-  .count-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    background: var(--tag-bg);
-    color: var(--text-muted);
-    padding: 3px 8px;
-    border-radius: 20px;
-  }
-  .kakao-btn {
-    background: var(--kakao);
-    border: none;
-    border-radius: 8px;
-    padding: 7px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--kakao-text);
-    cursor: pointer;
-    font-family: 'Noto Sans KR', sans-serif;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
+  .results-summary { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 8px; flex-wrap: wrap; }
+  .results-summary h2 { font-size: 14px; font-weight: 500; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .btn-group { display: flex; gap: 8px; }
+  .action-btn { border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: opacity 0.15s, transform 0.1s; font-weight: 500; }
+  .action-btn:hover { opacity: 0.85; }
+  .action-btn:active { transform: scale(0.97); }
+  .btn-dark { background: var(--text); color: #fff; }
+  .btn-excel { background: var(--excel); color: #fff; }
+  .supplier-grid { display: grid; gap: 1rem; }
+  .supplier-card { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .card-header { padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .card-header-left { display: flex; align-items: center; gap: 8px; }
+  .supplier-name { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .count-badge { font-family: 'DM Mono', monospace; font-size: 11px; background: var(--tag-bg); color: var(--text-muted); padding: 3px 8px; border-radius: 20px; }
+  .kakao-btn { background: var(--kakao); border: none; border-radius: 8px; padding: 6px 13px; font-size: 13px; font-weight: 700; color: var(--kakao-text); cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: transform 0.1s, box-shadow 0.1s; }
   .kakao-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
   .kakao-btn:active { transform: scale(0.97); }
-  .kakao-btn.copied {
-    background: #E8F5EE;
-    color: var(--success);
-  }
-
-  /* 상품 테이블 */
-  .items-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
+  .kakao-btn.copied { background: #E8F5EE; color: var(--success); }
+  .items-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   .items-table colgroup col:nth-child(1) { width: 50%; }
   .items-table colgroup col:nth-child(2) { width: 30%; }
   .items-table colgroup col:nth-child(3) { width: 20%; }
-  .items-table th {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 0.5rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .items-table td {
-    padding: 0.5rem 1rem;
-    font-size: 13px;
-    border-bottom: 1px solid #F5F1EC;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  .items-table th { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); padding: 0.5rem 1rem; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .items-table td { padding: 0.5rem 1rem; font-size: 13px; border-bottom: 1px solid #F5F1EC; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .items-table tr:last-child td { border-bottom: none; }
   .items-table tr:hover td { background: #FDFAF7; }
-
-  .qty-badge {
-    display: inline-block;
-    background: var(--text);
-    color: #fff;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 4px;
-    min-width: 32px;
-    text-align: center;
-  }
-
-  /* 미리보기 텍스트 */
-  .msg-preview {
-    margin: 0 1.5rem 1.25rem;
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 1rem 1.125rem;
-    font-size: 12.5px;
-    line-height: 1.8;
-    color: var(--text-muted);
-    white-space: pre-wrap;
-    font-family: 'DM Mono', monospace;
-    border: 1px solid var(--border);
-    display: none;
-    max-height: 200px;
-    overflow-y: auto;
-  }
+  .qty-badge { display: inline-block; background: var(--text); color: #fff; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; min-width: 32px; text-align: center; }
+  .msg-preview { margin: 0 1.25rem 1rem; background: var(--surface2); border-radius: 10px; padding: 0.875rem 1rem; font-size: 12.5px; line-height: 1.8; color: var(--text-muted); white-space: pre-wrap; font-family: 'DM Mono', monospace; border: 1px solid var(--border); display: none; max-height: 200px; overflow-y: auto; }
   .msg-preview.open { display: block; }
-
-  .preview-toggle {
-    background: none;
-    border: none;
-    font-size: 12px;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0.5rem 1.5rem 1rem;
-    font-family: 'Noto Sans KR', sans-serif;
-    transition: color 0.15s;
-  }
+  .preview-toggle { background: none; border: none; font-size: 12px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0.5rem 1.25rem 0.875rem; font-family: 'Noto Sans KR', sans-serif; transition: color 0.15s; }
   .preview-toggle:hover { color: var(--text); }
-
-  /* 빈 상태 */
-  .empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--text-muted);
-  }
-  .empty-state .big { font-size: 40px; margin-bottom: 1rem; }
-  .empty-state p { font-size: 14px; line-height: 1.7; }
-
-  /* 반응형 */
-  @media (max-width: 600px) {
-    .header { padding: 1.25rem 1.25rem; }
+  @media (max-width:600px) {
+    .header { padding: 1.25rem; }
     .upload-section, .results { padding-left: 1.25rem; padding-right: 1.25rem; }
-    .status-bar { margin: 0 1.25rem; }
-    .items-table th, .items-table td { padding: 0.5rem 1rem; }
-    .msg-preview { margin: 0 1rem 1rem; }
-    .preview-toggle { padding: 0.5rem 1rem 0.75rem; }
+    .items-table th, .items-table td { padding: 0.4rem 0.75rem; }
   }
 </style>
 </head>
@@ -350,35 +79,36 @@
     <span class="label">the J.Soo / 발주 도구</span>
     <span class="title">거래처 발주 메시지 생성기</span>
   </div>
-  <div class="header-meta">
-    엑셀 파일 업로드<br>→ 공급사별 자동 분류
-  </div>
+  <div class="header-meta">엑셀 업로드 → 공급사별 분류<br>카카오 메시지 + 선주문 엑셀 출력</div>
 </div>
 
 <div class="page-wrap">
-
 <div class="upload-section">
   <div class="drop-zone" id="dropZone">
     <input type="file" id="fileInput" accept=".xlsx,.xls" />
     <div class="drop-icon">📂</div>
     <div class="drop-title">엑셀 파일을 여기에 드래그하거나 클릭해서 업로드</div>
-    <div class="drop-sub">.xlsx / .xls 파일 · 숨긴 행 자동 제외</div>
+    <div class="drop-sub">.xlsx / .xls · 숨긴 행 자동 제외 · 선주문 등록양식 자동 생성</div>
   </div>
 </div>
 
-<div style="height: 1rem;"></div>
+<div style="height:1rem"></div>
 <div class="status-bar" id="statusBar">
   <div class="status-dot" id="statusDot"></div>
   <span id="statusText">파일 읽는 중...</span>
 </div>
-<div style="height: 1rem;"></div>
+<div style="height:1rem"></div>
 
 <div class="results" id="results">
   <div class="results-summary">
     <h2 id="summaryText">—</h2>
-    <button class="copy-all-btn" onclick="copyAll()">📋 전체 복사</button>
+    <div class="btn-group">
+      <button class="action-btn btn-excel" onclick="downloadExcel()">📥 선주문 엑셀 다운로드</button>
+      <button class="action-btn btn-dark" onclick="copyAll()">📋 전체 복사</button>
+    </div>
   </div>
   <div class="supplier-grid" id="supplierGrid"></div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -391,21 +121,17 @@ const statusText = document.getElementById('statusText');
 const resultsEl = document.getElementById('results');
 const supplierGrid = document.getElementById('supplierGrid');
 const summaryText = document.getElementById('summaryText');
+let allOrderData = [];
 
-// 드래그앤드롭
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) processFile(file);
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
 });
-fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) processFile(e.target.files[0]);
-});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0]); });
 
-function setStatus(msg, done = false) {
+function setStatus(msg, done=false) {
   statusBar.classList.add('visible');
   statusText.textContent = msg;
   statusDot.className = 'status-dot' + (done ? ' done' : '');
@@ -414,85 +140,114 @@ function setStatus(msg, done = false) {
 function processFile(file) {
   setStatus('파일 읽는 중...');
   resultsEl.classList.remove('visible');
+  allOrderData = [];
 
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = ev => {
     try {
-      const wb = XLSX.read(e.target.result, { type: 'array', cellStyles: true });
+      const wb = XLSX.read(ev.target.result, { type: 'array', cellStyles: true });
       const ws = wb.Sheets[wb.SheetNames[0]];
 
-      // 숨긴 행 파악
+      // 숨긴 행 파악 (행 숨김은 절대 풀지 않음)
       const rowInfo = ws['!rows'] || [];
       const hiddenRows = new Set();
       rowInfo.forEach((r, i) => { if (r && r.hidden) hiddenRows.add(i); });
 
-      // 데이터 파싱
+      // 헤더 파싱 (숨긴 열 포함 - 열은 풀어서 읽음)
       const range = XLSX.utils.decode_range(ws['!ref']);
       const headers = [];
       for (let c = range.s.c; c <= range.e.c; c++) {
-        const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
+        const cell = ws[XLSX.utils.encode_cell({ r:0, c })];
         headers.push(cell ? String(cell.v) : '');
       }
 
-      // 컬럼 인덱스 찾기
-      const colIdx = name => headers.findIndex(h => h.replace(/\s/g,'').includes(name.replace(/\s/g,'')));
-      const supIdx = colIdx('공급처명');
-      const prodIdx = colIdx('사입상품명');
-      const optIdx = colIdx('옵션내용');
+      const findCol = (...names) => {
+        for (const name of names) {
+          const idx = headers.findIndex(h => h.replace(/[\s\n]/g,'').includes(name.replace(/[\s\n]/g,'')));
+          if (idx >= 0) return idx;
+        }
+        return -1;
+      };
 
-      // 발주 컬럼 (다양한 형식 대응)
-      let orderIdx = headers.findIndex(h => h.includes('추가발주') || h.includes('추가 발주'));
+      const cm = {
+        등록일자:     findCol('등록일자'),
+        공급처명:     findCol('공급처명'),
+        공급처연락처: findCol('공급처연락처'),
+        공급처위치:   findCol('공급처위치'),
+        사입상품명:   findCol('사입상품명'),
+        상품명:       findCol('상품명'),
+        옵션내용:     findCol('옵션내용'),
+        원가:         findCol('원가'),
+        발주수량:     findCol('추가발주요청', '추가 발주'),
+        바코드번호:   findCol('바코드번호'),
+      };
 
-      if (supIdx < 0 || prodIdx < 0 || orderIdx < 0) {
-        setStatus('⚠️ 컬럼을 찾을 수 없습니다. 파일 형식을 확인해주세요.', true);
+      if (cm.공급처명 < 0 || cm.사입상품명 < 0 || cm.발주수량 < 0) {
+        setStatus('필수 컬럼을 찾을 수 없습니다. 파일 형식을 확인해주세요.', true);
         return;
       }
+
+      const getCell = (r, c) => {
+        if (c < 0) return '';
+        const cell = ws[XLSX.utils.encode_cell({ r, c })];
+        if (!cell) return '';
+        let v = cell.v;
+        if (typeof v === 'string' && v.startsWith('="')) v = v.slice(2, -1);
+        if (c === cm.등록일자 && typeof v === 'number') {
+          try {
+            const d = XLSX.SSF.parse_date_code(v);
+            if (d) v = d.y + '-' + String(d.m).padStart(2,'0') + '-' + String(d.d).padStart(2,'0');
+          } catch(e) {}
+        }
+        return String(v).trim();
+      };
 
       const grouped = {};
       for (let r = 1; r <= range.e.r; r++) {
         if (hiddenRows.has(r)) continue;
-        const getCell = c => {
-          const cell = ws[XLSX.utils.encode_cell({ r, c })];
-          if (!cell) return '';
-          let v = cell.v;
-          if (typeof v === 'string' && v.startsWith('="')) v = v.slice(2, -1);
-          return String(v).trim();
-        };
-        const qty = getCell(orderIdx);
+        const qty = getCell(r, cm.발주수량);
         const qtyNum = parseFloat(qty);
         if (!qty || isNaN(qtyNum) || qtyNum === 0) continue;
-
-        const sup = getCell(supIdx);
-        const prod = getCell(prodIdx);
-        const opt = getCell(optIdx);
+        const sup = getCell(r, cm.공급처명);
+        const prod = getCell(r, cm.사입상품명);
         if (!sup || !prod) continue;
 
+        const item = {
+          일자:   getCell(r, cm.등록일자),
+          업체명: sup,
+          연락처: getCell(r, cm.공급처연락처),
+          주소:   getCell(r, cm.공급처위치),
+          사입명: prod,
+          상품명: getCell(r, cm.상품명),
+          옵션:   getCell(r, cm.옵션내용),
+          원가:   getCell(r, cm.원가),
+          주문:   Math.round(qtyNum),
+          바코드: getCell(r, cm.바코드번호),
+        };
         if (!grouped[sup]) grouped[sup] = [];
-        grouped[sup].push({ prod, opt, qty: Math.round(qtyNum) });
+        grouped[sup].push(item);
+        allOrderData.push(item);
       }
 
       const suppliers = Object.keys(grouped);
-      const totalItems = suppliers.reduce((s, k) => s + grouped[k].length, 0);
-
       if (suppliers.length === 0) {
         setStatus('추가발주 요청 항목이 없습니다.', true);
         return;
       }
 
-      setStatus(`완료 · ${totalItems}건 / ${suppliers.length}개 공급사 (숨긴 행 제외)`, true);
-      summaryText.textContent = `${suppliers.length}개 공급사 · 총 ${totalItems}건`;
+      setStatus('완료 · ' + allOrderData.length + '건 / ' + suppliers.length + '개 공급사 (숨긴 행 제외)', true);
+      summaryText.textContent = suppliers.length + '개 공급사 · 총 ' + allOrderData.length + '건';
       renderResults(grouped);
-
-    } catch (err) {
-      setStatus('⚠️ 파일 읽기 실패: ' + err.message, true);
+    } catch(err) {
+      setStatus('파일 읽기 실패: ' + err.message, true);
     }
   };
   reader.readAsArrayBuffer(file);
 }
 
-function buildMessage(supplier, items) {
-  const lines = items.map(i => `📦 ${i.prod} / ${i.opt} / ${i.qty}장`).join('\n');
-  return `안녕하세요, 더제이수입니다 😊\n추가 발주 요청드립니다!\n\n${lines}\n\n확인 부탁드립니다, 감사합니다!`;
+function buildMessage(sup, items) {
+  const lines = items.map(i => '📦 ' + i.사입명 + ' / ' + i.옵션 + ' / ' + i.주문 + '장').join('\n');
+  return '안녕하세요, 더제이수입니다 😊\n추가 발주 요청드립니다!\n\n' + lines + '\n\n확인 부탁드립니다, 감사합니다!';
 }
 
 function renderResults(grouped) {
@@ -505,39 +260,50 @@ function renderResults(grouped) {
     card.className = 'supplier-card';
     card.style.animationDelay = (idx * 0.07) + 's';
 
-    const rows = items.map(i => `
-      <tr>
-        <td>${i.prod}</td>
-        <td style="color: var(--text-muted);">${i.opt || '-'}</td>
-        <td><span class="qty-badge">${i.qty}</span></td>
-      </tr>`).join('');
+    const rows = items.map(i =>
+      '<tr><td>' + i.사입명 + '</td><td style="color:var(--text-muted)">' + (i.옵션||'-') + '</td><td><span class="qty-badge">' + i.주문 + '</span></td></tr>'
+    ).join('');
 
-    card.innerHTML = `
-      <div class="card-header">
-        <div class="card-header-left">
-          <span class="supplier-name">${sup}</span>
-          <span class="count-badge">${items.length}건</span>
-        </div>
-        <button class="kakao-btn" onclick="copyMsg(this, \`${msg.replace(/`/g,'\\`')}\`)">
-          카카오 복사
-        </button>
-      </div>
-      <table class="items-table">
-        <colgroup><col><col><col></colgroup>
-        <thead>
-          <tr>
-            <th>상품명</th>
-            <th>옵션</th>
-            <th>수량</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <button class="preview-toggle" onclick="togglePreview(this)">▶ 카카오 메시지 미리보기</button>
-      <div class="msg-preview">${msg}</div>
-    `;
+    const escapedMsg = msg.replace(/\\/g,'\\\\').replace(/`/g,'\\`');
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<div class="card-header-left"><span class="supplier-name">' + sup + '</span><span class="count-badge">' + items.length + '건</span></div>' +
+        '<button class="kakao-btn" onclick="copyMsg(this,`' + escapedMsg + '`)">카카오 복사</button>' +
+      '</div>' +
+      '<table class="items-table"><colgroup><col><col><col></colgroup>' +
+        '<thead><tr><th>상품명</th><th>옵션</th><th>수량</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody></table>' +
+      '<button class="preview-toggle" onclick="togglePreview(this)">▶ 카카오 메시지 미리보기</button>' +
+      '<div class="msg-preview">' + msg + '</div>';
     supplierGrid.appendChild(card);
   });
+}
+
+function downloadExcel() {
+  if (!allOrderData.length) return;
+  const wb = XLSX.utils.book_new();
+  const headers = [
+    '일자(필수)','업체명(필수)','연락처(필수)','주소(필수)',
+    '사입명(필수)','상품명(필수)','옵션(필수)','원가(필수)',
+    '주문(필수)','비고','바코드번호(필수)',
+    '사용자관리코드','사용자상품코드','사용자메모1','사용자메모2','사용자메모3','상품이미지','상품위치'
+  ];
+  const dataRows = allOrderData.map(d => [
+    d.일자, d.업체명, d.연락처, d.주소,
+    d.사입명, d.상품명, d.옵션, d.원가 ? Number(d.원가) : '',
+    d.주문, '', d.바코드,
+    '','','','','','',''
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+  ws['!cols'] = [
+    {wch:14},{wch:16},{wch:16},{wch:24},{wch:22},{wch:30},
+    {wch:12},{wch:10},{wch:8},{wch:10},{wch:16},
+    {wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14}
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, '선주문 등록양식');
+  const today = new Date();
+  const d = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+  XLSX.writeFile(wb, '선주문등록양식_더제이수_' + d + '.xls');
 }
 
 function togglePreview(btn) {
@@ -560,15 +326,14 @@ function copyAll() {
   cards.forEach(card => {
     const sup = card.querySelector('.supplier-name').textContent;
     const preview = card.querySelector('.msg-preview').textContent;
-    all.push(`[ ${sup} ]\n${preview}`);
+    all.push('[ ' + sup + ' ]\n' + preview);
   });
   navigator.clipboard.writeText(all.join('\n\n' + '─'.repeat(30) + '\n\n')).then(() => {
-    const btn = document.querySelector('.copy-all-btn');
+    const btn = document.querySelector('.btn-dark');
     btn.textContent = '✓ 전체 복사됨';
     setTimeout(() => btn.textContent = '📋 전체 복사', 2000);
   });
 }
 </script>
-</div>
 </body>
 </html>
