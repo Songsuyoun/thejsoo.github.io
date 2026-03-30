@@ -339,11 +339,12 @@ function openDesc(id) {
 }
 function closeDesc() {
   document.getElementById('descModal').style.display = 'none';
+  document.getElementById('descTA').value = '';
   _descId = null;
 }
 function saveDesc() {
   if (_descId === null) return;
-  const val = document.getElementById('descTA').value;
+  const val = document.getElementById('descTA').value.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
   document.getElementById('desc'+_descId).value = val;
   const prev = document.getElementById('dprev'+_descId);
   prev.textContent = val.length > 50 ? val.slice(0,50)+'...' : val;
@@ -444,7 +445,7 @@ function showSupMsg(msg, ok) {
 // ── 설명 조합 ──
 function buildDesc(id) {
   const nm  = document.getElementById('nm'+id)?.value || '';
-  let d = (document.getElementById('desc'+id)?.value || '').replace(/\n/g,'<br>\n');
+  let d = (document.getElementById('desc'+id)?.value || '').replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n/g,'<br>\n');
   const cl  = tags[id+'c'] || [];
   const mc  = (tags[id+'m'] || []).join(', ');
   const fab = document.getElementById('fab'+id)?.value || '';
