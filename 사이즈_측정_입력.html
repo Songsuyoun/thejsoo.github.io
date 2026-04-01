@@ -139,6 +139,25 @@ input[type="text"]:focus { border-color: var(--border-focus); background: #fff; 
 .btn-add-size { width: 100%; height: 52px; border: 2px dashed #d0d0ce; border-radius: 14px; background: transparent; color: #888; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.12s; }
 .btn-add-size:active { background: var(--accent-light); border-color: #aaa; color: var(--text); }
 
+/* ─── 추가 섹션 ─── */
+.extra-section-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.extra-section-block { border: 1.5px solid #d4e3ff; border-radius: 14px; overflow: hidden; background: var(--white); }
+.extra-section-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #f0f5ff; border-bottom: 1px solid #d4e3ff; }
+.extra-section-title { font-size: 13px; font-weight: 700; color: #3a6fd8; display: flex; align-items: center; gap: 6px; }
+.extra-section-badge { font-size: 10px; font-weight: 600; background: #dceaff; color: #3a6fd8; border-radius: 10px; padding: 2px 8px; }
+.btn-remove-extra { width: 28px; height: 28px; border: none; background: none; border-radius: 7px; cursor: pointer; color: #aac4f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.btn-remove-extra:active { background: #fff0f0; color: var(--red); }
+.extra-name-input { height: 30px; padding: 0 8px; font-size: 13px; font-weight: 600; font-family: inherit; border: 1.5px solid #c0d4f8; border-radius: 7px; outline: none; background: #fff; color: #3a6fd8; width: 100px; -webkit-appearance: none; }
+.extra-name-input:focus { border-color: #3a6fd8; }
+
+/* 추가 섹션 버튼 그룹 */
+.add-extra-section-area { margin-bottom: 10px; }
+.add-extra-label { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 7px; padding: 0 2px; }
+.add-extra-btns { display: flex; gap: 7px; flex-wrap: wrap; }
+.btn-add-extra { height: 36px; padding: 0 13px; font-size: 12.5px; font-weight: 600; font-family: inherit; border: 1.5px dashed #c8c8c6; border-radius: 10px; background: #fff; color: #888; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-add-extra:active { border-color: #3a6fd8; color: #3a6fd8; background: #f0f5ff; border-style: solid; }
+.btn-add-extra:disabled { opacity: 0.3; pointer-events: none; }
+
 /* ─── 메모 ─── */
 .memo-wrap { padding: 10px 16px 14px; }
 textarea {
@@ -261,6 +280,10 @@ textarea:focus { border-color: var(--border-focus); background: #fff; }
     사이즈 추가
   </button>
 
+  <!-- 추가 섹션 -->
+  <div class="add-extra-section-area" id="add-extra-area"></div>
+  <div class="extra-section-wrap" id="extra-sections-wrap"></div>
+
   <!-- 메모 카드 -->
   <div class="card">
     <div class="card-title">메모 (선택)</div>
@@ -308,23 +331,34 @@ let SCRIPT_URL = localStorage.getItem('thejsoo_script_url') || 'https://script.g
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dN88i8_YCbhg9gY-bX95wzYCfFAFYZBSTmTCnK9XQHA';
 
 const TYPES = {
-  '상의':             ['어깨','가슴','암홀','팔길이','소매','밑단','총길이'],
+  '상의':             ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],
   '바지':             ['허리','힙','밑위','허벅지','밑단','총길이'],
   '스커트':           ['허리','힙','밑단','총길이'],
   '원피스':           ['어깨','가슴','암홀','팔길이','소매','허리','힙','밑단','총길이'],
-  '아우터':           ['어깨','가슴','암홀','팔길이','소매','허리','밑단','총길이'],
-  '상의(슬리브리스)': ['어깨','가슴','암홀','밑단','총길이'],
-  '셋업(바지)':       ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','하의허리','힙','밑위','허벅지','하의밑단','하의총길이'],
-  '셋업(스커트)':     ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','하의허리','힙','하의밑단','하의총길이'],
+  '아우터':           ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],
+  '상의(슬리브리스)': ['어깨','가슴','암홀','밑단','총길이','허리'],
+  '셋업(바지)':       ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리','하의허리','힙','밑위','허벅지','하의밑단','하의총길이'],
+  '셋업(스커트)':     ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리','하의허리','힙','하의밑단','하의총길이'],
   '신발':             ['굽','총높이'],
-  '벨트':             ['폭','총길이'],
-  '스카프/머플러':    ['가로','세로'],
+  '벨트':             ['벨트폭','벨트총길이'],
+  '스카프/머플러':    ['스카프가로','스카프세로'],
 };
 
 let currentType = '상의';
 let orderType = '';    // '사입' | '제작'
 let sizeBlocks = [];   // [{ id, name, vals:{col:val} }]
 let blockIdCounter = 0;
+
+// 추가 섹션
+const EXTRA_OPTIONS = [
+  { key: '벨트',    cols: ['벨트폭','벨트총길이'] },
+  { key: '스카프',  cols: ['스카프가로','스카프세로'] },
+  { key: '머플러',  cols: ['스카프가로','스카프세로'] },
+  { key: '직접입력', cols: ['항목1','항목2'] },
+];
+const CLOTH_TYPES = ['상의','바지','스커트','원피스','아우터','상의(슬리브리스)','셋업(바지)','셋업(스커트)'];
+let extraSections = []; // [{ id, key, name, cols, vals:{sizeName, col:val} }]
+let extraIdCounter = 0;
 
 // ═══════════════════════════════════════════
 //  초기화
@@ -346,6 +380,7 @@ function init() {
   });
 
   addSizeBlock(); // 첫 블록
+  renderExtraAddButtons(); // 초기 추가 섹션 버튼
   checkBanner();
 }
 
@@ -356,9 +391,12 @@ function switchType(t) {
   currentType = t;
   document.querySelectorAll('.type-tab').forEach(b =>
     b.classList.toggle('active', b.textContent === t));
-  // 블록 초기화 후 재렌더
   sizeBlocks.forEach(b => { b.vals = {}; });
+  extraSections = [];
+  extraIdCounter = 0;
   renderAllBlocks();
+  renderExtraAddButtons();
+  document.getElementById('extra-sections-wrap').innerHTML = '';
 }
 
 // ═══════════════════════════════════════════
@@ -378,6 +416,167 @@ function removeSizeBlock(id) {
   if (sizeBlocks.length <= 1) { showToast('최소 1개는 필요합니다', 'err'); return; }
   sizeBlocks = sizeBlocks.filter(b => b.id !== id);
   renderAllBlocks();
+}
+
+// ═══════════════════════════════════════════
+//  추가 섹션
+// ═══════════════════════════════════════════
+function renderExtraAddButtons() {
+  const area = document.getElementById('add-extra-area');
+  if (!CLOTH_TYPES.includes(currentType)) { area.innerHTML = ''; return; }
+  const usedKeys = extraSections.map(s => s.key).filter(k => k !== '직접입력');
+  let html = `<div class="add-extra-label">추가 항목</div><div class="add-extra-btns">`;
+  EXTRA_OPTIONS.forEach(opt => {
+    const disabled = opt.key !== '직접입력' && usedKeys.includes(opt.key) ? ' disabled' : '';
+    html += `<button class="btn-add-extra"${disabled} onclick="addExtraSection('${opt.key}')">+ ${opt.key}</button>`;
+  });
+  html += `</div>`;
+  area.innerHTML = html;
+}
+
+function addExtraSection(key) {
+  const id = ++extraIdCounter;
+  const opt = EXTRA_OPTIONS.find(o => o.key === key);
+  const cols = opt ? [...opt.cols] : ['항목1','항목2'];
+  const defaultSizeName = ['벨트','스카프','머플러'].includes(key) ? 'FREE' : '';
+  extraSections.push({ id, key, name: key, cols, sizeName: defaultSizeName, vals: {} });
+  renderExtraSections();
+  renderExtraAddButtons();
+  setTimeout(() => {
+    const el = document.getElementById(`extra-block-${id}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 60);
+}
+
+function removeExtraSection(id) {
+  extraSections = extraSections.filter(s => s.id !== id);
+  renderExtraSections();
+  renderExtraAddButtons();
+}
+
+function renderExtraSections() {
+  const wrap = document.getElementById('extra-sections-wrap');
+  wrap.innerHTML = '';
+  extraSections.forEach(sec => {
+    const div = document.createElement('div');
+    div.className = 'extra-section-block';
+    div.id = `extra-block-${sec.id}`;
+
+    const isCustom = sec.key === '직접입력';
+    const titleHtml = isCustom
+      ? `<input class="extra-name-input" type="text" value="${sec.name === '직접입력' ? '' : sec.name}" placeholder="섹션명" oninput="onExtraName(${sec.id},this.value)">`
+      : `<span>${sec.name}</span>`;
+    const badgeText = sec.cols.join(' · ');
+
+    const valsHtml = sec.cols.map((col, ci) => {
+      const v = sec.vals[col] || '';
+      return `
+        <div class="val-row">
+          <div class="val-label">${col}</div>
+          <div class="val-input-wrap">
+            <input class="val-inp${v ? ' has-value' : ''}" type="text" inputmode="decimal"
+              placeholder="" data-extra="${sec.id}" data-col="${col}" value="${v}"
+              oninput="onExtraVal(${sec.id},'${col}',this.value)">
+            <span class="val-unit">cm</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    const sizeNameVal = sec.sizeName || '';
+    // 프리셋: 벨트/스카프/머플러는 FREE 디폴트, 그 외는 S/M/L/FREE
+    const extraPresets = ['FREE','S','M','L','직접입력'];
+    const extraPresetBtns = extraPresets.map(p => {
+      const isSel = p === '직접입력'
+        ? (sizeNameVal && !['FREE','S','M','L'].includes(sizeNameVal))
+        : sizeNameVal === p;
+      const cls = isSel ? ' selected' : '';
+      const isDash = p === '직접입력';
+      return `<button class="size-preset-btn${cls}${isDash ? ' custom-btn' : ''}" style="height:30px;padding:0 10px;font-size:12px;"
+        onclick="selectExtraPreset(${sec.id},'${p}')">${p}</button>`;
+    }).join('');
+
+    div.innerHTML = `
+      <div class="extra-section-header">
+        <div class="extra-section-title">
+          ${titleHtml}
+          <span class="extra-section-badge">${badgeText}</span>
+        </div>
+        <button class="btn-remove-extra" onclick="removeExtraSection(${sec.id})">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="size-vals">
+        <div class="val-row">
+          <div class="val-label" style="color:#3a6fd8;font-size:12px;">사이즈명</div>
+          <div class="val-input-wrap" style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;">
+            ${extraPresetBtns}
+            <input class="val-inp extra-custom-inp" type="text" placeholder="직접입력..."
+              style="font-weight:700;width:90px;height:30px;font-size:13px;display:${(sizeNameVal && !['FREE','S','M','L'].includes(sizeNameVal)) ? 'block' : 'none'};"
+              data-extra="${sec.id}" data-col="__sizeName"
+              value="${(sizeNameVal && !['FREE','S','M','L'].includes(sizeNameVal)) ? sizeNameVal : ''}"
+              oninput="onExtraVal(${sec.id},'__sizeName',this.value)">
+          </div>
+        </div>
+        ${valsHtml}
+      </div>`;
+    wrap.appendChild(div);
+  });
+}
+
+function onExtraName(id, val) {
+  const s = extraSections.find(s => s.id === id);
+  if (s) s.name = val || '직접입력';
+}
+
+function selectExtraPreset(id, preset) {
+  const s = extraSections.find(s => s.id === id);
+  if (!s) return;
+  const block = document.getElementById(`extra-block-${id}`);
+  if (!block) return;
+  const customInp = block.querySelector('.extra-custom-inp');
+
+  if (preset === '직접입력') {
+    // 직접입력 버튼 활성화, input 보이기
+    block.querySelectorAll('.size-preset-btn').forEach(b => b.classList.remove('selected'));
+    block.querySelectorAll('.size-preset-btn').forEach(b => {
+      if (b.textContent === '직접입력') b.classList.add('selected');
+    });
+    if (customInp) { customInp.style.display = 'block'; customInp.focus(); }
+    s.sizeName = customInp ? customInp.value : '';
+  } else {
+    s.sizeName = preset;
+    block.querySelectorAll('.size-preset-btn').forEach(b =>
+      b.classList.toggle('selected', b.textContent === preset));
+    if (customInp) { customInp.style.display = 'none'; customInp.value = ''; }
+  }
+}
+function onExtraVal(id, col, val) {
+  const s = extraSections.find(s => s.id === id);
+  if (!s) return;
+  if (col === '__sizeName') s.sizeName = val;
+  else s.vals[col] = val;
+}
+
+function syncExtraFromDOM() {
+  extraSections.forEach(s => {
+    // 프리셋 선택값 우선, 직접입력이면 input값
+    const block = document.getElementById(`extra-block-${s.id}`);
+    if (block) {
+      const selectedBtn = [...block.querySelectorAll('.size-preset-btn.selected')].find(b => b.textContent !== '직접입력');
+      if (selectedBtn) {
+        s.sizeName = selectedBtn.textContent;
+      } else {
+        const customInp = block.querySelector('.extra-custom-inp');
+        if (customInp) s.sizeName = customInp.value.trim();
+      }
+    }
+    s.cols.forEach(col => {
+      const inp = document.querySelector(`input[data-extra="${s.id}"][data-col="${col}"]`);
+      if (inp) s.vals[col] = inp.value.trim();
+    });
+  });
 }
 
 function syncFromDOM() {
@@ -580,16 +779,37 @@ async function saveAll() {
   const dateStr = `${kst.getFullYear()}-${String(kst.getMonth()+1).padStart(2,'0')}-${String(kst.getDate()).padStart(2,'0')}`;
   const cols = TYPES[currentType];
 
-  const rows = sizeBlocks.map(b => ({
-    date:     dateStr,
-    orderType,
-    product,
-    type:     currentType,
-    sizeName: b.name,
-    memo,
-    allCols:  cols,
-    vals:     Object.fromEntries(cols.map(col => [col, b.vals[col] && b.vals[col] !== '' ? b.vals[col] : '-']))
-  }));
+  // 추가 섹션 값을 메인 행에 합치기
+  syncExtraFromDOM();
+
+  const rows = sizeBlocks.map(b => {
+    // 메인 vals
+    const vals = Object.fromEntries(
+      cols.map(col => [col, b.vals[col] && b.vals[col] !== '' ? b.vals[col] : '-'])
+    );
+    // 추가 섹션 vals 합치기 (같은 행에)
+    extraSections.forEach(s => {
+      s.cols.forEach(col => {
+        vals[col] = s.vals[col] && s.vals[col] !== '' ? s.vals[col] : '-';
+      });
+    });
+    // 추가 섹션 타입명 기록 (메모에 append)
+    const extraNames = extraSections.map(s => s.name).join(', ');
+    const fullMemo = extraNames
+      ? (memo ? `${memo} / 추가: ${extraNames}` : `추가: ${extraNames}`)
+      : memo;
+
+    return {
+      date:     dateStr,
+      orderType,
+      product,
+      type:     currentType,
+      sizeName: b.name,
+      memo:     fullMemo,
+      allCols:  [...cols, ...extraSections.flatMap(s => s.cols)],
+      vals
+    };
+  });
 
   const btn = document.getElementById('btn-save');
   btn.disabled = true;
@@ -620,12 +840,15 @@ async function saveAll() {
 function resetForm() {
   document.getElementById('product').value = '';
   document.getElementById('memo').value = '';
-  // 구분 선택 초기화
   orderType = '';
   document.getElementById('btn-saip').classList.remove('selected');
   document.getElementById('btn-jejak').classList.remove('selected');
   sizeBlocks = [];
   blockIdCounter = 0;
+  extraSections = [];
+  extraIdCounter = 0;
+  document.getElementById('extra-sections-wrap').innerHTML = '';
+  renderExtraAddButtons();
   addSizeBlock();
 }
 
