@@ -332,25 +332,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 
 <script>
 const TYPES = {
-  '상의':            { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이'],            modelSize: 'FREE' },
+  '상의':            { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],     modelSize: 'FREE' },
   '바지':            { cols: ['허리','힙','밑위','허벅지','밑단','총길이'],                    modelSize: 'S' },
   '스커트':          { cols: ['허리','힙','밑단','총길이'],                                    modelSize: 'S' },
   '원피스':          { cols: ['어깨','가슴','암홀','팔길이','소매','허리','힙','밑단','총길이'], modelSize: 'S' },
-  '아우터':          { cols: ['어깨','가슴','암홀','팔길이','소매','허리','밑단','총길이'],      modelSize: 'FREE' },
-  '상의(슬리브리스)': { cols: ['어깨','가슴','암홀','밑단','총길이'],                           modelSize: 'FREE' },
-  '셋업(바지)':      { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이'],            modelSize: 'FREE', isSetup: true,
+  '아우터':          { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],      modelSize: 'FREE' },
+  '상의(슬리브리스)': { cols: ['어깨','가슴','암홀','밑단','총길이','허리'],                    modelSize: 'FREE' },
+  '셋업(바지)':      { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],     modelSize: 'FREE', isSetup: true,
                        setupExtra: { key: '바지', cols: ['허리','힙','밑위','허벅지','밑단','총길이'] } },
-  '셋업(스커트)':    { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이'],            modelSize: 'FREE', isSetup: true,
+  '셋업(스커트)':    { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],     modelSize: 'FREE', isSetup: true,
                        setupExtra: { key: '스커트', cols: ['허리','힙','밑단','총길이'] } },
   '신발':            { cols: ['굽','총높이'],   modelSize: 'FREE', isAccessory: true },
-  '벨트':            { cols: ['폭','총길이'],   modelSize: 'FREE', isAccessory: true },
-  '스카프/머플러':   { cols: ['가로','세로'],   modelSize: 'FREE', isAccessory: true },
+  '벨트':            { cols: ['벨트폭','벨트총길이'],   modelSize: 'FREE', isAccessory: true },
+  '스카프/머플러':   { cols: ['스카프가로','스카프세로'],   modelSize: 'FREE', isAccessory: true },
 };
 
 const EXTRA_OPTIONS = [
-  { key: '벨트',    cols: ['폭','총길이'] },
-  { key: '스카프',  cols: ['가로','세로'] },
-  { key: '머플러',  cols: ['가로','세로'] },
+  { key: '벨트',    cols: ['벨트폭','벨트총길이'] },
+  { key: '스카프',  cols: ['스카프가로','스카프세로'] },
+  { key: '머플러',  cols: ['스카프가로','스카프세로'] },
   { key: '직접입력', cols: [] },
 ];
 
@@ -361,7 +361,7 @@ let generatedCode = '';
 let extraSections = [];
 let extraIdCounter = 0;
 
-const TEMPLATES = {"상의":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>팔길이</li>\n\t\t\t\t\t\t<li>소매</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : FREE 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"상의(슬리브리스)":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : FREE 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"바지":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>힙</li>\n\t\t\t\t\t\t<li>밑위</li>\n\t\t\t\t\t\t<li>허벅지</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : S 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"스커트":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>힙</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : S 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"원피스":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>팔길이</li>\n\t\t\t\t\t\t<li>소매</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>힙</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : S 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"아우터":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>팔길이</li>\n\t\t\t\t\t\t<li>소매</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : FREE 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"}};
+const TEMPLATES = {"상의":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>팔길이</li>\n\t\t\t\t\t\t<li>소매</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : FREE 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"상의(슬리브리스)":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : FREE 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"바지":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>힙</li>\n\t\t\t\t\t\t<li>밑위</li>\n\t\t\t\t\t\t<li>허벅지</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : S 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"스커트":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>힙</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : S 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"원피스":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>팔길이</li>\n\t\t\t\t\t\t<li>소매</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>힙</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : S 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"},"아우터":{"before":"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"padding:5px;\">\n\t\t\t\t<div class=\"sizetable list5\">\n\t\t\t\t\t<!--\n    [가이드]\n    - 가로 열 수에 맞게 \"list5\"에서 숫자를 변경하세요.\n    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.\n    -->\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\t\t\t\t\t<ul class=\"sizetable_header\">\n\t\t\t\t\t\t<li>SIZE(CM)</li>\n\t\t\t\t\t\t<li>어깨</li>\n\t\t\t\t\t\t<li>가슴</li>\n\t\t\t\t\t\t<li>암홀</li>\n\t\t\t\t\t\t<li>팔길이</li>\n\t\t\t\t\t\t<li>소매</li>\n\t\t\t\t\t\t<li>허리</li>\n\t\t\t\t\t\t<li>밑단</li>\n\t\t\t\t\t\t<li>총길이</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<!-- 사이즈 데이터 -->","rest":"<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class=\"sizetable_notice\">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class=\"sizetable_model\">\n\t\t\t\t\t\tSUYOUN : FREE 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table><a class=\"sizelink\" href=\"/article/notice/1/4/\">&#62;&#62; 사이즈 측정 방법 보러가기</a>"}};
 function buildTableHTML(cols, tableId) {
   let html = `<thead><tr><th class="col-num">#</th><th class="col-size">사이즈명</th>`;
   cols.forEach(c => { html += `<th>${c}</th>`; });
@@ -408,12 +408,82 @@ function fmtVal(v) {
   return n % 1 === 0 ? String(Math.round(n)) : String(n);
 }
 
+// 시트 저장용 컬럼명 → 카페24 표시용 컬럼명 변환
+function displayCol(col) {
+  const map = {
+    '스카프가로': '가로',
+    '스카프세로': '세로',
+    '벨트폭':    '폭',
+    '벨트총길이': '총길이',
+  };
+  return map[col] || col;
+}
+
+// 표/코드 출력 시 허리 위치를 소매(또는 암홀) 뒤로 이동
+// 대상: 상의, 아우터, 상의(슬리브리스), 셋업(바지), 셋업(스커트)
+const WAIST_REORDER_TYPES = ['상의','아우터','상의(슬리브리스)','셋업(바지)','셋업(스커트)'];
+function reorderColsForDisplay(type, cols, rows) {
+  if (!WAIST_REORDER_TYPES.includes(type)) return [cols, rows];
+  if (!cols.includes('허리')) return [cols, rows];
+
+  // 허리 인덱스, 소매/암홀 인덱스 찾기
+  const waistIdx = cols.indexOf('허리');
+  const afterIdx = cols.includes('소매')
+    ? cols.indexOf('소매')
+    : cols.indexOf('암홀');
+  if (afterIdx === -1 || waistIdx === afterIdx + 1) return [cols, rows]; // 이미 올바른 위치
+
+  // 허리를 소매/암홀 바로 뒤로 이동
+  const insertAt = afterIdx + 1;
+  const newCols = [...cols];
+  newCols.splice(waistIdx, 1);          // 기존 위치 제거
+  newCols.splice(insertAt, 0, '허리');  // 새 위치 삽입
+
+  // rows vals도 동일하게 재정렬
+  const newRows = rows.map(r => {
+    const newVals = [...r.vals];
+    const v = newVals.splice(waistIdx, 1)[0];
+    newVals.splice(insertAt, 0, v);
+    return { ...r, vals: newVals };
+  });
+
+  return [newCols, newRows];
+}
+
 function buildUls(rows) {
   return rows.map(({ size, vals }) => {
     let items = `\n\t\t\t\t\t\t<li>${size}</li>`;
     vals.forEach(v => { items += `\n\t\t\t\t\t\t<li>${v}</li>`; });
     return `\n\t\t\t\t\t<ul>${items}\n\t\t\t\t\t</ul>`;
   }).join('');
+}
+
+// 모든 row에서 - 인 컬럼 인덱스 제거 후 [filteredCols, filteredRows] 반환
+function filterEmptyCols(cols, rows) {
+  const keepIdx = cols.map((_, ci) =>
+    rows.some(r => r.vals[ci] !== '-')
+  );
+  const filteredCols = cols.filter((_, ci) => keepIdx[ci]);
+  const filteredRows = rows.map(r => ({
+    ...r,
+    vals: r.vals.filter((_, ci) => keepIdx[ci])
+  }));
+  return [filteredCols, filteredRows];
+}
+
+// 템플릿 before의 sizetable_header를 실제 필터된 컬럼으로 재구성
+function rebuildBefore(before, filteredCols) {
+  const totalCols = filteredCols.length + 1;
+  // list숫자 교체
+  let result = before.replace(/list\d+/, `list${totalCols}`);
+  // sizetable_header ul 내용 교체
+  const newHeaders = ['SIZE(CM)', ...filteredCols.map(displayCol)]
+    .map(c => `\n\t\t\t\t\t\t<li>${c}</li>`).join('');
+  result = result.replace(
+    /(<ul class=\"sizetable_header\">)([\s\S]*?)(<\/ul>)/,
+    `$1${newHeaders}\n\t\t\t\t\t$3`
+  );
+  return result;
 }
 
 function buildExtraHtml(name, cols, rows, firstSize) {
@@ -425,32 +495,15 @@ function buildExtraHtml(name, cols, rows, firstSize) {
     return `\n\t\t\t\t\t\t\t\t\t\t\t\t<ul>${items}\n\t\t\t\t\t\t\t\t\t\t\t\t</ul>`;
   }).join('');
 
-  const modelSize = firstSize || 'FREE';
   return `\n\t\t\t\t\t\t<br><b>${name}</b><br>
 \t\t\t\t\t\t<table border="0" cellpadding="0" cellspacing="0" width="100%">
 \t\t\t\t\t\t\t<tbody>
 \t\t\t\t\t\t\t\t<tr>
 \t\t\t\t\t\t\t\t\t<td style="padding:5px;">
 \t\t\t\t\t\t\t\t\t\t<div class="sizetable list${totalCols}">
-\t\t\t\t\t\t\t\t\t\t\t<!--
-    [가이드]
-    - 가로 열 수에 맞게 "list${totalCols}"에서 숫자를 변경하세요.
-    - 옵션 수에 따라 사이즈 데이터 <ul>...</ul> 그룹을 반복 추가하세요.
-    -->
-\t\t\t\t\t\t\t\t\t\t\t<!-- 사이즈 항목명 -->
 \t\t\t\t\t\t\t\t\t\t\t<ul class="sizetable_header">${headers}
 \t\t\t\t\t\t\t\t\t\t\t</ul>
 \t\t\t\t\t\t\t\t\t\t\t<!-- 사이즈 데이터 -->${uls}
-\t\t\t\t\t\t\t\t\t\t\t<!-- 사이즈 측정 안내 -->
-\t\t\t\t\t\t\t\t\t\t\t<div class="sizetable_notice">
-\t\t\t\t\t\t\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,
-\t\t\t\t\t\t\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.
-\t\t\t\t\t\t\t\t\t\t\t</div>
-\t\t\t\t\t\t\t\t\t\t\t<!-- 모델 정보 -->
-\t\t\t\t\t\t\t\t\t\t\t<div class="sizetable_model">
-\t\t\t\t\t\t\t\t\t\t\t\tSUYOUN : ${modelSize} 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)
-\t\t\t\t\t\t\t\t\t\t\t\t<br>
-\t\t\t\t\t\t\t\t\t\t\t</div>
 \t\t\t\t\t\t\t\t\t\t</div>
 \t\t\t\t\t\t\t\t\t</td>
 \t\t\t\t\t\t\t\t</tr>
@@ -509,6 +562,11 @@ function addSection(key, predefinedCols) {
   const tbl = document.getElementById(`etbl-${id}`);
   tbl.innerHTML = buildTableHTML(cols.length ? cols : ['항목1','항목2'], `e${id}`);
   attachEnter(tbl);
+  // 벨트/스카프/머플러는 FREE 사이즈 자동 입력
+  if (['벨트','스카프','머플러'].includes(key)) {
+    const firstSizeInp = tbl.querySelector('input[data-col="size"][data-row="0"]');
+    if (firstSizeInp) firstSizeInp.value = 'FREE';
+  }
   renderAddButtons();
 }
 
@@ -570,15 +628,22 @@ function generate() {
   let code = '';
 
   if (isAccessory) {
-    const totalCols = cols.length + 1;
-    const headers = ['SIZE(CM)', ...cols].map(c => `\n\t\t\t\t\t\t<li>${c}</li>`).join('');
+    const [fCols, fRows] = filterEmptyCols(cols, mainRows);
+    const totalCols = fCols.length + 1;
+    const headers = ['SIZE(CM)', ...fCols.map(displayCol)].map(c => `\n\t\t\t\t\t\t<li>${c}</li>`).join('');
     const before = `<table border="0" cellpadding="0" cellspacing="0" width="100%">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style="padding:5px;">\n\t\t\t\t<div class="sizetable list${totalCols}">\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\n\t\t\t\t\t<ul class="sizetable_header">${headers}\n\t\t\t\t\t</ul>\n\n\t\t\t\t\t<!-- 사이즈 데이터 -->`;
-    const firstSize = mainRows[0].size;
+    const firstSize = fRows[0].size;
     const rest = `\n\t\t\t\t\t<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class="sizetable_notice">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- 모델 정보 -->\n\t\t\t\t\t<div class="sizetable_model">\n\t\t\t\t\t\tSUYOUN : ${firstSize} 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>&nbsp;&nbsp;<a class="sizelink" href="/article/notice/1/4/">&#62;&#62; 사이즈 측정 방법 보러가기</a>`;
-    code = before + '\n' + buildUls(mainRows) + rest;
+    code = before + '\n' + buildUls(fRows) + rest;
   } else {
     const tmplKey = TEMPLATES[currentType] ? currentType : '상의';
     const tmpl = TEMPLATES[tmplKey];
+
+    // 메인 - 빈 컬럼 제거 → 허리 순서 재배치 → 템플릿 헤더 재구성
+    const [_fCols, _fRows] = filterEmptyCols(cols, mainRows);
+    const [fMainCols, fMainRows] = reorderColsForDisplay(currentType, _fCols, _fRows);
+    const mainBefore = rebuildBefore(tmpl.before, fMainCols);
+
     let extraHtml = '';
     extraSections.forEach(sec => {
       const nameEl = document.getElementById(`sname-${sec.id}`);
@@ -586,22 +651,25 @@ function generate() {
       const secTbl = document.getElementById(`etbl-${sec.id}`);
       if (!secTbl) return;
       const secRows = readRows(secTbl, sec.cols);
-      if (secRows.length) extraHtml += buildExtraHtml(secName, sec.cols, secRows, mainRows[0].size);
+      if (!secRows.length) return;
+      const [fSecCols, fSecRows] = filterEmptyCols(sec.cols, secRows);
+      extraHtml += buildExtraHtml(secName, fSecCols.map(displayCol), fSecRows, fMainRows[0].size);
     });
 
-    const firstSize = mainRows[0].size;
+    const firstSize = fMainRows[0].size;
     const restUpdated = tmpl.rest.replace(/(SUYOUN : )(FREE|S|M|L|XL|XXL|\d+)( 사이즈 착용)/, `$1${firstSize}$3`);
 
     if (extraHtml) {
-      // 메인 표 완전히 닫기 (notice/model 없이)
       const mainClose = '\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>';
-      const mainCode = tmpl.before + '\n' + buildUls(mainRows) + mainClose;
+      const mainCode = mainBefore + '\n' + buildUls(fMainRows) + mainClose;
+      // notice + model + sizelink 맨 마지막에 한 번만
+      const noticeModel = `\n<!-- 사이즈 측정 안내 -->\n<div class="sizetable_notice">\n\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n</div>\n<!-- 모델 정보 -->\n<div class="sizetable_model">\n\tSUYOUN : ${fMainRows[0].size} 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t<br>\n</div>`;
       const sizelink = '&nbsp;&nbsp;<a class="sizelink" href="/article/notice/1/4/">&#62;&#62; 사이즈 측정 방법 보러가기</a>';
       const isSetup = TYPES[currentType].isSetup;
       const mainPrefix = isSetup ? '<br><b>상의</b><br>\n' : '';
-      code = mainPrefix + mainCode + extraHtml + sizelink;
+      code = mainPrefix + mainCode + extraHtml + noticeModel + sizelink;
     } else {
-      code = tmpl.before + '\n' + buildUls(mainRows) + '\n\t\t\t\t\t' + restUpdated;
+      code = mainBefore + '\n' + buildUls(fMainRows) + '\n\t\t\t\t\t' + restUpdated;
     }
   }
 
@@ -700,11 +768,13 @@ function renderSheetList() {
   const typeFilter = document.getElementById('sheet-filter-type').value;
   const wrap = document.getElementById('sheet-list-wrap');
 
+  const EXTRA_TYPES = ['벨트', '스카프/머플러']; // 별도 행 저장되는 추가 섹션 타입
   let filtered = sheetData.filter(r => {
-    const matchText = !query ||
-      (r.product || '').toLowerCase().includes(query);
+    const matchText = !query || (r.product || '').toLowerCase().includes(query);
     const matchType = !typeFilter || r.type === typeFilter;
-    return matchText && matchType;
+    // 추가 섹션 타입은 목록에서 숨김 (메인 의류 불러올 때 자동 포함)
+    const isExtraSection = EXTRA_TYPES.includes(r.type);
+    return matchText && matchType && !isExtraSection;
   });
 
   if (!filtered.length) {
@@ -720,109 +790,206 @@ function renderSheetList() {
     grouped[d].push(r);
   });
 
+  const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+  // 7일치 날짜 계산
+  const today = new Date();
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().slice(0, 10).replace(/-/g, '.');
+
+  const recentDates = sortedDates.filter(d => d >= sevenDaysAgoStr || d === '날짜 없음');
+  const olderDates = sortedDates.filter(d => d < sevenDaysAgoStr);
+
   const typeIcons = { '상의':'👔','바지':'👖','스커트':'👗','원피스':'👗','아우터':'🧥','상의(슬리브리스)':'👕','셋업(바지)':'🎽','셋업(스커트)':'🎽','신발':'👟','벨트':'🪢','스카프/머플러':'🧣' };
 
-  let html = '';
-  Object.keys(grouped).sort((a,b) => b.localeCompare(a)).forEach(date => {
-    html += `<div class="date-group"><div class="date-group-header">${date}</div>`;
-    grouped[date].forEach((r, idx) => {
-      const rowIdx = sheetData.indexOf(r);
-      html += `
-        <div class="sheet-item" onclick="loadSheetRow(${rowIdx})">
-          <div class="sheet-item-icon sheet-item-type-badge">${r.type || '-'}</div>
-          <div class="sheet-item-info">
-            <div class="sheet-item-product">${r.product || '(상품명 없음)'}</div>
-            <div class="sheet-item-meta">
-              <span>${r.orderType || ''}</span>
-              <span>${r.sizeName || '-'}</span>
-              ${r.memo ? `<span>${r.memo}</span>` : ''}
-            </div>
-          </div>
-        </div>`;
+  const SIZE_ORDER = ['XS','S','M','L','XL','XXL','FREE','44','55','66','77','88'];
+  function sortSizes(sizes) {
+    return sizes.sort((a, b) => {
+      const ai = SIZE_ORDER.indexOf(a.toUpperCase());
+      const bi = SIZE_ORDER.indexOf(b.toUpperCase());
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
     });
-    html += `</div>`;
-  });
+  }
+
+  function renderDateGroups(dates) {
+    let html = '';
+    dates.forEach(date => {
+      // 같은 날짜 안에서 상품명+타입으로 그룹핑
+      const productGroups = {};
+      grouped[date].forEach(r => {
+        const key = (r.product || '') + '__' + (r.type || '');
+        if (!productGroups[key]) productGroups[key] = [];
+        productGroups[key].push(r);
+      });
+
+      html += `<div class="date-group"><div class="date-group-header">${date}</div>`;
+      Object.values(productGroups).forEach(rows => {
+        const first = rows[0];
+        const sizeNames = sortSizes(rows.map(r => r.sizeName).filter(Boolean)).join(', ');
+        const rowIndices = rows.map(r => sheetData.indexOf(r));
+        html += `
+          <div class="sheet-item" onclick="loadSheetRows([${rowIndices.join(',')}])">
+            <div class="sheet-item-icon sheet-item-type-badge">${first.type || '-'}</div>
+            <div class="sheet-item-info">
+              <div class="sheet-item-product">${first.product || '(상품명 없음)'}</div>
+              <div class="sheet-item-meta">
+                <span>${first.orderType || ''}</span>
+                <span style="font-weight:600;color:#1e1e1e;">${sizeNames}</span>
+                ${first.memo ? `<span>${first.memo}</span>` : ''}
+              </div>
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    });
+    return html;
+  }
+
+  let html = renderDateGroups(recentDates);
+
+  if (olderDates.length > 0) {
+    html += `<div id="older-section" style="display:none">${renderDateGroups(olderDates)}</div>`;
+    html += `<button onclick="document.getElementById('older-section').style.display='block';this.style.display='none';"
+      style="width:100%;padding:11px;font-size:13px;font-weight:600;font-family:inherit;background:#f7f7f5;color:#555;border:1.5px solid #e0e0dd;border-radius:10px;cursor:pointer;margin-top:6px;">
+      더보기 (${olderDates.length}일치 더 있음)
+    </button>`;
+  }
 
   wrap.innerHTML = html;
 }
 
-function loadSheetRow(idx) {
-  const row = sheetData[idx];
-  if (!row) return;
+function loadSheetRows(indices) {
+  const SIZE_ORDER = ['XS','S','M','L','XL','XXL','FREE','44','55','66','77','88'];
+  let rows = indices.map(i => sheetData[i]).filter(Boolean);
+  // 사이즈 순서대로 정렬
+  rows = rows.sort((a, b) => {
+    const ai = SIZE_ORDER.indexOf((a.sizeName || '').toUpperCase());
+    const bi = SIZE_ORDER.indexOf((b.sizeName || '').toUpperCase());
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+  if (!rows.length) return;
 
-  // 1. 타입 선택
-  const matchType = Object.keys(TYPES).find(t => t === row.type);
+  const first = rows[0];
+  const matchType = Object.keys(TYPES).find(t => t === first.type);
   if (matchType) selectType(matchType);
 
-  // 2. DOM 업데이트 후 값 채우기
   setTimeout(() => {
-    const typeInfo = TYPES[row.type];
+    const typeInfo = TYPES[first.type];
     if (!typeInfo) return;
 
-    // ── 메인 테이블 (상의 파트) ──
-    const tbl = document.getElementById('size-table');
-    const sizeInputs = tbl.querySelectorAll('input[data-col="size"]');
-
-    // 비어있는 첫 행 찾기
-    let targetRow = 0;
-    for (let r = 0; r < sizeInputs.length; r++) {
-      if (!sizeInputs[r].value.trim()) { targetRow = r; break; }
+    // ★ 셋업 하의 섹션은 selectType이 이미 추가했으므로 유지
+    // 벨트/스카프 같은 이전 추가 섹션만 제거 (셋업 하의 key는 보존)
+    const setupKey = typeInfo.isSetup && typeInfo.setupExtra ? typeInfo.setupExtra.key : null;
+    extraSections = extraSections.filter(s => s.key === setupKey);
+    const extraWrap = document.getElementById('extra-sections-wrap');
+    if (extraWrap) {
+      // setupKey 제외한 섹션 DOM만 제거
+      [...extraWrap.querySelectorAll('[id^="esec-"]')].forEach(el => {
+        const sid = parseInt(el.id.replace('esec-', ''));
+        if (!extraSections.find(s => s.id === sid)) el.remove();
+      });
     }
+    renderAddButtons();
 
-    // 사이즈명
-    const sizeInp = tbl.querySelector(`input[data-row="${targetRow}"][data-col="size"]`);
-    if (sizeInp) sizeInp.value = row.sizeName || '';
+    rows.forEach((row, rowOffset) => {
+      const tbl = document.getElementById('size-table');
+      const sizeInp = tbl.querySelector(`input[data-row="${rowOffset}"][data-col="size"]`);
+      if (sizeInp) sizeInp.value = row.sizeName || '';
 
-    // 메인 컬럼 값 채우기
-    typeInfo.cols.forEach((col, ci) => {
-      const inp = tbl.querySelector(`input[data-row="${targetRow}"][data-col="${ci}"]`);
-      if (!inp) return;
-      const val = row.vals && row.vals[col];
-      inp.value = (val && val !== '-') ? val : '';
+      typeInfo.cols.forEach((col, ci) => {
+        const inp = tbl.querySelector(`input[data-row="${rowOffset}"][data-col="${ci}"]`);
+        if (!inp) return;
+        const val = row.vals && row.vals[col];
+        inp.value = (val && val !== '-') ? val : '';
+      });
+
+      // 셋업 하의
+      if (typeInfo.isSetup && typeInfo.setupExtra) {
+        const extraCols = typeInfo.setupExtra.cols;
+        const colMap = { '허리':'하의허리','힙':'힙','밑위':'밑위','허벅지':'허벅지','밑단':'하의밑단','총길이':'하의총길이' };
+
+        // extraSections에서 셋업 하의 섹션 찾기 (키: 바지 or 스커트)
+        const setupKey = typeInfo.setupExtra.key;
+        const setupSec = extraSections.find(s => s.key === setupKey);
+        const extraTbl = setupSec
+          ? document.getElementById(`etbl-${setupSec.id}`)
+          : null;
+
+        if (extraTbl) {
+          const extraSizeInp = extraTbl.querySelector(`input[data-row="${rowOffset}"][data-col="size"]`);
+          if (extraSizeInp) extraSizeInp.value = row.sizeName || '';
+          extraCols.forEach((col, ci) => {
+            const sheetCol = colMap[col] || col;
+            const inp = extraTbl.querySelector(`input[data-row="${rowOffset}"][data-col="${ci}"]`);
+            if (!inp) return;
+            const val = row.vals && row.vals[sheetCol];
+            inp.value = (val && val !== '-') ? val : '';
+          });
+        }
+      }
     });
 
-    // ── 셋업 하의 섹션 (extra section) ──
-    if (typeInfo.isSetup && typeInfo.setupExtra) {
-      const extraCols = typeInfo.setupExtra.cols;
-      // 시트에서 하의 컬럼명 매핑 (하의허리→허리, 하의밑단→밑단, 하의총길이→총길이)
-      const colMap = {
-        '허리':   '하의허리',
-        '힙':     '힙',
-        '밑위':   '밑위',
-        '허벅지': '허벅지',
-        '밑단':   '하의밑단',
-        '총길이': '하의총길이',
-      };
+    // ── 추가 섹션 (벨트, 스카프/머플러) 불러오기 ──
+    // 방법 1: 별도 행으로 저장된 경우 (새 방식)
+    // 방법 2: S/M 행에 값이 있는 경우 (기존 방식) - 둘 다 지원
+    const EXTRA_TYPE_MAP = {
+      '벨트':          { key: '벨트',   cols: ['벨트폭','벨트총길이'] },
+      '스카프/머플러': { key: '스카프', cols: ['스카프가로','스카프세로'] },
+    };
+    const productName = first.product || '';
 
-      // extra 섹션 테이블 찾기 (id가 etbl-로 시작)
-      const extraTbl = document.querySelector('[id^="etbl-"]');
-      if (extraTbl) {
-        // 사이즈명 (extra 섹션 첫 번째 빈 행)
-        const extraSizeInputs = extraTbl.querySelectorAll('input[data-col="size"]');
-        let extraTargetRow = 0;
-        for (let r = 0; r < extraSizeInputs.length; r++) {
-          if (!extraSizeInputs[r].value.trim()) { extraTargetRow = r; break; }
-        }
-        const extraSizeInp = extraTbl.querySelector(`input[data-row="${extraTargetRow}"][data-col="size"]`);
-        if (extraSizeInp) extraSizeInp.value = row.sizeName || '';
+    Object.entries(EXTRA_TYPE_MAP).forEach(([extraType, opt]) => {
+      // 방법 1: 별도 행 찾기 (새 방식)
+      const extraRow = sheetData.find(r =>
+        r.product === productName && r.type === extraType
+      );
 
-        // 하의 값 채우기
-        extraCols.forEach((col, ci) => {
-          const sheetCol = colMap[col] || col;
-          const inp = extraTbl.querySelector(`input[data-row="${extraTargetRow}"][data-col="${ci}"]`);
-          if (!inp) return;
-          const val = row.vals && row.vals[sheetCol];
-          inp.value = (val && val !== '-') ? val : '';
+      // 방법 2: 첫 번째 row vals에서 값 찾기 (기존 방식)
+      const hasInlineVal = !extraRow && opt.cols.some(c =>
+        rows[0].vals && rows[0].vals[c] && rows[0].vals[c] !== '-'
+      );
+
+      if (!extraRow && !hasInlineVal) return;
+
+      // 값 소스 결정
+      const sourceVals = extraRow ? extraRow.vals : rows[0].vals;
+
+      // 추가 섹션 DOM에 추가
+      addSection(opt.key, opt.cols);
+
+      setTimeout(() => {
+        const allExtraTbls = document.querySelectorAll('[id^="etbl-"]');
+        allExtraTbls.forEach(extraTbl => {
+          const secId = extraTbl.id.replace('etbl-', '');
+          const sec = extraSections.find(s => String(s.id) === secId);
+          if (!sec || sec.cols[0] !== opt.cols[0]) return;
+
+          const extraSizeInp = extraTbl.querySelector(`input[data-row="0"][data-col="size"]`);
+          if (extraSizeInp) extraSizeInp.value = 'FREE';
+          opt.cols.forEach((col, ci) => {
+            const inp = extraTbl.querySelector(`input[data-row="0"][data-col="${ci}"]`);
+            if (!inp) return;
+            const val = sourceVals && sourceVals[col];
+            inp.value = (val && val !== '-') ? val : '';
+          });
         });
-      }
-    }
+      }, 30);
+    });
 
     closeSheetModal();
-    // 값 채운 뒤 코드 자동 생성
-    generate();
-    showSnack(`✅ "${row.product}" (${row.sizeName}) 코드 생성 완료!`, 'green');
+    setTimeout(() => generate(), 120);
+    showSnack(`✅ "${first.product}" (${rows.map(r=>r.sizeName).join(', ')}) 코드 생성 완료!`, 'green');
   }, 80);
 }
+
+function loadSheetRow(idx) { loadSheetRows([idx]); }
 
 // ── 스낵바 ──
 let snackTimer;
