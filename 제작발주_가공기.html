@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제작 발주 가공기 — the J.Soo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#f0f2f5;color:#1a1a1a;min-height:100vh}
+.header{background:#111;color:#fff;padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.header-sub{font-size:11px;color:#777;margin-top:2px}
+.badge{background:#333;color:#aaa;font-size:10px;padding:3px 10px;border-radius:20px}
+.wrap{max-width:900px;margin:28px auto;padding:0 20px 80px}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:18px;overflow:hidden}
+.card-head{padding:14px 22px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px}
+.card-head-title{font-size:13px;font-weight:700}
+.card-body{padding:20px 22px}
+.upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.upload-box{border:2px dashed #ddd;border-radius:10px;padding:20px 12px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.upload-box:hover{border-color:#888;background:#fafafa}
+.upload-box.ready{border-color:#16a34a;border-style:solid;background:#f0fdf4}
+.upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-ico{font-size:24px;line-height:1}
+.upload-role{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-bottom:2px}
+.role-main{background:#dbeafe;color:#1d4ed8}
+.role-prev{background:#f3f4f6;color:#444}
+.role-sbr{background:#dcfce7;color:#15803d}
+.upload-desc{font-size:11px;font-weight:700;color:#333}
+.upload-hint{font-size:9px;color:#aaa}
+.upload-fname{font-size:9px;color:#16a34a;font-weight:700;margin-top:4px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 26px;border-radius:8px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-run{background:#111;color:#fff}
+.btn-run:hover:not(:disabled){background:#333}
+.btn-run:disabled{background:#d1d5db;cursor:not-allowed;color:#9ca3af}
+.btn-dl{background:#16a34a;color:#fff;font-size:14px;padding:13px 32px}
+.btn-dl:hover{background:#15803d}
+.steps{display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb}
+.step-item{flex:1;padding:8px 4px;text-align:center;font-size:10px;background:#f9fafb;color:#9ca3af;border-right:1px solid #e5e7eb;transition:all .3s;font-weight:600}
+.step-item:last-child{border-right:none}
+.step-item.active{background:#111;color:#fff}
+.step-item.done{background:#dcfce7;color:#15803d}
+.step-item.fail{background:#fee2e2;color:#dc2626}
+.log-wrap{background:#0f172a;border-radius:10px;overflow:hidden}
+.log-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1e293b;border-bottom:1px solid #334155}
+.log-dot{width:10px;height:10px;border-radius:50%}
+.log-title{font-size:11px;color:#64748b;font-weight:600;margin-left:4px}
+.log-body{padding:14px;font-family:'Courier New',monospace;font-size:11.5px;line-height:2;max-height:320px;overflow-y:auto;color:#94a3b8}
+.log-body::-webkit-scrollbar{width:4px}
+.log-body::-webkit-scrollbar-track{background:#1e293b}
+.log-body::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
+.l-ok{color:#4ade80}
+.l-err{color:#f87171;font-weight:700}
+.l-info{color:#60a5fa}
+.l-warn{color:#fbbf24}
+.l-section{color:#e2e8f0;font-weight:700;border-top:1px solid #1e293b;margin-top:4px;padding-top:4px}
+.prog-bar{height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin:10px 0}
+.prog-fill{height:100%;background:linear-gradient(90deg,#111,#555);border-radius:3px;transition:width .4s}
+.verify-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.verify-item{border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.verify-ok{background:#f0fdf4;border:1px solid #bbf7d0}
+.verify-fail{background:#fff5f5;border:1px solid #fecaca}
+.verify-ico{font-size:22px;line-height:1}
+.verify-label{font-size:11px;color:#555;margin-bottom:3px}
+.verify-val{font-size:14px;font-weight:700}
+.verify-val.ok{color:#15803d}
+.verify-val.fail{color:#dc2626}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.sum-item{background:#f8fafc;border-radius:8px;padding:14px 10px;text-align:center;border:1px solid #e2e8f0}
+.sum-num{font-size:22px;font-weight:700;color:#111}
+.sum-label{font-size:10px;color:#888;margin-top:3px}
+.rec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.rec-item{border-radius:8px;padding:12px 10px;text-align:center}
+.rec-num{font-size:20px;font-weight:700}
+.rec-label{font-size:10px;margin-top:3px}
+.preview-scroll{overflow-x:auto;margin-top:4px;border-radius:8px;border:1px solid #e5e7eb}
+.preview-table{border-collapse:collapse;font-family:'Malgun Gothic',sans-serif;font-size:8.5pt;white-space:nowrap}
+.preview-table th,.preview-table td{border:1px solid #e0e0e0;padding:0 5px;height:20px;vertical-align:middle}
+.preview-table .rh{background:#f5f5f5;font-weight:700;text-align:center;font-size:8pt;color:#888;min-width:28px}
+.preview-table .h1{height:50px;vertical-align:middle}
+.h-yellow{background:#FFFF99;font-weight:700}
+.h-mp{background:#FFCCCC;font-weight:700;text-align:center}
+.h-blue{background:#CCE5FF;font-weight:700;text-align:center}
+.d-nfill{background:#FFFF99;font-weight:700;text-align:center}
+.d-pred{color:#FF0000;font-weight:700;text-align:center}
+.d-cnt{text-align:center}
+.d-blue{background:#CCE5FF;font-weight:700;text-align:center}
+.note{font-size:10px;color:#888;margin-top:8px;padding:8px 12px;background:#f9fafb;border-radius:6px;border-left:3px solid #d1d5db}
+.center{text-align:center}
+.mt12{margin-top:12px}
+.flex-center{display:flex;justify-content:center;margin-top:16px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">📋 제작 발주 가공기</div>
+    <div class="header-sub">the J.Soo — 발주 파일 자동 가공 시스템</div>
+  </div>
+  <div class="badge">ver 3.0 · ExcelJS</div>
+</div>
+
+<div class="wrap">
+
+  <!-- 파일 업로드 -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-title">① 파일 업로드</div>
+      <span style="font-size:10px;color:#aaa;margin-left:auto">3개 파일 모두 업로드 후 가공 시작</span>
+    </div>
+    <div class="card-body">
+      <div class="upload-grid">
+        <div class="upload-box" id="box-main">
+          <input type="file" accept=".xlsx" onchange="handleFile(this,'main')">
+          <div class="upload-ico">📊</div>
+          <div class="upload-role role-main">가공파일</div>
+          <div class="upload-desc">오늘 작업 대상</div>
+          <div class="upload-hint">stk_stockMibalsong_날짜_시간.xlsx</div>
+          <div class="upload-fname" id="fn-main">파일을 선택하세요</div>
+        </div>
+        <div class="upload-box" id="box-prev">
+          <input type="file" accept=".xlsx" onchange="handleFile(this,'prev')">
+          <div class="upload-ico">📋</div>
+          <div class="upload-role role-prev">이전파일</div>
+          <div class="upload-desc">M열(교환) 참조용</div>
+          <div class="upload-hint">stk_..._혜련.xlsx</div>
+          <div class="upload-fname" id="fn-prev">파일을 선택하세요</div>
+        </div>
+        <div class="upload-box" id="box-sbr">
+          <input type="file" accept=".xlsx" onchange="handleFile(this,'sbr')">
+          <div class="upload-ico">📦</div>
+          <div class="upload-role role-sbr">선주문파일</div>
+          <div class="upload-desc">N열 매핑용</div>
+          <div class="upload-hint">SBR*.xlsx</div>
+          <div class="upload-fname" id="fn-sbr">파일을 선택하세요</div>
+        </div>
+      </div>
+      <div class="flex-center mt12">
+        <button class="btn btn-run" id="btn-run" onclick="runProcess()" disabled>▶&nbsp; 가공 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 처리 진행 -->
+  <div class="card hidden" id="card-progress">
+    <div class="card-head">
+      <div class="card-head-title">② 처리 진행</div>
+      <span style="font-size:10px;color:#aaa;margin-left:auto" id="prog-label">0%</span>
+    </div>
+    <div class="card-body">
+      <div class="steps" id="steps">
+        <div class="step-item" id="s0">파일읽기</div>
+        <div class="step-item" id="s1">정렬</div>
+        <div class="step-item" id="s2">열삽입</div>
+        <div class="step-item" id="s3">매핑</div>
+        <div class="step-item" id="s4">수식</div>
+        <div class="step-item" id="s5">선주문</div>
+        <div class="step-item" id="s6">발주추천</div>
+        <div class="step-item" id="s7">서식</div>
+        <div class="step-item" id="s8">완료</div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+      <div class="log-wrap">
+        <div class="log-toolbar">
+          <div class="log-dot" style="background:#ef4444"></div>
+          <div class="log-dot" style="background:#f59e0b"></div>
+          <div class="log-dot" style="background:#22c55e"></div>
+          <span class="log-title">처리 로그</span>
+        </div>
+        <div class="log-body" id="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 검수 결과 -->
+  <div class="card hidden" id="card-verify">
+    <div class="card-head">
+      <div class="card-head-title">③ 검수 결과</div>
+      <span style="font-size:10px;margin-left:auto" id="verify-status"></span>
+    </div>
+    <div class="card-body">
+      <div class="verify-grid" id="verify-grid"></div>
+    </div>
+  </div>
+
+  <!-- 요약 + 다운로드 -->
+  <div class="card hidden" id="card-result">
+    <div class="card-head"><div class="card-head-title">④ 가공 완료</div></div>
+    <div class="card-body">
+      <div class="summary-grid">
+        <div class="sum-item"><div class="sum-num" id="s-total">-</div><div class="sum-label">총 데이터 행</div></div>
+        <div class="sum-item"><div class="sum-num" id="s-visible">-</div><div class="sum-label">보이는 행</div></div>
+        <div class="sum-item"><div class="sum-num" id="s-hidden">-</div><div class="sum-label">숨긴 행</div></div>
+        <div class="sum-item"><div class="sum-num" id="s-m">-</div><div class="sum-label">교환값 매핑</div></div>
+      </div>
+      <div class="rec-grid">
+        <div class="rec-item" style="background:#f0fdf4;border:1px solid #bbf7d0">
+          <div class="rec-num" style="color:#15803d" id="r-num">-</div><div class="rec-label" style="color:#166534">발주추천 수량</div>
+        </div>
+        <div class="rec-item" style="background:#fff7ed;border:1px solid #fed7aa">
+          <div class="rec-num" style="color:#c2410c" id="r-watch">-</div><div class="rec-label" style="color:#9a3412">관망</div>
+        </div>
+        <div class="rec-item" style="background:#fff5f5;border:1px solid #fecaca">
+          <div class="rec-num" style="color:#dc2626" id="r-sold">-</div><div class="rec-label" style="color:#991b1b">품절처리</div>
+        </div>
+        <div class="rec-item" style="background:#f8fafc;border:1px solid #e2e8f0">
+          <div class="rec-num" style="color:#888" id="r-empty">-</div><div class="rec-label" style="color:#aaa">데이터없음</div>
+        </div>
+      </div>
+      <div class="flex-center">
+        <button class="btn btn-dl" onclick="downloadFile()">⬇&nbsp; 엑셀 다운로드</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 미리보기 -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-title">📌 출력 엑셀 미리보기 (샘플)</div>
+      <span style="font-size:10px;color:#aaa;margin-left:auto">실제 파일 업로드 시 이 구조로 출력됩니다</span>
+    </div>
+    <div class="card-body">
+      <div class="preview-scroll">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th class="rh h1"></th>
+              <td class="h-yellow h1" style="min-width:52px">등록일자</td>
+              <td class="h-yellow h1" style="min-width:70px">공급처명</td>
+              <td class="h-yellow h1" style="min-width:130px">사입상품명</td>
+              <td class="h-yellow h1" style="min-width:160px">상품명</td>
+              <td class="h-yellow h1" style="min-width:60px">옵션내용</td>
+              <td class="h-yellow h1" style="min-width:34px">최근1주차주문량</td>
+              <td class="h-mp h1" style="min-width:20px">교환</td>
+              <td class="h-mp h1" style="min-width:60px">선주문 수량</td>
+              <td class="h-mp h1" style="min-width:40px">교환＋잔여수＋현재재고－미발수</td>
+              <td class="h-mp h1" style="min-width:40px">추가발주요청or품절체크</td>
+              <td class="h-yellow h1" style="min-width:44px">발주추천</td>
+              <td class="h-yellow h1" style="min-width:40px">품절여부</td>
+              <td class="h-yellow h1" style="min-width:26px">지연일</td>
+              <td class="h-yellow h1" style="min-width:26px">미발송수량</td>
+              <td class="h-yellow h1" style="min-width:54px">상품메모2</td>
+              <td class="h-yellow h1" style="min-width:30px">상품메모3</td>
+              <td class="h-yellow h1" style="min-width:30px">상품메모4</td>
+              <td class="h-yellow h1" style="min-width:32px">현재재고</td>
+              <td class="h-blue h1" style="min-width:12px">오늘</td>
+              <td class="h-blue h1" style="min-width:12px">1일</td>
+              <td class="h-blue h1" style="min-width:12px">2일</td>
+              <td class="h-blue h1" style="min-width:12px">3일</td>
+              <td class="h-blue h1" style="min-width:12px">4일</td>
+              <td class="h-blue h1" style="min-width:12px">5일</td>
+              <td class="h-blue h1" style="min-width:12px">6일</td>
+              <td class="h-blue h1" style="min-width:12px">7일</td>
+              <td class="h-blue h1" style="min-width:12px">8일</td>
+              <td class="h-blue h1" style="min-width:12px">9일</td>
+              <td class="h-blue h1" style="min-width:12px">10일</td>
+              <td class="h-blue h1" style="min-width:12px">11일</td>
+              <td class="h-blue h1" style="min-width:12px">12일</td>
+              <td class="h-blue h1" style="min-width:12px">13일</td>
+              <td class="h-blue h1" style="min-width:12px">14일</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th class="rh">2</th>
+              <td>2025-08-26</td><td>님프</td><td>26SS_아우라탑BL</td>
+              <td>[the J.Soo Premium] 아우라 타이 블라우스_Gray</td>
+              <td>그레이,M</td><td class="d-cnt">-</td><td class="d-cnt">-</td>
+              <td class="d-nfill">20</td><td class="d-cnt">식계산</td>
+              <td class="d-pred">식계산</td>
+              <td class="d-cnt" style="color:#15803d;font-weight:700">21</td>
+              <td>미품절</td><td class="d-cnt">0</td><td class="d-cnt">4</td>
+              <td>진행중</td><td></td><td class="d-cnt">1</td><td class="d-cnt">49</td>
+              <td class="d-blue">5</td><td class="d-blue">3</td><td class="d-blue">0</td>
+              <td class="d-blue">5</td><td class="d-blue">1</td><td class="d-blue">0</td>
+              <td class="d-blue">1</td><td class="d-blue">8</td><td class="d-blue">0</td>
+              <td class="d-blue">0</td><td class="d-blue">0</td><td class="d-blue">0</td>
+              <td class="d-blue">0</td><td class="d-blue">0</td><td class="d-blue">0</td>
+            </tr>
+            <tr>
+              <th class="rh">3</th>
+              <td>2026-02-06</td><td>아워슬로우</td><td>더라인자켓BL</td>
+              <td>[the J.Soo] 더라인 자켓</td>
+              <td>블랙</td><td class="d-cnt">-</td><td class="d-cnt">3</td>
+              <td class="d-nfill">95</td><td class="d-cnt">식계산</td>
+              <td class="d-pred">식계산</td>
+              <td class="d-cnt" style="color:#15803d;font-weight:700">168</td>
+              <td>미품절</td><td class="d-cnt">0</td><td class="d-cnt">61</td>
+              <td>진행중</td><td></td><td class="d-cnt">5</td><td class="d-cnt">21</td>
+              <td class="d-blue">12</td><td class="d-blue">11</td><td class="d-blue">9</td>
+              <td class="d-blue">14</td><td class="d-blue">10</td><td class="d-blue">13</td>
+              <td class="d-blue">8</td><td class="d-blue">15</td><td class="d-blue">11</td>
+              <td class="d-blue">10</td><td class="d-blue">12</td><td class="d-blue">9</td>
+              <td class="d-blue">13</td><td class="d-blue">11</td><td class="d-blue">10</td>
+            </tr>
+            <tr style="background:#fff5f5">
+              <th class="rh" style="background:#fee2e2">↕</th>
+              <td colspan="34" style="font-size:10px;color:#ef4444;padding:4px 8px">
+                ← 품절여부=품절 또는 상품메모2=완전종료 등 → 필터로 숨김 처리
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        ※ 숨긴 열: <strong>C D H I J K V</strong> (옵션비고, 상품메모1 포함) — L M O열은 표시<br>
+        ※ O열·P열은 수식으로 입력, 엑셀에서 열면 자동 계산 / 배경색·볼드·테두리 실제 엑셀에 적용됩니다
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const files={main:null,prev:null,sbr:null};
+let outputBuffer=null, outputFname='';
+
+function handleFile(input,key){
+  const f=input.files[0]; if(!f)return;
+  files[key]=f;
+  document.getElementById('fn-'+key).textContent=f.name;
+  document.getElementById('box-'+key).classList.add('ready');
+  document.getElementById('btn-run').disabled=!(files.main&&files.prev&&files.sbr);
+}
+
+function log(msg,type=''){
+  const el=document.getElementById('log');
+  const d=document.createElement('div');
+  if(type)d.className='l-'+type;
+  d.textContent=msg; el.appendChild(d); el.scrollTop=el.scrollHeight;
+}
+function setStep(i,s){ document.getElementById('s'+i).className='step-item '+(s==='active'?'active':s==='done'?'done':'fail'); }
+function setProgress(p){ document.getElementById('prog').style.width=p+'%'; document.getElementById('prog-label').textContent=p+'%'; }
+function addVerify(label,val,ok,detail=''){
+  const g=document.getElementById('verify-grid');
+  const ico=ok?'✅':'❌'; const cls=ok?'verify-ok':'verify-fail'; const vc=ok?'ok':'fail';
+  g.innerHTML+=`<div class="verify-item ${cls}"><div class="verify-ico">${ico}</div><div>
+    <div class="verify-label">${label}</div><div class="verify-val ${vc}">${val}</div>
+    ${detail?`<div style="font-size:10px;color:#888;margin-top:2px">${detail}</div>`:''}</div></div>`;
+}
+
+async function readWB(f){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>res(XLSX.read(e.target.result,{type:'array'}));
+    r.readAsArrayBuffer(f);
+  });
+}
+async function readAB(f){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.readAsArrayBuffer(f);
+  });
+}
+
+function colLetter(i){ let s='',n=i+1; while(n>0){n--;s=String.fromCharCode(65+(n%26))+s;n=Math.floor(n/26);} return s; }
+
+// ExcelJS 서식 헬퍼
+function mkFont(bold=false,color=null,sz=9){
+  const f={name:'맑은 고딕',size:sz,bold};
+  if(color)f.color={argb:'FF'+color};
+  return f;
+}
+function mkFill(hex){ return{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+hex}}; }
+function mkBorder(){
+  const s={style:'thin',color:{argb:'FF000000'}};
+  return{top:s,bottom:s,left:s,right:s};
+}
+function mkAlign(h='center',v='middle',wrap=false){ return{horizontal:h,vertical:v,wrapText:wrap}; }
+
+async function runProcess(){
+  document.getElementById('card-progress').classList.remove('hidden');
+  document.getElementById('card-verify').classList.add('hidden');
+  document.getElementById('card-result').classList.add('hidden');
+  document.getElementById('log').innerHTML='';
+  document.getElementById('verify-grid').innerHTML='';
+  document.getElementById('btn-run').disabled=true;
+  setProgress(0);
+  for(let i=0;i<9;i++) document.getElementById('s'+i).className='step-item';
+
+  try{
+    // ── 파일 읽기 ──
+    setStep(0,'active');
+    log('━━━ 파일 로드','section');
+    const[wbMain,wbPrev,wbSBR]=await Promise.all([readWB(files.main),readWB(files.prev),readWB(files.sbr)]);
+    const wsMain=wbMain.Sheets[wbMain.SheetNames[0]];
+    const wsPrev=wbPrev.Sheets[wbPrev.SheetNames[0]];
+    const wsSBR =wbSBR.Sheets[wbSBR.SheetNames[0]];
+    const mainData=XLSX.utils.sheet_to_json(wsMain,{header:1,defval:null});
+    const prevData=XLSX.utils.sheet_to_json(wsPrev,{header:1,defval:null});
+    const sbrData =XLSX.utils.sheet_to_json(wsSBR, {header:1,defval:null});
+    log(`✅ 가공파일: ${(mainData.length-1).toLocaleString()}행 / 이전파일: ${(prevData.length-1).toLocaleString()}행 / 선주문파일: ${sbrData.length-2}행`,'ok');
+    setStep(0,'done'); setProgress(8);
+
+    // ── STEP 1: 정렬 ──
+    setStep(1,'active');
+    log('\n━━━ STEP 1. 상품메모4 오름차순 정렬','section');
+    const header=[...mainData[0]];
+    let rows=mainData.slice(1);
+    rows.sort((a,b)=>{const av=a[19],bv=b[19];if(av==null&&bv==null)return 0;if(av==null)return 1;if(bv==null)return -1;return Number(av)-Number(bv);});
+    log(`✅ 정렬 완료 — 범위: ${rows.find(r=>r[19]!=null)?.[19]} ~ ${[...rows].reverse().find(r=>r[19]!=null)?.[19]}`,'ok');
+    setStep(1,'done'); setProgress(18);
+
+    // ── STEP 2~3: 열 삽입 ──
+    setStep(2,'active');
+    log('\n━━━ STEP 2~3. M~P 4열 + 발주추천 열 삽입','section');
+    const ph=prevData[0];
+    header.splice(12,0,ph[12],'선주문 수량',ph[14],ph[15]);
+    rows.forEach(r=>r.splice(12,0,null,null,null,null));
+    header.splice(16,0,'발주추천');
+    rows.forEach(r=>r.splice(16,0,null));
+    log(`✅ M(${ph[12]}) N(선주문 수량) O(교환+잔여+재고-미발) P(추가발주) Q(발주추천) 삽입 완료`,'ok');
+    setStep(2,'done'); setProgress(28);
+
+    // ── 열 위치 탐색 ──
+    const ci={}; header.forEach((h,i)=>{if(h)ci[h]=i;});
+    const iZ=ci['현재재고'],iU=ci['미발송수량'];
+    const iOs=ci['오늘주문수량'], iOe=ci['주문수량_14일전']??ci['주문수량_13일전'];
+    const iS2=ci['상품메모2'],iPj=ci['품절여부'];
+    log(`열 위치 — 현재재고:${colLetter(iZ)} 미발송:${colLetter(iU)} 주문수량:${colLetter(iOs)}~${colLetter(iOe)}`,'info');
+
+    // ── STEP 4: M열 매핑 ──
+    setStep(3,'active');
+    log('\n━━━ STEP 4. M열(교환) 바코드 매핑','section');
+    const oldMap={};
+    prevData.slice(1).forEach(r=>{const b=r[10],v=r[12];if(b!=null&&v!=null)oldMap[String(b).trim()]=v;});
+    let mM=0;
+    rows.forEach(r=>{const b=r[10];if(b!=null&&oldMap[String(b).trim()]!==undefined){r[12]=oldMap[String(b).trim()];mM++;}});
+    log(`✅ 교환값 매핑 완료 — ${mM}건`,'ok');
+    setStep(3,'done'); setProgress(38);
+
+    // ── STEP 5~6: 수식 ──
+    setStep(4,'active');
+    log('\n━━━ STEP 5~6. O열·P열 수식 입력','section');
+    const zL=colLetter(iZ),uL=colLetter(iU);
+    rows.forEach((r,i)=>{
+      const row=i+2;
+      r[14]={formula:`M${row}+N${row}+${zL}${row}-${uL}${row}`};
+      r[15]={formula:`IF(L${row}-O${row}>=0,L${row},"")`};
+    });
+    log(`✅ O=M+N+${zL}-${uL} / P=IF(L-O>=0,L,"") — ${rows.length}행`,'ok');
+    setStep(4,'done'); setProgress(48);
+
+    // ── STEP 8: SBR 매핑 ──
+    setStep(5,'active');
+    log('\n━━━ STEP 8. N열 선주문 바코드 매핑','section');
+    const sbrMap={};
+    sbrData.slice(2).forEach(r=>{let b=r[10];const q=r[8];if(b!=null&&q!=null){let k=String(b).trim();if(!k.startsWith('1-'))k='1-'+k;sbrMap[k]=q;}});
+    let mN=0,tN=0;
+    rows.forEach(r=>{const b=r[10];if(b!=null){const k=String(b).trim();if(sbrMap[k]!==undefined){r[13]=sbrMap[k];mN++;tN+=sbrMap[k];}}});
+    const sC=Object.keys(sbrMap).length,sT=Object.values(sbrMap).reduce((a,b)=>a+b,0);
+    const sOk=mN===sC&&tN===sT;
+    log(`${sOk?'✅':'❌'} 선주문 매핑 — ${mN}건/합계:${tN.toLocaleString()} vs SBR ${sC}건/합계:${sT.toLocaleString()}`,'ok');
+    if(!sOk)log('❌ 건수 또는 합계 불일치!','err');
+    setStep(5,sOk?'done':'fail'); setProgress(58);
+
+    // ── 발주추천 + 필터 ──
+    setStep(6,'active');
+    log('\n━━━ 발주추천 로직 적용','section');
+    const excV=new Set(['품절','완전종료','완전종료(재고있음)','완전종료(재고없음)','전체품절']);
+    let hidden=0,visible=0;
+    const rc={num:0,watch:0,sold:0,empty:0};
+    rows.forEach(r=>{
+      const vv=r[iS2],rv=r[iPj];
+      r._h=(vv!=null&&excV.has(String(vv)))||(rv!=null&&String(rv)!=='미품절');
+      if(r._h){hidden++;return;}
+      visible++;
+      const daily=[];for(let c=iOs;c<=iOe;c++)daily.push(Number(r[c])||0);
+      if(daily.reduce((a,b)=>a+b,0)===0){r[16]=null;rc.empty++;return;}
+      const nD=iOe-iOs+1,avg=daily.reduce((a,b)=>a+b,0)/nD;
+      const half=Math.floor(nD/2);
+      const rcnt=daily.slice(0,half).reduce((a,b)=>a+b,0)/half;
+      const rold=daily.slice(half).reduce((a,b)=>a+b,0)/half;
+      const dec=rold>0&&rcnt<rold*0.6;
+      const fname=String(r[5]||''),opt=String(r[6]||'');
+      const minQ=fname.includes('니트')?30:opt.includes(',')?10:15;
+      let grade=avg>=5?'A':avg>=2?'B':avg>=1?'C':'D';
+      if(dec)grade={A:'B',B:'C',C:'D',D:'D'}[grade];
+      let rec;
+      if(grade==='A')rec=Math.round(avg*14);
+      else if(grade==='B')rec=Math.round(avg*7);
+      else if(grade==='C'){r[16]='관망';rc.watch++;return;}
+      else{r[16]='품절처리';rc.sold++;return;}
+      if(rec<minQ){r[16]='관망';rc.watch++;}else{r[16]=rec;rc.num++;}
+    });
+    log(`✅ 발주추천 — 수량:${rc.num} / 관망:${rc.watch} / 품절처리:${rc.sold} / 빈칸:${rc.empty}`,'ok');
+    log(`   필터 — 보이는 행:${visible} / 숨긴 행:${hidden}`,'info');
+    setStep(6,'done'); setProgress(68);
+
+    // ── ExcelJS로 서식 적용 ──
+    setStep(7,'active');
+    log('\n━━━ 서식 적용 (ExcelJS)','section');
+
+    const wb2=new ExcelJS.Workbook();
+    const ws2=wb2.addWorksheet('Sheet1');
+
+    // 열 너비 + 숨기기 정의
+    const wMap={'등록일자':9.5,'공급처명':13.25,'사입상품명':31.625,'상품명':37.5,'옵션내용':12.375,
+      '선주문 수량':13.0,'추가발주요청\nｏｒ\n품절\n체크':6.875,'발주추천':7.375,
+      '옵션비고':6.5,'품절여부':8.5,'지연일':4.125,'미발송수량':3.5,
+      '상품메모2':7.875,'상품메모3':6.0,'상품메모4':5.375,'현재재고':5.75};
+    const hideSet=new Set(['공급처연락처','공급처위치','원가','부족수량','비고','바코드번호',
+      '상품메모1','옵션비고']);
+    const isOrdCol=h=>h&&(h==='오늘주문수량'||String(h).startsWith('주문수량_'));
+
+    ws2.columns=header.map(h=>({
+      key:h||'_',
+      width: isOrdCol(h)?1.92:(wMap[h]||8),
+      hidden: hideSet.has(h)||false
+    }));
+
+    // 1행 헤더 추가
+    const hRow=ws2.addRow(header);
+    hRow.height=76.5;
+    hRow.eachCell((cell,colNum)=>{
+      const h=header[colNum-1];
+      // 기본: 전체 1행 연노랑 + 볼드
+      cell.font=mkFont(true,null,9);
+      cell.fill=mkFill('FFFF99');
+      cell.alignment=mkAlign('center','middle',true);
+      // M~P (col 13~16): 연빨강 + 테두리
+      if(colNum>=13&&colNum<=16){
+        cell.fill=mkFill('FFCCCC');
+        cell.border=mkBorder();
+      }
+      // Q (col 17): 발주추천 — 기본 연노랑
+      // AA~AO: 연파랑
+      if(isOrdCol(h)){
+        cell.fill=mkFill('CCE5FF');
+      }
+    });
+
+    // 데이터 행
+    rows.forEach((r,ri)=>{
+      const dataRow=r.map(v=>{
+        if(v&&typeof v==='object'&&v.formula)return{formula:v.formula};
+        return v;
+      });
+      const eRow=ws2.addRow(dataRow);
+      eRow.height=18.75;
+      if(r._h) eRow.hidden=true;
+
+      eRow.eachCell({includeEmpty:true},(cell,colNum)=>{
+        const h=header[colNum-1];
+        cell.font=mkFont(false,null,9);
+
+        // M~P (13~16): 중앙정렬 + 테두리
+        if(colNum>=13&&colNum<=16){
+          cell.alignment=mkAlign('center','middle');
+          cell.border=mkBorder();
+        }
+        // N열(14): 데이터 있으면 연노랑 + 볼드
+        if(colNum===14&&r[13]!=null){
+          cell.fill=mkFill('FFFF99');
+          cell.font=mkFont(true,null,9);
+        }
+        // P열(16): 빨간 + 볼드
+        if(colNum===16){
+          cell.font=mkFont(true,'FF0000',9);
+        }
+        // AA~AO: 연파랑 + 볼드
+        if(isOrdCol(h)){
+          cell.fill=mkFill('CCE5FF');
+          cell.font=mkFont(true,null,9);
+        }
+      });
+    });
+
+    // 1행 고정
+    ws2.views=[{state:'frozen',ySplit:1,activeCell:'A2'}];
+
+    // 자동필터
+    ws2.autoFilter={from:{row:1,column:1},to:{row:1,column:header.length}};
+
+    log('✅ 서식 적용 완료 — 배경색/글자색/볼드/열너비/행높이/숨기기/필터 모두 적용','ok');
+    setStep(7,'done'); setProgress(90);
+
+    // ── 저장 ──
+    log('\n━━━ 파일 저장 중...','section');
+    outputBuffer=await wb2.xlsx.writeBuffer();
+    const today=files.main.name.match(/(\d{8})/)?.[1]||'output';
+    outputFname=`stk_stockMibalsong_${today}_processed.xlsx`;
+    setStep(8,'done'); setProgress(100);
+    log(`🎉 완료! 파일명: ${outputFname}`,'ok');
+
+    // ── 검수 ──
+    document.getElementById('card-verify').classList.remove('hidden');
+    addVerify('N열 선주문 건수/합계',`${mN}건 / ${tN.toLocaleString()}`,sOk,`SBR 기준: ${sC}건 / ${sT.toLocaleString()}`);
+    addVerify('O열 수식 참조',`=M+N+${zL}-${uL}`,true,`현재재고(${zL}) 미발송수량(${uL})`);
+    addVerify('발주추천 결과',`수량 ${rc.num}건 / 관망 ${rc.watch}건`,true,`품절처리 ${rc.sold}건 / 빈칸 ${rc.empty}건`);
+    addVerify('숨기기/필터',`${hidden}행 숨김 / ${visible}행 표시`,true,'상품메모2 + 품절여부 필터 적용');
+    document.getElementById('verify-status').textContent=sOk?'✅ 모든 검수 통과':'⚠️ 선주문 불일치 확인';
+    document.getElementById('verify-status').style.color=sOk?'#16a34a':'#dc2626';
+
+    // 요약
+    document.getElementById('s-total').textContent=rows.length.toLocaleString();
+    document.getElementById('s-visible').textContent=visible.toLocaleString();
+    document.getElementById('s-hidden').textContent=hidden.toLocaleString();
+    document.getElementById('s-m').textContent=mM+'건';
+    document.getElementById('r-num').textContent=rc.num;
+    document.getElementById('r-watch').textContent=rc.watch;
+    document.getElementById('r-sold').textContent=rc.sold;
+    document.getElementById('r-empty').textContent=rc.empty;
+    document.getElementById('card-result').classList.remove('hidden');
+    document.getElementById('btn-run').disabled=false;
+
+  }catch(e){
+    log('❌ 오류: '+e.message,'err');
+    console.error(e);
+    document.getElementById('btn-run').disabled=false;
+  }
+}
+
+function downloadFile(){
+  if(!outputBuffer)return;
+  const blob=new Blob([outputBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=outputFname;
+  a.click();
+}
+</script>
+</body>
+</html>
