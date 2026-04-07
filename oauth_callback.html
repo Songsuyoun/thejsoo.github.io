@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>더제이수 - 카페24 API 인증</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: linear-gradient(135deg, #1A1A1A 0%, #2d2d2d 100%);
+    color: #F5F0EB;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .container {
+    background: #fff;
+    color: #1A1A1A;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: #1A1A1A;
+  }
+  .subtitle {
+    color: #888;
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
+  .step {
+    background: #F5F0EB;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .step-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #555;
+    margin: 12px 0 6px;
+    font-weight: 500;
+  }
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'SF Mono', Monaco, monospace;
+    background: #fff;
+  }
+  input:focus {
+    outline: none;
+    border-color: #1A1A1A;
+  }
+  button {
+    width: 100%;
+    padding: 14px;
+    background: #1A1A1A;
+    color: #F5F0EB;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+  }
+  button:hover { background: #000; transform: translateY(-1px); }
+  button:disabled { background: #999; cursor: not-allowed; transform: none; }
+  .result {
+    background: #1A1A1A;
+    color: #F5F0EB;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 12px;
+    word-break: break-all;
+    display: none;
+  }
+  .result.show { display: block; }
+  .token-row {
+    background: rgba(245, 240, 235, 0.1);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .token-label {
+    color: #F5F0EB;
+    opacity: 0.6;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .token-value {
+    color: #F5F0EB;
+    line-height: 1.5;
+  }
+  .copy-btn {
+    background: rgba(245, 240, 235, 0.15);
+    color: #F5F0EB;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-top: 8px;
+    width: auto;
+    display: inline-block;
+  }
+  .copy-btn:hover { background: rgba(245, 240, 235, 0.25); }
+  .error {
+    background: #fee;
+    color: #c00;
+    padding: 14px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 13px;
+    display: none;
+  }
+  .error.show { display: block; }
+  .info {
+    background: #e8f4f8;
+    color: #0c5460;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .saved-notice {
+    color: #888;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔐 카페24 API 인증</h1>
+  <p class="subtitle">더제이수 코디 생성기 - OAuth 셋업 (1회만 진행)</p>
+
+  <div id="step1">
+    <div class="step">
+      <div class="step-title">📝 STEP 1. 앱 정보 입력</div>
+      <div class="info">
+        카페24 개발자센터에서 발급받은 정보를 입력하세요. 입력값은 브라우저에만 저장되고 외부로 전송되지 않습니다.
+      </div>
+
+      <label>Mall ID</label>
+      <input type="text" id="mallId" placeholder="suyoun6355" value="suyoun6355">
+
+      <label>Client ID</label>
+      <input type="text" id="clientId" placeholder="okvA5IrHC1UuCkjseQwmOA">
+
+      <label>Client Secret</label>
+      <input type="password" id="clientSecret" placeholder="재발급받은 새 Secret">
+      <div class="saved-notice">💾 입력값은 다음 인증 시 자동으로 불러와집니다</div>
+
+      <button onclick="startAuth()">🚀 카페24 인증 시작하기</button>
+      <div id="error" class="error"></div>
+    </div>
+  </div>
+
+  <div id="step2" style="display:none;">
+    <div class="step">
+      <div class="step-title">✅ STEP 2. 토큰 발급 완료!</div>
+      <div class="info">
+        아래 값들을 복사해서 GAS 코드 상단의 변수에 붙여넣으세요. <strong>refresh_token이 가장 중요합니다.</strong>
+      </div>
+      <div class="result show" id="result"></div>
+      <button onclick="location.reload()">🔄 다시 인증하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// 카페24 OAuth 인증 콜백 페이지
+// ============================================
+
+// 페이지 로드 시: localStorage에서 이전 입력값 복원
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = JSON.parse(sessionStorage.getItem('cafe24_auth') || '{}');
+  if (saved.mallId) document.getElementById('mallId').value = saved.mallId;
+  if (saved.clientId) document.getElementById('clientId').value = saved.clientId;
+  if (saved.clientSecret) document.getElementById('clientSecret').value = saved.clientSecret;
+
+  // 카페24에서 콜백된 경우 (?code=...)
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code && saved.clientId && saved.clientSecret && saved.mallId) {
+    exchangeCodeForToken(code, saved);
+  }
+});
+
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = '❌ ' + msg;
+  el.classList.add('show');
+}
+
+function startAuth() {
+  const mallId = document.getElementById('mallId').value.trim();
+  const clientId = document.getElementById('clientId').value.trim();
+  const clientSecret = document.getElementById('clientSecret').value.trim();
+
+  if (!mallId || !clientId || !clientSecret) {
+    showError('Mall ID, Client ID, Client Secret 모두 입력해주세요.');
+    return;
+  }
+
+  // 입력값 임시 저장 (콜백 후 사용)
+  sessionStorage.setItem('cafe24_auth', JSON.stringify({
+    mallId, clientId, clientSecret
+  }));
+
+  // 카페24 OAuth 인증 페이지로 이동
+  const redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
+  const scope = 'mall.read_product,mall.read_category';
+  const state = Math.random().toString(36).slice(2);
+  sessionStorage.setItem('oauth_state', state);
+
+  const authUrl = `https://${mallId}.cafe24api.com/api/v2/oauth/authorize`
+    + `?response_type=code`
+    + `&client_id=${clientId}`
+    + `&state=${state}`
+    + `&redirect_uri=${redirectUri}`
+    + `&scope=${scope}`;
+
+  window.location.href = authUrl;
+}
+
+async function exchangeCodeForToken(code, saved) {
+  const { mallId, clientId, clientSecret } = saved;
+
+  // Basic Auth 헤더용 base64 인코딩
+  const credentials = btoa(`${clientId}:${clientSecret}`);
+  const redirectUri = window.location.href.split('?')[0];
+
+  const formData = new URLSearchParams();
+  formData.append('grant_type', 'authorization_code');
+  formData.append('code', code);
+  formData.append('redirect_uri', redirectUri);
+
+  try {
+    const res = await fetch(`https://${mallId}.cafe24api.com/api/v2/oauth/token`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData.toString()
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      throw new Error(data.error_description || data.error);
+    }
+
+    // 성공! 토큰 표시
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+
+    const result = document.getElementById('result');
+    result.innerHTML = `
+      <div class="token-row">
+        <div class="token-label">🔑 ACCESS TOKEN (2시간 유효)</div>
+        <div class="token-value">${data.access_token}</div>
+        <button class="copy-btn" onclick="copyText('${data.access_token}', this)">📋 복사</button>
+      </div>
+      <div class="token-row">
+        <div class="token-label">♻️ REFRESH TOKEN ★ 가장 중요! GAS에 저장</div>
+        <div class="token-value">${data.refresh_token}</div>
+        <button class="copy-btn" onclick="copyText('${data.refresh_token}', this)">📋 복사</button>
+      </div>
+      <div class="token-row">
+        <div class="token-label">🏪 MALL ID</div>
+        <div class="token-value">${mallId}</div>
+      </div>
+      <div class="token-row">
+        <div class="token-label">🆔 CLIENT ID</div>
+        <div class="token-value">${clientId}</div>
+      </div>
+      <div class="token-row">
+        <div class="token-label">🔒 CLIENT SECRET</div>
+        <div class="token-value">${clientSecret}</div>
+      </div>
+      <div class="token-row">
+        <div class="token-label">⏰ 만료 시각</div>
+        <div class="token-value">access: ${data.expires_at || '약 2시간 후'}<br>refresh: ${data.refresh_token_expires_at || '약 2주 후'}</div>
+      </div>
+    `;
+
+    // URL에서 ?code 제거 (보안)
+    history.replaceState({}, '', window.location.pathname);
+
+  } catch(err) {
+    document.getElementById('step1').style.display = 'block';
+    showError('토큰 발급 실패: ' + err.message);
+  }
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ 복사됨!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+</script>
+</body>
+</html>
