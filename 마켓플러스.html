@@ -305,6 +305,9 @@ body {
       <li>카페24 어드민 → 해당 상품 수정 → 상세설명 칸에 <strong>붙여넣기</strong> (기존 내용 끝에 추가)</li>
       <li>저장 → 마켓 보내기에서 자동으로 글+사이즈가 함께 전송됨</li>
     </ol>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f0c896;">
+      ⚠️ <strong>금지어 자동 치환</strong>: 비플로우/오픈마켓 금지어(텐셀, 버킷백, 최고 등)는 자동으로 안전한 단어로 바뀝니다. 변경된 내용은 결과에 표시되니 꼭 확인해주세요!
+    </div>
   </div>
 
   <div class="input-section">
@@ -331,6 +334,18 @@ body {
   </div>
 
   <div class="results" id="results">
+
+    <!-- 0. 금지어 치환 알림 (있을 때만 표시) -->
+    <div class="result-card" id="replacementsCard" style="display:none;">
+      <div class="result-header" style="background:#fff4e6;border-bottom-color:#f0c896;">
+        <div class="result-title">
+          <span class="result-title-num" style="background:#c15a1f;">⚠️</span>
+          <span class="result-title-text">금지어 자동 변경 안내</span>
+          <span class="result-title-sub">아래 단어들이 마켓 안전 단어로 바뀌었어요</span>
+        </div>
+      </div>
+      <div id="replacementsList" style="padding:18px 22px;background:#fffdf8;"></div>
+    </div>
 
     <!-- 1. HTML 코드 -->
     <div class="result-card">
@@ -410,6 +425,31 @@ async function runGenerate() {
     document.getElementById('infoPrice').textContent = json.price ? '₩' + Number(json.price).toLocaleString() : '-';
     document.getElementById('productInfo').classList.add('show');
 
+    // 금지어 치환 이력 표시
+    const replacements = json.replacements || [];
+    const replacementsCard = document.getElementById('replacementsCard');
+    const replacementsList = document.getElementById('replacementsList');
+    if (replacements.length > 0) {
+      let html = '<div style="font-size:13px;color:#7a3e0a;margin-bottom:12px;">총 <strong>' + replacements.length + '개</strong>의 금지어가 안전한 단어로 자동 변경되었어요. 마켓에 등록되기 전에 한 번 더 확인해주세요!</div>';
+      html += '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+      html += '<thead><tr style="background:#fdf3e6;"><th style="padding:8px 12px;border:1px solid #f0c896;text-align:left;width:80px;">분류</th><th style="padding:8px 12px;border:1px solid #f0c896;text-align:left;">변경 전</th><th style="padding:8px 12px;border:1px solid #f0c896;text-align:center;width:40px;">→</th><th style="padding:8px 12px;border:1px solid #f0c896;text-align:left;">변경 후</th><th style="padding:8px 12px;border:1px solid #f0c896;text-align:center;width:60px;">횟수</th><th style="padding:8px 12px;border:1px solid #f0c896;text-align:left;">사유</th></tr></thead><tbody>';
+      replacements.forEach(r => {
+        html += '<tr>';
+        html += '<td style="padding:8px 12px;border:1px solid #f0c896;color:#888;">' + (r.category || '-') + '</td>';
+        html += '<td style="padding:8px 12px;border:1px solid #f0c896;"><span style="background:#fde8e6;padding:2px 8px;border-radius:4px;text-decoration:line-through;color:#c0392b;">' + r.from + '</span></td>';
+        html += '<td style="padding:8px 12px;border:1px solid #f0c896;text-align:center;color:#888;">→</td>';
+        html += '<td style="padding:8px 12px;border:1px solid #f0c896;"><span style="background:#e8f4f0;padding:2px 8px;border-radius:4px;color:#1f4530;font-weight:600;">' + r.to + '</span></td>';
+        html += '<td style="padding:8px 12px;border:1px solid #f0c896;text-align:center;">' + r.count + '회</td>';
+        html += '<td style="padding:8px 12px;border:1px solid #f0c896;font-size:12px;color:#666;">' + (r.note || '-') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      replacementsList.innerHTML = html;
+      replacementsCard.style.display = 'block';
+    } else {
+      replacementsCard.style.display = 'none';
+    }
+
     // HTML 코드 표시
     _generatedHtml = json.marketHtml || '';
     document.getElementById('codeArea').textContent = _generatedHtml;
@@ -418,7 +458,8 @@ async function runGenerate() {
     document.getElementById('previewArea').innerHTML = _generatedHtml.replace(/<!--[\s\S]*?-->/g, '');
 
     document.getElementById('results').classList.add('show');
-    showStatus(`✅ "${json.productName}" 디스크립션이 생성됐어요!`, 'ok');
+    const replaceMsg = replacements.length > 0 ? ` (금지어 ${replacements.length}개 자동 변경)` : '';
+    showStatus(`✅ "${json.productName}" 디스크립션이 생성됐어요!${replaceMsg}`, 'ok');
     toast('✅ 생성 완료!');
 
   } catch(e) {
