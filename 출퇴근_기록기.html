@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>더제이수 출퇴근</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#f5f3f0; --surface:#fff; --border:#e8e4de;
+  --text1:#1c1c1c; --text2:#666; --text3:#aaa;
+  --green:#2a6b4a; --green-bg:#eaf4ef;
+  --red:#b5293a; --red-bg:#fce8eb;
+  --blue:#1a4f8a; --blue-bg:#e8f0fb;
+  --shadow:0 4px 24px rgba(0,0,0,0.07);
+}
+body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:100vh; color:var(--text1); display:flex; flex-direction:column; align-items:center; padding:32px 24px; }
+.title { font-size:26px; font-weight:600; color:var(--text2); margin-bottom:32px; letter-spacing:0.03em; }
+
+/* 좌우 레이아웃 */
+.main-layout { display:flex; gap:16px; width:100%; max-width:860px; align-items:flex-start; }
+.left-col { flex:0 0 460px; display:flex; flex-direction:column; gap:0; }
+.right-col { flex:1; min-width:0; }
+
+/* 출퇴근 카드 */
+.card { background:var(--surface); border-radius:20px; padding:32px 28px; width:100%; box-shadow:var(--shadow); border:0.5px solid var(--border); margin-bottom:0; }
+.clock-area { text-align:center; padding-bottom:22px; margin-bottom:22px; border-bottom:0.5px solid var(--border); }
+.clock-notice { font-size:11px; color:var(--text3); margin-bottom:8px; }
+.clock { font-size:46px; font-weight:300; letter-spacing:-2px; line-height:1; margin-bottom:6px; }
+.clock-date { font-size:13px; color:var(--text2); }
+.field-label { font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--text3); text-transform:uppercase; margin-bottom:8px; }
+.code-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.code-row input { width:0; flex:1; font-family:inherit; border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:15px; font-weight:500; color:var(--text1); background:var(--surface); transition:border-color 0.2s; min-width:0; }
+.code-row input:focus { outline:none; border-color:var(--text2); }
+.code-name { font-size:12px; font-weight:500; color:var(--blue); width:70px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; }
+.code-remove { background:none; border:none; cursor:pointer; font-size:16px; color:var(--text3); padding:0; line-height:1; flex-shrink:0; width:20px; text-align:center; }
+.code-remove:hover { color:var(--red); }
+.btn-add-code { background:none; border:0.5px dashed var(--border2); border-radius:10px; color:var(--text3); font-family:inherit; font-size:13px; padding:10px; width:100%; cursor:pointer; margin-bottom:20px; transition:all 0.15s; }
+.btn-add-code:hover { background:var(--bg); color:var(--text2); border-color:var(--text3); }
+.action-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.btn { border:none; cursor:pointer; font-family:inherit; font-weight:500; transition:all 0.15s; border-radius:10px; }
+.btn:active { transform:scale(0.97); }
+.btn-in { background:var(--green-bg); color:var(--green); padding:18px 12px; font-size:14px; display:flex; flex-direction:column; align-items:center; gap:6px; width:100%; }
+.btn-in:hover { background:#d5eddf; }
+.btn-out { background:var(--red-bg); color:var(--red); padding:18px 12px; font-size:14px; display:flex; flex-direction:column; align-items:center; gap:6px; width:100%; }
+.btn-out:hover { background:#f9d5d9; }
+.btn-in:disabled, .btn-out:disabled { opacity:0.35; cursor:not-allowed; transform:none !important; }
+.icon { font-size:20px; }
+
+/* 현황판 카드 */
+.status-card { background:var(--surface); border-radius:20px; padding:28px; width:100%; box-shadow:var(--shadow); border:0.5px solid var(--border); }
+.status-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+.status-title { font-size:16px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+.status-desc { font-size:12px; color:var(--text3); line-height:1.5; }
+.refresh-btn { background:none; border:none; cursor:pointer; font-size:12px; color:var(--text3); font-family:inherit; padding:4px 8px; border-radius:6px; transition:all 0.15s; }
+.refresh-btn:hover { background:var(--bg); color:var(--text2); }
+
+.status-list { display:flex; flex-direction:column; gap:8px; }
+.status-item { display:flex; align-items:center; padding:12px 16px; border-radius:12px; background:var(--bg); border:0.5px solid var(--border); gap:12px; }
+.status-name { font-size:14px; font-weight:500; color:var(--text1); min-width:60px; flex-shrink:0; }
+.status-badges { display:flex; gap:6px; margin-left:auto; flex-shrink:0; }
+.badge { font-size:12px; font-weight:600; padding:4px 0; border-radius:100px; white-space:nowrap; width:58px; text-align:center; display:inline-block; }
+.badge-in-ok  { background:var(--green-bg); color:var(--green); }
+.badge-out-ok { background:var(--blue-bg);  color:var(--blue);  }
+.badge-in-no  { background:#f1efeb; color:#ccc; }
+.badge-out-no { background:#f1efeb; color:#ccc; }
+.status-loading { text-align:center; padding:24px; font-size:13px; color:var(--text3); }
+
+/* 모달 팝업 */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:9999; opacity:0; pointer-events:none; transition:opacity 0.2s; padding:24px; }
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal { background:var(--surface); border-radius:20px; padding:32px 28px; max-width:340px; width:100%; text-align:center; box-shadow:0 8px 40px rgba(0,0,0,0.15); }
+.modal-icon { font-size:32px; margin-bottom:14px; }
+.modal-msg { font-size:14px; line-height:1.7; color:var(--text1); margin-bottom:24px; font-weight:500; }
+.modal-btn { border:none; cursor:pointer; font-family:inherit; font-weight:600; font-size:14px; padding:12px 32px; border-radius:10px; transition:all 0.15s; }
+.modal-btn-ok  { background:var(--green); color:white; }
+.modal-btn-ok:hover  { background:#235a3e; }
+.modal-btn-err { background:var(--red); color:white; }
+.modal-btn-err:hover { background:#9a2230; }
+
+/* 토스트 / 로딩 */
+.toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--text1); color:white; padding:11px 22px; border-radius:100px; font-size:13px; opacity:0; pointer-events:none; transition:all 0.25s; z-index:9999; max-width:88vw; text-align:center; line-height:1.5; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.ok  { background:var(--green); }
+.toast.err { background:var(--red);   }
+.overlay { position:fixed; inset:0; background:rgba(245,243,240,0.75); display:flex; align-items:center; justify-content:center; z-index:999; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.overlay.show { opacity:1; pointer-events:all; }
+.spinner { width:26px; height:26px; border:2px solid var(--border); border-top-color:var(--text1); border-radius:50%; animation:spin 0.7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@media(max-width:700px) {
+  .main-layout { flex-direction:column; }
+  .left-col { flex:none; width:100%; }
+}
+</style>
+</head>
+<body>
+
+<p class="title">더제이수 출퇴근 기록기</p>
+
+<div class="main-layout">
+  <!-- 왼쪽: 출퇴근 입력 -->
+  <div class="left-col">
+    <div class="card">
+      <div class="clock-area">
+        <div class="clock-notice" id="clockNotice">정확한 시간을 불러오는 중이에요, 잠시만 기다려주세요</div>
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="clock-date" id="clockDate"></div>
+      </div>
+
+      <div class="field-label">사원 코드</div>
+      <div id="codeList"></div>
+      <button class="btn-add-code" onclick="addCodeRow()">+ 함께 출근하는 분 추가</button>
+
+      <div class="action-btns">
+        <button class="btn btn-in" id="btnIn" onclick="recordAll('출근')">
+          <span class="icon">☀️</span>출근
+        </button>
+        <button class="btn btn-out" id="btnOut" onclick="recordAll('퇴근')">
+          <span class="icon">🌙</span>퇴근
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 전체 현황판 -->
+  <div class="right-col">
+    <div class="status-card">
+      <div class="status-header">
+        <div>
+          <div class="status-title">오늘 출퇴근 현황</div>
+          <div class="status-desc">퇴근 미체크 직원이 보이면 꼭 챙겨주세요 🙏</div>
+        </div>
+        <button class="refresh-btn" onclick="loadStatus()">↻ 새로고침</button>
+      </div>
+      <div id="statusGrid" class="status-loading">불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 모달 팝업 -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon" id="modalIcon"></div>
+    <div class="modal-msg" id="modalMsg"></div>
+    <button class="modal-btn" id="modalBtn" onclick="closeModal()">확인</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"><div class="spinner"></div></div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyoemfzif8SRyhXhVA5pI4OCd5v_CrrrH0eo0hGwDWgnkf3gdDHMXw6oUsqgpP_IInu-Q/exec';
+
+const STAFF = [
+  { code:'201812268',  name:'이수나' },
+  { code:'2019030715', name:'임미정' },
+  { code:'2025030452', name:'손수민' },
+  { code:'2021091334', name:'이수정2' },
+  { code:'2025062354', name:'이은희' },
+  { code:'2025062355', name:'이혜정' },
+  { code:'2025062557', name:'윤혜정' },
+  { code:'2019101420', name:'이수정' },
+  { code:'2026022460', name:'유가경' },
+  { code:'2026030465', name:'오윤지' },
+];
+
+const staffMap = {};
+STAFF.forEach(s => { staffMap[s.code] = s.name; });
+
+// ── 서버 시계 (GAS 시간 기준) ──
+let serverOffset = 0; // 서버시간과 로컬시간의 차이(ms)
+let clockInterval = null;
+
+async function syncServerTime() {
+  try {
+    const localBefore = Date.now();
+    const res = await gasGet({ action: 'getTime' });
+    const localAfter = Date.now();
+    if (res.result === 'success') {
+      // 서버 시간을 Date 객체로 변환
+      const serverTime = new Date(res.date + 'T' + res.time + '+09:00');
+      const localMid = (localBefore + localAfter) / 2;
+      serverOffset = serverTime.getTime() - localMid;
+
+      // 날짜 표시 업데이트
+      document.getElementById('clockDate').textContent = `${res.display} (${res.day})`;
+      // 로드 완료 → 안내 문구 숨기기
+      document.getElementById('clockNotice').style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+function getServerNow() {
+  return new Date(Date.now() + serverOffset);
+}
+
+function startClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    const now = getServerNow();
+    const p = n => String(n).padStart(2, '0');
+    document.getElementById('clock').textContent =
+      `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+  }, 1000);
+}
+
+// 5분마다 서버 시간 재동기화
+syncServerTime().then(startClock);
+setInterval(() => syncServerTime(), 5 * 60 * 1000);
+
+// ── 사원코드 입력 행 관리 ──
+let rowCount = 0;
+
+function addCodeRow(defaultCode = '') {
+  rowCount++;
+  const id = `codeRow${rowCount}`;
+  const div = document.createElement('div');
+  div.className = 'code-row';
+  div.id = id;
+  div.innerHTML = `
+    <input type="text" placeholder="사원코드 입력" value="${defaultCode}"
+      oninput="lookupRow(this)"
+      onkeydown="if(event.key==='Enter')this.closest('.code-row').nextElementSibling?.querySelector('input')?.focus()">
+    <span class="code-name" id="name${id}"></span>
+    <button class="code-remove" style="visibility:${rowCount > 1 ? 'visible' : 'hidden'}" onclick="removeRow('${id}')">×</button>
+  `;
+  document.getElementById('codeList').appendChild(div);
+  if (defaultCode) lookupRow(div.querySelector('input'));
+}
+
+function removeRow(id) {
+  document.getElementById(id)?.remove();
+}
+
+function lookupRow(input) {
+  const code = input.value.trim();
+  const nameEl = input.closest('.code-row').querySelector('.code-name');
+  const name = staffMap[code];
+  nameEl.textContent = name ? `👤 ${name}` : '';
+  nameEl.style.color = name ? 'var(--blue)' : 'var(--text3)';
+}
+
+// ── 일괄 출퇴근 기록 ──
+async function recordAll(type) {
+  const rows = document.querySelectorAll('.code-row input');
+  const targets = [];
+
+  for (const input of rows) {
+    const code = input.value.trim();
+    if (!code) continue;
+    const name = staffMap[code];
+    if (!name) {
+      showModal(`사원코드 "${code}"를 확인해주세요.`, 'err');
+      return;
+    }
+    targets.push({ code, name });
+  }
+
+  if (targets.length === 0) {
+    showModal('사원코드를 입력해주세요.', 'err');
+    return;
+  }
+
+  setLoading(true);
+  const results = [];
+  try {
+    for (const t of targets) {
+      const res = await gasGet({ action:'record', name:t.name, code:t.code, type });
+      results.push({ name:t.name, result:res.result, message:res.message });
+    }
+  } catch(e) {
+    showModal('오류가 발생했어요.\n잠시 후 다시 시도해주세요.', 'err');
+    setLoading(false);
+    return;
+  } finally {
+    setLoading(false);
+  }
+
+  // 결과 정리
+  const ok     = results.filter(r => r.result === 'success').map(r => r.name);
+  const dup    = results.filter(r => r.result === 'duplicate').map(r => r.name);
+  const noIn   = results.filter(r => r.result === 'no_checkin').map(r => r.name);
+
+  let msg = '';
+  if (ok.length)   msg += `✅ ${ok.join(', ')}님 ${type} 완료!\n`;
+  if (dup.length)  msg += `⚠️ ${dup.join(', ')}님은 이미 ${type} 처리되었어요.\n`;
+  if (noIn.length) msg += `⚠️ ${noIn.join(', ')}님은 출근 기록이 없어요.\n`;
+  if (dup.length || noIn.length) msg += '\n문제가 있으면 송혜련에게 문의하세요.';
+
+  const isAllOk = ok.length > 0 && dup.length === 0 && noIn.length === 0;
+  showModal(msg.trim(), isAllOk ? 'ok' : 'err');
+
+  // 성공이든 에러든 항상 입력창 초기화
+  document.getElementById('codeList').innerHTML = '';
+  rowCount = 0;
+  addCodeRow();
+  if (ok.length > 0) loadStatus();
+}
+
+// ── 전체 직원 현황 로드 (GAS 서버 오늘 날짜 기준) ──
+async function loadStatus() {
+  const grid = document.getElementById('statusGrid');
+  grid.className = 'status-loading';
+  grid.textContent = '불러오는 중...';
+  try {
+    // 날짜도 서버에서 받은 값 사용
+    const timeRes = await gasGet({ action:'getTime' });
+    const today = timeRes.date;
+    const res = await gasGet({ action:'getRecords', from:today, to:today, name:'' });
+    renderStatus(res.data || []);
+  } catch(e) {
+    grid.className = 'status-loading';
+    grid.textContent = '불러오기 실패. 새로고침 해주세요.';
+  }
+}
+
+function renderStatus(data) {
+  const grid = document.getElementById('statusGrid');
+
+  // 이름 → { in, out } 매핑
+  const statusMap = {};
+  data.forEach(r => { statusMap[r.name] = { in: r.in, out: r.out }; });
+
+  grid.className = 'status-list';
+  grid.innerHTML = STAFF.map(s => {
+    const st = statusMap[s.name] || { in:'', out:'' };
+    const hasIn  = st.in  && st.in  !== '';
+    const hasOut = st.out && st.out !== '';
+
+    const inBadge  = hasIn
+      ? `<span class="badge badge-in-ok">출근 ✓</span>`
+      : `<span class="badge badge-in-no">출근</span>`;
+    const outBadge = hasOut
+      ? `<span class="badge badge-out-ok">퇴근 ✓</span>`
+      : `<span class="badge badge-out-no">퇴근</span>`;
+
+    return `
+      <div class="status-item">
+        <span class="status-name">${s.name}</span>
+        <div class="status-badges">${inBadge}${outBadge}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── GAS 통신 ──
+async function gasGet(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${GAS_URL}?${qs}`);
+  return res.json();
+}
+
+// ── 모달 팝업 ──
+function showModal(msg, type='ok') {
+  document.getElementById('modalIcon').textContent = type === 'ok' ? '✅' : '⚠️';
+  document.getElementById('modalMsg').textContent = msg;
+  const btn = document.getElementById('modalBtn');
+  btn.className = `modal-btn modal-btn-${type}`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function setLoading(on) {
+  document.getElementById('overlay').classList.toggle('show', on);
+}
+
+// 최초 현황 로드 + 첫 입력창 생성
+addCodeRow();
+loadStatus();
+</script>
+</body>
+</html>
