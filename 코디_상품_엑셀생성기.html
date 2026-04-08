@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>더제이수 코디 상품 생성기</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#F5F4F1;--surface:#fff;--border:#E0DDD8;--text:#1A1A1A;--muted:#888;
+  --accent:#1A1A1A;--green:#2D6A4F;--blue:#1A3A5C;--red:#C0392B;
+  --purple:#4A2C6A;--pink:#c0667a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:var(--accent);color:#fff;padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.h-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;}
+.h-badge{background:rgba(255,255,255,.15);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;}
+
+/* ── URL INPUT SECTION ── */
+.url-section{background:#fff;border-bottom:2px solid var(--border);padding:20px 28px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.url-section-title{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:12px;text-transform:uppercase;}
+.url-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.url-input-wrap{flex:1;min-width:240px;position:relative;}
+.url-input-wrap label{position:absolute;top:-9px;left:10px;background:#fff;font-size:10px;font-weight:700;color:var(--muted);padding:0 4px;letter-spacing:.5px;}
+.url-input{width:100%;padding:10px 14px;font-size:12px;font-family:'Noto Sans KR',sans-serif;border:1.5px solid var(--border);border-radius:8px;outline:none;transition:border-color .2s;}
+.url-input:focus{border-color:var(--accent);}
+.url-plus{font-size:18px;color:#ccc;font-weight:700;flex-shrink:0;}
+.gas-row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+.gas-label{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.gas-input{flex:1;min-width:200px;padding:7px 12px;font-size:11px;font-family:monospace;border:1px solid var(--border);border-radius:6px;outline:none;}
+.gas-save-btn{padding:7px 14px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;border-radius:6px;cursor:pointer;background:var(--accent);color:#fff;white-space:nowrap;}
+.gas-badge{font-size:10px;padding:3px 8px;border-radius:10px;background:#eee;color:#888;white-space:nowrap;}
+.run-btn{padding:12px 32px;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;border-radius:8px;cursor:pointer;background:var(--green);color:#fff;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.run-btn:hover{background:#235a40;}
+.run-btn:active{transform:scale(.97);}
+.run-btn:disabled{background:#aaa;cursor:not-allowed;}
+.status-bar{margin-top:10px;font-size:11px;padding:8px 12px;border-radius:6px;display:none;}
+
+/* ── RESULTS ── */
+.results{padding:24px 28px;display:flex;flex-direction:column;gap:20px;}
+.result-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.result-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#FAFAF8;}
+.result-header-left{display:flex;align-items:center;gap:10px;}
+.result-num{width:24px;height:24px;border-radius:6px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.result-title{font-size:14px;font-weight:700;}
+.result-desc{font-size:11px;color:var(--muted);}
+.result-actions{display:flex;gap:8px;}
+.copy-btn{padding:7px 14px;font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:#fff;color:var(--text);transition:all .15s;display:flex;align-items:center;gap:5px;}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+.copy-btn.copied{background:rgba(45,106,79,.1);border-color:var(--green);color:var(--green);}
+.dl-btn{padding:7px 14px;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;border-radius:6px;cursor:pointer;background:var(--green);color:#fff;transition:all .15s;}
+.dl-btn:hover{background:#235a40;}
+.result-body{padding:18px;}
+.placeholder-msg{text-align:center;padding:32px;color:#ccc;font-size:13px;}
+
+/* CSV 미리보기 */
+.csv-preview{overflow-x:auto;border:1px solid var(--border);border-radius:8px;}
+.csv-table{border-collapse:collapse;font-size:11px;white-space:nowrap;}
+.csv-table th{background:var(--accent);color:#fff;padding:7px 10px;font-weight:600;font-size:10px;border-right:1px solid rgba(255,255,255,.1);}
+.csv-table td{padding:6px 10px;border-bottom:1px solid var(--border);border-right:1px solid #f0ede8;color:#333;}
+.csv-table tr:last-child td{border-bottom:none;}
+.csv-table td.filled{background:#EEF4FC;color:var(--blue);font-weight:500;}
+
+/* 사이즈 코드 출력 */
+.size-code-tabs{display:flex;border-bottom:1px solid var(--border);}
+.size-tab{padding:10px 16px;font-size:12px;font-weight:500;font-family:'Noto Sans KR',sans-serif;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;}
+.size-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700;}
+.size-tab-content{display:none;padding:16px;}
+.size-tab-content.active{display:block;}
+.code-pre{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:#444;background:#FAFAF8;padding:14px;border-radius:8px;border:1px solid var(--border);white-space:pre-wrap;word-break:break-all;max-height:320px;overflow-y:auto;}
+
+/* 상세페이지 코드 */
+.detail-tabs{display:flex;border-bottom:1px solid var(--border);background:#FAFAF8;}
+.detail-tab{padding:10px 16px;font-size:12px;font-weight:500;font-family:'Noto Sans KR',sans-serif;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;}
+.detail-tab.active{color:var(--pink);border-bottom-color:var(--pink);font-weight:700;}
+.detail-tab-content{display:none;}
+.detail-tab-content.active{display:block;}
+.hl-tag{color:#c0667a;}
+.hl-attr{color:#b07d3a;}
+.hl-value{color:#4a8f6a;}
+.hl-comment{color:#999;font-style:italic;}
+.line-page{background:#fffde6;display:block;border-radius:3px;padding:0 4px;margin:1px 0;}
+.line-detail-bg{background:#e8f4fd;display:block;border-radius:3px;padding:0 4px;margin:1px 0;}
+.line-normal{display:block;padding:0 4px;margin:1px 0;color:#555;}
+.hl-output-area{min-height:200px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.8;background:#FAFAF8;word-break:break-all;}
+
+/* 사이즈 미리보기 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal-box{background:#fff;border-radius:14px;width:700px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.22);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);}
+.modal-body{padding:24px;overflow-y:auto;}
+.modal-close{width:30px;height:30px;border-radius:7px;border:none;background:#f4f4f2;cursor:pointer;font-size:17px;color:#666;display:flex;align-items:center;justify-content:center;}
+.sizetable ul{display:inline-flex;flex-direction:column;list-style:none;border:1px solid #ccc;margin-bottom:12px;}
+.sizetable ul+ul{margin-left:-1px;}
+.sizetable ul li{padding:7px 14px;font-size:13px;border-bottom:1px solid #e0e0e0;text-align:center;min-width:70px;background:#fff;white-space:nowrap;}
+.sizetable ul li:last-child{border-bottom:none;}
+.sizetable ul.sizetable_header{background:#f5f5f5;}
+.sizetable ul.sizetable_header li{background:#f5f5f5;font-weight:700;font-size:12px;color:#333;min-width:80px;}
+.sizetable ul:not(.sizetable_header) li:first-child{font-weight:700;background:#fafafa;}
+.sizetable{display:block;}
+.sizetable ul{display:inline-flex;vertical-align:top;}
+.sizetable_notice{font-size:12px;color:#888;line-height:1.8;margin-top:10px;display:block;}
+.sizetable_model{font-size:12px;color:#666;margin-top:6px;line-height:1.8;display:block;}
+.sizelink{display:inline-block;margin-top:8px;font-size:12px;color:#555;text-decoration:underline;}
+
+/* toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--accent);color:#fff;padding:9px 20px;border-radius:6px;font-size:12px;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-title">
+    <span>🛍️</span> 더제이수 코디 상품 생성기
+    <span class="h-badge">URL 2개 → 3가지 결과물 자동생성</span>
+  </div>
+</header>
+
+<!-- URL 입력 섹션 -->
+<div class="url-section">
+  <div class="url-section-title">상품 URL 입력</div>
+  <div class="url-row">
+    <div class="url-input-wrap">
+      <label>상의 URL</label>
+      <input class="url-input" id="url1" type="text" placeholder="https://thejsoo.com/product/detail.html?product_no=22075...">
+    </div>
+    <div class="url-plus">+</div>
+    <div class="url-input-wrap">
+      <label>하의 URL</label>
+      <input class="url-input" id="url2" type="text" placeholder="https://thejsoo.com/product/detail.html?product_no=22051...">
+    </div>
+    <button class="run-btn" id="runBtn" onclick="runAll()">✨ 생성하기</button>
+  </div>
+  <div class="url-row" style="margin-top:10px;">
+    <div class="url-input-wrap" style="flex:1;">
+      <label>👗 코디 착장 이미지 URL <span style="color:#c00;">(필수)</span></label>
+      <input class="url-input" id="outfitUrl" type="text" placeholder="상품페이지에서 원하는 코디 이미지 우클릭 → 이미지 주소 복사 (예: .../P000BGOZ/1.jpg)">
+    </div>
+  </div>
+  <div class="gas-row" style="display:none;">
+    <button onclick="toggleGasRow()" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:4px;">
+      🔑 GAS URL 설정 <span id="gasToggleIcon">▼</span>
+    </button>
+    <span class="gas-badge" id="gasBadge" style="margin-left:8px;">미설정</span>
+  </div>
+  <div id="gasExpandRow" style="display:none;margin-top:8px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input class="gas-input" id="gasInput" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;">
+      <button class="gas-save-btn" onclick="saveGas()">저장</button>
+    </div>
+  </div>
+  <div class="status-bar" id="statusBar"></div>
+</div>
+
+<!-- 결과 영역 -->
+<div class="results">
+
+  <!-- RESULT 1: CSV -->
+  <div class="result-card">
+    <div class="result-header">
+      <div class="result-header-left">
+        <div class="result-num">1</div>
+        <div>
+          <div class="result-title">📊 카페24 업로드용 CSV</div>
+          <div class="result-desc">상품 등록 엑셀 파일 다운로드</div>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="dl-btn" id="csvBtn" onclick="downloadCSV()" disabled>📥 CSV 다운로드</button>
+      </div>
+    </div>
+    <div class="result-body">
+      <div class="placeholder-msg" id="csvPlaceholder">생성하기 버튼을 누르면 여기에 미리보기가 표시됩니다</div>
+      <div id="csvPreview" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- RESULT 2: 사이즈 코드 -->
+  <div class="result-card">
+    <div class="result-header">
+      <div class="result-header-left">
+        <div class="result-num">2</div>
+        <div>
+          <div class="result-title">📐 사이즈 코드</div>
+          <div class="result-desc">카페24 상품 상세에 붙여넣는 사이즈표 HTML</div>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="copy-btn" id="sizePreviewBtn" onclick="openSizePreview()" disabled>👁 미리보기</button>
+        <button class="copy-btn" id="sizeCopyBtn" onclick="copySizeCode()" disabled>📋 복사</button>
+      </div>
+    </div>
+    <div>
+      <div class="placeholder-msg" id="sizePlaceholder">생성하기 버튼을 누르면 여기에 사이즈 코드가 표시됩니다</div>
+      <div id="sizeResult" style="display:none;">
+        <div class="size-code-tabs">
+          <button class="size-tab active" onclick="switchSizeTab('set')">셋업(합본)</button>
+          <button class="size-tab" onclick="switchSizeTab('top')">상의</button>
+          <button class="size-tab" onclick="switchSizeTab('bottom')">하의</button>
+        </div>
+        <div class="size-tab-content active" id="sizeTab-set"><pre class="code-pre" id="sizeCode-set"></pre></div>
+        <div class="size-tab-content" id="sizeTab-top"><pre class="code-pre" id="sizeCode-top"></pre></div>
+        <div class="size-tab-content" id="sizeTab-bottom"><pre class="code-pre" id="sizeCode-bottom"></pre></div>
+        <!-- 인라인 미리보기 영역 -->
+        <div id="sizePreviewInline" style="display:none;border-top:1px solid var(--border);padding:20px 24px;background:#FAFAF8;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px;">👁 사이즈표 미리보기</div>
+          <div id="sizePreviewContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT 3: 상세페이지 코드 -->
+  <div class="result-card">
+    <div class="result-header">
+      <div class="result-header-left">
+        <div class="result-num">3</div>
+        <div>
+          <div class="result-title">🖼️ 상세페이지 HTML 코드</div>
+          <div class="result-desc">카페24 상품 상세설명에 붙여넣는 이미지 코드</div>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="copy-btn" id="detailPreviewBtn" onclick="openDetailPreview()" disabled>👁 미리보기</button>
+        <button class="copy-btn" id="detailCopyBtn" onclick="copyDetailCode()" disabled>📋 복사</button>
+        <button class="copy-btn" id="detailCopyAllBtn" onclick="copyDetailAll()" disabled>📋 전체 복사(한줄)</button>
+      </div>
+    </div>
+    <div>
+      <div class="placeholder-msg" id="detailPlaceholder">생성하기 버튼을 누르면 여기에 코드가 표시됩니다</div>
+      <div id="detailResult" style="display:none;">
+        <div class="detail-tab-content active" id="dcontent-full"><div class="hl-output-area" id="dout-full"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 사이즈 미리보기 모달 -->
+<div class="modal-bg" id="sizeModal" onclick="if(event.target===this)closeSizeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span style="font-size:14px;font-weight:700;">사이즈표 미리보기</span>
+      <button class="modal-close" onclick="closeSizeModal()">×</button>
+    </div>
+    <div class="modal-body" id="sizeModalBody"></div>
+  </div>
+</div>
+
+<!-- 상세페이지 미리보기 모달 -->
+<div class="modal-bg" id="detailModal" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal-box" style="width:800px;">
+    <div class="modal-head">
+      <span style="font-size:14px;font-weight:700;">🖼️ 상세페이지 HTML 미리보기</span>
+      <button class="modal-close" onclick="closeDetailModal()">×</button>
+    </div>
+    <div class="modal-body" id="detailModalBody" style="background:#f9f9f9;min-height:200px;"></div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);background:#FAFAF8;font-size:11px;color:var(--muted);">
+      💡 실제 이미지는 상품코드(PXXXXXXXX) 교체 후 업로드하면 표시됩니다
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ────────────────────────────────────────
+// 전역 상태
+// ────────────────────────────────────────
+let _gasUrl = 'https://script.google.com/macros/s/AKfycbyjoE2YC24ZNBDTCJBPi1mwfba_u3lvGxIxEVJAg1MZfQKolK8FURvKXmzgekyID-N3Jg/exec';
+let _productData = null;  // GAS에서 받은 상품 데이터
+let _csvRaw = '';
+let _sizeCodes = { top: '', bottom: '', set: '' };
+let _detailRaws = { full: '', page: '', detail: '' };
+let _activeSizeTab = 'set';
+let _activeDetailTab = 'full';
+
+// ────────────────────────────────────────
+// GAS URL 관리
+// ────────────────────────────────────────
+function toggleGasRow() {
+  const row = document.getElementById('gasExpandRow');
+  const icon = document.getElementById('gasToggleIcon');
+  if (row.style.display === 'none' || !row.style.display) {
+    row.style.display = 'block';
+    icon.textContent = '▲';
+  } else {
+    row.style.display = 'none';
+    icon.textContent = '▼';
+  }
+}
+
+function saveGas() {
+  const v = document.getElementById('gasInput').value.trim();
+  if (!v) { toast('⚠️ GAS URL을 입력해주세요'); return; }
+  _gasUrl = v;
+  localStorage.setItem('gasUrl', v);
+  updateGasBadge(true);
+  // 입력창 접기
+  document.getElementById('gasExpandRow').style.display = 'none';
+  document.getElementById('gasToggleIcon').textContent = '▼';
+  toast('✅ GAS URL 저장 완료!');
+}
+function updateGasBadge(ok) {
+  const b = document.getElementById('gasBadge');
+  b.textContent = ok ? '✅ 연결됨' : '미설정';
+  b.style.background = ok ? '#E8F5EE' : '#eee';
+  b.style.color = ok ? '#1B5E20' : '#888';
+}
+// v28: 박힌 GAS URL 항상 사용 (localStorage 무시)
+(function() {
+  try {
+    // 옛날 버전에서 localStorage에 저장된 URL이 있어도 무시하고 새 박힌 URL 사용
+    localStorage.setItem('gasUrl', _gasUrl);
+    const inp = document.getElementById('gasInput');
+    if (inp) inp.value = _gasUrl;
+    updateGasBadge(true);
+  } catch(e) {}
+})();
+
+// ────────────────────────────────────────
+// 메인 실행
+// ────────────────────────────────────────
+async function runAll() {
+  const url1 = document.getElementById('url1').value.trim();
+  const url2 = document.getElementById('url2').value.trim();
+  const outfitUrl = document.getElementById('outfitUrl').value.trim();
+  if (!url1 || !url2) { toast('⚠️ URL 2개를 모두 입력해주세요!'); return; }
+  if (!outfitUrl) { toast('⚠️ 착장 이미지 URL을 입력해주세요!'); return; }
+  if (!_gasUrl) { showStatus('⚠️ GAS URL을 먼저 🔑 버튼 눌러서 설정해주세요!', 'warn'); return; }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.textContent = '⏳ 분석 중...';
+  showStatus('📡 GAS 서버에서 두 상품을 분석하는 중이에요... 10~20초 소요됩니다.', 'info');
+
+  try {
+    const res = await fetch(`${_gasUrl}?action=fetch_product&url1=${encodeURIComponent(url1)}&url2=${encodeURIComponent(url2)}&outfit_url=${encodeURIComponent(outfitUrl)}`);
+    if (!res.ok) throw new Error(`GAS 서버 오류 ${res.status}`);
+    const json = await res.json();
+    if (json.result !== 'ok') throw new Error(json.message || 'GAS 오류');
+    _productData = json.data;
+
+    buildCSV(_productData);
+    buildSizeCodes(_productData);
+    buildDetailCode(_productData);
+
+    showStatus(`✅ 완료! "${_productData.topName} + ${_productData.bottomName}" 생성됐어요.`, 'ok');
+    toast('✅ 생성 완료!');
+  } catch(e) {
+    showStatus('❌ 오류: ' + e.message, 'error');
+    toast('❌ 오류 발생');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ 생성하기';
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('statusBar');
+  el.style.display = 'block';
+  el.textContent = msg;
+  const styles = {
+    info:  { bg: '#EEF4FC', color: '#1A3A5C' },
+    ok:    { bg: '#E8F5EE', color: '#1B5E20' },
+    warn:  { bg: '#FFF3CD', color: '#856404' },
+    error: { bg: '#FDEDEC', color: '#922B21' },
+  };
+  const s = styles[type] || styles.info;
+  el.style.background = s.bg; el.style.color = s.color;
+}
+
+// ────────────────────────────────────────
+// 1. CSV 생성
+// ────────────────────────────────────────
+function buildCSV(d) {
+  const topPrice  = d.topPrice  || 0;
+  const botPrice  = d.bottomPrice || 0;
+  const totalSale = topPrice + botPrice;
+  // ★ 판매가 = 두 상품 합산 그대로 (할인 없음)
+  const salePrice = totalSale;
+
+  // ★ 공급가 0 고정
+  const supPrice = 0;
+
+  // ★ 상품명: [] 태그 모두 제거
+  const cleanName = (n) => String(n||'').replace(/\[.*?\]\s*/g,'').trim();
+  const nm = `[코디할인] ${cleanName(d.topName)} + ${cleanName(d.bottomName)}`;
+
+  // ★ 옵션: 상의 색상 // 하의 색상 // 하의 사이즈
+  const topColors = d.topColors  || [];
+  const botColors = d.bottomColors || [];
+  const sizes     = d.sizes      || [];
+  let opt = '';
+  if (topColors.length) opt += `상의 색상{${topColors.join('|')}}`;
+  if (botColors.length) opt += (opt?'//':'') + `하의 색상{${botColors.join('|')}}`;
+  if (sizes.length)     opt += (opt?'//':'') + `하의 사이즈{${sizes.join('|')}}`;
+
+  // 간략설명
+  const desc = buildDescText(d);
+
+  // ★ 상세설명: GAS에서 받은 실제 HTML 우선, 없으면 기본 생성
+  const detailHtml = buildDetailCodeStr(d);
+
+  const H = ['상품코드','자체 상품코드','진열상태','판매상태','상품분류 번호','상품분류 신상품영역','상품분류 추천상품영역','상품명','영문 상품명','상품명(관리용)','공급사 상품명','모델명','상품 요약설명','상품 간략설명','상품 상세설명','모바일 상품 상세설명 설정','모바일 상품 상세설명','검색어설정','과세구분','소비자가','공급가','상품가','판매가','판매가 대체문구 사용','판매가 대체문구','주문수량 제한 기준','최소 주문수량(이상)','최대 주문수량(이하)','적립금','적립금 구분','공통이벤트 정보','성인인증','옵션사용','품목 구성방식','옵션 표시방식','옵션세트명','옵션입력','옵션 스타일','버튼이미지 설정','색상 설정','필수여부','품절표시 문구','추가입력옵션','추가입력옵션 명칭','추가입력옵션 선택/필수여부','입력글자수(자)','이미지등록(상세)','이미지등록(목록)','이미지등록(작은목록)','이미지등록(축소)','이미지등록(추가)','제조사','공급사','브랜드','트렌드','자체분류 코드','제조일자','출시일자','유효기간 사용여부','유효기간','원산지','상품부피(cm)','상품결제안내','상품배송안내','교환/반품안내','서비스문의/안내','배송정보','배송방법','국내/해외배송','배송지역','배송비 선결제 설정','배송기간','배송비 구분','배송비입력','스토어픽업 설정','상품 전체중량(kg)','HS코드','상품 구분(해외통관)','상품소재','영문 상품소재(해외통관)','옷감(해외통관)','검색엔진최적화(SEO) 검색엔진 노출 설정','검색엔진최적화(SEO) Title','검색엔진최적화(SEO) Author','검색엔진최적화(SEO) Description','검색엔진최적화(SEO) Keywords','검색엔진최적화(SEO) 상품 이미지 Alt 텍스트','개별결제수단설정','상품배송유형 코드','메모','추가항목01_프로모션 문구'];
+  const row = {}; H.forEach(h => row[h] = '');
+  row['진열상태']='Y'; row['판매상태']='N'; row['상품분류 번호']='133|214';
+  row['상품분류 신상품영역']='N|N'; row['상품분류 추천상품영역']='N|N';
+  row['상품명']=nm;
+  row['상품 간략설명']=desc;
+  row['상품 상세설명']=detailHtml;   // ★ 상세설명에 HTML 코드
+  row['공급가']=supPrice; row['판매가']=salePrice;
+  row['공급사']='S0000000';           // ★ 공급사 고정
+  row['옵션사용']=opt?'Y':'N'; row['옵션입력']=opt;
+  row['모바일 상품 상세설명 설정']='A'; row['과세구분']='A|10'; row['소비자가']='0';
+  row['판매가 대체문구 사용']='N'; row['주문수량 제한 기준']='O'; row['최소 주문수량(이상)']='1';
+  row['적립금']='1.00'; row['적립금 구분']='P'; row['공통이벤트 정보']='Y'; row['성인인증']='N';
+  row['품목 구성방식']='T'; row['옵션 표시방식']='S'; row['필수여부']='F'; row['추가입력옵션']='F';
+  row['제조사']='M0000000'; row['브랜드']='B0000000'; row['트렌드']='T0000000'; row['자체분류 코드']='C000000A';
+  row['유효기간 사용여부']='F'; row['원산지']='1800'; row['배송정보']='F';
+  row['배송기간']='3|7'; row['배송비 구분']='D'; row['배송비입력']='3000|70000';
+  row['스토어픽업 설정']='N'; row['상품 전체중량(kg)']='1.00';
+  row['검색엔진최적화(SEO) 검색엔진 노출 설정']='Y'; row['상품배송유형 코드']='C';
+
+  const csvRow = H.map(h => { const v=String(row[h]??'').replace(/"/g,'""'); return (v.includes(',')||v.includes('"')||v.includes('\n'))?`"${v}"`:v; }).join(',');
+  _csvRaw = '\uFEFF' + H.join(',') + '\n' + csvRow;
+
+  // 미리보기 (핵심 컬럼만)
+  const previewCols = ['상품명','공급가','판매가','공급사','옵션입력','상품 간략설명'];
+  let tableHtml = '<div class="csv-preview"><table class="csv-table"><thead><tr>';
+  previewCols.forEach(c => tableHtml += `<th>${c}</th>`);
+  tableHtml += '</tr></thead><tbody><tr>';
+  previewCols.forEach(c => {
+    const v = String(row[c] || '');
+    const filled = !!v;
+    const short = v.length > 60 ? v.slice(0,60)+'…' : v;
+    tableHtml += `<td class="${filled?'filled':''}" title="${v.replace(/"/g,'&quot;')}">${short||'—'}</td>`;
+  });
+  tableHtml += '</tr></tbody></table></div>';
+  tableHtml += `<div style="margin-top:10px;font-size:11px;color:var(--muted);padding:0 2px;">💡 합산 판매가: <b>${totalSale.toLocaleString()}원</b> (${topPrice.toLocaleString()} + ${botPrice.toLocaleString()})</div>`;
+
+  document.getElementById('csvPlaceholder').style.display = 'none';
+  document.getElementById('csvPreview').style.display = 'block';
+  document.getElementById('csvPreview').innerHTML = tableHtml;
+  document.getElementById('csvBtn').disabled = false;
+}
+
+function buildDescText(d) {
+  const topColors   = (d.topColors   || []).join(', ');
+  const botColors   = (d.bottomColors|| []).join(', ');
+  const mc          = (d.modelColors       || []).join(', ');
+  const bottomMc    = (d.bottomModelColors || d.modelColors || []).join(', ');
+  const topFabric   = String(d.topFabric    || '');
+  const botFabric   = String(d.bottomFabric || '');
+  const elasticity  = String(d.elasticity   || '');
+  const transparency= String(d.transparency || '');
+  const lining      = String(d.lining       || '');
+  // ★ 상의 신축성/비침/안감 (없으면 하의 것으로 fallback)
+  const topElasticity   = String(d.topElasticity   || d.elasticity   || '');
+  const topTransparency = String(d.topTransparency || d.transparency || '');
+  const topLining       = String(d.topLining       || d.lining       || '');
+
+  // 첫줄: 소개문장 + <br> 추가, 이후: - 불릿 포인트
+  const formatDesc = (raw) => {
+    if (!raw) return '';
+    const lines = String(raw)
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+    if (lines.length === 0) return '';
+    // 첫 줄(소개 문장) 다음에 <br> 하나 추가
+    const firstLine = lines[0] + '<br>\n<br>';
+    const rest = lines.slice(1).join('<br>\n');
+    return rest ? firstLine + '\n' + rest : firstLine;
+  };
+
+  let desc = '';
+  desc += formatDesc(d.topDesc) + '<br>\n';
+  desc += '<br>\n';
+  desc += `Color<br>\n- ${topColors}<br>\n- 모델 착용 컬러 : ${mc}<br>\n`;
+  desc += '<br>\n';
+  desc += `Fabric<br>\n- ${topFabric}<br>\n`;
+  desc += '<br>\n';
+  desc += `Detail<br>\n- 신축성 ${topElasticity} / 비침 ${topTransparency} / 안감 ${topLining}<br>\n- 한국 제조<br>\n`;
+  desc += '<br>\n';
+  desc += formatDesc(d.bottomDesc) + '<br>\n';
+  desc += '<br>\n';
+  desc += `Color<br>\n- ${botColors}<br>\n- 모델 착용 컬러 : ${bottomMc}<br>\n`;
+  desc += '<br>\n';
+  desc += `Fabric<br>\n- ${botFabric}<br>\n`;
+  desc += '<br>\n';
+  desc += `Detail<br>\n- 신축성 ${elasticity} / 비침 ${transparency} / 안감 ${lining}<br>\n- 한국 제조<br>\n`;
+
+  const allColors = topColors + ',' + botColors;
+  if (allColors.includes('아이보리') || allColors.includes('화이트') || allColors.includes('크림') || allColors.includes('ivory') || allColors.includes('white'))
+    desc += '<br>\n화이트 색상은 밝은 컬러 특성상 비침이 있을 수 있습니다.<br>\n';
+  if (d.hasZip)
+    desc += '<br>\n콘솔지퍼 특성상 원단이 이중으로 덧대어진 부분은 지퍼를 올릴 때 다소 뻑뻑할 수 있습니다.<br>\n';
+  return desc;
+}
+
+function downloadCSV() {
+  if (!_csvRaw) return;
+  const blob = new Blob([_csvRaw], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `카페24_코디_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.csv`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('✅ CSV 다운로드 완료!');
+}
+
+// ────────────────────────────────────────
+// 2. 사이즈 코드 생성
+// ────────────────────────────────────────
+function buildSizeCodes(d) {
+  const topCols  = ['어깨','가슴','암홀','팔길이','소매','밑단','총길이'];
+  const botCols  = ['허리','힙','밑단','총길이'];
+
+  const topSizes = (d.topSizes && d.topSizes.length)
+    ? d.topSizes
+    : [{ size:'FREE', vals: topCols.map(()=>'-') }];
+
+  const botSizes = (d.bottomSizes && d.bottomSizes.length)
+    ? d.bottomSizes
+    : (d.sizes || ['S','M']).map(s => ({ size: s, vals: botCols.map(()=>'-') }));
+
+  _sizeCodes.top    = buildSizeHtml('상의',   topCols, topSizes, true);
+  _sizeCodes.bottom = buildSizeHtml('하의',   botCols, botSizes, true);
+  // 셋업: 상의(측정 안내 없음) + 하의(측정 안내 한번만)
+  const topNoNotice = buildSizeHtml('상의', topCols, topSizes, false);
+  const botWithNotice = buildSizeHtml('하의', botCols, botSizes, true);
+  _sizeCodes.set = `<b>상의</b><br>\n${topNoNotice}\n\n<b>하의</b><br>\n${botWithNotice}`;
+
+  document.getElementById('sizePlaceholder').style.display = 'none';
+  document.getElementById('sizeResult').style.display = 'block';
+  document.getElementById('sizeCode-top').textContent = _sizeCodes.top;
+  document.getElementById('sizeCode-bottom').textContent = _sizeCodes.bottom;
+  document.getElementById('sizeCode-set').textContent = _sizeCodes.set;
+  document.getElementById('sizeCopyBtn').disabled = false;
+  document.getElementById('sizePreviewBtn').disabled = false;
+}
+
+function buildSizeHtml(type, cols, rows, showNotice = true) {
+  const totalCols = cols.length + 1;
+  const headers = ['SIZE(CM)', ...cols].map(c => `\n\t\t\t\t\t\t<li>${c}</li>`).join('');
+  const before = `<table border="0" cellpadding="0" cellspacing="0" width="100%">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style="padding:5px;">\n\t\t\t\t<div class="sizetable list${totalCols}">\n\t\t\t\t\t<!-- 사이즈 항목명 -->\n\n\t\t\t\t\t<ul class="sizetable_header">${headers}\n\t\t\t\t\t</ul>\n\n\t\t\t\t\t<!-- 사이즈 데이터 -->`;
+  const uls = rows.map(r => {
+    const vals = Array.isArray(r.vals) ? r.vals : cols.map(()=>'-');
+    let items = `\n\t\t\t\t\t\t<li>${r.size}</li>`;
+    vals.forEach(v => { items += `\n\t\t\t\t\t\t<li>${v||'-'}</li>`; });
+    return `\n\t\t\t\t\t<ul>${items}\n\t\t\t\t\t</ul>`;
+  }).join('');
+  const firstSize = rows[0]?.size || 'S';
+  const notice = showNotice
+    ? `\n\t\t\t\t\t<!-- 사이즈 측정 안내 -->\n\t\t\t\t\t<div class="sizetable_notice">\n\t\t\t\t\t\t사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,\n\t\t\t\t\t\t<br> 측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="sizetable_model">\n\t\t\t\t\t\tSUYOUN : ${firstSize} 사이즈 착용 (163cm, 상의 55size, 하의 26inch, 신발 230mm)\n\t\t\t\t\t\t<br>\n\t\t\t\t\t</div>`
+    : '';
+  const close = `\n\t\t\t\t</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>`;
+  const sizelink = `&nbsp;&nbsp;<a class="sizelink" href="/article/notice/1/4/">&#62;&#62; 사이즈 측정 방법 보러가기</a>`;
+  return before + uls + notice + close + (showNotice ? sizelink : '');
+}
+
+function switchSizeTab(tab) {
+  _activeSizeTab = tab;
+  document.querySelectorAll('.size-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.size-tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.size-tab[onclick="switchSizeTab('${tab}')"]`).classList.add('active');
+  document.getElementById(`sizeTab-${tab}`).classList.add('active');
+  // 미리보기 열려있으면 내용 업데이트
+  const inlineWrap = document.getElementById('sizePreviewInline');
+  if (inlineWrap && inlineWrap.style.display !== 'none') {
+    document.getElementById('sizePreviewContent').innerHTML = _sizeCodes[tab] || '';
+  }
+}
+
+function copySizeCode() {
+  const code = _sizeCodes[_activeSizeTab];
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('sizeCopyBtn');
+    btn.textContent = '✅ 복사됨!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 복사'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function openSizePreview() {
+  const code = _sizeCodes[_activeSizeTab];
+  if (!code) return;
+  const inlineWrap = document.getElementById('sizePreviewInline');
+  const content    = document.getElementById('sizePreviewContent');
+  if (inlineWrap.style.display === 'none') {
+    content.innerHTML = code;
+    inlineWrap.style.display = 'block';
+    const btn = document.getElementById('sizePreviewBtn');
+    btn.textContent = '👁 미리보기 닫기';
+    btn.classList.add('copied');
+  } else {
+    inlineWrap.style.display = 'none';
+    const btn = document.getElementById('sizePreviewBtn');
+    btn.textContent = '👁 미리보기';
+    btn.classList.remove('copied');
+  }
+}
+function closeSizeModal() { document.getElementById('sizeModal').classList.remove('open'); }
+
+function openDetailPreview() {
+  const code = _detailRaws['full'];
+  if (!code) return;
+  document.getElementById('detailModalBody').innerHTML = code;
+  document.getElementById('detailModal').classList.add('open');
+}
+function closeDetailModal() { document.getElementById('detailModal').classList.remove('open'); }
+
+// CSV 상세설명용 HTML 코드 문자열 반환
+function buildDetailCodeStr(d) {
+  // ★ GAS에서 받은 실제 HTML이 있으면 그대로 사용 (fixedImg 이미 포함됨)
+  if (d && (d.detailPageHtml1 || d.detailPageHtml2)) {
+    return (d.detailPageHtml1 || d.detailPageHtml2).trim();
+  }
+
+  // GAS HTML 없을 때 기본 템플릿
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const dateCode = yy + mm + dd;
+  const prodCode = 'PXXXXXXXX';
+  const fixedImg = `\t<img src="https://s0474.img49.makeshop.info/web/upload/NNEditor/20211001/EC84B8ED8AB8525_ECA081EBA6BDEAB8882EBB0B0.jpg" /><br>`;
+  const pageImgCode = `\t<img src="/web/page/${dateCode}/${prodCode}/1.jpg" /><br>`;
+  const detailImgCode = [1,2,3,4,5].map(i =>
+    `\t\t<p><span class="rte-attach" style="display: block;"><img src="/web/detail/${dateCode}/${prodCode}/${i}.jpg" /></span></p>\n<br>`
+  ).join('\n');
+  return `<!-- [OPENEDITOR] -->\n<div id="sizetable" style="text-align: center;">\n\t<link rel="stylesheet" href="http://skin-mobile6--shop1.s0474.cafe24.com/detailtest.css" type="text/css" media="screen">\n\t<!--세트 배송 안내 이미지-->\n${fixedImg}\n\t<!--상세페이지 이미지 넣기-->\n${pageImgCode}\n\t<p>\n\t\t<!--디테일 컷 이미지 넣기-->\n${detailImgCode}\n\t</p>\n</div>`;
+}
+
+// ────────────────────────────────────────
+// 3. 상세페이지 코드 생성
+// ────────────────────────────────────────
+function buildDetailCode(d) {
+  // ★ GAS에서 받은 실제 HTML 우선 사용
+  const fullCode   = buildDetailCodeStr(d);
+  const pageCode   = fullCode;
+  const detailCode = fullCode;
+
+  _detailRaws = { full: fullCode, page: fullCode, detail: fullCode };
+
+  document.getElementById('detailPlaceholder').style.display = 'none';
+  document.getElementById('detailResult').style.display = 'block';
+  setDetailOutput('full', fullCode);
+  document.getElementById('detailCopyBtn').disabled = false;
+  document.getElementById('detailCopyAllBtn').disabled = false;
+  document.getElementById('detailPreviewBtn').disabled = false;
+
+  // 안내 메시지
+  const hasRealHtml = !!(d.detailPageHtml1 || d.detailPageHtml2);
+  const note = document.createElement('div');
+  note.style.cssText = 'padding:8px 16px;font-size:11px;color:var(--muted);background:#FFFDE7;border-top:1px solid var(--border);';
+  note.innerHTML = hasRealHtml
+    ? `✅ 실제 상품 상세페이지 HTML을 그대로 가져왔어요! 맨 위 세트 배송 안내 이미지가 자동으로 추가됩니다.`
+    : `💡 상세 HTML을 읽지 못했어요. <b>PXXXXXXXX</b> 부분을 실제 카페24 상품코드로 교체하세요.`;
+  document.getElementById('detailResult').appendChild(note);
+}
+
+function setDetailOutput(type, code) {
+  document.getElementById(`dout-${type}`).innerHTML = highlightHTML(code);
+}
+
+function highlightHTML(code) {
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return code.split('\n').map(line => {
+    const trimmed = line.trim();
+    let cls = 'line-normal';
+    if (/web\/page\//.test(line)||/상세페이지 이미지/.test(line)) cls='line-page';
+    else if (/web\/detail\//.test(line)||/디테일 컷/.test(line)||/rte-attach/.test(line)) cls='line-detail-bg';
+    let hl = '';
+    if (/^<!--/.test(trimmed)) {
+      hl = `<span class="hl-comment">${esc(line)}</span>`;
+    } else {
+      hl = esc(line)
+        .replace(/(&lt;\/?)([\w\d-]+)/g,'<span class="hl-tag">$1$2</span>')
+        .replace(/(\/?&gt;)/g,'<span class="hl-tag">$1</span>')
+        .replace(/\s([\w-]+)=&quot;/g,' <span class="hl-attr">$1</span>=&quot;')
+        .replace(/=&quot;([^&]*)&quot;/g,'=<span class="hl-value">&quot;$1&quot;</span>');
+    }
+    return `<span class="${cls}">${hl}</span>`;
+  }).join('\n');
+}
+
+function copyDetailCode() {
+  const code = _detailRaws['full'];
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('detailCopyBtn');
+    btn.textContent = '✅ 복사됨!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 복사'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyDetailAll() {
+  const code = _detailRaws['full'];
+  if (!code) return;
+  const oneLiner = code.replace(/\r?\n/g,'').replace(/\t/g,'').replace(/\s{2,}/g,' ');
+  navigator.clipboard.writeText(oneLiner).then(() => {
+    const btn = document.getElementById('detailCopyAllBtn');
+    btn.textContent = '✅ 복사됨!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 전체 복사'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ────────────────────────────────────────
+// 유틸
+// ────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') { closeSizeModal(); closeDetailModal(); }
+});
+</script>
+</body>
+</html>
