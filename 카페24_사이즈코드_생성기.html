@@ -2,6 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>카페24 사이즈 코드 생성기</title>
 <style>
@@ -78,6 +84,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 .copy-btn:hover { background: #333; }
 .copy-btn.copied { background: #16a34a; }
 .copy-btn:disabled, .preview-btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+.img-btn { display: flex; align-items: center; gap: 5px; padding: 7px 13px; font-size: 12.5px; font-weight: 600; font-family: inherit; border-radius: 8px; cursor: pointer; transition: all 0.15s; background: #f0f0ee; color: #555; border: 1.5px solid #d0d0ce; }
+.img-btn:hover { background: #e4e4e2; border-color: #bbb; }
+.img-btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+.img-btn.generating { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+.img-preview-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+.img-preview-overlay.open { display: flex; }
+.img-preview-modal { background: #fff; border-radius: 14px; max-width: 95vw; max-height: 90vh; position: relative; z-index: 3001; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+.img-preview-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid #e8e8e6; flex-shrink: 0; }
+.img-preview-header-title { font-size: 14px; font-weight: 700; }
+.img-preview-header-btns { display: flex; gap: 8px; align-items: center; }
+.btn-img-download { display: flex; align-items: center; gap: 5px; padding: 7px 14px; font-size: 12.5px; font-weight: 700; font-family: inherit; background: #1e1e1e; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+.btn-img-download:hover { background: #333; }
+.img-preview-close { width: 30px; height: 30px; border-radius: 7px; border: none; background: #f4f4f2; cursor: pointer; font-size: 18px; color: #666; display: flex; align-items: center; justify-content: center; }
+.img-preview-close:hover { background: #e8e8e6; }
+.img-preview-body { overflow: auto; padding: 16px 20px; display: flex; justify-content: center; align-items: flex-start; }
+.img-preview-body img { width: 1000px; height: auto; display: block; max-width: none; }
 .preview-btn { background: #fff; color: #1e1e1e; border: 1.5px solid #1e1e1e; }
 .preview-btn:hover { background: #f4f4f2; }
 
@@ -169,7 +191,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 .btn-cm-save { flex: 2; padding: 12px; font-size: 13px; font-family: inherit; background: #1e1e1e; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; }
 
 /* 불러오기 스낵바 */
-.snackbar { position: fixed; bottom: 20px; right: 20px; background: #1e1e1e; color: #fff; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; z-index: 2000; pointer-events: none; }
+.snackbar { position: fixed; bottom: 20px; right: 20px; background: #1e1e1e; color: #fff; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; z-index: 1500; pointer-events: none; }
 .snackbar.show { opacity: 1; }
 .snackbar.green { background: #16a34a; }
 .snackbar.red { background: #e55; }
@@ -273,6 +295,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 11H2.5A1.5 1.5 0 011 9.5v-7A1.5 1.5 0 012.5 1h7A1.5 1.5 0 0111 2.5V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span>코드 복사</span>
           </button>
+          <button class="img-btn" id="img-btn" onclick="generateSizeImage()" disabled>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="5.5" cy="7" r="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 11l4-3 3 2.5 2.5-2 4.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>이미지 저장</span>
+          </button>
         </div>
       </div>
       <div class="code-wrap">
@@ -320,6 +346,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 
 <div class="snackbar" id="snackbar"></div>
 
+<!-- 사이즈 이미지 렌더용 숨겨진 컨테이너 -->
+<div id="size-render-wrap" style="position:fixed;left:-9999px;top:0;z-index:-1;">
+  <div id="size-render-box"></div>
+</div>
+
+<div class="img-preview-overlay" id="img-preview-overlay" onclick="if(event.target===this)closeImgPreview()">
+  <div class="img-preview-modal">
+    <div class="img-preview-header">
+      <div class="img-preview-header-title">📐 사이즈 이미지 미리보기</div>
+      <div class="img-preview-header-btns">
+        <button class="btn-img-download" id="btn-img-download" onclick="downloadCurrentImg()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          JPG 저장
+        </button>
+        <button class="img-preview-close" onclick="closeImgPreview()">×</button>
+      </div>
+    </div>
+    <div class="img-preview-body">
+      <img id="img-preview-img" src="" alt="사이즈 가이드 미리보기">
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closePreview()">
   <div class="modal">
     <div class="modal-header">
@@ -331,6 +380,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 </div>
 
 <script>
+// ── 이미지 미리보기 모달 함수 ──
+function closeImgPreview() {
+  document.getElementById('img-preview-overlay').classList.remove('open');
+}
+function downloadCurrentImg() {
+  if (!window._sizeImgDataUrl) return;
+  const link = document.createElement('a');
+  const productName = window._sizeImgProduct || window._sizeImgType || 'size_guide';
+  const safeName = productName.replace(/[\\/:*?"<>|]/g, '_');
+  link.download = safeName + '_size_guide.jpg';
+  link.href = window._sizeImgDataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 const TYPES = {
   '상의':            { cols: ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],     modelSize: 'FREE' },
   '바지':            { cols: ['허리','힙','밑위','허벅지','밑단','총길이'],                    modelSize: 'S' },
@@ -680,6 +745,8 @@ function generate() {
   document.getElementById('code-placeholder').style.display = 'none';
   document.getElementById('copy-btn').disabled = false;
   document.getElementById('preview-btn').disabled = false;
+  const imgBtn = document.getElementById('img-btn');
+  if (imgBtn) imgBtn.disabled = false;
 }
 
 function resetOutput() {
@@ -689,6 +756,8 @@ function resetOutput() {
   const cb = document.getElementById('copy-btn');
   cb.disabled = true; cb.classList.remove('copied'); cb.querySelector('span').textContent = '코드 복사';
   document.getElementById('preview-btn').disabled = true;
+  const ib = document.getElementById('img-btn');
+  if (ib) { ib.disabled = true; }
 }
 
 function clearAll() { selectType(currentType); }
@@ -985,6 +1054,7 @@ function loadSheetRows(indices) {
 
     closeSheetModal();
     setTimeout(() => generate(), 120);
+    window._sizeImgProduct = first.product || '';
     showSnack(`✅ "${first.product}" (${rows.map(r=>r.sizeName).join(', ')}) 코드 생성 완료!`, 'green');
   }, 80);
 }
@@ -999,6 +1069,409 @@ function showSnack(msg, type = '') {
   el.textContent = msg;
   el.className = 'snackbar show' + (type ? ' ' + type : '');
   snackTimer = setTimeout(() => { el.className = 'snackbar'; }, 2800);
+}
+
+
+// ════════════════════════════════════════════════
+//  사이즈 이미지 생성 (JPG 다운로드)
+// ════════════════════════════════════════════════
+async function generateSizeImage() {
+  if (!generatedCode) return;
+
+  const btn = document.getElementById('img-btn');
+  btn.classList.add('generating');
+  btn.querySelector('span').textContent = '생성 중...';
+  btn.disabled = true;
+
+  try {
+    const { rows, extraRows } = parseSizeData();
+    if (!rows.length) { alert('사이즈 데이터가 없습니다.'); return; }
+
+    // 폰트 로딩 완료 대기
+    await document.fonts.ready;
+
+    // HTML 표 생성
+    const html = buildSizeHtml(rows, extraRows);
+    const box  = document.getElementById('size-render-box');
+    box.innerHTML = html;
+
+    // 렌더링 대기 (폰트 적용 시간)
+    await new Promise(r => setTimeout(r, 300));
+
+    // html2canvas로 캡처
+    const target = box.querySelector('.sg-wrap');
+    const canvas = await html2canvas(target, {
+      scale: 1,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: 1000,
+      windowWidth: 1200,
+    });
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+    document.getElementById('img-preview-img').src = dataUrl;
+    window._sizeImgDataUrl = dataUrl;
+    window._sizeImgType = currentType;
+    if (!window._sizeImgProduct) window._sizeImgProduct = currentType;
+    document.getElementById('img-preview-overlay').classList.add('open');
+    box.innerHTML = '';
+  } catch(e) {
+    alert('이미지 생성 실패: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.classList.remove('generating');
+    btn.querySelector('span').textContent = '이미지 저장';
+    btn.disabled = false;
+  }
+}
+
+function buildSizeHtml(rows, extraRows) {
+  // 메인 섹션 (첫 번째)
+  const mainSec = rows[0];
+  const sizes = mainSec.data.map(r => r.size);
+
+  // 헤더
+  const headerCells = sizes.map(sz =>
+    `<td class="sg-val-cell sg-header-size">${sz}</td>`
+  ).join('');
+
+  // 메인 데이터 행
+  const mainDataRows = mainSec.cols.map((col, ci) => {
+    const valCells = sizes.map((_, si2) => {
+      const val = mainSec.data[si2] ? mainSec.data[si2].vals[ci] : '-';
+      return `<td class="sg-val-cell">${val && val !== '-' ? val : '-'}</td>`;
+    }).join('');
+    return `<tr class="sg-row">
+      <td class="sg-label-cell">${col}</td>
+      ${valCells}
+    </tr>`;
+  }).join('');
+
+  // 추가 섹션 행 (이어붙이기)
+  // 추가 섹션이 FREE 1개면 → 모든 사이즈 컬럼에 같은 값 채우기
+  const extraDataRows = extraRows.map(sec => {
+    return sec.cols.map((col, ci) => {
+      const valCells = sizes.map((_, si2) => {
+        // 해당 사이즈 데이터가 있으면 사용, 없으면 첫 번째 값(FREE) 동일하게
+        const srcIdx = si2 < sec.data.length ? si2 : 0;
+        const val = sec.data[srcIdx] ? sec.data[srcIdx].vals[ci] : '-';
+        return `<td class="sg-val-cell">${val && val !== '-' ? val : '-'}</td>`;
+      }).join('');
+      return `<tr class="sg-row">
+        <td class="sg-label-cell">${col}</td>
+        ${valCells}
+      </tr>`;
+    }).join('');
+  }).join('');
+
+  const sectionsHtml = `
+    <table class="sg-table">
+      <thead>
+        <tr class="sg-header-row">
+          <td class="sg-label-cell sg-header-label">SIZE(CM)</td>
+          ${headerCells}
+        </tr>
+      </thead>
+      <tbody>
+        ${mainDataRows}
+        ${extraDataRows}
+      </tbody>
+    </table>`;
+
+  return `
+  <div class="sg-wrap">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      .sg-wrap {
+        width: 1000px;
+        background: #fff;
+        padding: 160px 60px 9px;
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+      }
+      .sg-title {
+        font-family: "EB Garamond", "Garamond", Georgia, serif;
+        font-weight: 100;
+        font-size: 32pt;
+        letter-spacing: 0.025em;
+        color: #1a1a1a;
+        text-align: center;
+        margin-bottom: 35px;
+      }
+      .sg-sec-label {
+        font-size: 11pt;
+        color: #555;
+        font-weight: 400;
+        margin-top: 30px;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+      }
+      .sg-table {
+        width: 840px;
+        border-collapse: collapse;
+        table-layout: fixed;
+        margin-left: 23px;
+        margin-right: 17px;
+      }
+      .sg-wrap > .sg-sec-label {
+        width: 840px;
+        margin-left: 23px;
+        margin-right: 17px;
+      }
+      /* 헤더 위 선만, 아래 선도 동일 굵기 */
+      .sg-header-row {
+        border-top: none;
+      }
+      .sg-table:first-of-type .sg-header-row {
+        border-top: none;
+      }
+      .sg-header-label {
+        font-family: "Pretendard", "Noto Sans KR", sans-serif !important;
+        font-weight: 300 !important;
+        font-size: 20pt !important;
+        letter-spacing: -0.02em !important;
+        color: #262626 !important;
+        text-align: center !important;
+        padding: 23px 0 !important;
+        border-bottom: 1px solid #b8b8b8 !important;
+      }
+      .sg-header-size {
+        font-family: "Pretendard", "Noto Sans KR", sans-serif !important;
+        font-weight: 300 !important;
+        font-size: 20pt !important;
+        letter-spacing: -0.02em !important;
+        color: #262626 !important;
+        text-align: center !important;
+        padding: 23px 0 !important;
+        border-bottom: 1px solid #b8b8b8 !important;
+      }
+      .sg-label-cell {
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+        font-weight: 400;
+        font-size: 19pt;
+        font-weight: 300;
+        letter-spacing: -0.02em;
+        color: #262626;
+        text-align: center;
+        padding: 23px 0;
+        width: 280px;
+        transform: scaleY(1.08);
+        border-bottom: 1px solid #b8b8b8;
+      }
+      .sg-val-cell {
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+        font-weight: 400;
+        font-size: 19pt;
+        font-weight: 300;
+        letter-spacing: -0.02em;
+        color: #262626;
+        text-align: center;
+        padding: 23px 0;
+        border-bottom: 1px solid #b8b8b8;
+        transform: scaleY(1.08);
+      }
+      .sg-table:last-of-type tbody tr:last-child .sg-label-cell,
+      .sg-table:last-of-type tbody tr:last-child .sg-val-cell {
+        border-bottom: none;
+      }
+      .sg-notice {
+        margin-top: 24px;
+        width: 840px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 20px;
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+        font-size: 16pt;
+        font-weight: 300;
+        letter-spacing: -0.02em;
+        color: #6c6b6b;
+        transform: scaleY(1.08);
+        line-height: 1.55;
+      }
+    </style>
+    <div class="sg-title">SIZE GUIDE</div>
+    ${sectionsHtml}
+    <div class="sg-notice">
+      ※ 사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,<br>
+      &nbsp;&nbsp;&nbsp;측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.
+    </div>
+  </div>`;
+}
+
+function parseSizeData() {
+  const { cols, isAccessory } = TYPES[currentType];
+  const mainTbl = document.getElementById('size-table');
+  const mainRows = readRows(mainTbl, cols);
+  const [_fc, _fr] = filterEmptyCols(cols, mainRows);
+  const [fCols, fRows] = reorderColsForDisplay(currentType, _fc, _fr);
+
+  // 메인 표 데이터
+  const rows = [{ label: null, cols: fCols.map(displayCol), data: fRows }];
+
+  // 추가 섹션 데이터
+  const extraRows = [];
+  extraSections.forEach(sec => {
+    const secTbl = document.getElementById(`etbl-${sec.id}`);
+    if (!secTbl) return;
+    const secData = readRows(secTbl, sec.cols);
+    if (!secData.length) return;
+    const [fsc, fsr] = filterEmptyCols(sec.cols, secData);
+    const nameEl = document.getElementById(`sname-${sec.id}`);
+    const secName = nameEl ? (nameEl.value.trim() || sec.name) : sec.name;
+    // 추가 섹션 컬럼명에 섹션명 prefix 붙이기 (벨트폭→벨트 폭, 스카프가로→스카프 가로)
+    const prefixedCols = fsc.map(c => {
+      const d = displayCol(c);
+      // 벨트/스카프/머플러 prefix 처리
+      if (sec.key === '벨트') return '벨트 ' + d;
+      if (sec.key === '스카프') return '스카프 ' + d;
+      if (sec.key === '머플러') return '머플러 ' + d;
+      return d;
+    });
+    extraRows.push({ label: secName, cols: prefixedCols, data: fsr });
+  });
+
+  return { rows, extraRows };
+}
+
+function buildSizeCanvas(rows, extraRows) {
+  // ── 1번 이미지 픽셀 분석 기반 정확한 수치 ──
+  const W         = 1000;
+  const fGaramond = '"EB Garamond", "Garamond", Georgia, serif';
+  const fPretend  = '"Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif';
+
+  // 고정 위치값 (이미지 분석)
+  const TITLE_BASE   = 202;  // SIZE GUIDE 베이스라인
+  const HEADER_BASE  = 283;  // SIZE(CM) 베이스라인
+  const FIRST_LINE   = 316;  // 첫 번째 구분선 y
+  const ROW_H        = 76;   // 행 높이
+  const LABEL_CX     = 222;  // 항목명 중앙 x
+  const LEFT_MARGIN  = 107;  // 왼쪽 여백 (구분선 시작)
+  const RIGHT_MARGIN = 893;  // 오른쪽 여백 (구분선 끝)
+
+  const allSections = [...rows, ...extraRows];
+
+  // 전체 행 수 계산
+  let totalRowCount = 0;
+  allSections.forEach(sec => { totalRowCount += sec.cols.length; });
+
+  // 캔버스 높이: 마지막 구분선 + 안내문구 공간
+  const lastLineY = FIRST_LINE + totalRowCount * ROW_H;
+  const totalH    = lastLineY + 120;
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = W;
+  canvas.height = totalH;
+  const ctx = canvas.getContext('2d');
+
+  // 배경 흰색
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, totalH);
+
+  // ── SIZE GUIDE 타이틀 (Garamond Bold 42pt=56px, tracking -20) ──
+  const TITLE_SIZE    = 56;
+  const TITLE_TRACK   = -20 / 1000 * TITLE_SIZE;
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = `bold ${TITLE_SIZE}px ${fGaramond}`;
+  ctx.textAlign = 'left';
+  const titleText = 'SIZE GUIDE';
+  let titleW = 0;
+  for (const ch of titleText) titleW += ctx.measureText(ch).width + TITLE_TRACK;
+  titleW -= TITLE_TRACK;
+  let tx = (W - titleW) / 2;
+  for (const ch of titleText) {
+    ctx.fillText(ch, tx, TITLE_BASE);
+    tx += ctx.measureText(ch).width + TITLE_TRACK;
+  }
+
+  let rowIdx = 0; // 전체 누적 행 인덱스
+
+  allSections.forEach((sec, si) => {
+    const sizes = sec.data.map(r => r.size);
+    const cols  = sec.cols;
+    const n     = sizes.length;
+
+    // 사이즈 컬럼 x 위치 계산
+    // 1번 이미지: S=500, M=781 (2사이즈 기준)
+    // n개일 때: 데이터 영역 380~893에 균등 배치
+    const DATA_START = 380;
+    const DATA_END   = RIGHT_MARGIN;
+    const colW  = (DATA_END - DATA_START) / n;
+    const colCX = sizes.map((_, i) => DATA_START + colW * i + colW / 2);
+
+    // 섹션 구분 (두 번째 섹션부터 제목)
+    const sectionOffsetY = rowIdx * ROW_H;
+    if (si > 0) {
+      const labelY = FIRST_LINE + sectionOffsetY - 20;
+      ctx.fillStyle = '#555';
+      ctx.font = `400 13px ${fPretend}`;
+      ctx.textAlign = 'left';
+      ctx.fillText(sec.label || '', LEFT_MARGIN, labelY);
+    }
+
+    // ── 헤더: SIZE(CM) + 사이즈명 ──
+    const hBaseY = HEADER_BASE + sectionOffsetY;
+    ctx.fillStyle = '#888';
+    ctx.font = `400 14px ${fPretend}`;
+    ctx.textAlign = 'left';
+    ctx.fillText('SIZE(CM)', LEFT_MARGIN, hBaseY);
+
+    sizes.forEach((sz, ci) => {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.font = `400 16px ${fPretend}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(sz, colCX[ci], hBaseY);
+    });
+
+    // 헤더 구분선
+    const hLineY = FIRST_LINE + sectionOffsetY;
+    ctx.strokeStyle = '#b8b8b8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(LEFT_MARGIN, hLineY);
+    ctx.lineTo(RIGHT_MARGIN, hLineY);
+    ctx.stroke();
+
+    // ── 데이터 행 ──
+    cols.forEach((col, ci2) => {
+      const lineY = hLineY + ci2 * ROW_H;
+      const midY  = lineY + ROW_H / 2 + 6;
+
+      // 항목명
+      ctx.fillStyle = '#333';
+      ctx.font = `400 16px ${fPretend}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(col, LABEL_CX, midY);
+
+      // 값
+      sizes.forEach((_, si2) => {
+        const val = sec.data[si2] ? sec.data[si2].vals[ci2] : '-';
+        ctx.fillStyle = '#333';
+        ctx.font = `400 16px ${fPretend}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(val && val !== '-' ? val : '-', colCX[si2], midY);
+      });
+
+      // 구분선
+      ctx.strokeStyle = '#d8d8d8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(LEFT_MARGIN, lineY + ROW_H);
+      ctx.lineTo(RIGHT_MARGIN, lineY + ROW_H);
+      ctx.stroke();
+    });
+
+    rowIdx += cols.length;
+  });
+
+  // ── 하단 안내 문구 ──
+  const noticeY = FIRST_LINE + rowIdx * ROW_H + 50;
+  ctx.fillStyle = '#888';
+  ctx.font = `400 13px ${fPretend}`;
+  ctx.textAlign = 'left';
+  ctx.fillText('※ 사이즈 측정은 상품을 바닥에 놓고 단면을 측정한 것이며,', LEFT_MARGIN, noticeY);
+  ctx.fillText('   측정 방법, 수축력 소재(니트류)에 따라 1~3cm 오차가 있을 수 있습니다.', LEFT_MARGIN, noticeY + 24);
+
+  return canvas;
 }
 
 document.querySelectorAll('.cloth-btn').forEach(b => b.addEventListener('click', () => selectType(b.dataset.type)));
