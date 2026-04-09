@@ -78,6 +78,9 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
 .modal-btn-ok:hover  { background:#235a3e; }
 .modal-btn-err { background:var(--red); color:white; }
 .modal-btn-err:hover { background:#9a2230; }
+.ip-banner { display:none; background:var(--red-bg); border:0.5px solid var(--red); border-radius:12px; padding:14px 18px; margin-bottom:16px; align-items:center; gap:10px; }
+.ip-banner-icon { font-size:18px; flex-shrink:0; }
+.ip-banner-msg { font-size:13px; color:var(--red); line-height:1.5; font-weight:500; }
 
 /* 토스트 / 로딩 */
 .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--text1); color:white; padding:11px 22px; border-radius:100px; font-size:13px; opacity:0; pointer-events:none; transition:all 0.25s; z-index:9999; max-width:88vw; text-align:center; line-height:1.5; }
@@ -109,6 +112,10 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
       </div>
 
       <div class="field-label">사원 코드</div>
+      <div class="ip-banner" id="ipBanner">
+        <span class="ip-banner-icon">🔒</span>
+        <span class="ip-banner-msg">회사 네트워크에서만 출퇴근 기록이 가능해요.<br>회사 와이파이에 연결되어 있는지 확인해주세요.</span>
+      </div>
       <div id="codeList"></div>
       <button class="btn-add-code" onclick="addCodeRow()">+ 함께 출근하는 분 추가</button>
 
@@ -165,8 +172,43 @@ const STAFF = [
   { code:'2026030465', name:'오윤지' },
 ];
 
+// ── 허용 IP 목록 (네이버 "내 ip" 검색 결과 입력) ──
+const ALLOWED_IPS = [
+  '121.145.247.70',
+  '221.167.0.166',
+  '221.167.1.202',
+];
+
 const staffMap = {};
 STAFF.forEach(s => { staffMap[s.code] = s.name; });
+
+// ── IP 확인 ──
+let ipVerified = false;
+
+async function checkIP() {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    const myIP = data.ip;
+
+    if (ALLOWED_IPS.length === 0 || ALLOWED_IPS.includes(myIP)) {
+      // IP 허용 — 버튼 활성화
+      ipVerified = true;
+      document.getElementById('ipBanner').style.display = 'none';
+    } else {
+      // IP 차단 — 버튼 비활성화 + 안내
+      ipVerified = false;
+      document.getElementById('ipBanner').style.display = 'flex';
+      document.getElementById('btnIn').disabled = true;
+      document.getElementById('btnOut').disabled = true;
+    }
+  } catch(e) {
+    // IP 확인 실패 시 차단
+    ipVerified = false;
+    document.getElementById('ipBanner').style.display = 'flex';
+    document.getElementById('ipBanner').querySelector('.ip-banner-msg').textContent = 'IP 확인에 실패했어요. 회사 와이파이에 연결되어 있는지 확인해주세요.';
+  }
+}
 
 // ── 서버 시계 (GAS 시간 기준) ──
 let serverOffset = 0; // 서버시간과 로컬시간의 차이(ms)
@@ -243,6 +285,10 @@ function lookupRow(input) {
 
 // ── 일괄 출퇴근 기록 ──
 async function recordAll(type) {
+  if (!ipVerified) {
+    showModal('회사 네트워크에서만 출퇴근 기록이 가능해요.\n회사 와이파이에 연결되어 있는지 확인해주세요.', 'err');
+    return;
+  }
   const rows = document.querySelectorAll('.code-row input');
   const targets = [];
 
@@ -366,7 +412,8 @@ function setLoading(on) {
   document.getElementById('overlay').classList.toggle('show', on);
 }
 
-// 최초 현황 로드 + 첫 입력창 생성
+// 최초 실행
+checkIP();
 addCodeRow();
 loadStatus();
 </script>
