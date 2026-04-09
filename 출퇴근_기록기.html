@@ -30,14 +30,16 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
 .clock { font-size:46px; font-weight:300; letter-spacing:-2px; line-height:1; margin-bottom:6px; }
 .clock-date { font-size:13px; color:var(--text2); }
 .field-label { font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--text3); text-transform:uppercase; margin-bottom:8px; }
-.code-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.code-row { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
 .code-row input { width:0; flex:1; font-family:inherit; border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:15px; font-weight:500; color:var(--text1); background:var(--surface); transition:border-color 0.2s; min-width:0; }
 .code-row input:focus { outline:none; border-color:var(--text2); }
-.code-name { font-size:12px; font-weight:500; color:var(--blue); width:70px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; }
 .code-remove { background:none; border:none; cursor:pointer; font-size:16px; color:var(--text3); padding:0; line-height:1; flex-shrink:0; width:20px; text-align:center; }
 .code-remove:hover { color:var(--red); }
-.btn-add-code { background:none; border:0.5px dashed var(--border2); border-radius:10px; color:var(--text3); font-family:inherit; font-size:13px; padding:10px; width:100%; cursor:pointer; margin-bottom:20px; transition:all 0.15s; }
+.code-name { font-size:12px; font-weight:500; color:var(--blue); padding-left:4px; margin-bottom:8px; min-height:16px; }
+.btn-add-code { background:none; border:0.5px dashed var(--border2); border-radius:10px; color:var(--text3); font-family:inherit; font-size:13px; padding:10px; width:100%; cursor:pointer; margin-bottom:20px; margin-top:4px; transition:all 0.15s; }
 .btn-add-code:hover { background:var(--bg); color:var(--text2); border-color:var(--text3); }
+.btn-sheet { display:flex; align-items:center; justify-content:center; gap:6px; background:none; border:0.5px solid var(--border); border-radius:10px; color:var(--text2); font-family:inherit; font-size:13px; padding:10px; width:100%; cursor:pointer; margin-top:10px; text-decoration:none; transition:all 0.15s; }
+.btn-sheet:hover { background:var(--bg); border-color:var(--text2); }
 .action-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .btn { border:none; cursor:pointer; font-family:inherit; font-weight:500; transition:all 0.15s; border-radius:10px; }
 .btn:active { transform:scale(0.97); }
@@ -127,6 +129,9 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
           <span class="icon">🌙</span>퇴근
         </button>
       </div>
+      <a class="btn-sheet" href="https://docs.google.com/spreadsheets/d/19mdIiWEUMbK9Vt-5bwmciPIag4JtYj9hEnr3mFn2bnk/edit" target="_blank">
+        📋 출퇴근 기록지 바로가기
+      </a>
     </div>
   </div>
 
@@ -258,29 +263,29 @@ function addCodeRow(defaultCode = '') {
   rowCount++;
   const id = `codeRow${rowCount}`;
   const div = document.createElement('div');
-  div.className = 'code-row';
   div.id = id;
   div.innerHTML = `
-    <input type="text" placeholder="사원코드 입력" value="${defaultCode}"
-      oninput="lookupRow(this)"
-      onkeydown="if(event.key==='Enter')this.closest('.code-row').nextElementSibling?.querySelector('input')?.focus()">
-    <span class="code-name" id="name${id}"></span>
-    <button class="code-remove" style="visibility:${rowCount > 1 ? 'visible' : 'hidden'}" onclick="removeRow('${id}')">×</button>
+    <div class="code-row">
+      <input type="text" placeholder="사원코드 입력" value="${defaultCode}"
+        oninput="lookupRow(this, '${id}')"
+        onkeydown="if(event.key==='Enter')document.getElementById('${id}').nextElementSibling?.querySelector('input')?.focus()">
+      <button class="code-remove" style="visibility:${rowCount > 1 ? 'visible' : 'hidden'}" onclick="removeRow('${id}')">×</button>
+    </div>
+    <div class="code-name" id="name${id}"></div>
   `;
   document.getElementById('codeList').appendChild(div);
-  if (defaultCode) lookupRow(div.querySelector('input'));
+  if (defaultCode) lookupRow(div.querySelector('input'), id);
 }
 
 function removeRow(id) {
   document.getElementById(id)?.remove();
 }
 
-function lookupRow(input) {
+function lookupRow(input, id) {
   const code = input.value.trim();
-  const nameEl = input.closest('.code-row').querySelector('.code-name');
+  const nameEl = document.getElementById(`name${id}`);
   const name = staffMap[code];
   nameEl.textContent = name ? `👤 ${name}` : '';
-  nameEl.style.color = name ? 'var(--blue)' : 'var(--text3)';
 }
 
 // ── 일괄 출퇴근 기록 ──
@@ -289,7 +294,7 @@ async function recordAll(type) {
     showModal('회사 네트워크에서만 출퇴근 기록이 가능해요.\n회사 와이파이에 연결되어 있는지 확인해주세요.', 'err');
     return;
   }
-  const rows = document.querySelectorAll('.code-row input');
+  const rows = document.querySelectorAll('#codeList input');
   const targets = [];
 
   for (const input of rows) {
