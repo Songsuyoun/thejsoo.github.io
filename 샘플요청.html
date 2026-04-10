@@ -9,7 +9,7 @@
 :root {
   --bg: #F7F6F3; --white: #FFF; --black: #111;
   --gray-100: #F2F1EE; --gray-200: #E6E3DE; --gray-400: #B0ADA7; --gray-600: #6B6760;
-  --accent: #C8603A; --accent-light: #FAF0EC;
+  --accent: #C8603A;
   --green: #2D6A4F; --green-light: #EAF4EE;
   --blue: #1A56A0; --blue-light: #EBF2FC;
   --red: #C0392B; --red-light: #FDECEA;
@@ -25,25 +25,15 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .step-badge { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; padding: 4px 12px; border-radius: 20px; }
 .main { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
 
-.guide { background: var(--blue-light); border: 1px solid #C5D9F2; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: var(--blue); line-height: 1.7; margin-bottom: 14px; }
+.guide { background: var(--blue-light); border: 1px solid #C5D9F2; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: var(--blue); line-height: 1.9; margin-bottom: 14px; }
+.guide strong { font-weight: 700; }
 
-/* DB 상태 바 */
-.db-bar {
-  background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px;
-  padding: 12px 16px; margin-bottom: 14px;
-  display: flex; align-items: center; justify-content: space-between;
-  box-shadow: var(--shadow);
-}
+/* DB 바 */
+.db-bar { background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
 .db-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
 .db-status.loading { background: var(--blue-light); color: var(--blue); }
 .db-status.ok { background: var(--green-light); color: var(--green); }
-.db-status.error { background: var(--red-light); color: var(--red); }
-.db-link {
-  font-size: 12px; color: var(--blue); text-decoration: none; font-weight: 600;
-  padding: 5px 12px; border: 1.5px solid #C5D9F2; border-radius: 8px;
-  background: var(--blue-light); transition: all 0.15s;
-}
-.db-link:hover { background: #D6E8FB; }
+.db-link { font-size: 12px; color: var(--blue); text-decoration: none; font-weight: 600; padding: 5px 12px; border: 1.5px solid #C5D9F2; border-radius: 8px; background: var(--blue-light); }
 
 /* API 카드 */
 .api-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
@@ -56,15 +46,42 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .api-status.ok { display: block; background: var(--green-light); color: var(--green); }
 .api-status.error { display: block; background: var(--red-light); color: var(--red); }
 
-/* 업로드 */
-.upload-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
-.upload-area { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; background: var(--gray-100); position: relative; transition: all 0.15s; }
+/* 입력 섹션 */
+.input-section { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+
+/* Step 라벨 */
+.step-label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.step-num { width: 22px; height: 22px; background: var(--black); color: white; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-text { font-size: 13px; font-weight: 700; }
+.step-sub { font-size: 11px; color: var(--gray-400); margin-left: auto; }
+
+/* 텍스트 영역 */
+.text-area { width: 100%; min-height: 130px; border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 12px 14px; font-size: 12px; font-family: var(--font); background: var(--gray-100); color: var(--black); outline: none; resize: vertical; line-height: 1.7; transition: border-color 0.15s; }
+.text-area:focus { border-color: var(--black); background: white; }
+.text-area::placeholder { color: var(--gray-400); }
+
+.btn-parse { margin-top: 8px; width: 100%; padding: 11px; border-radius: 8px; border: none; background: var(--black); color: white; font-size: 13px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: all 0.15s; }
+.btn-parse:hover { background: #333; }
+
+/* 파싱 결과 미리보기 */
+.parse-preview { margin-top: 10px; padding: 10px 14px; background: var(--green-light); border: 1px solid #B8DCCA; border-radius: 8px; font-size: 12px; color: var(--green); display: none; font-weight: 600; }
+
+/* 구분선 */
+.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
+.divider span { font-size: 11px; color: var(--gray-400); font-weight: 600; white-space: nowrap; }
+
+/* 이미지 업로드 */
+.upload-area { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 22px 20px; text-align: center; cursor: pointer; background: var(--gray-100); position: relative; transition: all 0.15s; }
 .upload-area:hover { border-color: var(--black); background: #EEEDEA; }
+.upload-area.has-image { border-color: var(--green); border-style: solid; background: var(--green-light); }
 .upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-icon { font-size: 30px; margin-bottom: 8px; }
-.upload-area h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.upload-icon { font-size: 26px; margin-bottom: 6px; }
+.upload-area h3 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
 .upload-area p { font-size: 11px; color: var(--gray-600); }
-.preview-img { width: 100%; max-height: 240px; object-fit: contain; border-radius: 8px; border: 1px solid var(--gray-200); margin-top: 12px; display: none; }
+.preview-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid var(--gray-200); margin-top: 12px; display: none; }
+
+/* 분석 버튼 */
 .btn-analyze { width: 100%; background: var(--accent); color: white; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; margin-top: 12px; display: none; transition: all 0.15s; }
 .btn-analyze.show { display: block; }
 .btn-analyze:disabled { background: var(--gray-400); cursor: not-allowed; }
@@ -74,6 +91,7 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .loading.show { display: block; }
 .spinner { width: 30px; height: 30px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.loading-msg { font-size: 13px; color: var(--gray-600); }
 
 /* 결과 */
 .results-wrap { display: none; }
@@ -85,52 +103,36 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .stat-chip.ok { border-color: var(--green); color: var(--green); background: var(--green-light); }
 .stat-chip.warn { border-color: var(--amber); color: var(--amber); background: var(--amber-light); }
 
-/* 컴팩트 카드 */
+/* 상품 카드 */
 .product-cards { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-.product-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); animation: slideUp 0.2s ease; }
+.product-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); animation: slideUp 0.2s ease; }
 @keyframes slideUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 .product-card.unmatched { border-left: 3px solid var(--amber); }
 
 .card-main { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
-.card-thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; border: 1px solid var(--gray-200); flex-shrink: 0; }
+.card-thumb { width: 52px; height: 52px; border-radius: 8px; border: 1px solid var(--gray-200); flex-shrink: 0; object-fit: cover; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 20px; overflow: hidden; }
+.card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .card-info { flex: 1; min-width: 0; }
-.card-name-input { width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; font-family: var(--font); color: var(--black); outline: none; padding: 0; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-name-input { width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; font-family: var(--font); color: var(--black); outline: none; padding: 0; margin-bottom: 3px; }
 .card-vendor-row { display: flex; align-items: center; gap: 6px; }
 .card-vendor-input { flex: 1; border: none; background: transparent; font-size: 12px; font-family: var(--font); color: var(--gray-600); outline: none; padding: 0; min-width: 0; }
 .card-vendor-input:focus { color: var(--black); }
-.match-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; cursor: default; }
+.match-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
 .match-badge.ok { background: var(--green-light); color: var(--green); }
 .match-badge.miss { background: var(--amber-light); color: var(--amber); }
-.card-remove { width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--gray-100); color: var(--gray-400); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-remove { width: 24px; height: 24px; border-radius: 50%; border: none; background: var(--gray-100); color: var(--gray-400); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .card-remove:active { background: var(--red-light); color: var(--red); }
 
-/* 미매칭 입력 폼 */
-.card-miss-form {
-  margin: 0 12px 10px;
-  background: var(--amber-light);
-  border: 1px solid #F0D060;
-  border-radius: 8px;
-  padding: 10px 12px;
-}
+/* 미매칭 폼 */
+.card-miss-form { margin: 0 12px 10px; background: var(--amber-light); border: 1px solid #F0D060; border-radius: 8px; padding: 10px 12px; }
 .miss-form-title { font-size: 10px; font-weight: 700; color: var(--amber); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
 .miss-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-.miss-form-row.single { grid-template-columns: 1fr; }
 .miss-input-wrap { display: flex; flex-direction: column; gap: 3px; }
 .miss-input-wrap label { font-size: 10px; font-weight: 700; color: var(--amber); }
-.miss-input {
-  border: 1.5px solid #E0C040; border-radius: 6px; padding: 7px 10px;
-  font-size: 12px; font-family: var(--font); background: white;
-  color: var(--black); outline: none; width: 100%;
-}
+.miss-input { border: 1.5px solid #E0C040; border-radius: 6px; padding: 7px 10px; font-size: 12px; font-family: var(--font); background: white; color: var(--black); outline: none; width: 100%; }
 .miss-input:focus { border-color: var(--amber); }
 .miss-input::placeholder { color: #C8A020; }
-.btn-save-vendor {
-  width: 100%; padding: 8px; border-radius: 6px; border: none;
-  background: var(--amber); color: white;
-  font-size: 12px; font-weight: 700; font-family: var(--font);
-  cursor: pointer; transition: all 0.15s;
-}
-.btn-save-vendor:hover { background: #9A6E00; }
+.btn-save-vendor { width: 100%; padding: 8px; border-radius: 6px; border: none; background: var(--amber); color: white; font-size: 12px; font-weight: 700; font-family: var(--font); cursor: pointer; }
 .btn-save-vendor:disabled { background: var(--gray-400); cursor: not-allowed; }
 .vendor-saved-msg { font-size: 11px; color: var(--green); font-weight: 600; text-align: center; margin-top: 4px; display: none; }
 
@@ -138,15 +140,13 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .save-all-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px; display: none; z-index: 50; }
 .save-all-wrap.show { display: block; }
 .save-all-inner { max-width: 680px; margin: 0 auto; }
-.btn-save-all { width: 100%; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+.btn-save-all { width: 100%; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .btn-save-all:disabled { background: var(--gray-400); cursor: not-allowed; }
 
-.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 300; }
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 300; max-width: calc(100vw - 40px); text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-@media (max-width: 400px) {
-  .miss-form-row { grid-template-columns: 1fr; }
-}
+@media (max-width: 400px) { .miss-form-row { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -159,17 +159,16 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 <div class="main">
 
   <div class="guide">
-    💡 신상마켓 찜 리스트 캡처 → 업로드 or <strong>Ctrl+V</strong><br>
-    AI가 상품명·거래처를 인식 → 거래처 DB 자동 매칭 → 구글 시트 저장
+    <strong>① 텍스트</strong> 신상마켓 찜 목록 전체 복붙 → 파싱<br>
+    <strong>② 이미지</strong> 스크롤 캡처 1장 업로드 → 자동 크롭<br>
+    <strong>③ 확인 후 저장</strong> → 구글 시트 + 드라이브 자동 저장
   </div>
 
-  <!-- 거래처 DB 상태 + 바로가기 -->
+  <!-- 거래처 DB 상태 -->
   <div class="db-bar">
-    <span class="db-status loading" id="dbStatus">거래처 목록 로딩 중...</span>
+    <span class="db-status loading" id="dbStatus">거래처 로딩 중...</span>
     <a href="https://docs.google.com/spreadsheets/d/1bP7Nwovu3wFV7T1UOlUhS-O56nMeZ7-3lSZ0iNHUcrc/edit"
-       target="_blank" class="db-link" id="dbLink" style="display:none;">
-      📋 거래처 시트 열기
-    </a>
+       target="_blank" class="db-link" id="dbLink" style="display:none;">📋 거래처 시트</a>
   </div>
 
   <!-- API 키 -->
@@ -182,30 +181,53 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
     <div class="api-status" id="apiStatus"></div>
   </div>
 
-  <!-- 업로드 -->
-  <div class="upload-card">
-    <div class="card-label">찜 리스트 캡처</div>
-    <div class="upload-area">
+  <!-- 입력 섹션 -->
+  <div class="input-section">
+
+    <!-- STEP 1: 텍스트 -->
+    <div class="step-label">
+      <div class="step-num">1</div>
+      <div class="step-text">찜 목록 텍스트 붙여넣기</div>
+      <div class="step-sub" id="parsedCount"></div>
+    </div>
+    <textarea class="text-area" id="textInput"
+      placeholder="신상마켓 찜 목록 복사해서 붙여넣으세요&#10;&#10;예시:&#10;E776 실버바 진주 귀걸이&#10;APM PLACE / 루미에르&#10;₩5,000&#10;17&#10;샌디 골지 니트가디건&#10;디오트 / MAYBEEN메이빈&#10;₩26,000&#10;131"></textarea>
+    <button class="btn-parse" onclick="parseText()">✂️ 텍스트 파싱하기</button>
+    <div class="parse-preview" id="parsePreview"></div>
+
+    <div class="divider"><span>이미지 추가 (선택 — 없으면 텍스트만 저장)</span></div>
+
+    <!-- STEP 2: 이미지 -->
+    <div class="step-label" style="margin-bottom:10px;">
+      <div class="step-num">2</div>
+      <div class="step-text">스크롤 캡처 이미지 업로드</div>
+      <div class="step-sub">Ctrl+V 도 가능</div>
+    </div>
+    <div class="upload-area" id="uploadArea">
       <input type="file" id="fileInput" accept="image/*">
-      <div class="upload-icon">📸</div>
-      <h3>이미지 업로드</h3>
-      <p>클릭해서 선택 · Ctrl+V 붙여넣기</p>
+      <div class="upload-icon" id="uploadIcon">📸</div>
+      <h3 id="uploadTitle">이미지 업로드 or Ctrl+V</h3>
+      <p id="uploadSub">텍스트 파싱 후 올리면 상품 수대로 자동 크롭돼요</p>
     </div>
     <img id="previewImg" class="preview-img" alt="">
-    <button class="btn-analyze" id="btnAnalyze" onclick="analyzeImage()">🤖 AI로 상품 분석하기</button>
+
+    <button class="btn-analyze show" id="btnProcess" onclick="processAll()" style="display:none;">
+      🔍 이미지 크롭 & 미리보기 생성
+    </button>
+
   </div>
 
   <!-- 로딩 -->
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <p style="font-size:13px; color:var(--gray-600);">상품 인식 중...</p>
+    <p class="loading-msg" id="loadingMsg">처리 중...</p>
   </div>
 
   <!-- 결과 -->
   <div class="results-wrap" id="resultsWrap">
     <div class="results-header">
-      <div class="results-title">인식된 상품 <span id="resultCount">0</span>개</div>
-      <button onclick="resetAll()" style="font-size:12px; color:var(--gray-600); background:none; border:none; cursor:pointer; font-family:var(--font);">다시 올리기</button>
+      <div class="results-title">상품 목록 <span id="resultCount">0</span>개</div>
+      <button onclick="resetAll()" style="font-size:11px; color:var(--gray-400); background:none; border:none; cursor:pointer; font-family:var(--font);">초기화</button>
     </div>
     <div class="stats-row" id="statsRow"></div>
     <div class="product-cards" id="productCards"></div>
@@ -217,7 +239,7 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 <div class="save-all-wrap" id="saveAllWrap">
   <div class="save-all-inner">
     <button class="btn-save-all" id="btnSaveAll" onclick="saveToSheet()">
-      📊 구글 시트에 저장 (<span id="saveCount">0</span>개)
+      📊 구글 시트에 전체 저장 (<span id="totalCount">0</span>개)
     </button>
   </div>
 </div>
@@ -228,7 +250,6 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 var GAS_VENDOR_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
 var GAS_SAMPLE_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
 
-// 내장 거래처 DB
 var BUILTIN_VENDORS = [
   {"업체명":"글로우님프","전화번호":"2250-1890","위치":"APM B1-8"},
   {"업체명":"드마르","전화번호":"2250-1390","위치":"APM B1-20"},
@@ -247,19 +268,9 @@ var BUILTIN_VENDORS = [
   {"업체명":"르누보","전화번호":"010-2955-3990","위치":"디오트 4-E-14"},
   {"업체명":"퍼스트런","전화번호":"2117-8708","위치":"디오트 3-G-14"},
   {"업체명":"스랍&아하","전화번호":"2117-4649","위치":"디오트 3-D-15"},
-  {"업체명":"JJ","전화번호":"2117-8826","위치":"디오트 B1-D-24"},
-  {"업체명":"그라찌","전화번호":"2117-4009","위치":"디오트 B1-E-17"},
-  {"업체명":"그루브","전화번호":"2117-4888","위치":"디오트 B2-나-9"},
-  {"업체명":"드라이플라워","전화번호":"2117-8419","위치":"디오트 B2-D-13"},
-  {"업체명":"드래이핑","전화번호":"2117-8636","위치":"디오트 B1-J-10"},
-  {"업체명":"라붐","전화번호":"2117-8027","위치":"디오트 2-B-8"},
-  {"업체명":"러브샷","전화번호":"2117-8561","위치":"디오트 B1-B-1"},
-  {"업체명":"레이브","전화번호":"2117-4595","위치":"디오트 3-J-13"},
-  {"업체명":"로쉘","전화번호":"2117-8650","위치":"디오트 B1-A-8"},
+  {"업체명":"선데이","전화번호":"2117-4972","위치":"디오트 4-H-17"},
   {"업체명":"무드랩","전화번호":"2117-8233","위치":"디오트 B1-E-5"},
-  {"업체명":"블러셔","전화번호":"2117-8103","위치":"디오트 B1-F-03"},
-  {"업체명":"비마인","전화번호":"2117-4833","위치":"디오트 3-E-8"},
-  {"업체명":"선데이","전화번호":"2117-4972","위치":"디오트 4-H-17"}
+  {"업체명":"비마인","전화번호":"2117-4833","위치":"디오트 3-E-8"}
 ];
 
 var BRAND_MAP = [
@@ -267,7 +278,6 @@ var BRAND_MAP = [
   { re: /쿨피스|coolpis/i, target: '쿨피스' },
   { re: /더\s*샌드|the\s*sand/i, target: '더샌드' },
   { re: /르헤베|leheve/i, target: '르헤베(구.마이영)' },
-  { re: /프레즐|prezel/i, target: '프레즐' },
   { re: /renouveau|르누보/i, target: '르누보' },
   { re: /ondo\s*온도/, target: '온도' },
   { re: /maybeen|메이빈/i, target: '메이빈' },
@@ -282,23 +292,23 @@ var BRAND_MAP = [
 ];
 
 var VENDORS = BUILTIN_VENDORS.slice();
-var currentBase64 = '', currentType = '', products = [];
+var products = [];
+var currentImageBase64 = '';
+var currentImageType = '';
+var textParsed = false;
 
 // ── 거래처 DB 로드 ──
 async function loadVendorDB() {
   var el = document.getElementById('dbStatus');
   try {
-    el.textContent = '거래처 목록 로딩 중...';
-    el.className = 'db-status loading';
+    el.textContent = '로딩 중...'; el.className = 'db-status loading';
     var res = await fetch(GAS_VENDOR_URL + '?action=getVendors');
     var data = await res.json();
-    if (data.result === 'ok' && Array.isArray(data.vendors) && data.vendors.length > 0) {
+    if (data.result === 'ok' && data.vendors && data.vendors.length > 0) {
       var builtinNames = {};
       BUILTIN_VENDORS.forEach(function(v) { builtinNames[v['업체명'].toLowerCase()] = true; });
       var sheetMap = {};
-      data.vendors.forEach(function(v) {
-        if (v['업체명']) sheetMap[v['업체명'].toLowerCase()] = v;
-      });
+      data.vendors.forEach(function(v) { if(v['업체명']) sheetMap[v['업체명'].toLowerCase()] = v; });
       VENDORS = BUILTIN_VENDORS.map(function(v) {
         var sv = sheetMap[v['업체명'].toLowerCase()];
         return sv ? { '업체명': v['업체명'], '전화번호': sv['전화번호']||v['전화번호'], '위치': sv['위치']||v['위치'] } : v;
@@ -306,19 +316,19 @@ async function loadVendorDB() {
       data.vendors.forEach(function(v) {
         if (v['업체명'] && !builtinNames[v['업체명'].toLowerCase()]) VENDORS.push(v);
       });
-      el.textContent = '✓ 거래처 ' + VENDORS.length + '개 로드됨';
+      el.textContent = '✓ 거래처 ' + VENDORS.length + '개';
       el.className = 'db-status ok';
       document.getElementById('dbLink').style.display = 'inline';
     } else throw new Error('empty');
   } catch(e) {
-    el.textContent = '거래처 ' + VENDORS.length + '개 (내장 데이터)';
+    el.textContent = '거래처 ' + VENDORS.length + '개 (내장)';
     el.className = 'db-status ok';
     document.getElementById('dbLink').style.display = 'inline';
   }
 }
 
 function normalizeBrand(raw) {
-  var t = (raw || '').trim();
+  var t = (raw||'').trim();
   for (var i = 0; i < BRAND_MAP.length; i++) {
     if (BRAND_MAP[i].re.test(t)) return BRAND_MAP[i].target;
   }
@@ -331,31 +341,64 @@ function findVendor(brandRaw) {
   }
   for (var i = 0; i < VENDORS.length; i++) {
     var vn = (VENDORS[i]['업체명']||'').toLowerCase();
-    if (target.indexOf(vn) >= 0 || vn.indexOf(target) >= 0) return VENDORS[i];
+    if (target.length > 1 && (target.indexOf(vn) >= 0 || vn.indexOf(target) >= 0)) return VENDORS[i];
   }
   return null;
 }
 
-// ── API 키 ──
-function saveApiKey() {
-  var key = document.getElementById('apiKey').value.trim();
-  if (!key.startsWith('sk-ant-')) { showApiStatus('API 키 형식이 올바르지 않아요', false); return; }
-  localStorage.setItem('anthropic_key', key);
-  showApiStatus('✅ 저장 완료!', true);
-}
-function getApiKey() { return localStorage.getItem('anthropic_key') || document.getElementById('apiKey').value.trim(); }
-function showApiStatus(msg, ok) {
-  var el = document.getElementById('apiStatus');
-  el.textContent = msg; el.className = 'api-status ' + (ok ? 'ok' : 'error');
+// ── STEP 1: 텍스트 파싱 ──
+function parseText() {
+  var text = document.getElementById('textInput').value.trim();
+  if (!text) { showToast('텍스트를 먼저 붙여넣어 주세요'); return; }
+
+  var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l; });
+  var items = [];
+  var i = 0;
+  while (i < lines.length) {
+    if (i + 1 < lines.length && lines[i+1].indexOf('/') >= 0) {
+      var productName = lines[i];
+      var vendorRaw = lines[i+1];
+      var skip = 2;
+      while (i+skip < lines.length && (lines[i+skip].startsWith('₩') || /^\d+$/.test(lines[i+skip]))) skip++;
+      var brandPart = vendorRaw.indexOf('/') >= 0 ? vendorRaw.split('/').slice(1).join('/').trim() : vendorRaw.trim();
+      items.push({ 상품명: productName, 거래처원본: brandPart });
+      i += skip;
+    } else { i++; }
+  }
+
+  if (!items.length) { showToast('상품을 인식하지 못했어요. 형식을 확인해주세요'); return; }
+
+  products = items.map(function(item, idx) {
+    var vendor = findVendor(item.거래처원본);
+    return {
+      id: idx,
+      상품명: item.상품명,
+      거래처: vendor ? vendor['업체명'] : item.거래처원본,
+      거래처원본: item.거래처원본,
+      연락처: vendor ? (vendor['전화번호']||'') : '',
+      주소: vendor ? (vendor['위치']||'') : '',
+      matched: !!vendor,
+      imageDataUrl: null
+    };
+  });
+
+  textParsed = true;
+  var preview = document.getElementById('parsePreview');
+  preview.style.display = 'block';
+  preview.textContent = '✅ ' + products.length + '개 상품 인식 완료! 이미지를 올리면 자동으로 크롭돼요.';
+  document.getElementById('parsedCount').textContent = products.length + '개 인식됨';
+
+  // 이미지 이미 있으면 바로 크롭
+  if (currentImageBase64) {
+    cropAndRender();
+  } else {
+    // 텍스트만으로 카드 표시 (이미지 없이)
+    renderCards();
+    showBtnProcess(false); // 텍스트만 있으면 바로 저장 버튼 표시
+  }
 }
 
-window.addEventListener('load', function() {
-  var saved = localStorage.getItem('anthropic_key');
-  if (saved) { document.getElementById('apiKey').value = saved; showApiStatus('✅ 저장된 API 키 불러옴', true); }
-  loadVendorDB();
-});
-
-// ── 파일 업로드 & 붙여넣기 ──
+// ── STEP 2: 이미지 업로드 ──
 document.getElementById('fileInput').addEventListener('change', function(e) {
   if (e.target.files[0]) handleImageFile(e.target.files[0]);
 });
@@ -370,94 +413,97 @@ document.addEventListener('paste', function(e) {
     }
   }
 });
+
 function handleImageFile(file) {
   var reader = new FileReader();
   reader.onload = function(ev) {
     var full = ev.target.result;
-    currentBase64 = full.split(',')[1]; currentType = file.type;
+    currentImageBase64 = full.split(',')[1];
+    currentImageType = file.type;
+
+    // 업로드 영역 UI 업데이트
+    var area = document.getElementById('uploadArea');
+    area.classList.add('has-image');
+    document.getElementById('uploadIcon').textContent = '✅';
+    document.getElementById('uploadTitle').textContent = '이미지 등록됨';
+    document.getElementById('uploadSub').textContent = file.name;
     document.getElementById('previewImg').src = full;
     document.getElementById('previewImg').style.display = 'block';
-    document.getElementById('btnAnalyze').classList.add('show');
-    document.getElementById('resultsWrap').classList.remove('show');
-    document.getElementById('saveAllWrap').classList.remove('show');
+
+    // 텍스트 파싱 완료 상태면 바로 크롭
+    if (textParsed && products.length > 0) {
+      cropAndRender();
+    } else {
+      showBtnProcess(true);
+    }
   };
   reader.readAsDataURL(file);
 }
 
-// ── AI 분석 ──
-async function analyzeImage() {
-  var key = getApiKey();
-  if (!key) { showToast('❌ API 키를 입력해주세요'); return; }
-  if (!currentBase64) { showToast('❌ 이미지를 올려주세요'); return; }
-
-  document.getElementById('btnAnalyze').disabled = true;
-  document.getElementById('btnAnalyze').textContent = '분석 중...';
-  document.getElementById('loading').classList.add('show');
-  document.getElementById('resultsWrap').classList.remove('show');
-
-  try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5', max_tokens: 2000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: currentType, data: currentBase64 } },
-          { type: 'text', text: '신상마켓 찜 리스트 이미지에서 각 상품의 상품명과 거래처를 추출하세요.\n거래처는 "디오트 / flutter(플러터)" 형식이면 슬래시 뒤쪽(flutter(플러터))만 사용하세요.\nJSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
-        ]}]
-      })
-    });
-
-    var data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    var text = (data.content && data.content[0] && data.content[0].text) || '[]';
-    var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-    await cropAndRender(parsed);
-
-  } catch(e) {
-    showToast('❌ 분석 실패: ' + e.message);
-  } finally {
-    document.getElementById('loading').classList.remove('show');
-    document.getElementById('btnAnalyze').disabled = false;
-    document.getElementById('btnAnalyze').textContent = '🤖 AI로 상품 분석하기';
-  }
+function showBtnProcess(show) {
+  document.getElementById('btnProcess').style.display = show ? 'block' : 'none';
 }
 
 // ── 이미지 크롭 ──
-async function cropAndRender(parsed) {
+async function cropAndRender() {
+  if (!currentImageBase64 || products.length === 0) return;
+
+  document.getElementById('loadingMsg').textContent = '이미지 크롭 중...';
+  document.getElementById('loading').classList.add('show');
+
   var img = new Image();
-  img.src = document.getElementById('previewImg').src;
+  img.src = 'data:' + currentImageType + ';base64,' + currentImageBase64;
   await new Promise(function(r) { img.onload = r; });
 
-  var count = parsed.length;
-  var cardW = Math.floor(img.width / count);
-  var cardH = Math.floor(img.height * 0.68);
+  var count = products.length;
+  // 스크롤 캡처: 가로는 이미지 전체 폭, 세로는 N등분
+  // 찜 리스트는 세로 스크롤이므로 세로 방향으로 N등분
+  var isVertical = img.height > img.width; // 스크롤 캡처는 세로가 더 길다
+  var cardH, cardW;
 
-  products = parsed.map(function(p, i) {
-    var canvas = document.createElement('canvas');
-    canvas.width = cardW - 8; canvas.height = cardH;
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(img, i * cardW, 0, cardW - 8, cardH, 0, 0, cardW - 8, cardH);
-    var vendor = findVendor(p['거래처']);
-    return {
-      상품명: p['상품명'],
-      거래처: vendor ? vendor['업체명'] : p['거래처'],
-      거래처원본: p['거래처'],
-      연락처: vendor ? (vendor['전화번호'] || '') : '',
-      주소: vendor ? (vendor['위치'] || '') : '',
-      matched: !!vendor,
-      vendorSaved: !!vendor,
-      imageDataUrl: canvas.toDataURL('image/jpeg', 0.85),
-      id: i
-    };
-  });
+  if (isVertical) {
+    // 세로 스크롤 캡처: 세로로 N등분, 각 행에 4개씩
+    // 행 수 = ceil(count / 4), 각 행 높이 = 전체높이/행수
+    var rows = Math.ceil(count / 4);
+    var rowH = Math.floor(img.height / rows);
+    var colW = Math.floor(img.width / 4);
 
+    products.forEach(function(p, i) {
+      var row = Math.floor(i / 4);
+      var col = i % 4;
+      var canvas = document.createElement('canvas');
+      canvas.width = colW - 4; canvas.height = Math.floor(rowH * 0.72);
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, col * colW, row * rowH, colW - 4, Math.floor(rowH * 0.72), 0, 0, colW - 4, Math.floor(rowH * 0.72));
+      p.imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    });
+  } else {
+    // 가로 한 줄 캡처: 가로로 N등분
+    var cardW2 = Math.floor(img.width / count);
+    var cardH2 = Math.floor(img.height * 0.70);
+    products.forEach(function(p, i) {
+      var canvas = document.createElement('canvas');
+      canvas.width = cardW2 - 4; canvas.height = cardH2;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, i * cardW2, 0, cardW2 - 4, cardH2, 0, 0, cardW2 - 4, cardH2);
+      p.imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    });
+  }
+
+  document.getElementById('loading').classList.remove('show');
+  showBtnProcess(false);
   renderCards();
+}
+
+// ── processAll (이미지 먼저 올렸을 때) ──
+function processAll() {
+  if (!textParsed || products.length === 0) {
+    showToast('텍스트를 먼저 파싱해주세요');
+    return;
+  }
+  if (currentImageBase64) {
+    cropAndRender();
+  }
 }
 
 // ── 카드 렌더링 ──
@@ -467,160 +513,197 @@ function renderCards() {
 
   var matched = products.filter(function(p) { return p.matched; }).length;
   var unmatched = products.length - matched;
-  var statsHtml = '<span class="stat-chip">총 ' + products.length + '개</span>' +
-    '<span class="stat-chip ok">✓ 매칭 ' + matched + '개</span>';
-  if (unmatched) statsHtml += '<span class="stat-chip warn">✗ 미매칭 ' + unmatched + '개 (연락처·주소 입력 필요)</span>';
-  document.getElementById('statsRow').innerHTML = statsHtml;
+  document.getElementById('statsRow').innerHTML =
+    '<span class="stat-chip">총 ' + products.length + '개</span>' +
+    '<span class="stat-chip ok">✓ 매칭 ' + matched + '개</span>' +
+    (unmatched ? '<span class="stat-chip warn">✗ 미매칭 ' + unmatched + '개</span>' : '');
 
   products.forEach(function(p, i) {
     var card = document.createElement('div');
     card.className = 'product-card' + (p.matched ? '' : ' unmatched');
     card.id = 'card-' + i;
 
+    var thumbHtml = p.imageDataUrl
+      ? '<div class="card-thumb"><img src="' + p.imageDataUrl + '" alt=""></div>'
+      : '<div class="card-thumb">👗</div>';
+
     var missFormHtml = '';
     if (!p.matched) {
-      missFormHtml = '<div class="card-miss-form" id="missform-' + i + '">' +
-        '<div class="miss-form-title">⚠️ 거래처 DB에 없는 곳 — 정보 입력 후 시트에 추가해주세요</div>' +
-        '<div class="miss-form-row">' +
-          '<div class="miss-input-wrap"><label>📞 연락처</label>' +
-          '<input class="miss-input" id="phone-' + i + '" placeholder="예: 2117-1234" value="' + esc(p.연락처) + '">' +
+      missFormHtml =
+        '<div class="card-miss-form" id="missform-' + i + '">' +
+          '<div class="miss-form-title">⚠️ DB에 없는 거래처 — 연락처·주소 입력 후 추가</div>' +
+          '<div class="miss-form-row">' +
+            '<div class="miss-input-wrap"><label>📞 연락처</label>' +
+            '<input class="miss-input" id="phone-' + i + '" placeholder="2117-1234" value="' + esc(p.연락처) + '"></div>' +
+            '<div class="miss-input-wrap"><label>📍 주소</label>' +
+            '<input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1" value="' + esc(p.주소) + '"></div>' +
           '</div>' +
-          '<div class="miss-input-wrap"><label>📍 주소</label>' +
-          '<input class="miss-input" id="addr-' + i + '" placeholder="예: 디오트 3-A-1" value="' + esc(p.주소) + '">' +
-          '</div>' +
-        '</div>' +
-        '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가하기</button>' +
-        '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 거래처 시트에 추가됐어요!</div>' +
-      '</div>';
+          '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가</button>' +
+          '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 추가됐어요!</div>' +
+        '</div>';
     }
 
-    card.innerHTML = '<div class="card-main">' +
-      '<img class="card-thumb" src="' + p.imageDataUrl + '" alt="">' +
-      '<div class="card-info">' +
-        '<input class="card-name-input" id="name-' + i + '" value="' + esc(p.상품명) + '" placeholder="상품명">' +
-        '<div class="card-vendor-row">' +
-          '<input class="card-vendor-input" id="vendor-' + i + '" value="' + esc(p.거래처) + '" placeholder="거래처" oninput="onVendorChange(' + i + ',this.value)">' +
-          '<span class="match-badge ' + (p.matched ? 'ok' : 'miss') + '" id="badge-' + i + '">' + (p.matched ? '✓ 매칭' : '✗ 미매칭') + '</span>' +
+    card.innerHTML =
+      '<div class="card-main">' +
+        thumbHtml +
+        '<div class="card-info">' +
+          '<input class="card-name-input" id="name-' + i + '" value="' + esc(p.상품명) + '" placeholder="상품명">' +
+          '<div class="card-vendor-row">' +
+            '<input class="card-vendor-input" id="vendor-' + i + '" value="' + esc(p.거래처) + '" placeholder="거래처" oninput="onVendorChange(' + i + ',this.value)">' +
+            '<span class="match-badge ' + (p.matched ? 'ok' : 'miss') + '" id="badge-' + i + '">' + (p.matched ? '✓ 매칭' : '✗ 미매칭') + '</span>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      '<button class="card-remove" onclick="removeProduct(' + i + ')">✕</button>' +
-    '</div>' + missFormHtml;
+        '<button class="card-remove" onclick="removeProduct(' + i + ')">✕</button>' +
+      '</div>' + missFormHtml;
 
     container.appendChild(card);
   });
 
   document.getElementById('resultCount').textContent = products.length;
-  document.getElementById('saveCount').textContent = products.length;
+  document.getElementById('totalCount').textContent = products.length;
   document.getElementById('resultsWrap').classList.add('show');
   document.getElementById('saveAllWrap').classList.add('show');
 }
 
-// ── 거래처 변경 시 실시간 재매칭 ──
+// ── 거래처 변경 ──
 function onVendorChange(i, value) {
   var vendor = findVendor(value);
   products[i].거래처 = vendor ? vendor['업체명'] : value;
-  products[i].연락처 = vendor ? (vendor['전화번호'] || '') : '';
-  products[i].주소   = vendor ? (vendor['위치'] || '') : '';
+  products[i].연락처 = vendor ? (vendor['전화번호']||'') : '';
+  products[i].주소   = vendor ? (vendor['위치']||'') : '';
   products[i].matched = !!vendor;
-
   var badge = document.getElementById('badge-' + i);
   if (badge) { badge.textContent = vendor ? '✓ 매칭' : '✗ 미매칭'; badge.className = 'match-badge ' + (vendor ? 'ok' : 'miss'); }
   var card = document.getElementById('card-' + i);
   if (card) card.classList.toggle('unmatched', !vendor);
-
   var missForm = document.getElementById('missform-' + i);
-  if (!vendor && !missForm) {
+  if (!vendor && !missForm && card) {
     var div = document.createElement('div');
     div.className = 'card-miss-form'; div.id = 'missform-' + i;
     div.innerHTML =
-      '<div class="miss-form-title">⚠️ 거래처 DB에 없는 곳 — 정보 입력 후 시트에 추가해주세요</div>' +
+      '<div class="miss-form-title">⚠️ DB에 없는 거래처 — 연락처·주소 입력 후 추가</div>' +
       '<div class="miss-form-row">' +
-        '<div class="miss-input-wrap"><label>📞 연락처</label><input class="miss-input" id="phone-' + i + '" placeholder="예: 2117-1234"></div>' +
-        '<div class="miss-input-wrap"><label>📍 주소</label><input class="miss-input" id="addr-' + i + '" placeholder="예: 디오트 3-A-1"></div>' +
+        '<div class="miss-input-wrap"><label>📞 연락처</label><input class="miss-input" id="phone-' + i + '" placeholder="2117-1234"></div>' +
+        '<div class="miss-input-wrap"><label>📍 주소</label><input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1"></div>' +
       '</div>' +
-      '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가하기</button>' +
-      '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 거래처 시트에 추가됐어요!</div>';
-    if (card) card.appendChild(div);
-  } else if (vendor && missForm) {
-    missForm.remove();
-  }
+      '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가</button>' +
+      '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 추가됐어요!</div>';
+    card.appendChild(div);
+  } else if (vendor && missForm) { missForm.remove(); }
 }
 
-// ── 거래처 DB 저장 ──
+// ── 거래처 저장 ──
 async function saveVendorToDB(i) {
-  var btn = document.getElementById('savevbtn-' + i);
+  var btn    = document.getElementById('savevbtn-' + i);
   var vendor = document.getElementById('vendor-' + i)?.value || products[i].거래처;
   var phone  = document.getElementById('phone-'  + i)?.value || '';
   var addr   = document.getElementById('addr-'   + i)?.value || '';
-
   if (!vendor) { showToast('거래처명을 입력해주세요'); return; }
   btn.disabled = true; btn.textContent = '저장 중...';
-
   try {
     var payload = encodeURIComponent(JSON.stringify({ name: vendor, phone: phone, addr: addr }));
     await fetch(GAS_VENDOR_URL + '?action=save&data=' + payload, { mode: 'no-cors' });
-
-    // 로컬 DB에도 추가
     VENDORS.push({ '업체명': vendor, '전화번호': phone, '위치': addr });
-    products[i].연락처 = phone;
-    products[i].주소 = addr;
-    products[i].vendorSaved = true;
-
+    products[i].연락처 = phone; products[i].주소 = addr;
     btn.style.display = 'none';
     var saved = document.getElementById('vsaved-' + i);
     if (saved) saved.style.display = 'block';
-    showToast('✅ ' + vendor + ' 거래처 시트에 추가됐어요!');
+    showToast('✅ ' + vendor + ' 시트에 추가됐어요!');
   } catch(e) {
-    btn.disabled = false; btn.textContent = '📋 거래처 시트에 추가하기';
-    showToast('❌ 저장 실패: ' + e.message);
+    btn.disabled = false; btn.textContent = '📋 거래처 시트에 추가';
+    showToast('❌ 저장 실패');
   }
 }
 
 function removeProduct(i) {
   products.splice(i, 1);
-  renderCards();
   if (!products.length) {
     document.getElementById('resultsWrap').classList.remove('show');
     document.getElementById('saveAllWrap').classList.remove('show');
+    return;
   }
+  renderCards();
 }
 
 // ── 구글 시트 저장 ──
 async function saveToSheet() {
+  if (!products.length) { showToast('저장할 상품이 없어요'); return; }
   var btn = document.getElementById('btnSaveAll');
   btn.disabled = true; btn.textContent = '저장 중...';
   var today = new Date().toISOString().split('T')[0];
   var success = 0;
 
+  document.getElementById('loadingMsg').textContent = '저장 중...';
+  document.getElementById('loading').classList.add('show');
+
   for (var i = 0; i < products.length; i++) {
-    var name   = document.getElementById('name-'   + i)?.value || products[i].상품명;
-    var vendor = document.getElementById('vendor-' + i)?.value || products[i].거래처;
+    var p = products[i];
+    var name   = document.getElementById('name-'   + i)?.value || p.상품명;
+    var vendor = document.getElementById('vendor-' + i)?.value || p.거래처;
+    var phone  = document.getElementById('phone-'  + i)?.value || p.연락처;
+    var addr   = document.getElementById('addr-'   + i)?.value || p.주소;
 
+    // 이미지 드라이브 업로드
+    var imageUrl = '';
+    if (p.imageDataUrl) {
+      document.getElementById('loadingMsg').textContent = '이미지 업로드 중... (' + (i+1) + '/' + products.length + ')';
+      try {
+        var imgBase64 = p.imageDataUrl.split(',')[1];
+        var imgPayload = encodeURIComponent(JSON.stringify({
+          base64: imgBase64,
+          fileName: vendor + '_' + name.slice(0,8) + '_' + today + '.jpg'
+        }));
+        var imgRes = await fetch(GAS_SAMPLE_URL + '?action=uploadImage&data=' + imgPayload);
+        var imgData = await imgRes.json();
+        if (imgData.result === 'ok') imageUrl = imgData.url;
+      } catch(e) { console.error('이미지 업로드 실패:', e); }
+    }
+
+    document.getElementById('loadingMsg').textContent = '시트 저장 중... (' + (i+1) + '/' + products.length + ')';
     var payload = encodeURIComponent(JSON.stringify({
-      '상품명': name, '거래처': vendor, '이미지URL': '',
-      '요청일': today, '입고일': '', '반납기한': '',
-      '상태': '요청중', '반납일': '', '출처': '신상마켓', '비고': ''
+      '상품명': name, '거래처': vendor, '연락처': phone, '주소': addr,
+      '이미지URL': imageUrl, '요청일': today,
+      '입고일': '', '반납기한': '', '상태': '요청중',
+      '반납일': '', '출처': '신상마켓', '비고': ''
     }));
-
     try {
       await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload, { mode: 'no-cors' });
       success++;
     } catch(e) { console.error(e); }
   }
 
+  document.getElementById('loading').classList.remove('show');
   btn.disabled = false;
-  btn.innerHTML = '📊 구글 시트에 저장 (<span id="saveCount">' + products.length + '</span>개)';
-  showToast('✅ ' + success + '개 저장 완료! 구글 시트를 확인해보세요');
+  btn.innerHTML = '📊 구글 시트에 전체 저장 (<span id="totalCount">' + products.length + '</span>개)';
+  showToast('✅ ' + success + '개 저장 완료!');
+}
+
+// ── API 키 ──
+function saveApiKey() {
+  var key = document.getElementById('apiKey').value.trim();
+  if (!key.startsWith('sk-ant-')) { showApiStatus('API 키 형식이 올바르지 않아요', false); return; }
+  localStorage.setItem('anthropic_key', key);
+  showApiStatus('✅ 저장 완료!', true);
+}
+function showApiStatus(msg, ok) {
+  var el = document.getElementById('apiStatus');
+  el.textContent = msg; el.className = 'api-status ' + (ok ? 'ok' : 'error');
 }
 
 function resetAll() {
-  currentBase64 = '';
+  products = []; currentImageBase64 = ''; currentImageType = ''; textParsed = false;
+  document.getElementById('textInput').value = '';
   document.getElementById('fileInput').value = '';
   document.getElementById('previewImg').style.display = 'none';
-  document.getElementById('btnAnalyze').classList.remove('show');
+  document.getElementById('parsePreview').style.display = 'none';
+  document.getElementById('parsedCount').textContent = '';
+  document.getElementById('uploadArea').classList.remove('has-image');
+  document.getElementById('uploadIcon').textContent = '📸';
+  document.getElementById('uploadTitle').textContent = '이미지 업로드 or Ctrl+V';
+  document.getElementById('uploadSub').textContent = '텍스트 파싱 후 올리면 상품 수대로 자동 크롭돼요';
   document.getElementById('resultsWrap').classList.remove('show');
   document.getElementById('saveAllWrap').classList.remove('show');
-  products = [];
+  showBtnProcess(false);
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -629,6 +712,12 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   clearTimeout(t._t); t._t = setTimeout(function() { t.classList.remove('show'); }, 3000);
 }
+
+window.addEventListener('load', function() {
+  var saved = localStorage.getItem('anthropic_key');
+  if (saved) { document.getElementById('apiKey').value = saved; showApiStatus('✅ 저장된 키 불러옴', true); }
+  loadVendorDB();
+});
 </script>
 </body>
 </html>
