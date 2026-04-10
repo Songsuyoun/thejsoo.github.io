@@ -653,7 +653,7 @@ async function saveToSheet() {
           base64: imgBase64,
           fileName: vendor + '_' + name.slice(0,8) + '_' + today + '.jpg'
         }));
-        var imgRes = await fetch(GAS_SAMPLE_URL + '?action=uploadImage&data=' + imgPayload);
+        var imgRes = await fetch(GAS_SAMPLE_URL + '?action=uploadImage&data=' + imgPayload, { mode: 'cors' });
         var imgData = await imgRes.json();
         if (imgData.result === 'ok') imageUrl = imgData.url;
       } catch(e) { console.error('이미지 업로드 실패:', e); }
