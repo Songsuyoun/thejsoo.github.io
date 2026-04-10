@@ -643,28 +643,22 @@ async function saveToSheet() {
     var phone  = document.getElementById('phone-'  + i)?.value || p.연락처;
     var addr   = document.getElementById('addr-'   + i)?.value || p.주소;
 
-    // 이미지 드라이브 업로드
-    var imageUrl = '';
+    // 이미지 base64를 데이터에 포함 → Apps Script에서 드라이브 저장까지 한번에
+    document.getElementById('loadingMsg').textContent = '저장 중... (' + (i+1) + '/' + products.length + ')';
+    var imgBase64 = '';
+    var imgFileName = '';
     if (p.imageDataUrl) {
-      document.getElementById('loadingMsg').textContent = '이미지 업로드 중... (' + (i+1) + '/' + products.length + ')';
-      try {
-        var imgBase64 = p.imageDataUrl.split(',')[1];
-        var imgPayload = encodeURIComponent(JSON.stringify({
-          base64: imgBase64,
-          fileName: vendor + '_' + name.slice(0,8) + '_' + today + '.jpg'
-        }));
-        var imgRes = await fetch(GAS_SAMPLE_URL + '?action=uploadImage&data=' + imgPayload, { mode: 'cors' });
-        var imgData = await imgRes.json();
-        if (imgData.result === 'ok') imageUrl = imgData.url;
-      } catch(e) { console.error('이미지 업로드 실패:', e); }
+      imgBase64 = p.imageDataUrl.split(',')[1];
+      imgFileName = (vendor + '_' + name).replace(/[^a-zA-Z0-9가-힣]/g, '_').slice(0,20) + '_' + today + '.jpg';
     }
 
-    document.getElementById('loadingMsg').textContent = '시트 저장 중... (' + (i+1) + '/' + products.length + ')';
     var payload = encodeURIComponent(JSON.stringify({
       '상품명': name, '거래처': vendor, '연락처': phone, '주소': addr,
-      '이미지URL': imageUrl, '요청일': today,
+      '이미지URL': '', '요청일': today,
       '입고일': '', '반납기한': '', '상태': '요청중',
-      '반납일': '', '출처': '신상마켓', '비고': ''
+      '반납일': '', '출처': '신상마켓', '비고': '',
+      'imageBase64': imgBase64,
+      'imageFileName': imgFileName
     }));
     try {
       await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload, { mode: 'no-cors' });
