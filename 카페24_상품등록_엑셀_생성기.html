@@ -436,10 +436,34 @@ function previewAboutImg() {
   lines.forEach(function(line) {
     var l = line.trim();
     if (!l) return;
-    if (!introLine && l.charAt(0)!=='-' && l.charAt(0)!=='※' && l.charAt(0)!=='*') introLine = l;
+    if (!introLine && l.charAt(0)!=='-' && l.charAt(0)!=='\u203b' && l.charAt(0)!=='*') introLine = l;
     else if (l.charAt(0)==='-') bullets.push(l);
-    else if (l.charAt(0)==='※' || l.charAt(0)==='*') notes.push(l);
+    else if (l.charAt(0)==='\u203b' || l.charAt(0)==='*') notes.push(l);
   });
+
+  // 최적 여백 자동 계산
+  // 임시 canvas로 텍스트 너비 측정
+  var tmpCanvas = document.createElement('canvas');
+  var tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.font = '400 25px "Pretendard","Noto Sans KR",sans-serif';
+
+  var allLines = [introLine].concat(bullets).concat(notes);
+  var maxTextW = 0;
+  allLines.forEach(function(l) {
+    var w = tmpCtx.measureText(l).width;
+    if (w > maxTextW) maxTextW = w;
+  });
+
+  // 최적 여백: 가장 긴 줄이 딱 1줄에 들어오도록
+  // 최소 20px, 최대 80px
+  var W = 1000;
+  var optPad = Math.floor((W - maxTextW) / 2) - 10;
+  var PAD_X = Math.max(20, Math.min(80, optPad));
+
+  // render-box 여백 동적 적용
+  var box = document.getElementById('about-render-box');
+  box.style.paddingLeft  = PAD_X + 'px';
+  box.style.paddingRight = PAD_X + 'px';
 
   function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -447,15 +471,14 @@ function previewAboutImg() {
   document.getElementById('ar-bullets').innerHTML = bullets.map(function(b){ return '<li>'+esc(b)+'</li>'; }).join('');
   document.getElementById('ar-notice').innerHTML = notes.map(function(n){ return esc(n); }).join('<br>');
 
-  // 모달 열기
+  // render box 표시
   document.getElementById('about-render-box').style.display = 'block';
   document.getElementById('fabric-render-box').style.display = 'none';
   document.getElementById('imgCanvas').style.display = 'none';
   document.getElementById('imgModal').style.display = 'flex';
 
-  // render-box 스케일 조정 (모달 너비에 맞게 축소 미리보기)
+  // 스케일 조정
   setTimeout(function() {
-    var box = document.getElementById('about-render-box');
     var wrap = box.parentElement;
     var scale = wrap.clientWidth / 1000;
     box.style.transform = 'scale('+scale+')';
