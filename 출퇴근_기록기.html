@@ -80,6 +80,8 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
 .modal-btn-ok:hover  { background:#235a3e; }
 .modal-btn-err { background:var(--red); color:white; }
 .modal-btn-err:hover { background:#9a2230; }
+.modal-btn-cancel { background:var(--bg); color:var(--text2); border:0.5px solid var(--border2); }
+.modal-btn-cancel:hover { background:var(--border); }
 .ip-banner { display:none; background:var(--red-bg); border:0.5px solid var(--red); border-radius:12px; padding:14px 18px; margin-bottom:16px; align-items:center; gap:10px; }
 .ip-banner-icon { font-size:18px; flex-shrink:0; }
 .ip-banner-msg { font-size:13px; color:var(--red); line-height:1.5; font-weight:500; }
@@ -156,13 +158,17 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
     <div class="modal-icon" id="modalIcon"></div>
     <div class="modal-msg" id="modalMsg"></div>
     <button class="modal-btn" id="modalBtn" onclick="closeModal()">확인</button>
+    <div id="confirmBtns" style="display:none;gap:10px;justify-content:center;">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">취소</button>
+      <button class="modal-btn modal-btn-ok" onclick="confirmModal()">갱신할게요</button>
+    </div>
   </div>
 </div>
 
 <div class="overlay" id="overlay"><div class="spinner"></div></div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyoemfzif8SRyhXhVA5pI4OCd5v_CrrrH0eo0hGwDWgnkf3gdDHMXw6oUsqgpP_IInu-Q/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzZiVaYaO3eW_CmTdmPQfutSWCoFEkkFaS3_zVsCye1M0gWmK90GFBhxqtYPYQREJCBRA/exec';
 
 const STAFF = [
   { code:'201812268',  name:'이수나' },
@@ -313,12 +319,18 @@ async function recordAll(type) {
     return;
   }
 
+  await doRecord(targets, type, false);
+}
+
+async function doRecord(targets, type, overwrite) {
   setLoading(true);
   const results = [];
   try {
     for (const t of targets) {
-      const res = await gasGet({ action:'record', name:t.name, code:t.code, type });
-      results.push({ name:t.name, result:res.result, message:res.message });
+      const params = { action:'record', name:t.name, code:t.code, type };
+      if (overwrite) params.overwrite = 'true';
+      const res = await gasGet(params);
+      results.push({ name:t.name, code:t.code, result:res.result, prevTime:res.prevTime });
     }
   } catch(e) {
     showModal('오류가 발생했어요.\n잠시 후 다시 시도해주세요.', 'err');
@@ -328,10 +340,28 @@ async function recordAll(type) {
     setLoading(false);
   }
 
-  // 결과 정리
-  const ok     = results.filter(r => r.result === 'success').map(r => r.name);
-  const dup    = results.filter(r => r.result === 'duplicate').map(r => r.name);
-  const noIn   = results.filter(r => r.result === 'no_checkin').map(r => r.name);
+  const ok       = results.filter(r => r.result === 'success').map(r => r.name);
+  const alreadyOut = results.filter(r => r.result === 'already_out');
+  const noIn     = results.filter(r => r.result === 'no_checkin').map(r => r.name);
+  const dup      = results.filter(r => r.result === 'duplicate').map(r => r.name);
+
+  // 이미 퇴근 찍은 사람 있으면 확인 모달
+  if (alreadyOut.length > 0) {
+    const names = alreadyOut.map(r => `${r.name}님 (기존 퇴근 ${r.prevTime}`).join(', ');
+    showConfirmModal(
+      `${names})\n\n퇴근 시간을 지금 시간으로 갱신할까요?`,
+      async () => {
+        // 확인 누르면 already_out 대상만 overwrite=true로 재요청
+        await doRecord(alreadyOut.map(r => ({ name:r.name, code:r.code })), type, true);
+      }
+    );
+    // 이미 성공한 사람 있으면 먼저 표시
+    if (ok.length > 0) {
+      loadStatus();
+      clearCodeList();
+    }
+    return;
+  }
 
   let msg = '';
   if (ok.length)   msg += `✅ ${ok.join(', ')}님 ${type} 완료!\n`;
@@ -342,11 +372,14 @@ async function recordAll(type) {
   const isAllOk = ok.length > 0 && dup.length === 0 && noIn.length === 0;
   showModal(msg.trim(), isAllOk ? 'ok' : 'err');
 
-  // 성공이든 에러든 항상 입력창 초기화
+  clearCodeList();
+  if (ok.length > 0) loadStatus();
+}
+
+function clearCodeList() {
   document.getElementById('codeList').innerHTML = '';
   rowCount = 0;
   addCodeRow();
-  if (ok.length > 0) loadStatus();
 }
 
 // ── 전체 직원 현황 로드 (GAS 서버 오늘 날짜 기준) ──
@@ -407,10 +440,32 @@ function showModal(msg, type='ok') {
   document.getElementById('modalMsg').textContent = msg;
   const btn = document.getElementById('modalBtn');
   btn.className = `modal-btn modal-btn-${type}`;
+  document.getElementById('confirmBtns').style.display = 'none';
+  document.getElementById('modalBtn').style.display = 'inline-block';
   document.getElementById('modalOverlay').classList.add('show');
 }
+
+let confirmCallback = null;
+function showConfirmModal(msg, onConfirm) {
+  document.getElementById('modalIcon').textContent = '🔄';
+  document.getElementById('modalMsg').textContent = msg;
+  document.getElementById('modalBtn').style.display = 'none';
+  document.getElementById('confirmBtns').style.display = 'flex';
+  confirmCallback = onConfirm;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
+  confirmCallback = null;
+}
+
+async function confirmModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  if (confirmCallback) {
+    await confirmCallback();
+    confirmCallback = null;
+  }
 }
 
 function setLoading(on) {
