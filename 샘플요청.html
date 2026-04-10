@@ -2,775 +2,433 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>더제이수 샘플 요청 엑셀 파일 생성기</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>샘플 요청 | 더제이수</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg: #F7F6F3;
+  --white: #FFFFFF;
+  --black: #111111;
+  --gray-100: #F2F1EE;
+  --gray-200: #E6E3DE;
+  --gray-400: #B0ADA7;
+  --gray-600: #6B6760;
+  --accent: #C8603A;
+  --accent-light: #FAF0EC;
+  --green: #2D6A4F;
+  --green-light: #EAF4EE;
+  --blue: #1A56A0;
+  --blue-light: #EBF2FC;
+  --radius: 14px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --font: 'Noto Sans KR', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font); background: var(--bg); color: var(--black); min-height: 100vh; padding-bottom: 40px; }
 
-  :root {
-    --bg: #f4f1ed;
-    --surface: #ffffff;
-    --surface2: #f9f7f4;
-    --border: #e0dbd3;
-    --border2: #ccc8c0;
-    --accent: #d45f3c;
-    --accent2: #3c7dd4;
-    --text: #1e1a16;
-    --text-muted: #9a9088;
-    --red: #d43c3c;
-    --green: #2e9e5b;
-    --radius: 14px;
-    --shadow: 0 2px 16px rgba(0,0,0,0.08);
-    --mono: 'DM Mono', monospace;
-  }
+header {
+  background: var(--black);
+  padding: 18px 20px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { color: white; font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.logo span { color: var(--accent); }
+.step-badge { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; padding: 4px 12px; border-radius: 20px; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+.main { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 48px 20px 80px;
-  }
+/* 안내 */
+.guide { background: var(--blue-light); border: 1px solid #C5D9F2; border-radius: 10px; padding: 14px 16px; font-size: 12px; color: var(--blue); line-height: 1.8; margin-bottom: 20px; }
+.guide strong { font-weight: 700; }
 
-  .wrap { width: 100%; max-width: 860px; }
+/* API 키 */
+.api-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.card-label { font-size: 11px; font-weight: 700; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+.api-row { display: flex; gap: 8px; }
+.api-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: var(--font); outline: none; background: var(--gray-100); transition: border-color 0.15s; }
+.api-input:focus { border-color: var(--black); background: white; }
+.btn-sm { padding: 10px 16px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; background: var(--black); color: white; transition: all 0.15s; white-space: nowrap; }
+.btn-sm:hover { background: #333; }
+.api-status { font-size: 11px; margin-top: 8px; padding: 5px 10px; border-radius: 6px; display: none; }
+.api-status.ok { display: block; background: var(--green-light); color: var(--green); }
+.api-status.error { display: block; background: #FDECEA; color: #C0392B; }
 
-  /* 헤더 */
-  .header {
-    margin-bottom: 32px;
-    padding-bottom: 24px;
-    border-bottom: 2px solid var(--text);
-  }
-  .header h1 {
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    white-space: nowrap;
-    font-family: var(--mono);
-  }
-  .header h1 span { color: var(--accent); }
-  .header p { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-weight: 400; }
+/* 업로드 */
+.upload-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.upload-area { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--gray-100); position: relative; }
+.upload-area:hover { border-color: var(--black); background: #EEEDEA; }
+.upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 36px; margin-bottom: 10px; }
+.upload-area h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.upload-area p { font-size: 12px; color: var(--gray-600); }
+.preview-img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; border: 1px solid var(--gray-200); margin-top: 14px; display: none; }
 
-  /* 카드 */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
+.btn-analyze { width: 100%; background: var(--accent); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; margin-top: 14px; display: none; transition: all 0.15s; }
+.btn-analyze.show { display: block; }
+.btn-analyze:hover { background: #b0522e; }
+.btn-analyze:disabled { background: var(--gray-400); cursor: not-allowed; }
 
-  .section-label {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.02em;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-label::before {
-    content: '';
-    display: inline-block;
-    width: 4px; height: 16px;
-    background: var(--accent);
-    border-radius: 2px;
-  }
+/* 로딩 */
+.loading { text-align: center; padding: 28px; display: none; }
+.loading.show { display: block; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  textarea {
-    width: 100%;
-    height: 210px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.8;
-    padding: 16px 18px;
-    resize: vertical;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212,95,60,0.1); }
-  textarea::placeholder { color: #bbb6ae; }
+/* 결과 카드들 */
+.results-wrap { display: none; }
+.results-wrap.show { display: block; }
+.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 2px; }
+.results-title { font-size: 12px; font-weight: 700; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; }
 
-  .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+.product-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.product-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); animation: slideUp 0.25s ease; }
+@keyframes slideUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-  .btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 12px 22px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 700;
-    font-family: var(--mono);
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s;
-  }
-  .btn-primary { background: var(--accent); color: #fff; flex: 1; justify-content: center; font-size: 14px; }
-  .btn-primary:hover { background: #c04e2c; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(212,95,60,0.28); }
-  .btn-secondary { background: var(--surface2); color: var(--text-muted); border: 1.5px solid var(--border); }
-  .btn-secondary:hover { color: var(--text); border-color: var(--border2); background: #eee9e2; }
-  .btn-blue { background: var(--accent2); color: #fff; justify-content: center; }
-  .btn-blue:hover { background: #2c6bbf; transform: translateY(-1px); }
-  .btn-green { background: var(--green); color: #fff; justify-content: center; }
-  .btn-green:hover { background: #238a4a; transform: translateY(-1px); }
+.card-top { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--gray-100); }
+.card-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--gray-200); flex-shrink: 0; }
+.card-thumb-placeholder { width: 56px; height: 56px; border-radius: 8px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.card-info { flex: 1; }
+.card-num { font-size: 10px; color: var(--gray-400); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+.card-name-input { width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; font-family: var(--font); color: var(--black); outline: none; }
+.card-vendor { font-size: 12px; color: var(--gray-600); margin-top: 2px; }
+.card-remove { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--gray-100); color: var(--gray-600); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-remove:active { background: #FDECEA; color: #C0392B; }
 
-  /* 통계 칩 */
-  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .stat-chip {
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    border: 1.5px solid var(--border);
-    color: var(--text-muted);
-    background: var(--surface2);
-    font-weight: 400;
-  }
-  .stat-chip.ok { border-color: var(--green); color: var(--green); background: #edfaf3; }
-  .stat-chip.warn { border-color: var(--red); color: var(--red); background: #fdf0f0; }
+.card-body { padding: 12px 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.field-row.single { grid-template-columns: 1fr; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 10px; font-weight: 700; color: var(--gray-400); letter-spacing: 0.08em; text-transform: uppercase; }
+.field input, .field select { border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 8px 10px; font-size: 13px; font-family: var(--font); color: var(--black); background: var(--gray-100); outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
+.field input:focus, .field select:focus { border-color: var(--black); background: white; }
 
-  /* 테이블 */
-  .preview-section { display: none; }
-  .preview-section.visible { display: block; }
+/* 저장 버튼 */
+.save-all-wrap { position: sticky; bottom: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); display: none; }
+.save-all-wrap.show { display: block; }
+.btn-save-all { width: 100%; background: var(--green); color: white; border: none; border-radius: 10px; padding: 16px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+.btn-save-all:hover { background: #1f4d38; }
+.btn-save-all:disabled { background: var(--gray-400); cursor: not-allowed; }
 
-  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1.5px solid var(--border); }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  thead th {
-    background: var(--surface2);
-    padding: 11px 14px;
-    text-align: left;
-    font-size: 10.5px;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-    border-bottom: 1.5px solid var(--border);
-    white-space: nowrap;
-    font-weight: 500;
-  }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--surface2); }
-  tbody tr.unmatched { background: #fff8f6; }
-  tbody tr.miss-filled { background: #f0faf4 !important; }
+/* 토스트 */
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 11px 20px; border-radius: 24px; font-size: 13px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 300; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  td { padding: 9px 14px; vertical-align: middle; }
-  td.name-col { max-width: 300px; word-break: keep-all; line-height: 1.5; color: var(--text); }
-  td.vendor-col { white-space: nowrap; font-weight: 500; }
-  td.vendor-col.miss { color: var(--red); }
-  td.phone-col, td.addr-col { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
-
-  .badge-miss {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 10px;
-    background: #fdf0f0; color: var(--red);
-    border: 1px solid rgba(212,60,60,0.25);
-    padding: 2px 7px; border-radius: 4px;
-    margin-right: 4px;
-  }
-
-  /* 미매칭 입력 인풋 */
-  .miss-input {
-    border: 1.5px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 9px;
-    font-size: 11.5px;
-    font-family: var(--mono);
-    background: #fff;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-    width: 130px;
-  }
-  .miss-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(212,95,60,0.1); }
-  .miss-input::placeholder { color: #ccc; }
-  .miss-input.addr-input { width: 160px; }
-
-  /* 안내 박스 */
-  .notice-box {
-    display: none;
-    margin-top: 16px;
-    padding: 13px 16px;
-    background: #fff8f6;
-    border: 1.5px solid rgba(212,60,60,0.2);
-    border-radius: 10px;
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.7;
-    font-weight: 400;
-  }
-
-  /* 다운로드 버튼 */
-  .dl-btn {
-    display: flex; align-items: center; gap: 9px;
-    padding: 14px 28px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
-    font-family: var(--mono);
-    cursor: pointer; border: none;
-    background: var(--accent2); color: #fff;
-    margin-top: 16px; width: 100%;
-    justify-content: center;
-    transition: all 0.15s;
-  }
-  .dl-btn:hover { background: #2c6bbf; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(60,125,212,0.28); }
-
-  /* 공유 모달 */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.35);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 28px;
-    width: 100%; max-width: 500px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-    position: relative;
-  }
-  .modal h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
-  .modal p.sub { font-size: 11.5px; color: var(--text-muted); margin-bottom: 16px; font-weight: 400; }
-  .share-box {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
-    font-size: 12.5px;
-    line-height: 2;
-    white-space: pre;
-    color: var(--text);
-    max-height: 340px;
-    overflow-y: auto;
-    margin-bottom: 16px;
-    font-weight: 400;
-  }
-  .modal-btns { display: flex; gap: 10px; }
-  .modal-close {
-    position: absolute; top: 16px; right: 18px;
-    background: none; border: none;
-    font-size: 18px; cursor: pointer;
-    color: var(--text-muted); font-family: var(--mono);
-  }
-  .modal-close:hover { color: var(--text); }
-
-  /* 토스트 */
-  .toast {
-    position: fixed; bottom: 30px; left: 50%;
-    transform: translateX(-50%) translateY(16px);
-    background: var(--text); color: #fff;
-    font-size: 13px; font-family: var(--mono);
-    padding: 11px 24px; border-radius: 8px;
-    opacity: 0; transition: all 0.3s;
-    pointer-events: none; z-index: 999;
-    white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.18);
-    font-weight: 400;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  .load-status {
-    font-size: 11.5px;
-    font-family: var(--mono);
-    padding: 5px 12px;
-    border-radius: 6px;
-    margin-bottom: 14px;
-    display: inline-block;
-  }
-  .btn-sheet-link {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 11px;
-    border-radius: 6px;
-    font-size: 11.5px; font-weight: 500;
-    font-family: var(--mono);
-    cursor: pointer; border: 1.5px solid var(--border2);
-    background: var(--surface2); color: var(--text-muted);
-    transition: all 0.15s;
-  }
-  .btn-sheet-link:hover { color: var(--accent2); border-color: var(--accent2); background: #f0f5ff; }
-
-  .load-status.loading { background: #f0f4ff; color: var(--accent2); border: 1px solid #c5d8ff; }
-  .load-status.ok      { background: #edfaf3; color: var(--green);   border: 1px solid #b6e8cc; }
-  .load-status.error   { background: #fdf0f0; color: var(--red);     border: 1px solid #f5c0c0; }
-
-  /* 거래처 업데이트 버튼 */
-  .btn-upload {
-    display: flex; align-items: center; gap: 8px;
-    padding: 11px 20px;
-    border-radius: 9px;
-    font-size: 13px; font-weight: 700;
-    font-family: var(--mono);
-    cursor: pointer; border: 1.5px solid var(--green);
-    background: var(--surface2); color: var(--green);
-    transition: all 0.15s; white-space: nowrap;
-  }
-  .btn-upload:hover { background: #edfaf3; transform: translateY(-1px); }
-  .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+@media (max-width: 480px) {
+  .field-row { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="header">
-    <h1>더제이수 샘플 요청 <span>엑셀 파일 생성기</span></h1>
-    <p>신상마켓 찜 목록 복사 → 붙여넣기 → 엑셀 다운로드</p>
+<header>
+  <div class="logo">더제이수 <span>샘플요청</span></div>
+  <div class="step-badge">① 요청 등록</div>
+</header>
+
+<div class="main">
+
+  <div class="guide">
+    💡 <strong>사용법:</strong> 신상마켓 찜 리스트 화면을 캡처해서 올려주세요.<br>
+    AI가 상품명·거래처를 자동 인식하고 이미지도 분리해드려요.
   </div>
 
-  <div class="card">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-      <span id="loadStatus" class="load-status" style="margin-bottom:0;">거래처 목록 불러오는 중...</span>
-      <a href="https://docs.google.com/spreadsheets/d/1bP7Nwovu3wFV7T1UOlUhS-O56nMeZ7-3lSZ0iNHUcrc/edit" target="_blank" id="sheetLink" style="display:none; text-decoration:none;">
-        <button class="btn-sheet-link">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          거래처 시트
-        </button>
-      </a>
+  <!-- API 키 -->
+  <div class="api-card">
+    <div class="card-label">Anthropic API 키</div>
+    <div class="api-row">
+      <input type="password" class="api-input" id="apiKey" placeholder="sk-ant-...">
+      <button class="btn-sm" onclick="saveApiKey()">저장</button>
     </div>
-    <div class="section-label">신상마켓 찜 목록 붙여넣기</div>
-    <textarea id="inputArea" placeholder="신상마켓에서 복사한 내용을 여기에 붙여넣으세요.
-
-예시:
-26ss) 스모어bl
-디오트 / flutter(플러터)
-₩25,000
-47
-로아트위드jk
-디오트 / flutter(플러터)
-₩51,000
-15"></textarea>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="processData()">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        분석 &amp; 미리보기
-      </button>
-      <button class="btn btn-secondary" onclick="clearAll()">초기화</button>
-    </div>
+    <div class="api-status" id="apiStatus"></div>
   </div>
 
-  <div class="card preview-section" id="previewSection">
-    <div class="section-label">미리보기</div>
-    <div class="stats" id="statsRow"></div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>업체명</th>
-            <th>연락처</th>
-            <th>주소</th>
-            <th>상품명 (내용)</th>
-          </tr>
-        </thead>
-        <tbody id="previewBody"></tbody>
-      </table>
+  <!-- 업로드 -->
+  <div class="upload-card">
+    <div class="card-label">찜 리스트 캡처 업로드</div>
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <div class="upload-icon">📸</div>
+      <h3>캡처 이미지를 올려주세요</h3>
+      <p>클릭해서 파일 선택 · 또는 <strong>Ctrl+V</strong> 붙여넣기</p>
     </div>
+    <img id="previewImg" class="preview-img" alt="미리보기">
+    <button class="btn-analyze" id="btnAnalyze" onclick="analyzeImage()">
+      🤖 AI로 상품 분석하기
+    </button>
+  </div>
 
-    <div class="notice-box" id="missingNotice">
-      ⬆ <span style="color:var(--red); font-weight:600;">미매칭 업체</span>는 위 표에서 연락처와 주소를 직접 입력하면 엑셀에 반영돼요.<br>
-      중복 거래처는 첫 번째 행에만 입력하면 같은 거래처의 모든 상품에 자동 적용됩니다.
-    </div>
+  <!-- 로딩 -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p style="font-size:13px; color:var(--gray-600);">이미지에서 상품을 인식하는 중...</p>
+  </div>
 
-    <div style="display:flex; gap:10px; margin-top:16px; align-items:flex-start;">
-      <div style="flex:1; display:flex; flex-direction:column; gap:5px;">
-        <button class="dl-btn" onclick="downloadExcel()" style="margin-top:0; width:100%;">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          엑셀 다운로드 (스마트비즈 업로드용)
-        </button>
-        <p id="autoSaveNote" style="display:none; font-size:11px; color:var(--text-muted); text-align:center; line-height:1.5;">
-          미등록 업체는 자동으로 거래처 LIST 구글 시트에 저장됩니다
-        </p>
-      </div>
+  <!-- 결과 -->
+  <div class="results-wrap" id="resultsWrap">
+    <div class="results-header">
+      <div class="results-title">인식된 상품 <span id="resultCount">0</span>개</div>
+      <button onclick="resetAll()" style="font-size:12px; color:var(--gray-600); background:none; border:none; cursor:pointer;">다시 올리기</button>
     </div>
-    </div>
+    <div class="product-cards" id="productCards"></div>
+  </div>
 
 </div>
-  </div>
+
+<!-- 저장 버튼 -->
+<div class="save-all-wrap" id="saveAllWrap">
+  <button class="btn-save-all" id="btnSaveAll" onclick="saveToSheet()">
+    📊 구글 시트에 전체 저장 (<span id="saveCount">0</span>개)
+  </button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
+let currentBase64 = '';
+let currentType = '';
+let products = [];
 
-// 내장 거래처 데이터
-const BUILTIN_VENDORS = [{"업체명": "JJ", "전화번호": "2117-8826", "위치": "디오트 B1-D-24"}, {"업체명": "가스나\\", "전화번호": "2117-8683", "위치": "디오트 2-F-3"}, {"업체명": "굿시스터", "전화번호": "2117-8868", "위치": "디오트 B1-A-9"}, {"업체명": "드고유", "전화번호": "2117-8046", "위치": "apm place 348"}, {"업체명": "그라찌", "전화번호": "2117-4009", "위치": "디오트 B1-E-17"}, {"업체명": "그레이", "전화번호": "2117-8238", "위치": "디오트 B1-i-5"}, {"업체명": "그루브", "전화번호": "2117-4888", "위치": "디오트 B2-나-9"}, {"업체명": "그라티아", "전화번호": "010-3390-3993", "위치": "청평화 5-가-29"}, {"업체명": "그리핑", "전화번호": "2232-5949", "위치": "청평화 B1-나-8"}, {"업체명": "글로우님프", "전화번호": "2250-1890", "위치": "APM B1-8"}, {"업체명": "글로우", "전화번호": "010-4917-0833", "위치": "신발상가 C-1-42"}, {"업체명": "김언니", "전화번호": "2117-4896", "위치": "디오트4-C-8"}, {"업체명": "꼬모", "전화번호": "2237-4342", "위치": "디오트 3-A-8"}, {"업체명": "나나", "전화번호": "2252-5998", "위치": "청평화 4-C-22"}, {"업체명": "나나제이", "전화번호": "2117-8161", "위치": "디오트 3-A-17"}, {"업체명": "나난", "전화번호": "010-3900-1148", "위치": "디오트 4-H-13"}, {"업체명": "네오", "전화번호": "010-8011-8091", "위치": "디오트 3-F-7"}, {"업체명": "네온히치", "전화번호": "2117-4864", "위치": "디오트 4-F-10"}, {"업체명": "내티", "전화번호": "010-7488-9549", "위치": "디오트 2-H-25"}, {"업체명": "노티스", "전화번호": "010-2926-4029", "위치": "디오트 4-C-17"}, {"업체명": "노리타", "전화번호": "2256-4567", "위치": "디오트 4-E-18"}, {"업체명": "노블", "전화번호": "2254-1957", "위치": "청평화 3-가-57"}, {"업체명": "노메럴", "전화번호": "2117-4202", "위치": "디오트 3-E-16"}, {"업체명": "노이", "전화번호": "010-9855-8482", "위치": "누죤 5-315"}, {"업체명": "노프라블럼", "전화번호": "2117-8720", "위치": "디오트 B1-d-23"}, {"업체명": "노크노크", "전화번호": "2117-8316", "위치": "디오트 4-B-13"}, {"업체명": "노조아", "전화번호": "02-231-0408", "위치": "apm luxe 2-217"}, {"업체명": "누에보", "전화번호": "010-3496-6780", "위치": "디오트 B2-D-25"}, {"업체명": "놈코어", "전화번호": "2117-4178", "위치": "디오트 3-E-23"}, {"업체명": "누크", "전화번호": "010-9139-8758", "위치": "디오트 1-B-29"}, {"업체명": "누벨", "전화번호": "010-2663-6144", "위치": "신발상가 1-37"}, {"업체명": "뉴진", "전화번호": "010-5956-4841", "위치": "디오트 B2-가-11,12"}, {"업체명": "니브", "전화번호": "010-3666-0105", "위치": "디오트 B2-B-5"}, {"업체명": "너울", "전화번호": "2236-1993", "위치": "벨포스트 3-87"}, {"업체명": "님프", "전화번호": "2117-8489", "위치": "디오트 4-H-5,6"}, {"업체명": "다빈", "전화번호": "2117-4479", "위치": "디오트 4-E-13"}, {"업체명": "다온", "전화번호": "010-5286-0902", "위치": "디자이너 B2-15"}, {"업체명": "르와드", "전화번호": "2117-4135", "위치": "디오트 4-H-5"}, {"업체명": "달팡", "전화번호": "2117-4440", "위치": "디오트 1-E-24"}, {"업체명": "담다", "전화번호": "010-2407-9160", "위치": "신발상가 C-1-1"}, {"업체명": "대영상사", "전화번호": "2252-9213", "위치": "신평화 1층 A동 63,21"}, {"업체명": "더메인", "전화번호": "2117-4850", "위치": "디오트 B2-E-16"}, {"업체명": "더모드9", "전화번호": "2117-8936", "위치": "디오트 3-J-28"}, {"업체명": "더바바라", "전화번호": "010-8098-4707", "위치": "디오트 3-C-18"}, {"업체명": "더그리다", "전화번호": "2117-4782", "위치": "디오트 4-i-13"}, {"업체명": "더뉴", "전화번호": "2117-4889", "위치": "디오트 4-f-1"}, {"업체명": "만식슈", "전화번호": "010-4228-6656", "위치": "신발상가 C-1-41"}, {"업체명": "더라크림", "전화번호": "010-7411-4430", "위치": "디오트 3-H-3"}, {"업체명": "더 준", "전화번호": "010-7277-5879", "위치": "디오트 3-i-4"}, {"업체명": "더블인", "전화번호": "010-6270-5209", "위치": "디오트 3-G-7"}, {"업체명": "더메인", "전화번호": "2231-4749", "위치": "쳥평화 4-C-32,33"}, {"업체명": "더리플레르", "전화번호": "010-3916-4010", "위치": "디오트 3-h-9"}, {"업체명": "더메인", "전화번호": "2117-4850", "위치": "디오트 4-D-23"}, {"업체명": "더라인", "전화번호": "010-2841-2874", "위치": "신발상가 C-1-39"}, {"업체명": "더레스트", "전화번호": "2250-0228", "위치": "APM 2-28"}, {"업체명": "더베이지스", "전화번호": "2231-2227", "위치": "apm luxe 2-227"}, {"업체명": "더블비", "전화번호": "2117-8199", "위치": "디오트 B1-L-1"}, {"업체명": "더블엠", "전화번호": "2117-8144", "위치": "디오트 2-A-13"}, {"업체명": "더블유", "전화번호": "2117-8126", "위치": "디오트 7-i-2"}, {"업체명": "더블유네이비", "전화번호": "6970-7481", "위치": "퀸즈스퀘어 3-81"}, {"업체명": "더블제이", "전화번호": "2232-0521", "위치": "청평화 5-라-4"}, {"업체명": "더스티밀러", "전화번호": "2117-8476", "위치": "디오트 B2-C-25"}, {"업체명": "더시스", "전화번호": "2117-4886", "위치": "디오트 4-H-5"}, {"업체명": "더코인", "전화번호": "2117-8498", "위치": "디오트 4-G-15"}, {"업체명": "더풀하우스", "전화번호": "2252-2447", "위치": "청평화 1-다-15"}, {"업체명": "데얼바이", "전화번호": "2117-8460", "위치": "디오트 3-i-7"}, {"업체명": "데이시크", "전화번호": "010-5007-3770", "위치": "디오트 2-B-28"}, {"업체명": "데이트", "전화번호": "2117-4015", "위치": "디오트 B1-F-4"}, {"업체명": "댄지", "전화번호": "010-2678-7540", "위치": "청평화 2-라-36"}, {"업체명": "델리케이트", "전화번호": "2117-4066", "위치": "디오트 B1-L-9"}, {"업체명": "도레미어패럴", "전화번호": "2117-8091", "위치": "디오트 4-A-20"}, {"업체명": "도리", "전화번호": "2117-4859", "위치": "디오트 4-i-3"}, {"업체명": "도이가", "전화번호": "010-9118-6130", "위치": "디오트 B1-A-7"}, {"업체명": "도리스", "전화번호": "2117-4717", "위치": "디오트 3-F5"}, {"업체명": "동대문", "전화번호": "2117-4031", "위치": "디오트 2-D-20"}, {"업체명": "두림", "전화번호": "010-7937-7071", "위치": "청평화 5-나-3"}, {"업체명": "두잇", "전화번호": "2117-4277", "위치": "디오트 3-i-19"}, {"업체명": "오르디(구.듀플로)", "전화번호": "2250-1132", "위치": "APM 1-132"}, {"업체명": "드라이블루", "전화번호": "2117-4631", "위치": "디오트 3-f-6"}, {"업체명": "드라이플라워", "전화번호": "2117-8419", "위치": "디오트 B2-D-13"}, {"업체명": "드마르", "전화번호": "2250-1390", "위치": "APM B1-20"}, {"업체명": "드래이핑", "전화번호": "2117-8636", "위치": "디오트 B1-J-10"}, {"업체명": "드레스 마피아", "전화번호": "2117-4647", "위치": "디오트 3-B-15"}, {"업체명": "드레스웰", "전화번호": "2117-4316", "위치": "디오트 3-C-13"}, {"업체명": "드레스코드", "전화번호": "2117-8968", "위치": "디오트 4-H-28"}, {"업체명": "언더스탠딩", "전화번호": "2250-0758", "위치": "apm B1-24"}, {"업체명": "드클로즈", "전화번호": "2117-4664", "위치": "디오트 4-D-3"}, {"업체명": "드폰드", "전화번호": "***-****-5470", "위치": "디오트 B1-G-19"}, {"업체명": "디다크", "전화번호": "2117-8528", "위치": "디오트 2-i-20"}, {"업체명": "디뮤어(구.보니)", "전화번호": "2117-8353", "위치": "디오트 4-J-22"}, {"업체명": "디스이즈", "전화번호": "2117-8552", "위치": "디오트 3-J-31"}, {"업체명": "디앤제이", "전화번호": "2117-8867", "위치": "디오트 2-J-9"}, {"업체명": "디어", "전화번호": "2117-8402", "위치": "디오트 4-E-29"}, {"업체명": "디얼그레이", "전화번호": "2117-8355", "위치": "디오트 B2-C-25"}, {"업체명": "디에이The A", "전화번호": "2117-8296", "위치": "디오트 3-E-24"}, {"업체명": "디코드", "전화번호": "***-****-2818", "위치": "동원 B1층 132호"}, {"업체명": "딜라이트(Delight)", "전화번호": "2233-9658", "위치": "청평화 4-B-46"}, {"업체명": "딜라잇", "전화번호": "2117-4046", "위치": "디오트 B2-G25-1"}, {"업체명": "뚜따", "전화번호": "2117-4664", "위치": "디오트 3-A-11"}, {"업체명": "딸래미", "전화번호": "2232-5510", "위치": "청평화 5-가-555"}, {"업체명": "라우쉬", "전화번호": "2250-1252", "위치": "APM 2-205"}, {"업체명": "라이크워터", "전화번호": "2117-4044", "위치": "디오트 4-g-17"}, {"업체명": "라미제이", "전화번호": "***-****-8712", "위치": "디오트 4-F-7"}, {"업체명": "라비(광덕)", "전화번호": "2250-1432", "위치": "부산광역시 부산 진구 신앙로9\n 범천빌딩 302호"}, {"업체명": "라붐", "전화번호": "2117-8027", "위치": "디오트 2-B-8"}, {"업체명": "라스텔라", "전화번호": "2117-8116", "위치": "디오트3-A-6"}, {"업체명": "라쏭", "전화번호": "2117-8590", "위치": "디오트4-I-9"}, {"업체명": "라우드", "전화번호": "010-4876-9272", "위치": "디오트 B2-C-22"}, {"업체명": "라운드제이", "전화번호": "2232-4054", "위치": "청평화 4-D-30,31"}, {"업체명": "라운지베라", "전화번호": "2117-8241", "위치": "디오트 4-C-7"}, {"업체명": "라이브포에버", "전화번호": "2117-8525", "위치": "디오트 4-G-1"}, {"업체명": "랑스", "전화번호": "2254-4476", "위치": "청평화 4-가-34"}, {"업체명": "러브샷", "전화번호": "2117-8561", "위치": "디오트 B1-B-1"}, {"업체명": "러브앤헤이트", "전화번호": "2232-7729", "위치": "청평화 5-다-25"}, {"업체명": "러브미모어", "전화번호": "010-9808-3461", "위치": "디오트 3-C-06"}, {"업체명": "러브어스", "전화번호": "010-6764-2694", "위치": "디오트 4-H-10"}, {"업체명": "러브유쏘머치", "전화번호": "2117-4449", "위치": "디오트 4-D-11"}, {"업체명": "러블", "전화번호": "010-2800-0402", "위치": "디오트 4-B-26"}, {"업체명": "러빗", "전화번호": "2117-4973", "위치": "디오트 3-E-17"}, {"업체명": "러스티", "전화번호": "2117-4418", "위치": "디오트 4-J-21"}, {"업체명": "럭키스토어", "전화번호": "2117-8121", "위치": "디오트 4-G-10"}, {"업체명": "런던레이스", "전화번호": "2117-4712", "위치": "디오트 4-i-7"}, {"업체명": "럽럽", "전화번호": "2117-8293", "위치": "디오트 4-H-12"}, {"업체명": "랜느", "전화번호": "010-9841-6999", "위치": "신발상가 C동 1층 20호"}, {"업체명": "레드제이", "전화번호": "2117-4916", "위치": "디오트 3-B-16"}, {"업체명": "레어썸", "전화번호": "2117-4237", "위치": "디오트 3-F-4"}, {"업체명": "레몬", "전화번호": "010-6352-6142", "위치": "신발상가 B-1-가25"}, {"업체명": "레뜨왈", "전화번호": "2231-5131", "위치": "APM LUXE B1-31"}, {"업체명": "레어스", "전화번호": "6270-2403", "위치": "유어스 3-78"}, {"업체명": "레이브", "전화번호": "2117-4595", "위치": "디오트 3-J-13"}, {"업체명": "레주르", "전화번호": "010-3283-4905", "위치": "청평화 5-나-44"}, {"업체명": "레인우드", "전화번호": "010-9756-3676", "위치": "디오트 B1-D-18"}, {"업체명": "레인드롭", "전화번호": "2117-4856", "위치": "디오트 4-B-24"}, {"업체명": "레터링", "전화번호": "2117-4045", "위치": "디오트 4-J-7"}, {"업체명": "로그", "전화번호": "010-3760-0256", "위치": "신발상가 c동 2F-56"}, {"업체명": "레트로드레스", "전화번호": "2117-8048", "위치": "디오트4-A-23"}, {"업체명": "로그먼트", "전화번호": "2117-4750", "위치": "디오트 B1-G-22"}, {"업체명": "로얄치즈", "전화번호": "2117-4660", "위치": "디오트 4-E-3,4"}, {"업체명": "로와드(구.다올)", "전화번호": "2117-4135", "위치": "디오트 3-B-18"}, {"업체명": "로이", "전화번호": "2117-4419", "위치": "디오트 B1-G-24"}, {"업체명": "로쉘", "전화번호": "2117-8650", "위치": "디오트 B1-A-8"}, {"업체명": "로지", "전화번호": "2117-4490", "위치": "디오트 4-F-19"}, {"업체명": "로하트", "전화번호": "010-2245-2133", "위치": "디오트 2-D-3"}, {"업체명": "로프트", "전화번호": "2117-4458", "위치": "디오트 3-i-19"}, {"업체명": "룰루12", "전화번호": "2117-8213", "위치": "디오트 B2-C-20"}, {"업체명": "룸잉", "전화번호": "2117-4666", "위치": "디오트 3-F-12"}, {"업체명": "루어", "전화번호": "010-4205-8877", "위치": "디오트 B1-G-11"}, {"업체명": "르뽀렘", "전화번호": "6970-7566", "위치": "퀸즈스퀘어 3-115"}, {"업체명": "르날드", "전화번호": "6270-1030", "위치": "유어스 1-63"}, {"업체명": "르마레", "전화번호": "010-5483-9917", "위치": "청평화 1-다"}, {"업체명": "로제르", "전화번호": "010-4947-7076", "위치": "디오트 2-A-19"}, {"업체명": "르오브(구.베르디)", "전화번호": "2250-1234", "위치": "APM 2층 34호"}, {"업체명": "르누보", "전화번호": "010-2955-3990", "위치": "디오트 4-E-14"}, {"업체명": "르블랑", "전화번호": "010-5825-6389", "위치": "디오트 4-A-1"}, {"업체명": "르에이", "전화번호": "2117-8656", "위치": "디오트 3-J-9"}, {"업체명": "르솜", "전화번호": "010-7912-9568", "위치": "디오트 B2-A-11"}, {"업체명": "르테일러", "전화번호": "2117-8879", "위치": "디오트 B1-J-1"}, {"업체명": "리뉴얼(르레브)", "전화번호": "2117-4824", "위치": "디오트 4-D-19"}, {"업체명": "리센스", "전화번호": "2232-4010", "위치": "청평화 1-다-29"}, {"업체명": "리디아", "전화번호": "2117-4549", "위치": "디오트 1-f-19"}, {"업체명": "리리", "전화번호": "2117-8664", "위치": "디오트 B1-H-19"}, {"업체명": "리자드스탠다드", "전화번호": "010-3389-0605", "위치": "디오트 B2-N-68"}, {"업체명": "링크", "전화번호": "2117-8535", "위치": "디오트 2-i-13"}, {"업체명": "리미티드", "전화번호": "2117-4785", "위치": "디오트 3-F-13"}, {"업체명": "리버티", "전화번호": "2117-4547", "위치": "디오트 3-E-19"}, {"업체명": "리브레", "전화번호": "2117-8951", "위치": "디오트 B1-E-10"}, {"업체명": "리썸", "전화번호": "2117-4908", "위치": "디오트 B2-B-13"}, {"업체명": "리얼펄리", "전화번호": "2117-8438", "위치": "디오트 3-H-10"}, {"업체명": "리플", "전화번호": "2117-4405", "위치": "디오트 4-G-5"}, {"업체명": "리오더", "전화번호": "2117-4858", "위치": "디오트 4-C-30"}, {"업체명": "리엔", "전화번호": "010-4289-9987", "위치": "청평화 3-라-14"}, {"업체명": "린다", "전화번호": "2117-4428", "위치": "디오트 4-G-2"}, {"업체명": "린제이", "전화번호": "2117-4052", "위치": "디오트 3-D-13"}, {"업체명": "링오브노이", "전화번호": "2117-4424", "위치": "디오트 4-E-10"}, {"업체명": "림쏭", "전화번호": "2117-4853", "위치": "디오트 B1-J-14"}, {"업체명": "립플레이스", "전화번호": "010-9087-7127", "위치": "디오트 3-i-26"}, {"업체명": "링(RING)", "전화번호": "2117-4606", "위치": "디오트 4-B-22"}, {"업체명": "마니모", "전화번호": "6970-7633", "위치": "광희 5-58"}, {"업체명": "마리드", "전화번호": "010-6519-2511", "위치": "디오트 2-G-5"}, {"업체명": "마르셀", "전화번호": "010-3319-4116", "위치": "디오트 5-F-27"}, {"업체명": "마스터피스", "전화번호": "2250-1923", "위치": "apm B1-152"}, {"업체명": "마리앤", "전화번호": "2117-4822", "위치": "디오트 B2-H-5,6"}, {"업체명": "마레모해", "전화번호": "010-5573-5747", "위치": "디오트 4층 H-3"}, {"업체명": "무튼", "전화번호": "010-2504-0177", "위치": "디오트 4-4B-7"}, {"업체명": "마랑", "전화번호": "2252-3034", "위치": "청평화 4-D-21"}, {"업체명": "마블", "전화번호": "2117-4648", "위치": "디오트 4-i-05"}, {"업체명": "마스", "전화번호": "2117-8760", "위치": "디오트 B1-j-26"}, {"업체명": "마요네즈", "전화번호": "2117-8978", "위치": "디오트 3-H-15"}, {"업체명": "르헤베(구.마이영)", "전화번호": "2117-8083", "위치": "디오트 5-J-26"}, {"업체명": "마이션", "전화번호": "2117-4541", "위치": "디오트 4-G-4"}, {"업체명": "마인디", "전화번호": "2117-4108", "위치": "디오트 B2-D-24"}, {"업체명": "마카롱", "전화번호": "2117-8807", "위치": "디오트 4-E-20"}, {"업체명": "말파", "전화번호": "2117-4321", "위치": "디오트 4-A-3"}, {"업체명": "만식슈", "전화번호": "010-4228-6656", "위치": "신발상가 C-1-41"}, {"업체명": "레인드롭", "전화번호": "2117-4856", "위치": "디오트 4-B-24"}, {"업체명": "맨하탄", "전화번호": "2117-8383", "위치": "디오트 3-B-9"}, {"업체명": "머시룸", "전화번호": "010-4865-7332", "위치": "디오트 B2-C-25"}, {"업체명": "머머링", "전화번호": "2117-4415", "위치": "디오트 4-H-18"}, {"업체명": "먼데이", "전화번호": "2117-4119", "위치": "디오트 B2-C-16"}, {"업체명": "메르제", "전화번호": "2117-8488", "위치": "디오트 3-J-1"}, {"업체명": "메이빈", "전화번호": "010-7791-7918", "위치": "디오트 3-B-13"}, {"업체명": "메인", "전화번호": "010-9050-6137", "위치": "디오트 3-F-21"}, {"업체명": "메이비앤코", "전화번호": "2117-4993", "위치": "디오트 3-J-23"}, {"업체명": "메이크제이", "전화번호": "3298-1122", "위치": "디자이너 B1-9"}, {"업체명": "메인스트릿", "전화번호": "010-8214-4410", "위치": "디오트 4-A-10"}, {"업체명": "메인제이", "전화번호": "2117-4984", "위치": "디오트 3-H-26"}, {"업체명": "멜라운지", "전화번호": "2117-8715", "위치": "디오트 3-H-8"}, {"업체명": "멜로즈", "전화번호": "2231-1741", "위치": "청평화 4-B-24"}, {"업체명": "멜론", "전화번호": "2117-4992", "위치": "디오트 1-C-18"}, {"업체명": "멜티드", "전화번호": "2117-8529", "위치": "디오트 3-i-10"}, {"업체명": "모노클", "전화번호": "2117-8327", "위치": "디오트 B1-J-29"}, {"업체명": "모조", "전화번호": "010-3671-1080", "위치": "신발상가 C-2-12"}, {"업체명": "모어", "전화번호": "010-3221-2872", "위치": "청평화 5-가-42,43"}, {"업체명": "모다", "전화번호": "2237-8711", "위치": "디자이너 B1-34"}, {"업체명": "모다", "전화번호": "2252-0803", "위치": "청평화 2-라-4"}, {"업체명": "모던바이실", "전화번호": "2117-4945", "위치": "디오트 4-E-19"}, {"업체명": "모리바이시스", "전화번호": "2231-8926", "위치": "청평화 5-라-27"}, {"업체명": "모모코", "전화번호": "2117-4347", "위치": "디오트 B1-J-26"}, {"업체명": "몽구스", "전화번호": "2117-8274", "위치": "디오트 B1-J-13"}, {"업체명": "모이라이", "전화번호": "2117-8042", "위치": "디오트 4-A-13"}, {"업체명": "목화씨", "전화번호": "2117-4133", "위치": "디오트 3-B-8"}, {"업체명": "몬트", "전화번호": "010-4164-2633", "위치": "신발상가 C-1-45"}, {"업체명": "몰디브", "전화번호": "2117-8401", "위치": "디오트 1-C-27"}, {"업체명": "무드랩", "전화번호": "2117-8233", "위치": "디오트 B1-E-5"}, {"업체명": "무드온", "전화번호": "010-9618-8288", "위치": "신발상가 B-2-43"}, {"업체명": "무드베이지", "전화번호": "2117-8461", "위치": "디오트 3-J-27"}, {"업체명": "무이", "전화번호": "010-5744-1141", "위치": "신발상가 C-1-23"}, {"업체명": "무이모나", "전화번호": "2117-8151", "위치": "디오트 4-D-03"}, {"업체명": "무브먼트", "전화번호": "2117-8612", "위치": "디오트 2-J-16"}, {"업체명": "무이비엔", "전화번호": "010-9122-0182", "위치": "Apm Place 2F 263"}, {"업체명": "뮤즈(MUSE)", "전화번호": "2232-2890", "위치": "청평화 5-라-536"}, {"업체명": "미니진", "전화번호": "2117-8310", "위치": "디오트 B1-J-11"}, {"업체명": "미네트", "전화번호": "2117-4249", "위치": "디오트3 -F-18"}, {"업체명": "미드나잇선", "전화번호": "2117-4034", "위치": "디오트 4-C-16"}, {"업체명": "미쓰진", "전화번호": "010-4991-7888", "위치": "디오트 4-G-8"}, {"업체명": "미엘", "전화번호": "010-3266-1411", "위치": "청평화 1-나-9"}, {"업체명": "미엘르", "전화번호": "2117-4635", "위치": "디오트 B1-i-17"}, {"업체명": "민잇", "전화번호": "2117-8997", "위치": "디오트 B1-E-12-1"}, {"업체명": "미코", "전화번호": "2117-8140", "위치": "디오트 4-A-17"}, {"업체명": "밀도", "전화번호": "2117-8938", "위치": "디오트 B1-G-4"}, {"업체명": "멜로우", "전화번호": "010-9104-6220", "위치": "신발상가 C-3-가-23"}, {"업체명": "밍키", "전화번호": "2231-8157", "위치": "청평화 B1-바-7"}, {"업체명": "바운드", "전화번호": "2117-8804", "위치": "디오트 5-F-14"}, {"업체명": "바디펀", "전화번호": "010-5409-5782", "위치": "청평화 3-라-23"}, {"업체명": "바니스", "전화번호": "2253-2662", "위치": "청평화 4-C-401"}, {"업체명": "비비드", "전화번호": "2117-4672", "위치": "디오트 B1-L-1"}, {"업체명": "바니플라워", "전화번호": "2117-4338", "위치": "디오트 B1-G-3"}, {"업체명": "바바라부", "전화번호": "2234-4515", "위치": "청평화 신관B1-9"}, {"업체명": "바나듐", "전화번호": "2233-1736", "위치": "청평화 5-라-7"}, {"업체명": "바르셀로나", "전화번호": "2117-8857", "위치": "디오트 B1-A-1"}, {"업체명": "바스", "전화번호": "2117-4020", "위치": "디오트 5-H-19"}, {"업체명": "바스키아", "전화번호": "2117-8031", "위치": "디오트 4-A-8"}, {"업체명": "바이라니", "전화번호": "2117-8040", "위치": "디오트 B1-H-9"}, {"업체명": "바이릴리", "전화번호": "2117-4910", "위치": "디오트 1-i-5"}, {"업체명": "바이미니", "전화번호": "2117-4117", "위치": "디오트 4-E-1"}, {"업체명": "바이붐", "전화번호": "2117-4377", "위치": "디오트 B1-A-3"}, {"업체명": "바이슈가", "전화번호": "2117-4319", "위치": "디오트 3-D-19"}, {"업체명": "바이더슈", "전화번호": "2117-4710", "위치": "디오트 4-C-18"}, {"업체명": "바이시아", "전화번호": "2234-0626", "위치": "청평화 5-가-18"}, {"업체명": "바이엘", "전화번호": "010-9534-9338", "위치": "청평화 5-라-22"}, {"업체명": "바인", "전화번호": "010-3189-5024", "위치": "디오트 5-A-22"}, {"업체명": "바이진", "전화번호": "2117-4480", "위치": "디오트 3-E-29"}, {"업체명": "바잉", "전화번호": "010-8240-5630", "위치": "청평화 4-C-20"}, {"업체명": "바인야드", "전화번호": "2250-1881", "위치": "apm B1-25"}, {"업체명": "반아", "전화번호": "2236-0048", "위치": "청평화 5-라-48"}, {"업체명": "버블언더", "전화번호": "2117-8817", "위치": "디오트 4-C-17"}, {"업체명": "버튼", "전화번호": "010-6346-6607", "위치": "신발상가 C동 1층 53호"}, {"업체명": "번영사", "전화번호": "2235-2816", "위치": "신평화 1층 A동 58호"}, {"업체명": "베니", "전화번호": "010-7645-3011", "위치": "청평화 4-C-45"}, {"업체명": "벌스데이", "전화번호": "2117-8541", "위치": "디오트 3-i-2"}, {"업체명": "베러", "전화번호": "2117-8210", "위치": "APM 1-59"}, {"업체명": "베르네프", "전화번호": "2231-8392", "위치": "APM 4-401"}, {"업체명": "베른", "전화번호": "010-2870-5632", "위치": "디오트 B1-F-17"}, {"업체명": "베리모어", "전화번호": "010-2754-3587", "위치": "디오트 B1-B-3"}, {"업체명": "베리베리", "전화번호": "2117-8791", "위치": "디오트 B1-J-5"}, {"업체명": "벨르", "전화번호": "010-2122-9051", "위치": "디오트 2-i-20"}, {"업체명": "부(BOO)", "전화번호": "2117-8855", "위치": "디오트 B1-L-08"}, {"업체명": "부티크로즈", "전화번호": "010-4582-3773", "위치": "디오트 B2-i-13"}, {"업체명": "브랜디", "전화번호": "2252-1215", "위치": "청평화 5-라-5"}, {"업체명": "블랜드", "전화번호": "010-6584-5359", "위치": "청평화 4-나-28"}, {"업체명": "블랜딩", "전화번호": "2117-8574", "위치": "디오트 B1-H-1"}, {"업체명": "브리즈", "전화번호": "2117-4232", "위치": "디오트 4-H-19"}, {"업체명": "브론즈베리", "전화번호": "010-7169-8545", "위치": "디오트 2-F-18"}, {"업체명": "브링", "전화번호": "2117-8023", "위치": "디오트 4-G-2"}, {"업체명": "블랙폼", "전화번호": "2117-4844", "위치": "디오트 5층 F-22"}, {"업체명": "블랙라인", "전화번호": "2117-4102", "위치": "디오트 3-E-5"}, {"업체명": "블랙레이디", "전화번호": "2117-8618", "위치": "디오트 3-A-19"}, {"업체명": "블랙스모키", "전화번호": "2117-4930", "위치": "디오트 4-E-25"}, {"업체명": "블랭크", "전화번호": "2117-8389", "위치": "디오트 4-H-16"}, {"업체명": "블러드무드", "전화번호": "2117-4979", "위치": "디오트 B2-i-24"}, {"업체명": "블러셔", "전화번호": "2117-8103", "위치": "디오트 B1-F-03"}, {"업체명": "블럭", "전화번호": "2117-4259", "위치": "디오트 4-C-14"}, {"업체명": "블레스유", "전화번호": "2117-4284", "위치": "디오트 1-C-5"}, {"업체명": "블론드", "전화번호": "2234-6576", "위치": "청평화 5-다-10"}, {"업체명": "블루걸", "전화번호": "2117-4453", "위치": "디오트 3-G-4"}, {"업체명": "블루레이크", "전화번호": "2117-8505", "위치": "디오트 2-B17"}, {"업체명": "블루베어", "전화번호": "2117-4587", "위치": "디오트 3-E-13"}, {"업체명": "블루아이", "전화번호": "2236-1231", "위치": "청평화 4-A-444"}, {"업체명": "블룸", "전화번호": "2117-4221", "위치": "디오트 B1-G-17"}, {"업체명": "블룸", "전화번호": "010-3787-6207", "위치": "청평화 5-가-26"}, {"업체명": "블리스&바셀", "전화번호": "2231-5096", "위치": "청평화 5-나-517"}, {"업체명": "블리스", "전화번호": "2117-4548", "위치": "디오트 B1-J-01"}, {"업체명": "블로윙", "전화번호": "010-7253-1680", "위치": "디오트 3-H-21"}, {"업체명": "블링", "전화번호": "2117-4740", "위치": "디오트 4-G-8"}, {"업체명": "비마인", "전화번호": "2117-4833", "위치": "디오트 3-E-8"}, {"업체명": "비비엘", "전화번호": "2117-4556", "위치": "디오트 2-D-10"}, {"업체명": "비바글램", "전화번호": "2117-8477", "위치": "디오트 4-J-26"}, {"업체명": "비바이숑", "전화번호": "2117-8474", "위치": "디오트 4-i-20"}, {"업체명": "비브르", "전화번호": "2117-4303", "위치": "디오트 4-J-20"}, {"업체명": "비앤부", "전화번호": "2117-8485", "위치": "디오트 3-H-5"}, {"업체명": "비커밍", "전화번호": "2236-4624", "위치": "청평화 4-C-3"}, {"업체명": "빌리지", "전화번호": "2235-8553", "위치": "디오트 B1-J-9"}, {"업체명": "사라", "전화번호": "2117-4728", "위치": "디오트 B1-E-15"}, {"업체명": "사운드", "전화번호": "2117-4840", "위치": "디오트 4-J-11"}, {"업체명": "서울러", "전화번호": "010-9759-2052", "위치": "디오트 1-C-13"}, {"업체명": "선데이", "전화번호": "2117-4972", "위치": "디오트 4-H-17"}, {"업체명": "세라비", "전화번호": "2117-8995", "위치": "디오트 3-i-17"}, {"업체명": "센토", "전화번호": "010-9843-4889", "위치": "apm place 7-25"}, {"업체명": "세러데이", "전화번호": "2117-4119", "위치": "디오트 4-G-6"}, {"업체명": "셀로나", "전화번호": "010-9222-7744", "위치": "디오트 5-D-16"}, {"업체명": "셀렉트", "전화번호": "2117-4630", "위치": "디오트 3-E-10"}, {"업체명": "소프", "전화번호": "010-7629-3015", "위치": "디오트 3-C-15"}, {"업체명": "쇼퍼홀릭", "전화번호": "2117-4551", "위치": "디오트 B1-F-8"}, {"업체명": "SOO&JUNE(수앤준)", "전화번호": "6970-7779", "위치": "퀸즈스퀘어 5-27"}, {"업체명": "수퍼발리", "전화번호": "2117-8148", "위치": "디오트 B1-i-4"}, {"업체명": "슈퍼", "전화번호": "010-2636-8069", "위치": "디오트 5-A-9"}, {"업체명": "슈퍼비", "전화번호": "2117-4068", "위치": "디오트 4-C-11"}, {"업체명": "스랍&아하", "전화번호": "2117-4649", "위치": "디오트 3-D-15"}, {"업체명": "스타일스크랩", "전화번호": "2117-8414", "위치": "디오트 4-D-4"}, {"업체명": "스테이블", "전화번호": "2254-0250", "위치": "청평화 B1-나-7"}, {"업체명": "스토리태그", "전화번호": "2117-4773", "위치": "디오트 4-D-15"}, {"업체명": "스톤베이지", "전화번호": "2232-3976", "위치": "청평화 5-가-49"}, {"업체명": "스토리", "전화번호": "010-8193-0070", "위치": "서울 동대문구 장안동459-3 대일빌딩401호"}, {"업체명": "스튜디오그레이", "전화번호": "2117-4778", "위치": "디오트 4-B-16"}, {"업체명": "스크램블", "전화번호": "010-3771-8813", "위치": "디오트 B1-K-13"}, {"업체명": "슬로우피플", "전화번호": "010-4141-1629", "위치": "벨포스트 2-22"}, {"업체명": "슬릭", "전화번호": "2117-4504", "위치": "디오트 B1-H-7"}, {"업체명": "심플", "전화번호": "2238-3345", "위치": "청평화 B1-다-10"}, {"업체명": "심플먼트", "전화번호": "2117-4539", "위치": "디오트 3-C-26"}, {"업체명": "솔트비", "전화번호": "010-7731-7775", "위치": "디오트 5-D-11"}, {"업체명": "심플베이지", "전화번호": "2117-4911", "위치": "디오트 3-G-10"}, {"업체명": "쏠제이(SOL.J)", "전화번호": "2117-8616", "위치": "디오트 B2-A-9"}, {"업체명": "이안", "전화번호": "2252-5252", "위치": "청평화 1-가-4"}, {"업체명": "이유", "전화번호": "010-9927-1017", "위치": "디오트 2-B-17"}, {"업체명": "이르", "전화번호": "2117-8166", "위치": "디오트 3-B-3"}, {"업체명": "아델", "전화번호": "2117-4365", "위치": "디오트 2-A-16"}, {"업체명": "아도라", "전화번호": "2117-8440", "위치": "디오트 B1-i-18"}, {"업체명": "아라모드", "전화번호": "2117-4909", "위치": "디오트 4-i-14"}, {"업체명": "아페리얼", "전화번호": "2117-8603", "위치": "디오트 4-G-10"}, {"업체명": "아리키시", "전화번호": "010-3725-8716", "위치": "디오트 4-E-17"}, {"업체명": "아베끄", "전화번호": "2117-4042", "위치": "디오트 4-F-25"}, {"업체명": "아보카도", "전화번호": "2117-4865", "위치": "디오트 4-C-9"}, {"업체명": "아스카", "전화번호": "2117-8614", "위치": "디오트 B2-B-24"}, {"업체명": "아울", "전화번호": "2117-8464", "위치": "디오트 4-C-09"}, {"업체명": "아이유", "전화번호": "010-4465-0639", "위치": "디오트 4-B-15"}, {"업체명": "아워", "전화번호": "2117-4128", "위치": "디오트 4-J-5"}, {"업체명": "아이보리", "전화번호": "2117-8243", "위치": "디오트 4-C-6"}, {"업체명": "아임히어", "전화번호": "2117-4898", "위치": "디오트 4-D-5"}, {"업체명": "아임블링", "전화번호": "6270-1193", "위치": "유어스 1-33"}, {"업체명": "아임파인땡큐", "전화번호": "2117-8976", "위치": "디오트 4-H-15"}, {"업체명": "아워웨이브", "전화번호": "010-3846-3888", "위치": "APM LUXE 6-23"}, {"업체명": "아우라", "전화번호": "2117-8966", "위치": "디오트 1-J-9"}, {"업체명": "아지트", "전화번호": "2117-4368", "위치": "디오트 B1-J-18"}, {"업체명": "아크미", "전화번호": "2117-8602", "위치": "디오트 3-D-11"}, {"업체명": "아톰", "전화번호": "2117-8255", "위치": "디오트 2-F-10"}, {"업체명": "아처", "전화번호": "2250-1116", "위치": "APM 1-16"}, {"업체명": "안단테", "전화번호": "010-6775-0820", "위치": "디오트 1-C-14"}, {"업체명": "아호이", "전화번호": "2117-4201", "위치": "디오트 4-D-11"}, {"업체명": "알뤼르", "전화번호": "010-4252-2451", "위치": "디오트 4-D-7"}, {"업체명": "알로하", "전화번호": "2233-3046", "위치": "청평화 3-가-46"}, {"업체명": "알유핫", "전화번호": "010-4409-1999", "위치": "디오트 4-H-19"}, {"업체명": "앙버터", "전화번호": "010-5920-3052", "위치": "디오트 3-i-5"}, {"업체명": "앙쥬", "전화번호": "2117-8470", "위치": "디오트 4-C-20"}, {"업체명": "애니짱", "전화번호": "010-5313-5756", "위치": "청평화 2-라-36"}, {"업체명": "애플비", "전화번호": "2231-6129", "위치": "청평화 5-가-45"}, {"업체명": "애플앤딜리셔스", "전화번호": "010-8223-8843", "위치": "디오트 B1-B-4"}, {"업체명": "애플트리", "전화번호": "6366-3983", "위치": "뉴존 B1-523,524"}, {"업체명": "앤유브라운", "전화번호": "010-8777-8212", "위치": "디오트 B1-E-1-1"}, {"업체명": "앤드바이엘", "전화번호": "2117-8405", "위치": "디오트 B1-G-17"}, {"업체명": "앤드꼬모", "전화번호": "2117-4614", "위치": "디오트 4-J-30"}, {"업체명": "앤드미크", "전화번호": "2117-8046", "위치": "디오트 4-C-03"}, {"업체명": "앤드모어", "전화번호": "2117-3315", "위치": "디오트 3-F-15"}, {"업체명": "앤드유에디션(구.럭키그라운드)", "전화번호": "2200-5094", "위치": "apm place 3-23"}, {"업체명": "앤써(에드프로덕트)", "전화번호": "010-9913-4009", "위치": "디오트 4-i-15-1"}, {"업체명": "앤코", "전화번호": "2117-4288", "위치": "디오트B1-G-11"}, {"업체명": "어나더", "전화번호": "010-8477-2438", "위치": "디오트 2-D-13"}, {"업체명": "어라운드110", "전화번호": "2117-4471", "위치": "디오트 B2-E-24"}, {"업체명": "어니스티", "전화번호": "2117-4668", "위치": "디오트 2-J-15"}, {"업체명": "어라이크", "전화번호": "2117-8599", "위치": "디오트 3-C-9"}, {"업체명": "어모먼트", "전화번호": "2117-8060", "위치": "디오트 B1-C-22"}, {"업체명": "어메이든", "전화번호": "2117-8982", "위치": "디오트 5-B-6"}, {"업체명": "어뮤즈", "전화번호": "2117-4337", "위치": "디오트 B2-E-16"}, {"업체명": "어바웃페이스", "전화번호": "2117-4025", "위치": "디오트 3-A-24"}, {"업체명": "어반스테이", "전화번호": "2117-8427", "위치": "디오트 2-J-26"}, {"업체명": "어셈블리", "전화번호": "2231-3556", "위치": "APM LUXE 5-532"}, {"업체명": "어스", "전화번호": "2117-8342", "위치": "디오트 3-H-9"}, {"업체명": "어썸플레인", "전화번호": "010-9281-1705", "위치": "디오트 4-C-3"}, {"업체명": "어텐션", "전화번호": "2117-4016", "위치": "디오트 4-A-15"}, {"업체명": "어퍼스타", "전화번호": "2117-8190", "위치": "디오트 4-J-31"}, {"업체명": "온니", "전화번호": "2117-4559", "위치": "디오트 3-C-28"}, {"업체명": "언더스탠딩", "전화번호": "2250-0758", "위치": "apm B1-24"}, {"업체명": "언더트리", "전화번호": "2117-8718", "위치": "디오트 4-A-19"}, {"업체명": "언커먼", "전화번호": "010-4627-6990", "위치": "청평화 5-나-13"}, {"업체명": "언커버", "전화번호": "2117-8039", "위치": "디오트 4-B-5"}, {"업체명": "언세인", "전화번호": "010-3939-4023", "위치": "디오트 4-A-23"}, {"업체명": "엄핏", "전화번호": "010-5738-1733", "위치": "디오트 2-G-7"}, {"업체명": "언토이", "전화번호": "2117-4963", "위치": "디오트 4-A-18"}, {"업체명": "업밀리언", "전화번호": "010-9233-6130", "위치": "청평화 1-라-34"}, {"업체명": "얼로우", "전화번호": "2117-8329", "위치": "디오트 B1-H-17"}, {"업체명": "앤드바이럴", "전화번호": "2117-8405", "위치": "디오트 B1-G-17"}, {"업체명": "에픽", "전화번호": "010-4561-8961", "위치": "청평화 5-나-525"}, {"업체명": "에스더블유샵", "전화번호": "2117-8450", "위치": "디오트 4-B-4"}, {"업체명": "원썸아이", "전화번호": "010-4549-2502", "위치": "디오트 3-J-16"}, {"업체명": "엘로이", "전화번호": "010-6228-8649", "위치": "디오트 4-B-23"}, {"업체명": "에이트글로우", "전화번호": "010-4345-8583", "위치": "디오트 4-E-29"}, {"업체명": "에테모와이", "전화번호": "010-8887-1660", "위치": "디오트 3-i-25"}, {"업체명": "에르메", "전화번호": "2117-4488", "위치": "디오트 4-B-27"}, {"업체명": "웨어미", "전화번호": "2117-4159", "위치": "디오트 4-J-4"}, {"업체명": "웨더이즈굿", "전화번호": "010-7109-3570", "위치": "디오트 4-H-2"}, {"업체명": "에브리썬데이", "전화번호": "2117-8548", "위치": "디오트 4-C-14"}, {"업체명": "에브리띵 위드 미", "전화번호": "2117-4530", "위치": "디오트 4-i-2"}, {"업체명": "에이드", "전화번호": "2117-8468", "위치": "디오트 3-F-5"}, {"업체명": "에이미컴퍼니", "전화번호": "2117-4053", "위치": "디오트 4-H-20"}, {"업체명": "더샌드(엘엠티(L/M/T)", "전화번호": "2250-1667", "위치": "APM B1-18"}, {"업체명": "에이블랙", "전화번호": "2117-4772", "위치": "디오트 3-A-22"}, {"업체명": "에이원", "전화번호": "2117-8949", "위치": "디오트 B1-F-07"}, {"업체명": "엣디스모먼트", "전화번호": "2117-8180", "위치": "디오트 4-B-15"}, {"업체명": "오스로", "전화번호": "010-3223-5951", "위치": "디오트 5-B-6"}, {"업체명": "엠디", "전화번호": "2235-0888", "위치": "청평화 1-다-18"}, {"업체명": "엠오엘(MOL)", "전화번호": "010-2822-4530", "위치": "디오트 5-A-8"}, {"업체명": "오쓰오쓰", "전화번호": "2236-4125", "위치": "청평화 5-다-2"}, {"업체명": "오브유", "전화번호": "2200-5019", "위치": "apm place 519"}, {"업체명": "오예", "전화번호": "2117-4502", "위치": "디오트 4-G-23"}, {"업체명": "오블리크", "전화번호": "2236-6918", "위치": "청평화 5-가-17"}, {"업체명": "오프터스", "전화번호": "010-5327-3843", "위치": "디오트 3-D-2"}, {"업체명": "오픈런", "전화번호": "2117-8687", "위치": "디오트 3-E-17"}, {"업체명": "온더블룸", "전화번호": "010-3787-6207", "위치": "청평화 5-가-26"}, {"업체명": "온앤온", "전화번호": "010-4156-2159", "위치": "신발상가 C-2-43"}, {"업체명": "온도", "전화번호": "2117-8867", "위치": "디오트 B1-L-4"}, {"업체명": "온텀", "전화번호": "2117-8660", "위치": "디오트 3-J-10"}, {"업체명": "올제", "전화번호": "02-2117-8769", "위치": "디오트 4-i-16"}, {"업체명": "와썹", "전화번호": "010-2210-6720", "위치": "신발상가 C동 1층 32호"}, {"업체명": "웨이팅", "전화번호": "2254-0107", "위치": "청평화 B1-다-12"}, {"업체명": "웨이비", "전화번호": "010-9653-0620", "위치": "디오트 B1-A-10"}, {"업체명": "웨어로우", "전화번호": "010-5480-3779", "위치": "디오트 5층 f-19"}, {"업체명": "웨어러블 리메이크", "전화번호": "2117-8565", "위치": "apm Luxe 1-106"}, {"업체명": "웨어미", "전화번호": "2117-4159", "위치": "디오트 4-J-4"}, {"업체명": "웰로우", "전화번호": "2117-8351", "위치": "디오트 4-f-4"}, {"업체명": "위드", "전화번호": "2117-8286", "위치": "디오트 3-E-9"}, {"업체명": "위드비", "전화번호": "2117-4581", "위치": "디오트 B1-G-7"}, {"업체명": "위즈원", "전화번호": "2117-8259", "위치": "디오트 2-E-23"}, {"업체명": "위즈투", "전화번호": "2117-8836", "위치": "디오트 1-B-15"}, {"업체명": "유아뷰티풀", "전화번호": "2117-4646", "위치": "디오트 4-J-21"}, {"업체명": "유앤미", "전화번호": "2117-8696", "위치": "디오트 1-F-7"}, {"업체명": "이너프", "전화번호": "2117-4618", "위치": "디오트 4-F-21"}, {"업체명": "이브닝샌드", "전화번호": "2117-8929", "위치": "디오트 B1-H-25"}, {"업체명": "이니셜", "전화번호": "2117-4171", "위치": "디오트 2-C-17"}, {"업체명": "이사칠", "전화번호": "010-8241-2470", "위치": "디오트 2-F-4"}, {"업체명": "이오", "전화번호": "2231-0485", "위치": "apm Luxe B1-B112"}, {"업체명": "이오(청평)", "전화번호": "010-3541-5157", "위치": "청평화 5-가-25"}, {"업체명": "이음", "전화번호": "02-2250-0797", "위치": "apm 1층 49"}, {"업체명": "이크무이", "전화번호": "010-5919-3085", "위치": "디오트 B1-D-4"}, {"업체명": "이프유", "전화번호": "2117-8921", "위치": "디오트 3-G-19"}, {"업체명": "이합사", "전화번호": "2253-5058", "위치": "청평화 B1-나-12"}, {"업체명": "일미리", "전화번호": "2117-4468", "위치": "디오트 4-H-11"}, {"업체명": "잇썸", "전화번호": "2117-8364", "위치": "디오트 3-F-24"}, {"업체명": "재미주", "전화번호": "010-9293-6130", "위치": "디오트 2-F-12"}, {"업체명": "잭슨", "전화번호": "2117-8706", "위치": "디오트 3-E-25"}, {"업체명": "제이제이(JJ)", "전화번호": "2117-8826", "위치": "디오트 B1-C-21"}, {"업체명": "제이듀", "전화번호": "2236-8858", "위치": "청평화 4-A-28"}, {"업체명": "제이투", "전화번호": "2117-8773", "위치": "디오트 2-J-2"}, {"업체명": "제이캣", "전화번호": "2117-8085", "위치": "디오트 B1-D-8"}, {"업체명": "제이그레이", "전화번호": "2117-4725", "위치": "디오트 4-A-2"}, {"업체명": "제이리커버", "전화번호": "2234-2713", "위치": "청평화 2-나-23"}, {"업체명": "제이나인", "전화번호": "2117-8903", "위치": "디오트 B2-D-21"}, {"업체명": "제이라떼", "전화번호": "010-3718-8410", "위치": "디오트 4-J-23"}, {"업체명": "제이런", "전화번호": "2117-4555", "위치": "디오트 4-C-13"}, {"업체명": "제이스토리", "전화번호": "2117-4527", "위치": "디오트  B1-C-2"}, {"업체명": "제이앨리스", "전화번호": "2117-8034", "위치": "디오트 4-F-17"}, {"업체명": "제이윤", "전화번호": "2117-4129", "위치": "디오트 3-C-10"}, {"업체명": "베러", "전화번호": "2250-1459", "위치": "apm 1-59"}, {"업체명": "제이피엑스", "전화번호": "2231-3286", "위치": "apm Luxe B1-110"}, {"업체명": "제인", "전화번호": "010-6486-6268", "위치": "신발상가 C-1-14"}, {"업체명": "제인모리스", "전화번호": "2117-4621", "위치": "디오트 4-A-21"}, {"업체명": "쥬드", "전화번호": "2235-8215", "위치": "청평화 5-나-547"}, {"업체명": "쥬디스", "전화번호": "2117-8592", "위치": "디오트 1-i-12"}, {"업체명": "지니", "전화번호": "2117-8647", "위치": "디오트 4-F-23"}, {"업체명": "지오", "전화번호": "764-7533", "위치": "신발상가 C동1층40호"}, {"업체명": "지수", "전화번호": "2117-4280", "위치": "디오트 4-i-13"}, {"업체명": "초이스", "전화번호": "010-6706-6459", "위치": "청평화 2-라-3"}, {"업체명": "촘촘", "전화번호": "010-4124-2576", "위치": "신발상가 D-2-30"}, {"업체명": "찬스", "전화번호": "2117-4349", "위치": "디오트 B1-G-13"}, {"업체명": "캐스터네츠", "전화번호": "010-4246-5088", "위치": "디오트 B1-K-5"}, {"업체명": "캔들", "전화번호": "010-9122-0182", "위치": "디오트 2-A-20"}, {"업체명": "커먼", "전화번호": "010-8585-6809", "위치": "신발상가 C동 1층 57"}, {"업체명": "커밍제이", "전화번호": "2117-8575", "위치": "디오트 3-H-13"}, {"업체명": "컴히얼", "전화번호": "2117-4627", "위치": "디오트 4-E-13"}, {"업체명": "키키", "전화번호": "010-2295-7768", "위치": "청평화  B1-가-2"}, {"업체명": "커버", "전화번호": "2117-8546", "위치": "디오트 3-C-1"}, {"업체명": "케이트", "전화번호": "010.4243.4288", "위치": "청평화 5-다-44"}, {"업체명": "키치", "전화번호": "010-6586-1582", "위치": "디오트 5-J-17"}, {"업체명": "케미", "전화번호": "2231-1400", "위치": "청평화 B1-가-6"}, {"업체명": "코너샵", "전화번호": "2233-4521", "위치": "청평화 3-라-48"}, {"업체명": "코지하우스", "전화번호": "010-8418-7444", "위치": "디오트-3-C-3"}, {"업체명": "코즈캣", "전화번호": "2117-8813", "위치": "디오트 3-i-15"}, {"업체명": "코코리", "전화번호": "2117-4617", "위치": "디오트 3-H-04"}, {"업체명": "코코마티니", "전화번호": "2117-8486", "위치": "디오트 3-H-7"}, {"업체명": "코코제이닛시", "전화번호": "2117-4063", "위치": "디오트 4-G-9"}, {"업체명": "코이", "전화번호": "010-3434-5284", "위치": "디오트 2-B-6"}, {"업체명": "코쿤", "전화번호": "2117-4972", "위치": "디오트 3-D-10"}, {"업체명": "콘티", "전화번호": "010-3179-3663", "위치": "청평화 4-A-37"}, {"업체명": "크렘", "전화번호": "010-5082-8208", "위치": "디오트 2-J-8"}, {"업체명": "쿨피스", "전화번호": "2117-4070", "위치": "디오트 4-D-20"}, {"업체명": "쿠잉", "전화번호": "2117-8935", "위치": "디오트 3-E-27"}, {"업체명": "크림", "전화번호": "010-7604-1340", "위치": "신발상가 C-1-34"}, {"업체명": "크롱", "전화번호": "2117-4210", "위치": "디오트 3-C-2"}, {"업체명": "클린", "전화번호": "010-8328-5758", "위치": "디오트 B1-i-18"}, {"업체명": "클라썸", "전화번호": "2117-8780", "위치": "디오트 3-J-18"}, {"업체명": "클레오", "전화번호": "2235-8140", "위치": "청평화 2-나-27"}, {"업체명": "클로스", "전화번호": "2231-6943", "위치": "apm Luxe 203"}, {"업체명": "타히티", "전화번호": "2117-4431", "위치": "디오트 4-J-13"}, {"업체명": "탭페이지", "전화번호": "2117-4112", "위치": "디오트3-H-4"}, {"업체명": "탱크걸", "전화번호": "2117-4142", "위치": "디오트 4-H-23"}, {"업체명": "테라이즈", "전화번호": "010-4995-0521", "위치": "디오트 2-F-4"}, {"업체명": "테이크", "전화번호": "010-7597-0600", "위치": "신평화 4-A-443"}, {"업체명": "테일즈", "전화번호": "010-3510-0818", "위치": "디오트 4-J-28"}, {"업체명": "투유", "전화번호": "2117-8201", "위치": "디오트 4-E-25"}, {"업체명": "트로피", "전화번호": "2117-4716", "위치": "디오트 4-J-16"}, {"업체명": "트릴리언", "전화번호": "010-3317-0528", "위치": "디오트 B1-B-10"}, {"업체명": "티엔", "전화번호": "2117-4214", "위치": "디오트 B1-J-20"}, {"업체명": "트웬티", "전화번호": "2117-4570", "위치": "디오트 3-D-21"}, {"업체명": "티케", "전화번호": "2250-1297", "위치": "apm B1-39"}, {"업체명": "티니", "전화번호": "010-7259-0223", "위치": "청평화 5-다-28"}, {"업체명": "트웰브", "전화번호": "2117-4882", "위치": "디오트 4-F-12"}, {"업체명": "토레", "전화번호": "010-6644-5589", "위치": "apm Luxe B2-1"}, {"업체명": "틴트", "전화번호": "2235-1151", "위치": "디오트 3-E-6"}, {"업체명": "파니니", "전화번호": "2117-4245", "위치": "디오트 B2-D-30"}, {"업체명": "파이버", "전화번호": "010-9598-0060", "위치": "디오트 3-E-12"}, {"업체명": "팍써", "전화번호": "2117-8278", "위치": "디오트 B2-G-25"}, {"업체명": "팔팔", "전화번호": "2117-8663", "위치": "디오트 4-i-20"}, {"업체명": "페어링", "전화번호": "010-4647-4170", "위치": "APM LUXE 4-17"}, {"업체명": "패키지", "전화번호": "2117-4697", "위치": "디오트 4-F-22"}, {"업체명": "퍼블릭", "전화번호": "2117-4144", "위치": "디오트 1-E-12"}, {"업체명": "퍼번트", "전화번호": "010-6774-2356", "위치": "디오트 B1-k-11"}, {"업체명": "퍼스트런", "전화번호": "2117-8708", "위치": "디오트 3-G-14"}, {"업체명": "퍼플", "전화번호": "2117-4560", "위치": "디오트 4-H-01"}, {"업체명": "핑크펌킨", "전화번호": "2117-4552", "위치": "디오트 3-B-02"}, {"업체명": "펀치", "전화번호": "2252-6406", "위치": "청평화 B1-신관-5호"}, {"업체명": "페니엘", "전화번호": "2238-8649", "위치": "청평화 4-B-44"}, {"업체명": "페이버", "전화번호": "2117-8834", "위치": "디오트 3-i-12"}, {"업체명": "페퍼", "전화번호": "2117-4678", "위치": "디오트 3-F-16"}, {"업체명": "페퍼솔트", "전화번호": "2117-4678", "위치": "디오트 4-G-19"}, {"업체명": "페이지원", "전화번호": "2234-5060", "위치": "청평화 5-가-6"}, {"업체명": "페라리", "전화번호": "2117-4675", "위치": "디오트 4-H-15"}, {"업체명": "포니테일", "전화번호": "010-2223-7801", "위치": "디오트 B1-F-13"}, {"업체명": "포러데이", "전화번호": "2117-4450", "위치": "디오트 3-i-16"}, {"업체명": "포레스트", "전화번호": "2117-8514", "위치": "디오트 3-D-16"}, {"업체명": "포에트", "전화번호": "2117-8733", "위치": "디오트 4-J-10"}, {"업체명": "포마드", "전화번호": "2117-8311", "위치": "디오트 4-D-9"}, {"업체명": "포커페이스", "전화번호": "2117-8694", "위치": "디오트 4-E-10"}, {"업체명": "포티포우먼(구.팔팔)", "전화번호": "010-8006-5009", "위치": "디오트 B1-H-16"}, {"업체명": "포포", "전화번호": "2117-4863", "위치": "디오트 4-B-12"}, {"업체명": "폼스튜디오", "전화번호": "2117-4366", "위치": "디오트 3-J-15"}, {"업체명": "프로퍼", "전화번호": "2117-4155", "위치": "디오트 5-A-11"}, {"업체명": "프레즐", "전화번호": "010-8698-5021", "위치": "디오트 3-I-26"}, {"업체명": "프롬디", "전화번호": "010-5176-2871", "위치": "서울시 중구 신당동 다산로 \n 29길 66번지 정우빌딩 3층"}, {"업체명": "프릴", "전화번호": "010-5858-5646", "위치": "디오트 5-j1-j2"}, {"업체명": "플라밍고", "전화번호": "2117-4048", "위치": "디오트 3-i-4"}, {"업체명": "플라워웨이브", "전화번호": "2231-9182", "위치": "청평화 5-라-519"}, {"업체명": "플로어", "전화번호": "2250-1157", "위치": "APM 1-57"}, {"업체명": "플랜", "전화번호": "2117-8595", "위치": "디오트 3-B-30"}, {"업체명": "플리즈", "전화번호": "010-6701-5806", "위치": "디오트 5-C-7"}, {"업체명": "플러버", "전화번호": "2117-8252", "위치": "apm place B1-104"}, {"업체명": "플러터", "전화번호": "2117-8336", "위치": "디오트 5-J-19"}, {"업체명": "플레이마켓", "전화번호": "2117-4770", "위치": "디오트 4-J-5"}, {"업체명": "플레인노트", "전화번호": "2117-4132", "위치": "디오트 4-B-28"}, {"업체명": "플로우", "전화번호": "2117-4433", "위치": "디오트 B2-G-24"}, {"업체명": "필모그래피", "전화번호": "2117-8457", "위치": "디오트 2-i-27"}, {"업체명": "피크닉", "전화번호": "010-5844-9991", "위치": "디오트 1-D-9"}, {"업체명": "피오니", "전화번호": "2117-4589", "위치": "디오트 B2-A-10"}, {"업체명": "피버", "전화번호": "2117-4885", "위치": "디오트 4-D-9"}, {"업체명": "하마", "전화번호": "2253-4630", "위치": "청평화 3-다-26"}, {"업체명": "하라", "전화번호": "010-3047-2263", "위치": "디오트 1-B-4"}, {"업체명": "하프", "전화번호": "2117-8610", "위치": "디오트 3-B-1호"}, {"업체명": "하우디", "전화번호": "010-2822-4530", "위치": "디오트 4-D-10"}, {"업체명": "하우", "전화번호": "2233-4403", "위치": "청평화 3-다-1~2호"}, {"업체명": "하우룩글로벌", "전화번호": "2237-4403", "위치": "청평화 1-다-2A호"}, {"업체명": "하루하", "전화번호": "02-2117-4036", "위치": "디오트 B1-L-3-1"}, {"업체명": "허니허니", "전화번호": "2117-8563", "위치": "디오트 1-E-14호"}, {"업체명": "해브", "전화번호": "2117-4079", "위치": "디오트 4-i-15-1"}, {"업체명": "해시", "전화번호": "010-8585-3163", "위치": "신발상가 C동1층31호"}, {"업체명": "허니비", "전화번호": "2252-5558", "위치": "청평화 4-D-48"}, {"업체명": "허니콤", "전화번호": "2233-8898", "위치": "청평화 4-C-28"}, {"업체명": "허쉬", "전화번호": "2117-8369", "위치": "디오트 2-H-6"}, {"업체명": "허즈비", "전화번호": "2117-4100", "위치": "디오트 B2-D-16"}, {"업체명": "헤브", "전화번호": "2117-4079", "위치": "디오트 4-i-15-1"}, {"업체명": "헤르모드", "전화번호": "2117-8074", "위치": "디오트 B1-F-3"}, {"업체명": "헤이무드", "전화번호": "010-7643-3597", "위치": "디오트 B1-J-2"}, {"업체명": "헤이노크", "전화번호": "010-7110-0133", "위치": "디오트 3-F-2"}, {"업체명": "헤이빌리", "전화번호": "2117-4974", "위치": "디오트 B1-A-15"}, {"업체명": "헤이", "전화번호": "2117-8677", "위치": "디오트 3-A-24"}, {"업체명": "헤일로", "전화번호": "010-2771-2241", "위치": "청평화 5-나-534"}, {"업체명": "해크니", "전화번호": "2117-4884", "위치": "디오트 B1-L5-2"}, {"업체명": "호시", "전화번호": "2117-8580", "위치": ""}];
-let VENDORS = [...BUILTIN_VENDORS];
+// API 키
+function saveApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key.startsWith('sk-ant-')) { showApiStatus('API 키 형식이 올바르지 않아요 (sk-ant-로 시작)', false); return; }
+  localStorage.setItem('anthropic_key', key);
+  showApiStatus('✅ 저장 완료! 다음에도 자동으로 불러와요', true);
+}
+function getApiKey() { return localStorage.getItem('anthropic_key') || document.getElementById('apiKey').value.trim(); }
+function showApiStatus(msg, ok) {
+  const el = document.getElementById('apiStatus');
+  el.textContent = msg;
+  el.className = 'api-status ' + (ok ? 'ok' : 'error');
+}
 
-async function loadVendors() {
-  const el = document.getElementById('loadStatus');
+// 페이지 로드시 저장된 키 불러오기
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('anthropic_key');
+  if (saved) { document.getElementById('apiKey').value = saved; showApiStatus('✅ 저장된 API 키를 불러왔어요', true); }
+});
+
+// 파일 업로드
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) handleImageFile(file);
+});
+
+// 클립보드 붙여넣기 (Ctrl+V)
+document.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (file) { handleImageFile(file); showToast('📋 이미지 붙여넣기 완료!'); }
+      break;
+    }
+  }
+});
+
+function handleImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const full = ev.target.result;
+    currentBase64 = full.split(',')[1];
+    currentType = file.type;
+    document.getElementById('previewImg').src = full;
+    document.getElementById('previewImg').style.display = 'block';
+    document.getElementById('btnAnalyze').classList.add('show');
+    document.getElementById('resultsWrap').classList.remove('show');
+    document.getElementById('saveAllWrap').classList.remove('show');
+  };
+  reader.readAsDataURL(file);
+}
+
+// AI 분석
+async function analyzeImage() {
+  const key = getApiKey();
+  if (!key) { showToast('❌ API 키를 먼저 입력해주세요'); return; }
+  if (!currentBase64) { showToast('❌ 이미지를 먼저 올려주세요'); return; }
+
+  document.getElementById('btnAnalyze').disabled = true;
+  document.getElementById('btnAnalyze').textContent = '분석 중...';
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('resultsWrap').classList.remove('show');
+
   try {
-    el.textContent = '거래처 목록 불러오는 중...';
-    el.className = 'load-status loading';
-    const res = await fetch(`${GAS_URL}?action=getVendors`);
-    const data = await res.json();
-    if (data.result === 'ok' && Array.isArray(data.vendors) && data.vendors.length > 0) {
-      const builtinNames = new Set(BUILTIN_VENDORS.map(v => v['업체명'].toLowerCase()));
-      const sheetOnly = data.vendors.filter(v => !builtinNames.has(v['업체명'].toLowerCase()));
-      const sheetMap = {};
-      data.vendors.forEach(v => { sheetMap[v['업체명'].toLowerCase()] = v; });
-      VENDORS = BUILTIN_VENDORS.map(v => {
-        const sv = sheetMap[v['업체명'].toLowerCase()];
-        return sv ? { '업체명': v['업체명'], '전화번호': sv['전화번호'] || v['전화번호'], '위치': sv['위치'] || v['위치'] } : v;
-      });
-      VENDORS = [...VENDORS, ...sheetOnly];
-      el.textContent = `✓ 거래처 ${VENDORS.length}개`;
-      el.className = 'load-status ok';
-      const lnk = document.getElementById('sheetLink'); if(lnk) lnk.style.display = 'inline';
-    } else {
-      throw new Error('getVendors 미지원');
-    }
-  } catch(err) {
-    VENDORS = [...BUILTIN_VENDORS];
-    el.textContent = `✓ 거래처 ${VENDORS.length}개`;
-    el.className = 'load-status ok';
-    const lnk = document.getElementById('sheetLink'); if(lnk) lnk.style.display = 'inline';
-    console.warn('시트 연동 실패, 내장 데이터 사용:', err.message);
-  }
-}
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: currentType, data: currentBase64 } },
+            { type: 'text', text: `이 신상마켓 찜 리스트 이미지에서 상품 정보를 추출해주세요.
+각 상품마다 상품명과 거래처(업체명)를 추출하세요.
+거래처는 "디오트 / flutter(플러터)" 형식이면 슬래시 뒤쪽만 사용하세요.
 
-async function saveVendorToSheet(name, phone, addr) {
-  try {
-    const payload = encodeURIComponent(JSON.stringify({ name, phone, addr }));
-    await fetch(`${GAS_URL}?action=save&data=${payload}`);
-  } catch(err) { console.error('저장 실패:', err); }
-}
-
-
-
-const BRAND_MAP = [
-  { pattern: /flutter\(플러터\)/i,          target: '플러터' },
-  { pattern: /flutter/i,                   target: '플러터' },
-  { pattern: /coolpis\s*쿨피스/i,           target: '쿨피스' },
-  { pattern: /쿨피스/i,                     target: '쿨피스' },
-  { pattern: /더\s*샌드/i,                  target: '더샌드' },
-  { pattern: /the\s*sand/i,                target: '더샌드' },
-  { pattern: /르헤베/i,                     target: '르헤베(구.마이영)' },
-  { pattern: /leheve/i,                    target: '르헤베(구.마이영)' },
-  { pattern: /프레즐/i,                     target: '프레즐' },
-  { pattern: /prezel/i,                    target: '프레즐' },
-  { pattern: /renouveau/i,                 target: '르누보' },
-  { pattern: /르누보/i,                     target: '르누보' },
-  { pattern: /ondo\s*온도/i,                target: '온도' },
-  { pattern: /maybeen|메이빈/i,             target: '메이빈' },
-  { pattern: /inouf|이너프/i,               target: '이너프' },
-  { pattern: /로와드/i,                     target: '로와드(구.다올)' },
-  { pattern: /sunday\(선데이\)|선데이/i,     target: '선데이' },
-  { pattern: /솔트비/i,                     target: '솔트비' },
-  { pattern: /salt_b/i,                    target: '솔트비' },
-  { pattern: /gratia\s*그라티아|그라티아/i,  target: '그라티아' },
-  { pattern: /스랍/i,                       target: '스랍&아하' },
-  { pattern: /srap/i,                      target: '스랍&아하' },
-  { pattern: /퍼스트런|first\s*run/i,       target: '퍼스트런' },
-  { pattern: /라운지베라|lounge\s*vera/i,   target: '라운지베라' },
-  { pattern: /모이\(moi\)|모이/i,            target: '모이라이' },
-];
-
-function normalizeBrand(raw) {
-  for (const rule of BRAND_MAP) {
-    if (rule.pattern.test(raw.trim())) return rule.target;
-  }
-  return raw.trim();
-}
-
-function findVendor(brandRaw) {
-  const target = normalizeBrand(brandRaw).toLowerCase();
-  for (const v of VENDORS) {
-    if (v['업체명'].toLowerCase() === target) return v;
-  }
-  for (const v of VENDORS) {
-    const vn = v['업체명'].toLowerCase();
-    if (target.includes(vn) || vn.includes(target)) return v;
-  }
-  return null;
-}
-
-function parseInput(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-  const items = [];
-  let i = 0;
-  while (i < lines.length) {
-    if (i + 1 < lines.length && lines[i+1].includes('/')) {
-      const productName = lines[i];
-      const vendorRaw = lines[i+1];
-      let skip = 2;
-      while (i+skip < lines.length && (lines[i+skip].startsWith('₩') || /^\d+$/.test(lines[i+skip]))) skip++;
-      const brandPart = vendorRaw.includes('/') ? vendorRaw.split('/').slice(1).join('/').trim() : vendorRaw.trim();
-      items.push({ productName, brandPart });
-      i += skip;
-    } else { i++; }
-  }
-  return items;
-}
-
-let currentResults = [];
-let missInputStore = {};
-
-function processData() {
-  const text = document.getElementById('inputArea').value.trim();
-  if (!text) { showToast('⚠ 목록을 먼저 붙여넣어 주세요'); return; }
-  const items = parseInput(text);
-  if (!items.length) { showToast('⚠ 파싱된 상품이 없습니다. 형식을 확인해주세요'); return; }
-
-  missInputStore = {};
-  currentResults = items.map(item => {
-    const v = findVendor(item.brandPart);
-    return v
-      ? { 업체명: v['업체명'], 연락처: v['전화번호']||'', 주소: v['위치']||'', 내용: item.productName, matched: true, brandKey: null }
-      : { 업체명: item.brandPart, 연락처: '', 주소: '', 내용: item.productName, matched: false, brandKey: item.brandPart };
-  });
-
-  currentResults.filter(r => !r.matched).forEach(r => {
-    if (!missInputStore[r.brandKey]) missInputStore[r.brandKey] = { phone: '', addr: '' };
-  });
-
-  currentResults.sort((a,b) => a.matched === b.matched ? 0 : a.matched ? 1 : -1);
-  renderPreview();
-}
-
-function renderPreview() {
-  const tbody = document.getElementById('previewBody');
-  tbody.innerHTML = '';
-
-  const unmatched = currentResults.filter(r => !r.matched);
-  const matched   = currentResults.filter(r =>  r.matched);
-
-  document.getElementById('statsRow').innerHTML =
-    `<span class="stat-chip">총 ${currentResults.length}개</span>` +
-    `<span class="stat-chip ok">✓ 매칭 ${matched.length}개</span>` +
-    (unmatched.length ? `<span class="stat-chip warn">✗ 미매칭 ${unmatched.length}개</span>` : '');
-
-  const firstRowOfBrand = {};
-
-  for (const r of currentResults) {
-    const tr = document.createElement('tr');
-    if (!r.matched) {
-      tr.classList.add('unmatched');
-      tr.dataset.brandKey = r.brandKey;
-
-      const isFirst = !firstRowOfBrand[r.brandKey];
-      if (isFirst) firstRowOfBrand[r.brandKey] = true;
-
-      const storedPhone = missInputStore[r.brandKey]?.phone || '';
-      const storedAddr  = missInputStore[r.brandKey]?.addr  || '';
-
-      tr.innerHTML = `
-        <td class="vendor-col miss">
-          <span class="badge-miss">✗ LIST없음</span>${r.업체명}
-        </td>
-        <td class="phone-col">
-          ${isFirst
-            ? `<input class="miss-input" type="text" placeholder="연락처 입력" data-brand="${r.brandKey}" data-field="phone" value="${storedPhone}" oninput="syncMissInput(this)" />`
-            : `<span class="synced-val" data-brand="${r.brandKey}" data-field="phone">${storedPhone || '—'}</span>`
-          }
-        </td>
-        <td class="addr-col">
-          ${isFirst
-            ? `<input class="miss-input addr-input" type="text" placeholder="주소 입력" data-brand="${r.brandKey}" data-field="addr" value="${storedAddr}" oninput="syncMissInput(this)" />`
-            : `<span class="synced-val" data-brand="${r.brandKey}" data-field="addr">${storedAddr || '—'}</span>`
-          }
-        </td>
-        <td class="name-col">${r.내용}</td>`;
-    } else {
-      tr.innerHTML = `
-        <td class="vendor-col">${r.업체명}</td>
-        <td class="phone-col">${r.연락처||'—'}</td>
-        <td class="addr-col">${r.주소||'—'}</td>
-        <td class="name-col">${r.내용}</td>`;
-    }
-    tbody.appendChild(tr);
-  }
-
-  document.getElementById('missingNotice').style.display = unmatched.length ? 'block' : 'none';
-  document.getElementById('previewSection').classList.add('visible');
-  document.getElementById('previewSection').scrollIntoView({ behavior:'smooth', block:'start' });
-  const noteEl = document.getElementById('autoSaveNote');
-  if (noteEl) noteEl.style.display = unmatched.length ? 'block' : 'none';
-}
-
-function syncMissInput(input) {
-  const brand = input.dataset.brand;
-  const field = input.dataset.field;
-  const val = input.value;
-
-  missInputStore[brand][field] = val;
-
-  // currentResults 업데이트
-  currentResults.forEach(r => {
-    if (!r.matched && r.brandKey === brand) {
-      if (field === 'phone') r.연락처 = val;
-      else r.주소 = val;
-    }
-  });
-
-  // 같은 거래처 synced-val 스팬 업데이트
-  document.querySelectorAll(`.synced-val[data-brand="${brand}"][data-field="${field}"]`).forEach(el => {
-    el.textContent = val || '—';
-  });
-
-  // 행 배경색 업데이트
-  const filled = missInputStore[brand].phone || missInputStore[brand].addr;
-  document.querySelectorAll('tr.unmatched').forEach(tr => {
-    if (tr.dataset.brandKey === brand) {
-      tr.classList.toggle('miss-filled', !!filled);
-    }
-  });
-}
-
-
-// ── 미등록 거래처 구글 시트 등록 ──
-async function uploadMissingVendors() {
-  const btn = document.getElementById('uploadVendorBtn');
-  const missKeys = Object.keys(missInputStore).filter(k => missInputStore[k].phone || missInputStore[k].addr);
-  if (!missKeys.length) { showToast('⚠ 입력된 거래처 정보가 없어요'); return; }
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 등록 중... (${missKeys.length}개)`;
-  let successCount = 0, failCount = 0;
-  for (const key of missKeys) {
-    const phone = missInputStore[key].phone || '';
-    const addr  = missInputStore[key].addr  || '';
-    const r = currentResults.find(r => !r.matched && r.brandKey === key);
-    const name = r ? r.업체명 : key;
-    try {
-      const payload = encodeURIComponent(JSON.stringify({ name, phone, addr }));
-      const res = await fetch(`${GAS_URL}?action=save&data=${payload}`);
-      const data = await res.json();
-      if (data.result === 'ok') successCount++; else failCount++;
-    } catch(err) { failCount++; }
-  }
-  btn.disabled = false;
-  btn.classList.remove('loading');
-  btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v13"/><path d="M5 9l7-7 7 7"/><rect x="3" y="16" width="18" height="6" rx="2"/></svg> 미등록 거래처 구글 시트에 등록`;
-  if (failCount === 0) {
-    showToast(`✓ ${successCount}개 거래처 시트 등록 완료!`);
-    btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 등록 완료 (${successCount}개)`;
-    missKeys.forEach(key => {
-      const r = currentResults.find(r => !r.matched && r.brandKey === key);
-      if (r) VENDORS.push({ '업체명': r.업체명, '전화번호': missInputStore[key].phone||'', '위치': missInputStore[key].addr||'' });
+반드시 JSON 배열만 반환하세요:
+[{"상품명":"...","거래처":"..."},{"상품명":"...","거래처":"..."}]` }
+          ]
+        }]
+      })
     });
-  } else {
-    showToast(`⚠ ${successCount}개 성공, ${failCount}개 실패`);
+
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content?.[0]?.text || '[]';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    // 이미지 크롭
+    await cropAndRender(parsed);
+
+  } catch(e) {
+    showToast('❌ 분석 실패: ' + e.message);
+    console.error(e);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('btnAnalyze').disabled = false;
+    document.getElementById('btnAnalyze').textContent = '🤖 AI로 상품 분석하기';
   }
 }
 
+// 이미지 크롭
+async function cropAndRender(parsed) {
+  const img = new Image();
+  img.src = document.getElementById('previewImg').src;
+  await new Promise(r => img.onload = r);
 
-// ── 공유 모달 ──
-function openShareModal() {
-  const missKeys = [];
-  currentResults.filter(r => !r.matched).forEach(r => {
-    if (!missKeys.includes(r.brandKey)) missKeys.push(r.brandKey);
-  });
-  if (!missKeys.length) { showToast('미매칭 업체가 없어요'); return; }
+  const count = parsed.length;
+  const cardW = Math.floor(img.width / count);
+  const cardH = Math.floor(img.height * 0.68);
 
-  let lines = [];
-  lines.push('*** 샘플 요청 거래처 추가해주세요! ***');
-  lines.push('');
-
-  missKeys.forEach((key, idx) => {
-    const phone = missInputStore[key]?.phone || '';
-    const addr  = missInputStore[key]?.addr  || '';
-    lines.push(`${idx + 1}. 업체명: ${key}`);
-    if (phone) lines.push(`   연락처: ${phone}`);
-    if (addr)  lines.push(`   주  소: ${addr}`);
+  products = parsed.map((p, i) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = cardW - 10;
+    canvas.height = cardH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, i * cardW, 0, cardW - 10, cardH, 0, 0, cardW - 10, cardH);
+    return { ...p, imageDataUrl: canvas.toDataURL('image/jpeg', 0.85), id: i };
   });
 
-  document.getElementById('shareContent').textContent = lines.join('\n');
-  document.getElementById('shareModal').classList.add('open');
+  renderCards();
 }
 
-function closeShareModal() {
-  document.getElementById('shareModal').classList.remove('open');
+function renderCards() {
+  const container = document.getElementById('productCards');
+  const today = new Date().toISOString().split('T')[0];
+  container.innerHTML = '';
+  products.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <div class="card-top">
+        <img class="card-thumb" src="${p.imageDataUrl}" alt="">
+        <div class="card-info">
+          <div class="card-num">상품 ${i+1}</div>
+          <input class="card-name-input" id="name-${i}" value="${esc(p.상품명)}" placeholder="상품명">
+          <div class="card-vendor" id="vendor-disp-${i}">${esc(p.거래처)}</div>
+        </div>
+        <button class="card-remove" onclick="removeProduct(${i})">✕</button>
+      </div>
+      <div class="card-body">
+        <div class="field-row">
+          <div class="field">
+            <label>거래처</label>
+            <input id="vendor-${i}" value="${esc(p.거래처)}" placeholder="거래처명">
+          </div>
+          <div class="field">
+            <label>요청일</label>
+            <input type="date" id="reqdate-${i}" value="${today}">
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label>출처</label>
+            <select id="source-${i}">
+              <option value="신상마켓" selected>신상마켓</option>
+              <option value="주거래처">주거래처</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.getElementById('resultCount').textContent = products.length;
+  document.getElementById('saveCount').textContent = products.length;
+  document.getElementById('resultsWrap').classList.add('show');
+  document.getElementById('saveAllWrap').classList.add('show');
 }
 
-function copyShareContent() {
-  const text = document.getElementById('shareContent').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('✓ 복사 완료! 관리자에게 붙여넣어 주세요');
-    closeShareModal();
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('✓ 복사 완료!');
-    closeShareModal();
-  });
-}
-
-// ── 엑셀 다운로드 ──
-function downloadExcel() {
-  if (!currentResults.length) { showToast('⚠ 먼저 분석을 실행해주세요'); return; }
-  const wb = XLSX.utils.book_new();
-
-  const s1 = [['업체명(필수)','연락처(필수)','주소(필수)','내용(필수)']];
-  for (const r of currentResults) s1.push([r.업체명, r.연락처, r.주소, r.내용]);
-  const ws1 = XLSX.utils.aoa_to_sheet(s1);
-  ws1['!cols'] = [{wch:22},{wch:18},{wch:26},{wch:58}];
-  const hStyle = { font:{bold:true,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'4472C4'}}, alignment:{horizontal:'center'} };
-  ['A1','B1','C1','D1'].forEach(ref => { if(ws1[ref]) ws1[ref].s = hStyle; });
-  currentResults.forEach((r,i) => {
-    if (!r.matched && !r.연락처 && !r.주소) {
-      ['A','B','C','D'].forEach(col => {
-        const ref = col+(i+2);
-        if (!ws1[ref]) ws1[ref] = {v:'',t:'s'};
-        ws1[ref].s = { fill:{fgColor:{rgb:'FFE7E7'}} };
-      });
-    }
-  });
-  XLSX.utils.book_append_sheet(wb, ws1, '샘플차감 등록양식');
-
-  const s2 = [['상품명','업체명(매칭결과)','연락처','주소','매칭여부']];
-  for (const r of currentResults) s2.push([r.내용, r.업체명, r.연락처, r.주소, r.matched?'✓ 매칭':'✗ LIST 없음']);
-  const ws2 = XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols'] = [{wch:58},{wch:22},{wch:18},{wch:24},{wch:14}];
-  XLSX.utils.book_append_sheet(wb, ws2, '원본 찜목록');
-
-  const d = new Date();
-  const ds = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-  // 미매칭 거래처 자동 저장
-  const savedKeys = [];
-  currentResults.filter(r => !r.matched).forEach(r => {
-    if (!savedKeys.includes(r.brandKey)) {
-      savedKeys.push(r.brandKey);
-      saveVendorToSheet(r.업체명, missInputStore[r.brandKey]?.phone||'', missInputStore[r.brandKey]?.addr||'');
-    }
-  });
-  XLSX.writeFile(wb, `스마트비즈_샘플요청_${ds}.xlsx`);
-  if (savedKeys.length) {
-    showToast(`✓ 엑셀 다운로드 완료 · 미등록 거래처 ${savedKeys.length}개 시트 저장`);
-  } else {
-    showToast('✓ 엑셀 다운로드 완료!');
+function removeProduct(i) {
+  products.splice(i, 1);
+  renderCards();
+  if (products.length === 0) {
+    document.getElementById('resultsWrap').classList.remove('show');
+    document.getElementById('saveAllWrap').classList.remove('show');
   }
 }
 
-function clearAll() {
-  document.getElementById('inputArea').value = '';
-  document.getElementById('previewSection').classList.remove('visible');
-  currentResults = [];
-  missInputStore = {};
+// 구글 시트 저장
+async function saveToSheet() {
+  const btn = document.getElementById('btnSaveAll');
+  btn.disabled = true;
+  btn.textContent = '저장 중...';
+
+  let success = 0;
+  for (let i = 0; i < products.length; i++) {
+    const name = document.getElementById('name-' + i)?.value || products[i].상품명;
+    const vendor = document.getElementById('vendor-' + i)?.value || products[i].거래처;
+    const reqdate = document.getElementById('reqdate-' + i)?.value || '';
+    const source = document.getElementById('source-' + i)?.value || '신상마켓';
+
+    try {
+      const payload = encodeURIComponent(JSON.stringify({
+        상품명: name,
+        거래처: vendor,
+        이미지URL: '',
+        요청일: reqdate,
+        입고일: '',
+        반납기한: '',
+        상태: '요청중',
+        반납일: '',
+        출처: source,
+        비고: ''
+      }));
+      await fetch(`${GAS_URL}?action=add&data=${payload}`, { mode: 'no-cors' });
+      success++;
+    } catch(e) { console.error(e); }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `📊 구글 시트에 전체 저장 (<span id="saveCount">${products.length}</span>개)`;
+  showToast(`✅ ${success}개 저장 완료! 구글 시트를 확인해주세요`);
 }
 
+function resetAll() {
+  currentBase64 = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('btnAnalyze').classList.remove('show');
+  document.getElementById('resultsWrap').classList.remove('show');
+  document.getElementById('saveAllWrap').classList.remove('show');
+  products = [];
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3000);
 }
-
-window.addEventListener('DOMContentLoaded', loadVendors);
 </script>
 </body>
 </html>
