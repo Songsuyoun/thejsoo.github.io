@@ -169,34 +169,48 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
     <div class="card">
       <div class="card-label">입고 정보 입력</div>
 
+      <!-- STEP 1: 거래처 선택 -->
       <div class="input-group">
-        <label class="input-label">거래처</label>
-        <input class="input-field" id="manualVendor" placeholder="예: 르헤베" list="vendorList">
-        <datalist id="vendorList"></datalist>
+        <label class="input-label">① 거래처 선택</label>
+        <div style="display:flex; gap:8px;">
+          <select class="input-field" id="manualVendor" onchange="onVendorChange()" style="cursor:pointer; flex:1;">
+            <option value="">-- 거래처 선택 --</option>
+          </select>
+          <button type="button" onclick="toggleDirectVendor()" id="btnDirectVendor"
+            style="padding:9px 14px; border-radius:8px; border:1.5px solid var(--gray-200); background:var(--gray-100); font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; white-space:nowrap; color:var(--gray-600);">
+            직접 입력
+          </button>
+        </div>
+        <input class="input-field" id="manualVendorDirect" placeholder="거래처명 직접 입력"
+          style="display:none; margin-top:8px;" oninput="onDirectVendorInput(this.value)">
       </div>
 
-      <div class="input-group">
-        <label class="input-label">상품명</label>
-        <input class="input-field" id="manualProduct" placeholder="예: BEST 라인BL">
+      <!-- STEP 2: 요청중 상품 선택 -->
+      <div class="input-group" id="matchGroup" style="display:none;">
+        <label class="input-label">② 요청중 상품 선택</label>
+        <select class="input-field" id="manualMatch" onchange="onMatchChange()" style="cursor:pointer;">
+          <option value="">-- 직접 입력 (새 행 추가) --</option>
+        </select>
       </div>
+
+      <!-- STEP 3: 상품명 (매칭 안될 때만) -->
+      <div class="input-group" id="productGroup" style="display:none;">
+        <label class="input-label">③ 상품명</label>
+        <input class="input-field" id="manualProduct" placeholder="상품명 직접 입력">
+      </div>
+
+      <!-- 매칭된 상품 확인 -->
+      <div id="matchedPreview" style="display:none; background:var(--green-light); border:1px solid #B8DCCA; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:12px; color:var(--green); line-height:1.8;"></div>
 
       <div class="input-row">
         <div class="input-group">
           <label class="input-label">입고일</label>
-          <input class="input-field" type="date" id="manualInbound">
+          <input class="input-field" type="date" id="manualInbound" onchange="setDeadline(this.value)">
         </div>
         <div class="input-group">
-          <label class="input-label">반납기한 (자동 +14일)</label>
+          <label class="input-label">반납기한 (+14일 자동)</label>
           <input class="input-field" type="date" id="manualDeadline">
         </div>
-      </div>
-
-      <!-- 시트 매칭 -->
-      <div class="input-group">
-        <label class="input-label">요청중 상품과 매칭</label>
-        <select class="input-field" id="manualMatch" style="cursor:pointer;">
-          <option value="">-- 새 행으로 추가 --</option>
-        </select>
       </div>
 
       <button class="btn-primary" onclick="saveManual()">📊 입고 처리하기</button>
@@ -260,23 +274,112 @@ async function loadSheetRows() {
 }
 
 function populateMatchSelect() {
-  var sel = document.getElementById('manualMatch');
-  sel.innerHTML = '<option value="">-- 새 행으로 추가 --</option>';
-  sheetRows.forEach(function(r, i) {
-    var opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = r['상품명'] + ' / ' + r['거래처'];
-    sel.appendChild(opt);
+  // 거래처 드롭다운 채우기
+  var vendorSel = document.getElementById('manualVendor');
+  var vendors = [];
+  sheetRows.forEach(function(r) {
+    if (vendors.indexOf(r['거래처']) < 0) vendors.push(r['거래처']);
   });
-
-  // 거래처 datalist
-  var dl = document.getElementById('vendorList');
-  var vendors = [...new Set(sheetRows.map(function(r) { return r['거래처']; }))];
+  vendorSel.innerHTML = '<option value="">-- 거래처 선택 --</option>';
   vendors.forEach(function(v) {
     var opt = document.createElement('option');
-    opt.value = v;
-    dl.appendChild(opt);
+    opt.value = v; opt.textContent = v;
+    vendorSel.appendChild(opt);
   });
+
+  // 요청중 없으면 안내
+  if (sheetRows.length === 0) {
+    vendorSel.innerHTML = '<option value="">요청중 상품이 없어요</option>';
+  }
+}
+
+function toggleDirectVendor() {
+  var direct = document.getElementById('manualVendorDirect');
+  var select = document.getElementById('manualVendor');
+  var btn = document.getElementById('btnDirectVendor');
+  var isHidden = direct.style.display === 'none';
+
+  if (isHidden) {
+    direct.style.display = 'block';
+    select.value = '';
+    select.disabled = true;
+    btn.textContent = '목록에서 선택';
+    btn.style.background = 'var(--black)';
+    btn.style.color = 'white';
+    btn.style.borderColor = 'var(--black)';
+    document.getElementById('matchGroup').style.display = 'none';
+    document.getElementById('productGroup').style.display = 'block';
+    document.getElementById('matchedPreview').style.display = 'none';
+    direct.focus();
+  } else {
+    direct.style.display = 'none';
+    direct.value = '';
+    select.disabled = false;
+    btn.textContent = '직접 입력';
+    btn.style.background = 'var(--gray-100)';
+    btn.style.color = 'var(--gray-600)';
+    btn.style.borderColor = 'var(--gray-200)';
+    document.getElementById('productGroup').style.display = 'none';
+  }
+}
+
+function onDirectVendorInput(val) {
+  // 직접 입력 모드에선 상품명 항상 표시
+  document.getElementById('productGroup').style.display = val ? 'block' : 'none';
+}
+
+function onVendorChange() {
+  var directVendorEl = document.getElementById('manualVendorDirect');
+  var vendor = (directVendorEl.style.display !== 'none' && directVendorEl.value.trim())
+    ? directVendorEl.value.trim()
+    : document.getElementById('manualVendor').value;
+  var matchSel = document.getElementById('manualMatch');
+  var matchGroup = document.getElementById('matchGroup');
+  var productGroup = document.getElementById('productGroup');
+  var preview = document.getElementById('matchedPreview');
+
+  preview.style.display = 'none';
+  productGroup.style.display = 'none';
+
+  if (!vendor) { matchGroup.style.display = 'none'; return; }
+
+  // 해당 거래처의 요청중 상품만 필터링
+  var filtered = sheetRows.filter(function(r) { return r['거래처'] === vendor; });
+  matchSel.innerHTML = '<option value="">-- 직접 입력 (새 행 추가) --</option>';
+  filtered.forEach(function(r) {
+    var idx = sheetRows.indexOf(r);
+    var opt = document.createElement('option');
+    opt.value = idx;
+    opt.textContent = r['상품명'];
+    matchSel.appendChild(opt);
+  });
+
+  matchGroup.style.display = 'block';
+
+  // 1개뿐이면 자동 선택
+  if (filtered.length === 1) {
+    matchSel.value = sheetRows.indexOf(filtered[0]);
+    onMatchChange();
+  }
+}
+
+function onMatchChange() {
+  var idx = document.getElementById('manualMatch').value;
+  var preview = document.getElementById('matchedPreview');
+  var productGroup = document.getElementById('productGroup');
+
+  if (idx === '') {
+    // 새 행 추가 선택
+    productGroup.style.display = 'block';
+    preview.style.display = 'none';
+  } else {
+    // 매칭된 상품 미리보기
+    var r = sheetRows[parseInt(idx)];
+    productGroup.style.display = 'none';
+    preview.style.display = 'block';
+    preview.innerHTML = '✅ 매칭: <strong>' + esc(r['상품명']) + '</strong><br>' +
+      '요청일: ' + r['요청일'] + ' &nbsp;→&nbsp; 상태: 요청중 → <strong>보유중</strong>';
+  }
 }
 
 // ── 탭 전환 ──
@@ -567,16 +670,19 @@ async function saveManual() {
   var deadline= document.getElementById('manualDeadline').value;
   var matchIdx= document.getElementById('manualMatch').value;
 
-  if (!vendor || !product) { showToast('거래처와 상품명을 입력해주세요'); return; }
+  // 매칭된 경우엔 product 없어도 OK
+  if (!vendor) { showToast('거래처를 선택해주세요'); return; }
+  if (matchIdx === '' && !product) { showToast('상품명을 입력해주세요'); return; }
 
   try {
     if (matchIdx !== '') {
-      // 기존 행 업데이트
+      // 기존 행 업데이트 (매칭된 요청중 상품)
       var row = sheetRows[parseInt(matchIdx)];
       var payload = encodeURIComponent(JSON.stringify({
         '_row': row['_row'], '상태': '보유중', '입고일': inbound, '반납기한': deadline
       }));
       await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
+      showToast('✅ ' + row['상품명'] + ' 입고 처리 완료!');
     } else {
       // 새 행 추가
       var payload2 = encodeURIComponent(JSON.stringify({
@@ -585,11 +691,22 @@ async function saveManual() {
         '반납기한': deadline, '상태': '보유중', '반납일': '', '출처': '직접입고', '비고': ''
       }));
       await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload2, { mode: 'no-cors' });
+      showToast('✅ ' + product + ' 입고 처리 완료!');
     }
-    showToast('✅ 입고 처리 완료!');
+    // 폼 초기화
     document.getElementById('manualVendor').value = '';
-    document.getElementById('manualProduct').value = '';
+    document.getElementById('manualVendor').disabled = false;
+    document.getElementById('manualVendorDirect').value = '';
+    document.getElementById('manualVendorDirect').style.display = 'none';
+    document.getElementById('btnDirectVendor').textContent = '직접 입력';
+    document.getElementById('btnDirectVendor').style.background = 'var(--gray-100)';
+    document.getElementById('btnDirectVendor').style.color = 'var(--gray-600)';
+    document.getElementById('btnDirectVendor').style.borderColor = 'var(--gray-200)';
     document.getElementById('manualMatch').value = '';
+    document.getElementById('manualProduct').value = '';
+    document.getElementById('matchGroup').style.display = 'none';
+    document.getElementById('productGroup').style.display = 'none';
+    document.getElementById('matchedPreview').style.display = 'none';
     loadSheetRows();
   } catch(e) { showToast('❌ 저장 실패'); }
 }
