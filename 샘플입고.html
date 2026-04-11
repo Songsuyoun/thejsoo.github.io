@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>샘플 입고 | 더제이수</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg: #F7F6F3; --white: #FFF; --black: #111;
+  --gray-100: #F2F1EE; --gray-200: #E6E3DE; --gray-400: #B0ADA7; --gray-600: #6B6760;
+  --green: #2D6A4F; --green-light: #EAF4EE;
+  --blue: #1A56A0; --blue-light: #EBF2FC;
+  --red: #C0392B; --red-light: #FDECEA;
+  --amber: #B8860B; --amber-light: #FEF9E7;
+  --accent: #E8756A;
+  --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.07); --font: 'Noto Sans KR', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font); background: var(--bg); color: var(--black); min-height: 100vh; padding-bottom: 110px; }
+
+header { background: var(--black); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.logo { color: white; font-size: 16px; font-weight: 700; }
+.logo span { color: var(--accent); }
+.step-badge { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; padding: 4px 12px; border-radius: 20px; }
+.main { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
+
+/* 탭 */
+.tabs { display: flex; background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 4px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.tab { flex: 1; padding: 10px; border-radius: 9px; border: none; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; background: transparent; color: var(--gray-600); transition: all 0.15s; }
+.tab.active { background: var(--black); color: white; }
+
+/* 카드 */
+.card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.card-label { font-size: 10px; font-weight: 700; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+
+/* API 입력 */
+.api-row { display: flex; gap: 8px; }
+.api-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: var(--font); outline: none; background: var(--gray-100); }
+.api-input:focus { border-color: var(--black); background: white; }
+.btn-sm { padding: 9px 16px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; background: var(--black); color: white; white-space: nowrap; }
+.api-status { font-size: 11px; margin-top: 6px; padding: 4px 10px; border-radius: 6px; display: none; }
+.api-status.ok { display: block; background: var(--green-light); color: var(--green); }
+.api-status.error { display: block; background: var(--red-light); color: var(--red); }
+
+/* 업로드 */
+.upload-area { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; background: var(--gray-100); position: relative; transition: all 0.15s; }
+.upload-area:hover { border-color: var(--black); background: #EEEDEA; }
+.upload-area.has-image { border-color: var(--green); border-style: solid; background: var(--green-light); }
+.upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 28px; margin-bottom: 6px; }
+.upload-area h3 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.upload-area p { font-size: 11px; color: var(--gray-600); }
+.preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; border: 1px solid var(--gray-200); margin-top: 12px; display: none; }
+
+/* 버튼 */
+.btn-primary { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; background: var(--accent); color: white; margin-top: 12px; transition: all 0.15s; }
+.btn-primary:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+/* 인풋 */
+.input-group { margin-bottom: 12px; }
+.input-label { font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; display: block; }
+.input-field { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: var(--font); background: var(--gray-100); outline: none; }
+.input-field:focus { border-color: var(--black); background: white; }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* 로딩 */
+.loading { text-align: center; padding: 24px; display: none; }
+.loading.show { display: block; }
+.spinner { width: 30px; height: 30px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* AI 인식 결과 카드 */
+.result-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.result-card.matched { border-color: var(--green); background: #FAFFFC; }
+.result-card.unmatched { border-color: var(--amber); background: var(--amber-light); }
+.result-card.new-row { border-color: var(--blue); background: var(--blue-light); }
+
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.result-name { font-size: 14px; font-weight: 700; }
+.result-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+.result-badge.ok { background: var(--green-light); color: var(--green); }
+.result-badge.warn { background: var(--amber-light); color: var(--amber); }
+.result-badge.new { background: var(--blue-light); color: var(--blue); }
+
+.result-info { font-size: 12px; color: var(--gray-600); margin-bottom: 10px; }
+
+/* 매칭 선택 UI */
+.match-select { width: 100%; border: 1.5px solid var(--amber); border-radius: 8px; padding: 9px 12px; font-size: 12px; font-family: var(--font); background: white; outline: none; margin-bottom: 8px; }
+.match-actions { display: flex; gap: 8px; }
+.btn-match-new { flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--blue); background: var(--blue-light); color: var(--blue); font-size: 12px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+.btn-match-select { flex: 1; padding: 8px; border-radius: 8px; border: none; background: var(--amber); color: white; font-size: 12px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+
+/* 날짜 정보 */
+.date-info { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.date-chip { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-200); }
+.date-chip.highlight { background: var(--green-light); color: var(--green); border-color: var(--green); }
+
+/* 저장 버튼 */
+.save-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px; display: none; z-index: 50; }
+.save-wrap.show { display: block; }
+.save-inner { max-width: 680px; margin: 0 auto; }
+.btn-save { width: 100%; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+.btn-save:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 300; max-width: calc(100vw - 40px); text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">더제이수 <span>샘플입고</span></div>
+  <div class="step-badge">② 입고 처리</div>
+</header>
+
+<div class="main">
+
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab active" id="tabAI" onclick="switchTab('ai')">📸 거래명세서 AI 인식</button>
+    <button class="tab" id="tabManual" onclick="switchTab('manual')">✏️ 직접 입력</button>
+  </div>
+
+  <!-- ── AI 인식 탭 ── -->
+  <div id="panelAI">
+    <!-- API 키 -->
+    <div class="card">
+      <div class="card-label">Anthropic API 키</div>
+      <div class="api-row">
+        <input type="password" class="api-input" id="apiKey" placeholder="sk-ant-...">
+        <button class="btn-sm" onclick="saveApiKey()">저장</button>
+      </div>
+      <div class="api-status" id="apiStatus"></div>
+    </div>
+
+    <!-- 이미지 업로드 -->
+    <div class="card">
+      <div class="card-label">거래명세서 사진</div>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" id="fileInput" accept="image/*" capture="environment">
+        <div class="upload-icon" id="uploadIcon">📄</div>
+        <h3 id="uploadTitle">거래명세서 사진 촬영 or 업로드</h3>
+        <p id="uploadSub">AI가 상품명·거래처를 자동으로 인식해요</p>
+      </div>
+      <img id="previewImg" class="preview-img" alt="">
+      <button class="btn-primary" id="btnAnalyze" onclick="analyzeImage()" style="display:none;">
+        🤖 AI로 입고 상품 인식하기
+      </button>
+    </div>
+
+    <!-- 로딩 -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p style="font-size:13px; color:var(--gray-600);" id="loadingMsg">인식 중...</p>
+    </div>
+
+    <!-- 인식 결과 -->
+    <div id="aiResults" style="display:none;">
+      <div style="font-size:12px; font-weight:700; color:var(--gray-600); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px;">
+        인식 결과 <span id="aiResultCount">0</span>개
+      </div>
+      <div id="resultCards"></div>
+    </div>
+  </div>
+
+  <!-- ── 직접 입력 탭 ── -->
+  <div id="panelManual" style="display:none;">
+    <div class="card">
+      <div class="card-label">입고 정보 입력</div>
+
+      <div class="input-group">
+        <label class="input-label">거래처</label>
+        <input class="input-field" id="manualVendor" placeholder="예: 르헤베" list="vendorList">
+        <datalist id="vendorList"></datalist>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">상품명</label>
+        <input class="input-field" id="manualProduct" placeholder="예: BEST 라인BL">
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">입고일</label>
+          <input class="input-field" type="date" id="manualInbound">
+        </div>
+        <div class="input-group">
+          <label class="input-label">반납기한 (자동 +14일)</label>
+          <input class="input-field" type="date" id="manualDeadline">
+        </div>
+      </div>
+
+      <!-- 시트 매칭 -->
+      <div class="input-group">
+        <label class="input-label">요청중 상품과 매칭</label>
+        <select class="input-field" id="manualMatch" style="cursor:pointer;">
+          <option value="">-- 새 행으로 추가 --</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" onclick="saveManual()">📊 입고 처리하기</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 저장 버튼 (AI 탭) -->
+<div class="save-wrap" id="saveWrap">
+  <div class="save-inner">
+    <button class="btn-save" id="btnSave" onclick="saveAll()">
+      📊 입고 처리 완료 (<span id="saveCount">0</span>개)
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var GAS_SAMPLE_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
+
+var pendingRows = [];   // AI 인식 결과
+var sheetRows = [];     // 시트 요청중 목록
+
+// ── 초기화 ──
+window.addEventListener('load', function() {
+  var saved = localStorage.getItem('anthropic_key');
+  if (saved) { document.getElementById('apiKey').value = saved; showApiStatus('✅ 저장된 키 불러옴', true); }
+
+  // 오늘 날짜 기본값
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('manualInbound').value = today;
+  setDeadline(today);
+
+  // 입고일 변경 시 반납기한 자동 계산
+  document.getElementById('manualInbound').addEventListener('change', function() {
+    setDeadline(this.value);
+  });
+
+  loadSheetRows();
+});
+
+function setDeadline(dateStr) {
+  if (!dateStr) return;
+  var d = new Date(dateStr);
+  d.setDate(d.getDate() + 14);
+  document.getElementById('manualDeadline').value = d.toISOString().split('T')[0];
+}
+
+// ── 시트에서 요청중 목록 불러오기 ──
+async function loadSheetRows() {
+  try {
+    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll');
+    var data = await res.json();
+    if (data.result === 'ok') {
+      sheetRows = data.rows.filter(function(r) { return r['상태'] === '요청중'; });
+      populateMatchSelect();
+    }
+  } catch(e) { console.error('시트 로드 실패', e); }
+}
+
+function populateMatchSelect() {
+  var sel = document.getElementById('manualMatch');
+  sel.innerHTML = '<option value="">-- 새 행으로 추가 --</option>';
+  sheetRows.forEach(function(r, i) {
+    var opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = r['상품명'] + ' / ' + r['거래처'];
+    sel.appendChild(opt);
+  });
+
+  // 거래처 datalist
+  var dl = document.getElementById('vendorList');
+  var vendors = [...new Set(sheetRows.map(function(r) { return r['거래처']; }))];
+  vendors.forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v;
+    dl.appendChild(opt);
+  });
+}
+
+// ── 탭 전환 ──
+function switchTab(tab) {
+  document.getElementById('panelAI').style.display = tab === 'ai' ? 'block' : 'none';
+  document.getElementById('panelManual').style.display = tab === 'manual' ? 'block' : 'none';
+  document.getElementById('tabAI').classList.toggle('active', tab === 'ai');
+  document.getElementById('tabManual').classList.toggle('active', tab === 'manual');
+  document.getElementById('saveWrap').classList.toggle('show', tab === 'ai' && pendingRows.length > 0);
+}
+
+// ── API 키 ──
+function saveApiKey() {
+  var key = document.getElementById('apiKey').value.trim();
+  if (!key.startsWith('sk-ant-')) { showApiStatus('API 키 형식이 올바르지 않아요', false); return; }
+  localStorage.setItem('anthropic_key', key);
+  showApiStatus('✅ 저장 완료!', true);
+}
+function showApiStatus(msg, ok) {
+  var el = document.getElementById('apiStatus');
+  el.textContent = msg; el.className = 'api-status ' + (ok ? 'ok' : 'error');
+}
+function getApiKey() { return localStorage.getItem('anthropic_key') || document.getElementById('apiKey').value.trim(); }
+
+// ── 이미지 업로드 ──
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+function handleFile(file) {
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var area = document.getElementById('uploadArea');
+    area.classList.add('has-image');
+    document.getElementById('uploadIcon').textContent = '✅';
+    document.getElementById('uploadTitle').textContent = '사진 등록됨';
+    document.getElementById('uploadSub').textContent = file.name;
+    document.getElementById('previewImg').src = ev.target.result;
+    document.getElementById('previewImg').style.display = 'block';
+    document.getElementById('btnAnalyze').style.display = 'block';
+    window._imgBase64 = ev.target.result.split(',')[1];
+    window._imgType = file.type;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── AI 분석 ──
+async function analyzeImage() {
+  var key = getApiKey();
+  if (!key) { showToast('❌ API 키를 입력해주세요'); return; }
+  if (!window._imgBase64) { showToast('❌ 사진을 올려주세요'); return; }
+
+  document.getElementById('btnAnalyze').disabled = true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('aiResults').style.display = 'none';
+
+  try {
+    // STEP 1: 이미지에서 상품명·거래처 추출
+    document.getElementById('loadingMsg').textContent = '상품 인식 중...';
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5', max_tokens: 1500,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: window._imgType, data: window._imgBase64 } },
+          { type: 'text', text: '이 거래명세서에서 상품명과 거래처(업체명)를 추출하세요. JSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
+        ]}]
+      })
+    });
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    var text = data.content[0].text;
+    var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    // STEP 2: 시트 요청중 목록과 AI 매칭
+    document.getElementById('loadingMsg').textContent = '시트 상품과 매칭 중...';
+    var matched = await aiMatch(parsed, key);
+    renderAIResults(matched);
+  } catch(e) {
+    showToast('❌ 인식 실패: ' + e.message);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('btnAnalyze').disabled = false;
+    document.getElementById('btnAnalyze').textContent = '🤖 AI로 입고 상품 인식하기';
+  }
+}
+
+// ── AI 매칭 함수 ──
+async function aiMatch(items, key) {
+  if (sheetRows.length === 0) {
+    // 시트에 요청중 항목 없으면 매칭 없이 반환
+    return items.map(function(item) {
+      return { 상품명: item['상품명'], 거래처: item['거래처'], matchedSheetIdx: -1 };
+    });
+  }
+
+  var sheetList = sheetRows.map(function(r, i) {
+    return i + '. ' + r['상품명'] + ' / ' + r['거래처'];
+  }).join('\n');
+
+  var invoiceList = items.map(function(item, i) {
+    return i + '. ' + item['상품명'] + ' / ' + item['거래처'];
+  }).join('\n');
+
+  var prompt = '아래는 구글 시트의 [요청중] 상품 목록이야:\n' + sheetList +
+    '\n\n아래는 거래명세서에서 인식한 상품 목록이야:\n' + invoiceList +
+    '\n\n각 영수증 상품이 시트 목록 중 어떤 항목과 같은 상품인지 판단해줘.' +
+    '\n상품명이 줄임말이거나 다르게 표기돼도 같은 상품이면 매칭해줘.' +
+    '\n매칭 없으면 sheetIdx를 -1로 해줘.' +
+    '\nJSON만 반환: [{"invoiceIdx":0,"sheetIdx":0}, ...]';
+
+  var resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5', max_tokens: 500,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  var data = await resp.json();
+  var matchText = data.content[0].text;
+  var matchResult = JSON.parse(matchText.replace(/```json|```/g, '').trim());
+
+  // 결과 합치기
+  return items.map(function(item, i) {
+    var m = matchResult.find(function(r) { return r.invoiceIdx === i; });
+    var sheetIdx = m ? m.sheetIdx : -1;
+    return {
+      상품명: item['상품명'],
+      거래처: item['거래처'],
+      matchedSheetIdx: sheetIdx
+    };
+  });
+}
+
+// ── AI 결과 렌더링 ──
+function renderAIResults(items) {
+  var today = new Date().toISOString().split('T')[0];
+  var deadline = new Date(); deadline.setDate(deadline.getDate() + 14);
+  var deadlineStr = deadline.toISOString().split('T')[0];
+
+  // aiMatch 결과(matchedSheetIdx 포함)로 pendingRows 구성
+  pendingRows = items.map(function(item) {
+    var sheetIdx = item.matchedSheetIdx;
+    var matched = sheetIdx >= 0 ? sheetRows[sheetIdx] : null;
+    return {
+      상품명: item['상품명'],
+      거래처: item['거래처'],
+      입고일: today,
+      반납기한: deadlineStr,
+      matched: matched,
+      matchedIdx: sheetIdx,
+      action: matched ? 'match' : 'ask',
+      rowNum: matched ? matched['_row'] : null
+    };
+  });
+
+  var container = document.getElementById('resultCards');
+  container.innerHTML = '';
+  document.getElementById('aiResultCount').textContent = pendingRows.length;
+
+  pendingRows.forEach(function(p, i) {
+    var card = document.createElement('div');
+    card.className = 'result-card ' + (p.matched ? 'matched' : 'unmatched');
+    card.id = 'rcard-' + i;
+
+    var matchedInfo = p.matched
+      ? '<div class="result-info">→ ' + p.matched['상품명'] + ' / ' + p.matched['거래처'] + '</div>'
+      : '';
+
+    var actionHtml = '';
+    if (!p.matched) {
+      // 매칭 안 됨 → 선택지 보여주기
+      var options = sheetRows.map(function(r, ri) {
+        return '<option value="' + ri + '">' + r['상품명'] + ' / ' + r['거래처'] + '</option>';
+      }).join('');
+      actionHtml =
+        '<select class="match-select" id="matchSel-' + i + '">' +
+          '<option value="">-- 직접 선택 --</option>' +
+          options +
+        '</select>' +
+        '<div class="match-actions">' +
+          '<button class="btn-match-new" onclick="setAction(' + i + ',\'new\')">➕ 새 행으로 추가</button>' +
+          '<button class="btn-match-select" onclick="setAction(' + i + ',\'select\')">✓ 선택한 항목에 매칭</button>' +
+        '</div>';
+    }
+
+    card.innerHTML =
+      '<div class="result-header">' +
+        '<div class="result-name">' + esc(p.상품명) + '</div>' +
+        '<span class="result-badge ' + (p.matched ? 'ok' : 'warn') + '">' + (p.matched ? '✓ 자동매칭' : '⚠ 미매칭') + '</span>' +
+      '</div>' +
+      '<div class="result-info">' + esc(p.거래처) + '</div>' +
+      matchedInfo +
+      '<div class="date-info">' +
+        '<span class="date-chip highlight">입고일 ' + p.입고일 + '</span>' +
+        '<span class="date-chip">반납기한 ' + p.반납기한 + '</span>' +
+      '</div>' +
+      (actionHtml ? '<div style="margin-top:10px;">' + actionHtml + '</div>' : '');
+
+    container.appendChild(card);
+  });
+
+  document.getElementById('aiResults').style.display = 'block';
+  document.getElementById('saveCount').textContent = pendingRows.length;
+  document.getElementById('saveWrap').classList.add('show');
+}
+
+// ── 미매칭 액션 설정 ──
+function setAction(i, action) {
+  var sel = document.getElementById('matchSel-' + i);
+  if (action === 'select' && sel.value === '') { showToast('요청중 상품을 선택해주세요'); return; }
+
+  pendingRows[i].action = action;
+  if (action === 'select') {
+    var ri = parseInt(sel.value);
+    pendingRows[i].matched = sheetRows[ri];
+    pendingRows[i].rowNum = sheetRows[ri]['_row'];
+    pendingRows[i].matchedIdx = ri;
+  }
+
+  var card = document.getElementById('rcard-' + i);
+  card.className = 'result-card ' + (action === 'new' ? 'new-row' : 'matched');
+
+  var badge = card.querySelector('.result-badge');
+  badge.textContent = action === 'new' ? '➕ 새 행 추가' : '✓ 매칭됨';
+  badge.className = 'result-badge ' + (action === 'new' ? 'new' : 'ok');
+
+  card.querySelector('div[style="margin-top:10px;"]')?.remove?.() ||
+  (function() { var el = card.querySelector('.match-select'); if(el) el.closest('div').remove?.(); })();
+
+  showToast(action === 'new' ? '➕ 새 행으로 추가됩니다' : '✓ 매칭 완료!');
+}
+
+// ── AI 탭 저장 ──
+async function saveAll() {
+  var btn = document.getElementById('btnSave');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  var success = 0;
+
+  for (var i = 0; i < pendingRows.length; i++) {
+    var p = pendingRows[i];
+    if (p.action === 'ask') { showToast('⚠️ ' + p.상품명 + ' 처리 방법을 선택해주세요'); continue; }
+
+    try {
+      if (p.action === 'match' || p.action === 'select') {
+        // 기존 행 업데이트
+        var payload = encodeURIComponent(JSON.stringify({
+          '_row': p.rowNum,
+          '상태': '보유중',
+          '입고일': p.입고일,
+          '반납기한': p.반납기한
+        }));
+        await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
+      } else {
+        // 새 행 추가
+        var payload2 = encodeURIComponent(JSON.stringify({
+          '상품명': p.상품명, '거래처': p.거래처, '연락처': '', '주소': '',
+          '이미지URL': '', '요청일': '', '입고일': p.입고일,
+          '반납기한': p.반납기한, '상태': '보유중', '반납일': '', '출처': '직접입고', '비고': ''
+        }));
+        await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload2, { mode: 'no-cors' });
+      }
+      success++;
+    } catch(e) { console.error(e); }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📊 입고 처리 완료 (<span id="saveCount">' + pendingRows.length + '</span>개)';
+  showToast('✅ ' + success + '개 입고 처리 완료!');
+}
+
+// ── 직접 입력 저장 ──
+async function saveManual() {
+  var vendor  = document.getElementById('manualVendor').value.trim();
+  var product = document.getElementById('manualProduct').value.trim();
+  var inbound = document.getElementById('manualInbound').value;
+  var deadline= document.getElementById('manualDeadline').value;
+  var matchIdx= document.getElementById('manualMatch').value;
+
+  if (!vendor || !product) { showToast('거래처와 상품명을 입력해주세요'); return; }
+
+  try {
+    if (matchIdx !== '') {
+      // 기존 행 업데이트
+      var row = sheetRows[parseInt(matchIdx)];
+      var payload = encodeURIComponent(JSON.stringify({
+        '_row': row['_row'], '상태': '보유중', '입고일': inbound, '반납기한': deadline
+      }));
+      await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
+    } else {
+      // 새 행 추가
+      var payload2 = encodeURIComponent(JSON.stringify({
+        '상품명': product, '거래처': vendor, '연락처': '', '주소': '',
+        '이미지URL': '', '요청일': '', '입고일': inbound,
+        '반납기한': deadline, '상태': '보유중', '반납일': '', '출처': '직접입고', '비고': ''
+      }));
+      await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload2, { mode: 'no-cors' });
+    }
+    showToast('✅ 입고 처리 완료!');
+    document.getElementById('manualVendor').value = '';
+    document.getElementById('manualProduct').value = '';
+    document.getElementById('manualMatch').value = '';
+    loadSheetRows();
+  } catch(e) { showToast('❌ 저장 실패'); }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>
