@@ -643,25 +643,36 @@ async function saveToSheet() {
     var phone  = document.getElementById('phone-'  + i)?.value || p.연락처;
     var addr   = document.getElementById('addr-'   + i)?.value || p.주소;
 
-    // 이미지 base64를 데이터에 포함 → Apps Script에서 드라이브 저장까지 한번에
     document.getElementById('loadingMsg').textContent = '저장 중... (' + (i+1) + '/' + products.length + ')';
-    var imgBase64 = '';
-    var imgFileName = '';
-    if (p.imageDataUrl) {
-      imgBase64 = p.imageDataUrl.split(',')[1];
-      imgFileName = (vendor + '_' + name).replace(/[^a-zA-Z0-9가-힣]/g, '_').slice(0,20) + '_' + today + '.jpg';
-    }
 
-    var payload = encodeURIComponent(JSON.stringify({
-      '상품명': name, '거래처': vendor, '연락처': phone, '주소': addr,
-      '이미지URL': '', '요청일': today,
-      '입고일': '', '반납기한': '', '상태': '요청중',
-      '반납일': '', '출처': '신상마켓', '비고': '',
-      'imageBase64': imgBase64,
-      'imageFileName': imgFileName
-    }));
+    // 이미지 있으면 POST(이미지+데이터 함께), 없으면 GET
     try {
-      await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload, { mode: 'no-cors' });
+      if (p.imageDataUrl) {
+        var imgBase64 = p.imageDataUrl.split(',')[1];
+        var imgFileName = (vendor + '_' + name).replace(/[^a-zA-Z0-9가-힣]/g, '_').slice(0,20) + '_' + today + '.jpg';
+        var body = JSON.stringify({
+          action: 'add',
+          '상품명': name, '거래처': vendor, '연락처': phone, '주소': addr,
+          '이미지URL': '', '요청일': today,
+          '입고일': '', '반납기한': '', '상태': '요청중',
+          '반납일': '', '출처': '신상마켓', '비고': '',
+          imageBase64: imgBase64, imageFileName: imgFileName
+        });
+        await fetch(GAS_SAMPLE_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: body
+        });
+      } else {
+        var payload = encodeURIComponent(JSON.stringify({
+          '상품명': name, '거래처': vendor, '연락처': phone, '주소': addr,
+          '이미지URL': '', '요청일': today,
+          '입고일': '', '반납기한': '', '상태': '요청중',
+          '반납일': '', '출처': '신상마켓', '비고': ''
+        }));
+        await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload, { mode: 'no-cors' });
+      }
       success++;
     } catch(e) { console.error(e); }
   }
