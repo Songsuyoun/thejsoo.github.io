@@ -524,7 +524,15 @@ function previewDetailImg() {
 
   // DOM 채우기
   document.getElementById('fi-color').textContent = colorStr || '—';
-  document.getElementById('fi-fabric').innerHTML = fabricStr.split(String.fromCharCode(10)).map(function(l){ return l.trim(); }).join('<br>') || '—';
+  // '/'도 줄바꿈으로 처리
+  var fabricHtml = fabricStr
+    .split('/')
+    .map(function(part) { return part.trim(); })
+    .filter(function(part) { return part; })
+    .join('<br>');
+  // 엔터 줄바꿈도 처리
+  fabricHtml = fabricHtml.split(String.fromCharCode(10)).map(function(l){ return l.trim(); }).filter(function(l){ return l; }).join('<br>');
+  document.getElementById('fi-fabric').innerHTML = fabricHtml || '—';
 
   // render box 표시
   document.getElementById('fabric-render-box').style.display = 'block';
