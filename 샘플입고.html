@@ -173,6 +173,11 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
         <p id="uploadSub">여러 장 선택하면 순서대로 자동 처리해요</p>
       </div>
       <img id="previewImg" class="preview-img" alt="">
+      <div style="display:flex; align-items:center; gap:8px; margin-top:10px; padding:10px 14px; background:#F0F4FF; border-radius:8px; border:1.5px solid #C5D5F5;">
+        <input type="checkbox" id="chkHandwritten" style="width:16px; height:16px; cursor:pointer; accent-color:#4A7AE0;">
+        <label for="chkHandwritten" style="font-size:12px; font-weight:600; color:#4A7AE0; cursor:pointer;">✏️ 수기 영수증 — AI가 읽은 후 상품명 직접 수정 가능</label>
+      </div>
+
       <button class="btn-primary" id="btnAnalyze" onclick="analyzeImage()" style="display:none;">
         🤖 AI로 입고 상품 인식하기
       </button>
@@ -610,7 +615,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
 // ── 이미지 압축 + 자동 분할 ──
 function compressBase64(dataUrl) {
   return new Promise(function(resolve) {
-    var MAX = 4500000; // 약 3.3MB 실제 크기 → API 5MB 제한 안전마진
+    var MAX = 3500000; // 약 2.6MB 실제 크기 → base64 후 4.6MB 이하 (안전마진 충분히)
     var b64 = dataUrl.split(',')[1];
     if (b64.length <= MAX) { resolve(dataUrl); return; }
 
@@ -746,13 +751,16 @@ async function analyzeImage() {
         rd.readAsDataURL(file);
       });
 
-      // 분할 (긴 영수증 자동 분할)
+      // 분할 후 각 조각 압축
       var imgParts = await splitImageIfLong(rawDataUrl);
+      var compressedParts = [];
+      for (var ci = 0; ci < imgParts.length; ci++) {
+        var c = await compressBase64(imgParts[ci]);
+        compressedParts.push(c);
+      }
 
-      for (var pi = 0; pi < imgParts.length; pi++) {
-        // 각 조각 압축
-        var compressed = await compressBase64(imgParts[pi]);
-        var partBase64 = compressed.split(',')[1];
+      for (var pi = 0; pi < compressedParts.length; pi++) {
+        var partBase64 = compressedParts[pi].split(',')[1];
 
         if (imgParts.length > 1) {
           document.getElementById('loadingMsg').textContent =
@@ -976,8 +984,20 @@ function renderAIResults(items) {
     }
 
     card.innerHTML =
+      var isHandwritten = document.getElementById('chkHandwritten') && document.getElementById('chkHandwritten').checked;
+      var nameBadge = isHandwritten
+        ? '<span style="font-size:10px; background:#4A7AE0; color:white; border-radius:10px; padding:2px 8px; margin-left:6px;">✏️ 수기</span>'
+        : '';
+
       '<div class="result-header">' +
-        '<div class="result-name">' + esc(p.상품명) + '</div>' +
+        '<div class="result-name">' +
+          (isHandwritten
+            ? '<input class="card-name-input" id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
+              'style="border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:15px; font-weight:700; font-family:var(--font); width:100%; outline:none; color:var(--black);" ' +
+              'oninput="pendingRows[' + i + '].상품명=this.value">'
+            : esc(p.상품명)) +
+          nameBadge +
+        '</div>' +
         '<span class="result-badge ' + (p.matched ? 'ok' : 'warn') + '">' + (p.matched ? '✓ 자동매칭' : '⚠ 미매칭') + '</span>' +
       '</div>' +
       '<div class="result-info">' + esc(p.거래처) +
@@ -1044,6 +1064,10 @@ async function saveAll() {
     if (p.action === 'ask') p.action = 'new';
 
     try {
+      // 수기 영수증이면 수정된 상품명 반영
+      var nameEditEl = document.getElementById('nameEdit-' + i);
+      if (nameEditEl) p.상품명 = nameEditEl.value.trim() || p.상품명;
+
       var memo = document.getElementById('memo-' + i) ? document.getElementById('memo-' + i).value.trim() : '';
       if (p.action === 'match' || p.action === 'select') {
         // 기존 행 업데이트 (연락처·주소도 같이 업데이트)
