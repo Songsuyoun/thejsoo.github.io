@@ -601,30 +601,30 @@ function readFileAsBase64(file) {
       var img = new Image();
       img.onload = function() {
         // 5MB 이하면 그대로, 초과면 Canvas로 압축
-        var MAX_BYTES = 4.5 * 1024 * 1024; // 4.5MB 안전마진
+        // base64는 원본보다 ~33% 커짐 → API 5MB 제한 기준으로 역산
+        var MAX_BASE64_LEN = 3.5 * 1024 * 1024 / 0.75; // 원본 3.5MB → base64 약 4.6MB
         var base64 = ev.target.result.split(',')[1];
-        var byteSize = Math.ceil(base64.length * 0.75);
 
-        if (byteSize <= MAX_BYTES) {
+        if (base64.length <= MAX_BASE64_LEN) {
           resolve({ base64: base64, type: file.type, name: file.name });
           return;
         }
 
         // Canvas로 리사이즈 압축
         var canvas = document.createElement('canvas');
-        var ratio = Math.sqrt(MAX_BYTES / byteSize);
+        var ratio = Math.sqrt(MAX_BASE64_LEN / base64.length) * 0.9;
         canvas.width  = Math.floor(img.width  * ratio);
         canvas.height = Math.floor(img.height * ratio);
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // 품질 조정하며 압축
+        // 품질 조정하며 압축 (base64 기준)
         var quality = 0.85;
         var compressed;
         do {
           compressed = canvas.toDataURL('image/jpeg', quality);
           quality -= 0.05;
-        } while (compressed.length * 0.75 > MAX_BYTES && quality > 0.3);
+        } while (compressed.split(',')[1].length > MAX_BASE64_LEN && quality > 0.2);
 
         var compressedBase64 = compressed.split(',')[1];
         var newSize = Math.round(compressedBase64.length * 0.75 / 1024);
