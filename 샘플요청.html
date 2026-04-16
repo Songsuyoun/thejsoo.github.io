@@ -188,11 +188,29 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
     <strong>③ 확인 후 저장</strong> → 구글 시트 + 드라이브 자동 저장
   </div>
 
+  <!-- 바로가기 버튼 -->
+  <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+    <a href="https://docs.google.com/spreadsheets/d/1cSF19qDVRfIAdFMGOFMbD73yajki4zUdPoEFE0vemEY/edit"
+       target="_blank"
+       style="flex:1; text-align:center; padding:10px 8px; background:var(--green-light); border:1.5px solid var(--green); border-radius:10px; font-size:12px; font-weight:700; color:var(--green); text-decoration:none;">
+      📊 샘플 관리 시트
+    </a>
+    <a href="https://drive.google.com/drive/folders/1agUM10wUZz04gPE-Ta6kabvDDVKfW0a9"
+       target="_blank"
+       style="flex:1; text-align:center; padding:10px 8px; background:var(--blue-light); border:1.5px solid var(--blue); border-radius:10px; font-size:12px; font-weight:700; color:var(--blue); text-decoration:none;">
+      🖼️ 드라이브 폴더
+    </a>
+    <a href="https://docs.google.com/spreadsheets/d/1bP7Nwovu3wFV7T1UOlUhS-O56nMeZ7-3lSZ0iNHUcrc/edit"
+       target="_blank"
+       style="flex:1; text-align:center; padding:10px 8px; background:var(--amber-light); border:1.5px solid var(--amber); border-radius:10px; font-size:12px; font-weight:700; color:var(--amber); text-decoration:none;">
+      📋 거래처 시트
+    </a>
+  </div>
+
   <!-- 거래처 DB 상태 -->
   <div class="db-bar">
     <span class="db-status loading" id="dbStatus">거래처 로딩 중...</span>
-    <a href="https://docs.google.com/spreadsheets/d/1bP7Nwovu3wFV7T1UOlUhS-O56nMeZ7-3lSZ0iNHUcrc/edit"
-       target="_blank" class="db-link" id="dbLink" style="display:none;">📋 거래처 시트</a>
+    <span id="dbLink"></span>
   </div>
 
 
@@ -399,15 +417,34 @@ function normalizeBrand(raw) {
   }
   return t;
 }
+function normalizeForMatch(s) {
+  return (s || '').toLowerCase().replace(/[()\[\]{}\-\.·,\s]/g, '');
+}
+
 function findVendor(brandRaw) {
   var target = normalizeBrand(brandRaw).toLowerCase();
-  for (var i = 0; i < VENDORS.length; i++) {
-    if ((VENDORS[i]['업체명']||'').toLowerCase() === target) return VENDORS[i];
-  }
+  var targetNorm = normalizeForMatch(target);
+
+  // 1. 정확히 일치
   for (var i = 0; i < VENDORS.length; i++) {
     var vn = (VENDORS[i]['업체명']||'').toLowerCase();
-    if (target.length > 1 && (target.indexOf(vn) >= 0 || vn.indexOf(target) >= 0)) return VENDORS[i];
+    if (vn === target) return VENDORS[i];
   }
+
+  // 2. 특수문자/공백 제거 후 일치 (로와드(구.다올) vs 로와드(구-다올))
+  for (var i = 0; i < VENDORS.length; i++) {
+    var vnNorm = normalizeForMatch(VENDORS[i]['업체명']);
+    if (vnNorm === targetNorm && targetNorm.length > 1) return VENDORS[i];
+  }
+
+  // 3. 포함 관계
+  for (var i = 0; i < VENDORS.length; i++) {
+    var vnNorm = normalizeForMatch(VENDORS[i]['업체명']);
+    if (targetNorm.length > 1 && vnNorm.length > 1) {
+      if (targetNorm.indexOf(vnNorm) >= 0 || vnNorm.indexOf(targetNorm) >= 0) return VENDORS[i];
+    }
+  }
+
   return null;
 }
 
@@ -468,14 +505,27 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
   if (e.target.files[0]) handleImageFile(e.target.files[0]);
 });
 document.addEventListener('paste', function(e) {
+  // 이미지 붙여넣기 처리 (텍스트 입력창 포함 어디서든)
   var items = e.clipboardData && e.clipboardData.items;
   if (!items) return;
-  for (var i = 0; i < items.length; i++) {
-    if (items[i].type.startsWith('image/')) {
-      var file = items[i].getAsFile();
-      if (file) { handleImageFile(file); showToast('📋 이미지 붙여넣기 완료!'); }
-      break;
+
+  for (var idx = 0; idx < items.length; idx++) {
+    if (items[idx].type.startsWith('image/')) {
+      var file = items[idx].getAsFile();
+      if (file) {
+        e.preventDefault();
+        handleImageFile(file);
+        showToast('📋 이미지 붙여넣기 완료!');
+      }
+      return; // 이미지면 텍스트 파싱 안 함
     }
+  }
+
+  // 이미지 없고 텍스트면 → textarea 파싱
+  if (e.target && e.target.id === 'textInput') {
+    setTimeout(function() {
+      if (document.getElementById('textInput').value.trim()) parseText();
+    }, 100);
   }
 });
 
@@ -518,8 +568,26 @@ async function cropAndRender() {
   document.getElementById('loading').classList.add('show');
 
   var img = new Image();
-  img.src = 'data:' + currentImageType + ';base64,' + currentImageBase64;
-  await new Promise(function(r) { img.onload = r; });
+  await new Promise(function(resolve, reject) {
+    img.onload = function() {
+      // 실제 크기가 로드됐는지 확인
+      if (img.width > 0 && img.height > 0) {
+        resolve();
+      } else {
+        reject(new Error('이미지 크기를 읽을 수 없어요'));
+      }
+    };
+    img.onerror = reject;
+    img.src = 'data:' + currentImageType + ';base64,' + currentImageBase64;
+  });
+  
+  // 혹시 모를 렌더링 지연 대기
+  await new Promise(function(r) { setTimeout(r, 100); });
+  
+  if (img.width === 0 || img.height === 0) {
+    showToast('❌ 이미지 로드 실패, 다시 시도해주세요');
+    return;
+  }
 
   var count = products.length;
   var cols = 5; // 신상마켓 찜 리스트 항상 5열
@@ -599,9 +667,9 @@ function renderCards() {
           '<div class="miss-form-title">⚠️ DB에 없는 거래처 — 연락처·주소 입력 후 추가</div>' +
           '<div class="miss-form-row">' +
             '<div class="miss-input-wrap"><label>📍 주소</label>' +
-            '<input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1" value="' + esc(p.주소) + '"></div>' +
+            '<input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1" value="' + esc(p.주소) + '" oninput="syncSameVendor(' + i + ',\'addr\',this.value)"></div>' +
             '<div class="miss-input-wrap"><label>📞 연락처</label>' +
-            '<input class="miss-input" id="phone-' + i + '" placeholder="2117-1234" value="' + esc(p.연락처) + '"></div>' +
+            '<input class="miss-input" id="phone-' + i + '" placeholder="2117-1234" value="' + esc(p.연락처) + '" oninput="syncSameVendor(' + i + ',\'phone\',this.value)"></div>' +
           '</div>' +
           '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가</button>' +
           '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 추가됐어요!</div>' +
@@ -650,7 +718,7 @@ function onVendorChange(i, value) {
       '<div class="miss-form-title">⚠️ DB에 없는 거래처 — 연락처·주소 입력 후 추가</div>' +
       '<div class="miss-form-row">' +
         '<div class="miss-input-wrap"><label>📞 연락처</label><input class="miss-input" id="phone-' + i + '" placeholder="2117-1234"></div>' +
-        '<div class="miss-input-wrap"><label>📍 주소</label><input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1"></div>' +
+        '<div class="miss-input-wrap"><label>📍 주소</label><input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1" oninput="syncSameVendor(' + i + ',\'addr\',this.value)"></div>' +
       '</div>' +
       '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가</button>' +
       '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 추가됐어요!</div>';
@@ -670,11 +738,38 @@ async function saveVendorToDB(i) {
     var payload = encodeURIComponent(JSON.stringify({ name: vendor, phone: phone, addr: addr }));
     await fetch(GAS_VENDOR_URL + '?action=save&data=' + payload, { mode: 'no-cors' });
     VENDORS.push({ '업체명': vendor, '전화번호': phone, '위치': addr });
+
+    // 같은 거래처명인 다른 카드에도 자동 적용
+    var sameVendorCount = 0;
+    products.forEach(function(p, j) {
+      var pVendor = document.getElementById('vendor-' + j) ? document.getElementById('vendor-' + j).value : p.거래처;
+      // 특수문자/공백 제거 후 비교
+      // 공백/특수문자 제거 후 비교
+      function simplify(s) { return (s||'').toLowerCase().replace(/\s/g,'').replace(/[().\-]/g,''); }
+      if (j !== i && simplify(pVendor) === simplify(vendor) && simplify(vendor).length > 0) {
+        p.연락처 = phone;
+        p.주소 = addr;
+        p.matched = true;
+        // 해당 카드 미매칭 폼 자동 숨김
+        var otherForm = document.getElementById('missform-' + j);
+        if (otherForm) {
+          otherForm.innerHTML = '<div style="font-size:11px; color:var(--green); padding:6px 0;">✅ ' + esc(vendor) + ' 정보 자동 적용됨</div>';
+        }
+        var badge = document.getElementById('badge-' + j);
+        if (badge) { badge.textContent = '✓ 매칭'; badge.className = 'match-badge ok'; }
+        var card = document.getElementById('card-' + j);
+        if (card) card.classList.remove('unmatched');
+        sameVendorCount++;
+      }
+    });
+
     products[i].연락처 = phone; products[i].주소 = addr;
     btn.style.display = 'none';
     var saved = document.getElementById('vsaved-' + i);
     if (saved) saved.style.display = 'block';
-    showToast('✅ ' + vendor + ' 시트에 추가됐어요!');
+    var msg = '✅ ' + vendor + ' 시트에 추가됐어요!';
+    if (sameVendorCount > 0) msg += ' (' + sameVendorCount + '개 카드 자동 적용)';
+    showToast(msg);
   } catch(e) {
     btn.disabled = false; btn.textContent = '📋 거래처 시트에 추가';
     showToast('❌ 저장 실패');
@@ -694,6 +789,27 @@ function removeProduct(i) {
 // ── 구글 시트 저장 ──
 async function saveToSheet() {
   if (!products.length) { showToast('저장할 상품이 없어요'); return; }
+
+  // 미매칭 거래처 중 주소/연락처 미입력 체크
+  var incomplete = [];
+  products.forEach(function(p, pi) {
+    if (!p.matched && !p.vendorSaved) {
+      var addrEl  = document.getElementById('addr-'  + pi);
+      var phoneEl = document.getElementById('phone-' + pi);
+      var addrVal  = addrEl  ? addrEl.value.trim()  : '';
+      var phoneVal = phoneEl ? phoneEl.value.trim() : '';
+      if (!addrVal || !phoneVal) {
+        var vendorEl = document.getElementById('vendor-' + pi);
+        incomplete.push((vendorEl ? vendorEl.value : p.거래처) || p.상품명);
+      }
+    }
+  });
+
+  if (incomplete.length > 0) {
+    // 경고는 하되 저장은 계속 진행
+    showToast('⚠️ 미매칭 거래처 ' + incomplete.length + '개는 주소·연락처 없이 저장돼요');
+  }
+
   var btn = document.getElementById('btnSaveAll');
   btn.disabled = true; btn.textContent = '저장 중...';
   var today = new Date().toISOString().split('T')[0];
@@ -780,6 +896,52 @@ document.addEventListener('click', function(e) {
   if (e.target === modal) closeGuide();
 });
 
+// 같은 거래처 카드 실시간 동기화
+// 알림 팝업
+function showAlert(title, msg) {
+  var existing = document.getElementById('alertModal');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'alertModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML =
+    '<div style="background:white;border-radius:16px;padding:24px 20px;width:100%;max-width:400px;">' +
+      '<div style="font-size:16px;font-weight:700;margin-bottom:12px;">' + title + '</div>' +
+      '<div style="font-size:13px;color:#6B6760;line-height:1.8;white-space:pre-line;margin-bottom:20px;">' + msg + '</div>' +
+      '<button onclick="document.getElementById(\'alertModal\').remove()" ' +
+        'style="width:100%;padding:13px;border-radius:10px;border:none;background:#111;color:white;font-size:14px;font-weight:700;font-family:sans-serif;cursor:pointer;">확인</button>' +
+    '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  // 3초 후 자동 제거
+  setTimeout(function() { if (document.getElementById('alertModal')) document.getElementById('alertModal').remove(); }, 5000);
+}
+
+function syncSameVendor(i, field, value) {
+  var vendor = document.getElementById('vendor-' + i) ? document.getElementById('vendor-' + i).value : products[i].거래처;
+  function simplify(s) {
+    return (s||'').toLowerCase().split('').filter(function(c){ return /[a-z0-9가-힣]/.test(c); }).join('');
+  }
+  var vendorKey = simplify(vendor);
+  if (!vendorKey) return;
+
+  products.forEach(function(p, j) {
+    if (j === i) return; // 본인 제외
+    var pVendor = document.getElementById('vendor-' + j) ? document.getElementById('vendor-' + j).value : p.거래처;
+    if (simplify(pVendor) !== vendorKey) return;
+
+    // 같은 거래처면 해당 필드 동기화
+    var targetInput = document.getElementById(field + '-' + j);
+    if (targetInput) {
+      targetInput.value = value;
+      // products 데이터도 업데이트
+      if (field === 'addr') p.주소 = value;
+      if (field === 'phone') p.연락처 = value;
+    }
+  });
+}
+
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function showToast(msg) {
   var t = document.getElementById('toast');
@@ -791,11 +953,10 @@ window.addEventListener('load', function() {
   loadVendorDB();
 
   // 텍스트 붙여넣기 감지 → 자동 파싱
-  document.getElementById('textInput').addEventListener('paste', function() {
+  // 텍스트 자동 파싱 (이미지는 전역 paste에서 처리)
+  document.getElementById('textInput').addEventListener('paste', function(e) {
     setTimeout(function() {
-      if (document.getElementById('textInput').value.trim()) {
-        parseText();
-      }
+      if (document.getElementById('textInput').value.trim()) parseText();
     }, 100);
   });
 });
