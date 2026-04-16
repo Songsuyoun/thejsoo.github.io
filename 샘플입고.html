@@ -384,7 +384,7 @@ function setDeadline(dateStr) {
 var vendorDB = [];
 async function loadVendorDB() {
   try {
-    var res = await fetch(GAS_VENDOR_URL + '?action=getVendors');
+    var res = await fetch(GAS_SAMPLE_URL + '?action=getVendors');
     var data = await res.json();
     if (data.result === 'ok' && data.vendors) {
       vendorDB = data.vendors;
