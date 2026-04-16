@@ -1239,7 +1239,7 @@ async function linkAlias(i) {
     name: selectedVendor['업체명'],
     alias: newAlias
   }));
-  await fetch(GAS_VENDOR_URL + '?action=updateAlias&data=' + payload, { mode: 'no-cors' });
+  await fetch(GAS_SAMPLE_URL + '?action=updateAlias&data=' + payload, { mode: 'no-cors' });
 
   // 로컬 vendorDB도 업데이트
   vendorDB[vendorIdx]['별칭'] = newAlias;
