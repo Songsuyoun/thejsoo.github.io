@@ -613,10 +613,33 @@ function splitImageIfLong(dataUrl, type) {
 
       console.log('이미지: ' + w + 'x' + h + ' 비율=' + ratio.toFixed(1) + ' 회전=' + isLandscape + ' ' + parts + '등분');
 
-      // 1장이고 용량도 작으면 그대로
       var b64len = dataUrl.split(',')[1].length;
+
+      // 1장이고 용량도 작으면 그대로
       if (parts === 1 && b64len <= 6500000) {
         resolve([{ dataUrl: dataUrl, type: type }]);
+        return;
+      }
+
+      // 1장인데 용량 초과 → 압축만 해서 반환
+      if (parts === 1 && b64len > 6500000) {
+        var cImg = new Image();
+        cImg.onload = function() {
+          var cvs = document.createElement('canvas');
+          var r2 = Math.sqrt(6500000 / b64len) * 0.85;
+          cvs.width  = Math.floor(cImg.width  * r2);
+          cvs.height = Math.floor(cImg.height * r2);
+          cvs.getContext('2d').drawImage(cImg, 0, 0, cvs.width, cvs.height);
+          var q = 0.85;
+          var comp;
+          do {
+            comp = cvs.toDataURL('image/jpeg', q);
+            q -= 0.05;
+          } while (comp.split(',')[1].length > 6500000 && q > 0.2);
+          console.log('단일 이미지 압축: ' + Math.round(b64len/1024) + 'KB → ' + Math.round(comp.split(",")[1].length/1024) + 'KB');
+          resolve([{ dataUrl: comp, type: 'image/jpeg' }]);
+        };
+        cImg.src = dataUrl;
         return;
       }
 
