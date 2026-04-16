@@ -594,95 +594,80 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
   reader.readAsDataURL(files[0]);
 });
 
-// ── 이미지 자동 분할 + 회전 처리 ──
-function splitImageIfLong(dataUrl, type) {
+// ── 이미지 압축 + 자동 분할 ──
+function compressBase64(dataUrl) {
+  return new Promise(function(resolve) {
+    var MAX = 6000000; // 약 4.5MB 실제 크기
+    var b64 = dataUrl.split(',')[1];
+    if (b64.length <= MAX) { resolve(dataUrl); return; }
+
+    var img = new Image();
+    img.onload = function() {
+      var scale = Math.sqrt(MAX / b64.length) * 0.8;
+      var canvas = document.createElement('canvas');
+      canvas.width  = Math.floor(img.width  * scale);
+      canvas.height = Math.floor(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      var q = 0.85, result;
+      do {
+        result = canvas.toDataURL('image/jpeg', q);
+        q -= 0.05;
+      } while (result.split(',')[1].length > MAX && q > 0.2);
+
+      console.log('압축: ' + Math.round(b64.length/1024) + 'KB → ' + Math.round(result.split(',')[1].length/1024) + 'KB');
+      resolve(result);
+    };
+    img.src = dataUrl;
+  });
+}
+
+function splitImageIfLong(dataUrl) {
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
       var w = img.width, h = img.height;
+      // 가로 이미지면 실제 긴 쪽 기준으로 비율 계산
+      var longSide  = Math.max(w, h);
+      var shortSide = Math.min(w, h);
+      var ratio = longSide / shortSide;
 
-      // 가로로 찍힌 경우 세로로 회전
+      var parts = ratio >= 4.5 ? 3 : ratio >= 2.5 ? 2 : 1;
+      console.log('분할: ' + w + 'x' + h + ' 비율=' + ratio.toFixed(1) + ' → ' + parts + '등분');
+
+      if (parts === 1) { resolve([dataUrl]); return; }
+
+      // 항상 세로 방향으로 통일 (가로면 회전)
       var isLandscape = w > h;
-      var effectiveW = isLandscape ? h : w;
-      var effectiveH = isLandscape ? w : h;
-
-      var ratio = effectiveH / effectiveW;
-      var parts = 1;
-      if (ratio >= 5) parts = 3;
-      else if (ratio >= 2.5) parts = 2;
-
-      console.log('이미지: ' + w + 'x' + h + ' 비율=' + ratio.toFixed(1) + ' 회전=' + isLandscape + ' ' + parts + '등분');
-
-      var b64len = dataUrl.split(',')[1].length;
-
-      // 1장이고 용량도 작으면 그대로
-      if (parts === 1 && b64len <= 6500000) {
-        resolve([{ dataUrl: dataUrl, type: type }]);
-        return;
+      var drawCanvas = document.createElement('canvas');
+      if (isLandscape) {
+        drawCanvas.width = h; drawCanvas.height = w;
+        var dc = drawCanvas.getContext('2d');
+        dc.translate(h/2, w/2);
+        dc.rotate(Math.PI/2);
+        dc.drawImage(img, -w/2, -h/2);
+      } else {
+        drawCanvas.width = w; drawCanvas.height = h;
+        drawCanvas.getContext('2d').drawImage(img, 0, 0);
       }
 
-      // 1장인데 용량 초과 → 압축만 해서 반환
-      if (parts === 1 && b64len > 6500000) {
-        var cImg = new Image();
-        cImg.onload = function() {
-          var cvs = document.createElement('canvas');
-          var r2 = Math.sqrt(6500000 / b64len) * 0.85;
-          cvs.width  = Math.floor(cImg.width  * r2);
-          cvs.height = Math.floor(cImg.height * r2);
-          cvs.getContext('2d').drawImage(cImg, 0, 0, cvs.width, cvs.height);
-          var q = 0.85;
-          var comp;
-          do {
-            comp = cvs.toDataURL('image/jpeg', q);
-            q -= 0.05;
-          } while (comp.split(',')[1].length > 6500000 && q > 0.2);
-          console.log('단일 이미지 압축: ' + Math.round(b64len/1024) + 'KB → ' + Math.round(comp.split(",")[1].length/1024) + 'KB');
-          resolve([{ dataUrl: comp, type: 'image/jpeg' }]);
-        };
-        cImg.src = dataUrl;
-        return;
-      }
-
+      var fw = drawCanvas.width, fh = drawCanvas.height;
+      var partH = Math.floor(fh / parts);
       var results = [];
-      var partH = Math.floor(effectiveH / parts);
 
       for (var p = 0; p < parts; p++) {
-        var canvas = document.createElement('canvas');
-        var segH = (p === parts - 1) ? effectiveH - partH * p : partH;
-
-        if (isLandscape) {
-          // 가로 이미지: 회전해서 자르기
-          canvas.width = effectiveW;
-          canvas.height = segH;
-          var ctx = canvas.getContext('2d');
-          ctx.save();
-          ctx.translate(effectiveW, 0);
-          ctx.rotate(Math.PI / 2);
-          ctx.drawImage(img, p * partH, 0, segH, effectiveW, 0, 0, segH, effectiveW);
-          ctx.restore();
-        } else {
-          canvas.width = w;
-          canvas.height = segH;
-          var ctx2 = canvas.getContext('2d');
-          ctx2.drawImage(img, 0, p * partH, w, segH, 0, 0, w, segH);
-        }
-
-        // 각 조각 압축 (5MB 이하로)
-        var MAX_B64 = 6500000;
-        var q = 0.85;
-        var result;
-        do {
-          result = canvas.toDataURL('image/jpeg', q);
-          q -= 0.05;
-        } while (result.split(',')[1].length > MAX_B64 && q > 0.2);
-
-        results.push({ dataUrl: result, type: 'image/jpeg' });
+        var segH = (p === parts-1) ? fh - partH*p : partH;
+        var seg = document.createElement('canvas');
+        seg.width = fw; seg.height = segH;
+        seg.getContext('2d').drawImage(drawCanvas, 0, p*partH, fw, segH, 0, 0, fw, segH);
+        results.push(seg.toDataURL('image/jpeg', 0.9));
       }
       resolve(results);
     };
     img.src = dataUrl;
   });
 }
+
 
 function readFileAsBase64(file) {
   return new Promise(function(resolve) {
@@ -741,46 +726,29 @@ async function analyzeImage() {
       document.getElementById('loadingMsg').textContent =
         '(' + (fi+1) + '/' + _pendingFiles.length + ') ' + file.name + ' 인식 중...';
 
-      // 원본을 DataURL로 읽은 뒤 분할 먼저 (압축 전에 분할)
+      // 원본 DataURL 읽기
       var rawDataUrl = await new Promise(function(rs) {
         var rd = new FileReader();
         rd.onload = function(ev) { rs(ev.target.result); };
         rd.readAsDataURL(file);
       });
 
-      // 세로로 긴 이미지 자동 분할
-      var imgParts = await splitImageIfLong(rawDataUrl, file.type);
+      // 분할 (긴 영수증 자동 분할)
+      var imgParts = await splitImageIfLong(rawDataUrl);
 
       for (var pi = 0; pi < imgParts.length; pi++) {
-        var part = imgParts[pi];
-        // 분할된 조각도 5MB 초과면 압축
-        var MAX_B64 = 6500000;
-        var rawBase64 = part.dataUrl.split(',')[1];
-        var partBase64 = rawBase64;
-        if (rawBase64.length > MAX_B64) {
-          var tmpImg = new Image();
-          await new Promise(function(r) { tmpImg.onload = r; tmpImg.src = part.dataUrl; });
-          var tmpCanvas = document.createElement('canvas');
-          var ratio2 = Math.sqrt(MAX_B64 / rawBase64.length) * 0.85;
-          tmpCanvas.width  = Math.floor(tmpImg.width  * ratio2);
-          tmpCanvas.height = Math.floor(tmpImg.height * ratio2);
-          tmpCanvas.getContext('2d').drawImage(tmpImg, 0, 0, tmpCanvas.width, tmpCanvas.height);
-          var q = 0.85;
-          var comp;
-          do { comp = tmpCanvas.toDataURL('image/jpeg', q); q -= 0.05; }
-          while (comp.split(',')[1].length > MAX_B64 && q > 0.2);
-          partBase64 = comp.split(',')[1];
-          console.log('조각 압축: ' + Math.round(rawBase64.length/1024) + 'KB → ' + Math.round(partBase64.length/1024) + 'KB');
-        }
+        // 각 조각 압축
+        var compressed = await compressBase64(imgParts[pi]);
+        var partBase64 = compressed.split(',')[1];
 
         if (imgParts.length > 1) {
           document.getElementById('loadingMsg').textContent =
-            '(' + (fi+1) + '/' + _pendingFiles.length + ') ' + file.name +
-            ' - ' + (pi+1) + '/' + imgParts.length + '번째 구간 인식 중...';
+            '(' + (fi+1) + '/' + _pendingFiles.length + ') ' +
+            (pi+1) + '/' + imgParts.length + '번째 구간 인식 중...';
         }
 
         // AI 인식
-        var resp = await fetch('https://anthropic-proxy.so0474.workers.dev', {
+        var resp2 = await fetch('https://anthropic-proxy.so0474.workers.dev', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -791,7 +759,7 @@ async function analyzeImage() {
             ]}]
           })
         });
-        var data = await resp.json();
+        var data = await resp2.json();
         if (data.error) throw new Error(data.error.message);
         var text = data.content[0].text;
         var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
