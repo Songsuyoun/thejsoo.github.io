@@ -685,18 +685,37 @@ async function analyzeImage() {
       document.getElementById('loadingMsg').textContent =
         '(' + (fi+1) + '/' + _pendingFiles.length + ') ' + file.name + ' 인식 중...';
 
-      // base64 변환
-      var imgData = await readFileAsBase64(file);
+      // 원본을 DataURL로 읽은 뒤 분할 먼저 (압축 전에 분할)
+      var rawDataUrl = await new Promise(function(rs) {
+        var rd = new FileReader();
+        rd.onload = function(ev) { rs(ev.target.result); };
+        rd.readAsDataURL(file);
+      });
 
       // 세로로 긴 이미지 자동 분할
-      var imgParts = await splitImageIfLong(
-        'data:' + imgData.type + ';base64,' + imgData.base64,
-        imgData.type
-      );
+      var imgParts = await splitImageIfLong(rawDataUrl, file.type);
 
       for (var pi = 0; pi < imgParts.length; pi++) {
         var part = imgParts[pi];
-        var partBase64 = part.dataUrl.split(',')[1];
+        // 분할된 조각도 5MB 초과면 압축
+        var MAX_B64 = 6500000;
+        var rawBase64 = part.dataUrl.split(',')[1];
+        var partBase64 = rawBase64;
+        if (rawBase64.length > MAX_B64) {
+          var tmpImg = new Image();
+          await new Promise(function(r) { tmpImg.onload = r; tmpImg.src = part.dataUrl; });
+          var tmpCanvas = document.createElement('canvas');
+          var ratio2 = Math.sqrt(MAX_B64 / rawBase64.length) * 0.85;
+          tmpCanvas.width  = Math.floor(tmpImg.width  * ratio2);
+          tmpCanvas.height = Math.floor(tmpImg.height * ratio2);
+          tmpCanvas.getContext('2d').drawImage(tmpImg, 0, 0, tmpCanvas.width, tmpCanvas.height);
+          var q = 0.85;
+          var comp;
+          do { comp = tmpCanvas.toDataURL('image/jpeg', q); q -= 0.05; }
+          while (comp.split(',')[1].length > MAX_B64 && q > 0.2);
+          partBase64 = comp.split(',')[1];
+          console.log('조각 압축: ' + Math.round(rawBase64.length/1024) + 'KB → ' + Math.round(partBase64.length/1024) + 'KB');
+        }
 
         if (imgParts.length > 1) {
           document.getElementById('loadingMsg').textContent =
