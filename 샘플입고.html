@@ -594,6 +594,40 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
   reader.readAsDataURL(files[0]);
 });
 
+// ── 이미지 자동 분할 ──
+// 세로로 긴 이미지를 비율에 따라 2~3등분으로 자름
+function splitImageIfLong(dataUrl, type) {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var ratio = img.height / img.width;
+      var parts = 1;
+      if (ratio >= 5) parts = 3;
+      else if (ratio >= 2.5) parts = 2;
+
+      if (parts === 1) {
+        resolve([{ dataUrl: dataUrl, type: type }]);
+        return;
+      }
+
+      var results = [];
+      var partH = Math.floor(img.height / parts);
+
+      for (var p = 0; p < parts; p++) {
+        var canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = (p === parts - 1) ? img.height - partH * p : partH;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, p * partH, img.width, canvas.height, 0, 0, img.width, canvas.height);
+        results.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.9), type: 'image/jpeg' });
+      }
+      console.log('이미지 분할: 비율=' + ratio.toFixed(1) + ' → ' + parts + '등분');
+      resolve(results);
+    };
+    img.src = dataUrl;
+  });
+}
+
 function readFileAsBase64(file) {
   return new Promise(function(resolve) {
     var reader = new FileReader();
@@ -654,30 +688,58 @@ async function analyzeImage() {
       // base64 변환
       var imgData = await readFileAsBase64(file);
 
-      // AI 인식
-      var resp = await fetch('https://anthropic-proxy.so0474.workers.dev', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'claude-opus-4-5', max_tokens: 4096,
-          messages: [{ role: 'user', content: [
-            { type: 'image', source: { type: 'base64', media_type: imgData.type, data: imgData.base64 } },
-            { type: 'text', text: '이 영수증/거래명세서를 분석해줘.\n\n중요: 영수증의 \'거래처명\'은 우리 회사(더제이수)야. 실제 거래처는 영수증 상단의 업체명(예: 페니엘, PENIEL 등 상호명)이야.\n\n추출 규칙:\n- 거래처: 영수증 상단 업체 상호명 (거래처명 항목 말고!)\n- 상품명: 상품 목록의 각 상품명 (색상/사이즈 포함)\n- 같은 상품이 수량 2개면 → 2개의 row로 분리\n\nJSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
-          ]}]
-        })
-      });
-      var data = await resp.json();
-      if (data.error) throw new Error(data.error.message);
-      var text = data.content[0].text;
-      var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      allParsed = allParsed.concat(parsed);
+      // 세로로 긴 이미지 자동 분할
+      var imgParts = await splitImageIfLong(
+        'data:' + imgData.type + ';base64,' + imgData.base64,
+        imgData.type
+      );
+
+      for (var pi = 0; pi < imgParts.length; pi++) {
+        var part = imgParts[pi];
+        var partBase64 = part.dataUrl.split(',')[1];
+
+        if (imgParts.length > 1) {
+          document.getElementById('loadingMsg').textContent =
+            '(' + (fi+1) + '/' + _pendingFiles.length + ') ' + file.name +
+            ' - ' + (pi+1) + '/' + imgParts.length + '번째 구간 인식 중...';
+        }
+
+        // AI 인식
+        var resp = await fetch('https://anthropic-proxy.so0474.workers.dev', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-opus-4-5', max_tokens: 4096,
+            messages: [{ role: 'user', content: [
+              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: partBase64 } },
+              { type: 'text', text: '이 영수증/거래명세서를 분석해줘.\n\n중요: 영수증의 \'거래처명\'은 우리 회사(더제이수)야. 실제 거래처는 영수증 상단의 업체명(예: 페니엘, PENIEL 등 상호명)이야.\n\n추출 규칙:\n- 거래처: 영수증 상단 업체 상호명 (거래처명 항목 말고!)\n- 상품명: 상품 목록의 각 상품명 (색상/사이즈 포함)\n- 같은 상품이 수량 2개면 → 2개의 row로 분리\n- 이미지가 영수증 일부일 수 있으니 보이는 상품 모두 추출해줘\n\nJSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
+            ]}]
+          })
+        });
+        var data = await resp.json();
+        if (data.error) throw new Error(data.error.message);
+        var text = data.content[0].text;
+        var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+        allParsed = allParsed.concat(parsed);
+      }
     }
+
+    // 옵션 제거 + 거래처별 상품명 중복 제거
+    var deduped = [];
+    var seen = {};
+    allParsed.forEach(function(item) {
+      var baseName = (item['상품명'] || '').split('/')[0].trim();
+      var vendor = item['거래처'] || '';
+      var uniqKey = vendor + '||' + baseName.toLowerCase().replace(/\s/g, '');
+      if (!seen[uniqKey]) {
+        seen[uniqKey] = true;
+        deduped.push({ '상품명': baseName, '거래처': vendor });
+      }
+    });
 
     // 전체 합친 결과로 시트 매칭
     document.getElementById('loadingMsg').textContent = '시트 상품과 매칭 중...';
-    var matched = await aiMatch(allParsed);
+    var matched = await aiMatch(deduped);
     renderAIResults(matched);
 
   } catch(e) {
