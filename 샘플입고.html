@@ -356,8 +356,7 @@ var sheetRows = [];     // 시트 요청중 목록
 
 // ── 초기화 ──
 window.addEventListener('load', function() {
-  var saved = localStorage.getItem('anthropic_key');
-  if (saved) { document.getElementById('apiKey').value = saved; showApiStatus('✅ 저장된 키 불러옴', true); }
+  // API 키는 Cloudflare Worker에 저장됨 (입력 불필요)
 
   // 오늘 날짜 기본값
   var today = new Date().toISOString().split('T')[0];
