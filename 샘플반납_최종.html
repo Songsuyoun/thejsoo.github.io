@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>샘플 반납 | 더제이수</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg: #F7F6F3; --white: #FFF; --black: #111;
+  --gray-100: #F2F1EE; --gray-200: #E6E3DE; --gray-400: #B0ADA7; --gray-600: #6B6760;
+  --green: #2D6A4F; --green-light: #EAF4EE;
+  --blue: #1A56A0; --blue-light: #EBF2FC;
+  --red: #C0392B; --red-light: #FDECEA;
+  --amber: #B8860B; --amber-light: #FEF9E7;
+  --accent: #E8756A;
+  --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.07); --font: 'Noto Sans KR', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font); background: var(--bg); color: var(--black); min-height: 100vh; padding-bottom: 120px; }
+
+header { background: var(--black); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.logo { color: white; font-size: 16px; font-weight: 700; }
+.logo span { color: var(--accent); }
+.step-badge { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; padding: 4px 12px; border-radius: 20px; }
+.main { max-width: 680px; margin: 0 auto; padding: 20px 16px; width: 100%; }
+
+/* 대시보드 */
+.dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.dash-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 14px 10px; text-align: center; box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s; }
+.dash-card.active.red { border: 2px solid var(--red); background: var(--red-light); }
+.dash-card.active.amber { border: 2px solid var(--amber); background: var(--amber-light); }
+.dash-card.active.green { border: 2px solid var(--green); background: var(--green-light); }
+.dash-num { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.dash-num.red { color: var(--red); }
+.dash-num.amber { color: var(--amber); }
+.dash-num.green { color: var(--green); }
+.dash-label { font-size: 10px; color: var(--gray-600); font-weight: 600; }
+
+/* 필터 */
+.filter-bar { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
+.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--gray-200); background: var(--white); font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; white-space: nowrap; color: var(--gray-600); }
+.filter-btn.active { background: var(--black); border-color: var(--black); color: white; }
+
+/* 거래처 그룹 */
+.vendor-group { margin-bottom: 20px; }
+.vendor-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 8px; box-shadow: var(--shadow); }
+.vendor-name { font-size: 14px; font-weight: 700; }
+.vendor-meta { font-size: 11px; color: var(--gray-600); }
+.btn-kakao { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #F0D060; background: var(--amber-light); color: var(--amber); font-size: 11px; font-weight: 700; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+
+/* 상품 카드 */
+.product-cards { display: flex; flex-direction: column; gap: 8px; }
+.product-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); transition: all 0.15s; cursor: pointer; }
+.product-card.checked { border-color: var(--green); background: #FAFFFC; }
+.product-card.urgent { border-left: 4px solid var(--red); }
+.product-card.warning { border-left: 4px solid var(--amber); }
+.product-card.checked.urgent, .product-card.checked.warning { border-left: 4px solid var(--green); }
+
+.card-inner { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
+
+/* 체크박스 */
+.card-check { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--gray-200); background: var(--gray-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; transition: all 0.15s; }
+.card-check.on { background: var(--green); border-color: var(--green); color: white; }
+
+/* 이미지 */
+.card-img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; border: 1px solid var(--gray-200); flex-shrink: 0; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 22px; overflow: hidden; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+/* 카드 정보 */
+.card-info { flex: 1; min-width: 0; }
+.card-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-vendor { font-size: 12px; color: var(--gray-600); margin-bottom: 4px; }
+.card-dday { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.card-dday.urgent { background: var(--red-light); color: var(--red); }
+.card-dday.warning { background: var(--amber-light); color: var(--amber); }
+.card-dday.safe { background: var(--green-light); color: var(--green); }
+
+/* 로딩 */
+.loading { text-align: center; padding: 40px 20px; }
+.spinner { width: 30px; height: 30px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 빈 화면 */
+.empty { text-align: center; padding: 60px 20px; color: var(--gray-400); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; font-weight: 600; }
+
+/* 카톡 팝업 */
+.kakao-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: flex-end; justify-content: center; }
+.kakao-modal.show { display: flex; }
+.kakao-inner { background: white; border-radius: 20px 20px 0 0; padding: 24px 16px 40px; width: 100%; max-width: 680px; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.kakao-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+.kakao-textarea { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; font-size: 13px; font-family: var(--font); background: var(--gray-100); outline: none; resize: vertical; min-height: 120px; color: var(--black); line-height: 1.7; }
+.kakao-textarea:focus { border-color: var(--black); background: white; }
+.kakao-actions { display: flex; gap: 10px; margin-top: 12px; }
+.btn-copy { flex: 1; padding: 13px; border-radius: 10px; border: none; background: var(--amber); color: white; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+.btn-close-modal { flex: 0; padding: 13px 18px; border-radius: 10px; border: 1.5px solid var(--gray-200); background: white; color: var(--gray-600); font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+
+/* 저장 버튼 */
+.save-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px; z-index: 50; }
+.save-inner { max-width: 680px; margin: 0 auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.checked-info { font-size: 12px; color: var(--gray-600); white-space: nowrap; }
+.btn-save { flex: 1; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: background 0.15s; }
+.btn-save:disabled { background: var(--gray-400) !important; cursor: not-allowed !important; }
+
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 300; max-width: calc(100vw - 40px); text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── 모바일 최적화 ── */
+@media (max-width: 480px) {
+  .main { padding: 14px 12px; }
+  .miss-form-row { grid-template-columns: 1fr !important; }
+  .input-row { grid-template-columns: 1fr !important; }
+  .dashboard { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .dash-num { font-size: 22px; }
+  .dash-label { font-size: 9px; }
+  .card-main { gap: 8px; padding: 10px; }
+  .card-thumb, .card-img { width: 52px; height: 52px; }
+  .tabs { gap: 4px; }
+  .tab { font-size: 11px; padding: 9px 6px; }
+  .vendor-header { flex-wrap: wrap; gap: 8px; }
+  .filter-bar { gap: 6px; }
+  .filter-btn { padding: 6px 10px; font-size: 11px; }
+  .btn-kakao { font-size: 10px; padding: 5px 10px; }
+  .save-inner { flex-direction: column; gap: 8px; }
+  .save-inner .checked-info { text-align: center; }
+  .kakao-inner { padding: 20px 16px 32px; }
+  .match-actions { flex-direction: column; }
+  .api-row { flex-direction: column; }
+  .btn-sm { width: 100%; }
+  .results-actions { gap: 4px; }
+  .card-name-input { font-size: 13px; }
+}
+
+/* 터치 타겟 최소 44px, 폰트 줌 방지 */
+input, select, textarea, button { touch-action: manipulation; }
+input[type="text"], input[type="password"], input[type="date"], select, textarea {
+  font-size: 16px !important; /* iOS 줌 방지 */
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">더제이수 <span>샘플반납</span></div>
+  <div class="step-badge">③ 반납 처리</div>
+</header>
+
+<div class="main">
+
+  <!-- 대시보드 -->
+  <div class="dashboard">
+    <div class="dash-card red" id="dashUrgent" onclick="setFilter('urgent')">
+      <div class="dash-num red" id="numUrgent">-</div>
+      <div class="dash-label">⚠️ 기한 초과</div>
+    </div>
+    <div class="dash-card amber" id="dashWarning" onclick="setFilter('warning')">
+      <div class="dash-num amber" id="numWarning">-</div>
+      <div class="dash-label">📅 3일 이내</div>
+    </div>
+    <div class="dash-card green" id="dashSafe" onclick="setFilter('safe')">
+      <div class="dash-num green" id="numSafe">-</div>
+      <div class="dash-label">✅ 여유 있음</div>
+    </div>
+  </div>
+
+  <!-- 거래처 검색 -->
+  <div style="position:relative; margin-bottom:12px;">
+    <input id="vendorSearch" type="text" placeholder="🔍 거래처 검색 (예: 이 → 이유·이프유 / ㄹㅎㅂ → 르헤베)"
+      oninput="onSearchInput(this.value)"
+      onkeydown="if(event.key==='Enter') applySearch()"
+      style="width:100%; border:1.5px solid var(--gray-200); border-radius:10px; padding:11px 16px; font-size:14px; font-family:var(--font); background:var(--white); outline:none; box-shadow:var(--shadow);">
+    <!-- 자동완성 드롭다운 -->
+    <div id="searchDropdown" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1.5px solid var(--gray-200); border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:200; max-height:200px; overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- 필터 바 -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all')">전체</button>
+    <button class="filter-btn" onclick="setFilter('urgent')">기한 초과</button>
+    <button class="filter-btn" onclick="setFilter('warning')">3일 이내</button>
+    <button class="filter-btn" onclick="setFilter('safe')">여유 있음</button>
+  </div>
+
+  <!-- 로딩 -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p style="font-size:13px; color:var(--gray-600);">보유중 샘플 불러오는 중...</p>
+  </div>
+
+  <!-- 상품 목록 -->
+  <div id="itemList"></div>
+
+  <!-- 빈 화면 -->
+  <div class="empty" id="emptyState" style="display:none;">
+    <div class="empty-icon">🎉</div>
+    <div class="empty-text">반납할 샘플이 없어요!</div>
+  </div>
+
+</div>
+
+<!-- 카톡 멘트 팝업 -->
+<div class="kakao-modal" id="kakaoModal">
+  <div class="kakao-inner">
+    <div class="kakao-title">
+      <span>💬 카톡 멘트 — <span id="kakaoVendorName"></span></span>
+      <button onclick="closeKakao()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
+    </div>
+    <textarea class="kakao-textarea" id="kakaoText"></textarea>
+    <div class="kakao-actions">
+      <button class="btn-close-modal" onclick="closeKakao()">닫기</button>
+      <button class="btn-copy" onclick="copyKakao()">📋 복사하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 저장 버튼 -->
+<div class="save-wrap">
+  <div class="save-inner">
+    <div class="checked-info" id="checkedInfo">0개 선택</div>
+    <button class="btn-save" id="btnSave" onclick="saveAndExcel()" disabled
+      style="background:var(--green);">
+      ✅ 반납 처리 + 엑셀 저장
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var GAS_VENDOR_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
+var GAS_SAMPLE_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
+
+var allItems = [];
+var currentFilter = 'all';
+
+// ── 초기화 ──
+window.addEventListener('load', function() {
+  loadItems();
+});
+
+// ── 시트에서 보유중 목록 로드 ──
+async function loadItems() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('loading').innerHTML = '<div class="spinner"></div><p style="font-size:13px;color:var(--gray-600);" id="loadingMsg">보유중 샘플 불러오는 중...</p>';
+  document.getElementById('itemList').innerHTML = '';
+  document.getElementById('emptyState').style.display = 'none';
+
+  // 10초 timeout
+  var controller = new AbortController();
+  var timer = setTimeout(function() { controller.abort(); }, 10000);
+
+  try {
+    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll', { signal: controller.signal });
+    clearTimeout(timer);
+    var data = await res.json();
+    if (data.result === 'ok') {
+      allItems = data.rows
+        .filter(function(r) { return r['상태'] === '보유중'; })
+        .map(function(r) {
+          var dday = calcDday(r['반납기한']);
+          var urgency = dday < 0 ? 'urgent' : dday <= 3 ? 'warning' : 'safe';
+          return Object.assign({}, r, { dday: dday, urgency: urgency, checked: false });
+        })
+        .sort(function(a, b) { return a.dday - b.dday; });
+      updateDashboard();
+      renderList();
+    } else {
+      throw new Error('응답 오류');
+    }
+  } catch(e) {
+    clearTimeout(timer);
+    var msg = e.name === 'AbortError' ? '⏱ 응답 시간 초과' : '❌ 로드 실패';
+    document.getElementById('loading').innerHTML =
+      '<div style="font-size:32px;margin-bottom:12px;">😢</div>' +
+      '<p style="font-size:13px;color:var(--gray-600);margin-bottom:16px;">' + msg + '<br>Apps Script 배포 상태를 확인해주세요</p>' +
+      '<button onclick="loadItems()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--black);color:white;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">🔄 다시 시도</button>';
+    return;
+  } finally {
+    if (!document.getElementById('loading').querySelector('button')) {
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+}
+
+function calcDday(dateStr) {
+  if (!dateStr) return 999;
+  var deadline = new Date(dateStr);
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  deadline.setHours(0,0,0,0);
+  return Math.floor((deadline - today) / (1000 * 60 * 60 * 24));
+}
+
+function ddayLabel(dday) {
+  if (dday < 0) return 'D+' + Math.abs(dday) + ' 초과';
+  if (dday === 0) return 'D-Day';
+  return 'D-' + dday;
+}
+
+function updateDashboard() {
+  var urgent = allItems.filter(function(r) { return r.urgency === 'urgent'; }).length;
+  var warning = allItems.filter(function(r) { return r.urgency === 'warning'; }).length;
+  var safe = allItems.filter(function(r) { return r.urgency === 'safe'; }).length;
+  document.getElementById('numUrgent').textContent = urgent;
+  document.getElementById('numWarning').textContent = warning;
+  document.getElementById('numSafe').textContent = safe;
+}
+
+// ── 필터 ──
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.dash-card').forEach(function(b) { b.classList.remove('active'); });
+  var btns = document.querySelectorAll('.filter-btn');
+  var idx = ['all','urgent','warning','safe'].indexOf(f);
+  if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+  if (f === 'urgent') document.getElementById('dashUrgent').classList.add('active');
+  if (f === 'warning') document.getElementById('dashWarning').classList.add('active');
+  if (f === 'safe') document.getElementById('dashSafe').classList.add('active');
+  renderList();
+}
+
+// ── 목록 렌더링 (거래처별 그룹) ──
+function renderList() {
+  var filtered = currentFilter === 'all' ? allItems : allItems.filter(function(r) { return r.urgency === currentFilter; });
+
+  // 거래처 검색 필터 적용
+  if (searchKeyword) {
+    filtered = filtered.filter(function(r) {
+      var v = r['거래처'] || '';
+      return v.toLowerCase().indexOf(searchKeyword.toLowerCase()) >= 0 ||
+             matchChosong(v, searchKeyword);
+    });
+  }
+
+  if (!filtered.length) {
+    document.getElementById('itemList').innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+  document.getElementById('emptyState').style.display = 'none';
+
+  // 거래처별 그룹핑
+  var groups = {};
+  filtered.forEach(function(item) {
+    var v = item['거래처'] || '기타';
+    if (!groups[v]) groups[v] = [];
+    groups[v].push(item);
+  });
+
+  var html = '';
+  // 거래처 그룹도 dday 오름차순 정렬
+  Object.keys(groups).forEach(function(vendor) {
+    groups[vendor].sort(function(a, b) { return a.dday - b.dday; });
+  });
+
+  // 거래처 그룹 자체도 그룹 내 최소 dday 기준 정렬
+  var sortedVendors = Object.keys(groups).sort(function(a, b) {
+    var minA = Math.min.apply(null, groups[a].map(function(r) { return r.dday; }));
+    var minB = Math.min.apply(null, groups[b].map(function(r) { return r.dday; }));
+    return minA - minB;
+  });
+
+  sortedVendors.forEach(function(vendor) {
+    var items = groups[vendor];
+    var vendorInfo = items[0];
+    html += '<div class="vendor-group">';
+    html += '<div class="vendor-header">';
+    html += '<div>';
+    html += '<div class="vendor-name">' + esc(vendor) + '</div>';
+    html += '<div class="vendor-meta">' + esc(vendorInfo['연락처'] || '') + (vendorInfo['주소'] ? ' · ' + esc(vendorInfo['주소']) : '') + '</div>';
+    html += '</div>';
+    html += '<button class="btn-kakao" onclick="openKakao(\'' + esc(vendor) + '\')">💬 카톡 멘트</button>';
+    html += '</div>';
+    html += '<div class="product-cards">';
+
+    items.forEach(function(item) {
+      var rowNum = item['_row'];
+      var ddayClass = item.urgency;
+      var cardClass = 'product-card ' + ddayClass + (item.checked ? ' checked' : '');
+      var checkClass = 'card-check' + (item.checked ? ' on' : '');
+      var thumbUrl = driveThumb(item['이미지URL']);
+      var imgHtml = thumbUrl
+        ? '<div class="card-img"><img src="' + thumbUrl + '" onerror="this.parentElement.innerHTML=\'👗\'" loading="lazy"></div>'
+        : '<div class="card-img">👗</div>';
+
+      html += '<div class="' + cardClass + '" id="pcard-' + rowNum + '" onclick="toggleCard(' + rowNum + ')">';
+      html += '<div class="card-inner">';
+      html += '<div class="' + checkClass + '" id="chk-' + rowNum + '">' + (item.checked ? '✓' : '') + '</div>';
+      html += imgHtml;
+      html += '<div class="card-info">';
+      html += '<div class="card-name">' + esc(item['상품명']) + '</div>';
+      html += '<div class="card-vendor">' + esc(item['거래처']) + ' · 입고 ' + fmtDate(item['입고일']) + '</div>';
+      html += '<span class="card-dday ' + ddayClass + '">' + ddayLabel(item.dday) + ' · ' + fmtDate(item['반납기한']) + '</span>';
+      if (item['비고']) html += '<div style="margin-top:5px; font-size:11px; color:var(--amber); background:var(--amber-light); border-radius:6px; padding:3px 8px; display:inline-block;">📝 ' + esc(item['비고']) + '</div>';
+      html += '</div>';
+      html += '</div>';
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  document.getElementById('itemList').innerHTML = html;
+  updateSaveBtn();
+}
+
+// ── 카드 체크 토글 ──
+function toggleCard(rowNum) {
+  var item = allItems.find(function(r) { return r['_row'] === rowNum; });
+  if (!item) return;
+  item.checked = !item.checked;
+
+  var card = document.getElementById('pcard-' + rowNum);
+  var chk  = document.getElementById('chk-' + rowNum);
+  if (item.checked) {
+    card.classList.add('checked');
+    chk.classList.add('on'); chk.textContent = '✓';
+  } else {
+    card.classList.remove('checked');
+    chk.classList.remove('on'); chk.textContent = '';
+  }
+  updateSaveBtn();
+}
+
+function updateSaveBtn() {
+  var cnt = allItems.filter(function(r) { return r.checked; }).length;
+  document.getElementById('checkedInfo').textContent = cnt + '개 선택';
+  var btn = document.getElementById('btnSave');
+  btn.disabled = cnt === 0;
+  btn.style.cursor = cnt === 0 ? 'not-allowed' : 'pointer';
+  btn.textContent = cnt > 0 ? '✅ 반납 처리 + 엑셀 저장 (' + cnt + '개)' : '✅ 반납 처리 + 엑셀 저장';
+}
+
+// ── 반납 처리 + 엑셀 저장 통합 ──
+async function saveAndExcel() {
+  var checked = allItems.filter(function(r) { return r.checked; });
+  if (!checked.length) return;
+
+  // 엑셀 먼저 생성 (반납 처리 전 상태로)
+  downloadExcel();
+
+  // 반납 처리
+  await saveReturns();
+}
+
+// ── 반납 저장 ──
+async function saveReturns() {
+  var checked = allItems.filter(function(r) { return r.checked; });
+  if (!checked.length) return;
+
+  var btn = document.getElementById('btnSave');
+  btn.disabled = true; btn.textContent = '처리 중...';
+
+  var today = new Date().toISOString().split('T')[0];
+  var success = 0;
+
+  for (var i = 0; i < checked.length; i++) {
+    var item = checked[i];
+    try {
+      var payload = encodeURIComponent(JSON.stringify({
+        '_row': item['_row'],
+        '상태': '반납완료',
+        '반납일': today
+      }));
+      await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
+      success++;
+    } catch(e) { console.error(e); }
+  }
+
+  showToast('✅ ' + success + '개 반납 처리 완료!');
+  setTimeout(function() { loadItems(); }, 1000);
+}
+
+// ── 카톡 멘트 팝업 ──
+function openKakao(vendor) {
+  var items = allItems.filter(function(r) { return r['거래처'] === vendor && r['상태'] === '보유중'; });
+  var names = items.map(function(r) { return r['상품명']; }).join(', ');
+
+  document.getElementById('kakaoVendorName').textContent = vendor;
+  document.getElementById('kakaoText').value =
+    '안녕하세요 더제이수입니다 😊\n' +
+    vendor + ' 샘플 반납 건으로 연락드려요!\n\n' +
+    '· ' + names + '\n\n' +
+    '반납 일정 조율 가능하실까요? 감사합니다 🙏';
+
+  document.getElementById('kakaoModal').classList.add('show');
+}
+function closeKakao() {
+  document.getElementById('kakaoModal').classList.remove('show');
+}
+function copyKakao() {
+  var text = document.getElementById('kakaoText').value;
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('📋 카톡 멘트 복사됐어요!');
+    closeKakao();
+  }).catch(function() {
+    document.getElementById('kakaoText').select();
+    document.execCommand('copy');
+    showToast('📋 복사됐어요!');
+    closeKakao();
+  });
+}
+
+// 바깥 클릭 시 닫기
+document.getElementById('kakaoModal').addEventListener('click', function(e) {
+  if (e.target === this) closeKakao();
+});
+
+// ── 엑셀 다운로드 (스마트비즈 샘플차감 양식) ──
+function downloadExcel() {
+  var checked = allItems.filter(function(r) { return r.checked; });
+  if (!checked.length) { showToast('반납할 상품을 선택해주세요'); return; }
+
+  // 시트1: 샘플차감 등록양식
+  var rows = [['업체명(필수)', '연락처(필수)', '주소(필수)', '내용(필수)']];
+  checked.forEach(function(item) {
+    rows.push([
+      item['거래처'] || '',
+      item['연락처'] || '',
+      item['주소']   || '',
+      item['상품명'] || ''
+    ]);
+  });
+
+  var ws1 = XLSX.utils.aoa_to_sheet(rows);
+
+  // 열 너비 설정
+  ws1['!cols'] = [
+    { wch: 22 }, // 업체명
+    { wch: 18 }, // 연락처
+    { wch: 24 }, // 주소
+    { wch: 50 }  // 내용
+  ];
+
+  // 시트2: 반납 목록 (참고용)
+  var rows2 = [['상품명', '거래처', '입고일', '반납기한', '반납일', 'D-day']];
+  var today = new Date().toISOString().split('T')[0];
+  checked.forEach(function(item) {
+    rows2.push([
+      item['상품명']   || '',
+      item['거래처']   || '',
+      fmtDate(item['입고일']),
+      fmtDate(item['반납기한']),
+      today,
+      ddayLabel(item.dday)
+    ]);
+  });
+  var ws2 = XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols'] = [
+    { wch: 40 }, { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 }
+  ];
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, '샘플차감 등록양식');
+  XLSX.utils.book_append_sheet(wb, ws2, '반납 목록');
+
+  var today2 = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, '스마트비즈_샘플반납_' + today2 + '.xlsx');
+  showToast('📥 엑셀 파일 다운로드 완료!');
+}
+
+// 날짜 포맷 (2026-04-10T15:00:00.000Z → 2026-04-10)
+function fmtDate(s) {
+  if (!s) return '-';
+  return String(s).split('T')[0];
+}
+
+// 구글 드라이브 URL → 썸네일 URL로 변환 (CORS 우회)
+function driveThumb(url) {
+  if (!url) return '';
+  var match = url.match(/[?&]id=([^&]+)/);
+  if (match) return 'https://drive.google.com/thumbnail?id=' + match[1] + '&sz=w200';
+  return url;
+}
+
+// ── 거래처 검색 ──
+var searchKeyword = '';
+
+function onSearchInput(val) {
+  searchKeyword = val.trim();
+  var dropdown = document.getElementById('searchDropdown');
+
+  if (!searchKeyword) {
+    dropdown.style.display = 'none';
+    renderList();
+    return;
+  }
+
+  // 거래처 목록에서 초성/부분 매칭
+  var vendors = [...new Set(allItems.map(function(r) { return r['거래처'] || ''; }))];
+  var matched = vendors.filter(function(v) {
+    return v.toLowerCase().indexOf(searchKeyword.toLowerCase()) >= 0 ||
+           matchChosong(v, searchKeyword);
+  });
+
+  if (matched.length === 0) {
+    dropdown.style.display = 'none';
+    renderList();
+    return;
+  }
+
+  // 드롭다운 표시
+  dropdown.innerHTML = '';
+    var ddHtml = '';
+  matched.forEach(function(v) {
+    var div = document.createElement('div');
+    div.style.cssText = 'padding:10px 16px; cursor:pointer; font-size:13px; border-bottom:1px solid #E6E3DE;';
+    div.innerHTML = v.replace(new RegExp('(' + escapeReg(searchKeyword) + ')', 'gi'), '<strong style="color:#E8756A;">$1</strong>');
+    div.addEventListener('mouseover', function() { this.style.background = '#F2F1EE'; });
+    div.addEventListener('mouseout',  function() { this.style.background = ''; });
+    div.addEventListener('click', function() { selectVendor(v); });
+    dropdown.appendChild(div);
+  });
+  dropdown.style.display = 'block';
+
+  // 동시에 목록도 필터링
+  renderList();
+}
+
+function selectVendor(vendor) {
+  document.getElementById('vendorSearch').value = vendor;
+  searchKeyword = vendor;
+  document.getElementById('searchDropdown').style.display = 'none';
+  renderList();
+}
+
+function applySearch() {
+  document.getElementById('searchDropdown').style.display = 'none';
+  renderList();
+}
+
+// 초성 매칭 (간단 버전)
+var CHOSONG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function getChosong(str) {
+  var result = '';
+  for (var i = 0; i < str.length; i++) {
+    var code = str.charCodeAt(i) - 0xAC00;
+    if (code >= 0 && code <= 11171) {
+      result += CHOSONG[Math.floor(code / 588)];
+    } else {
+      result += str[i];
+    }
+  }
+  return result;
+}
+function matchChosong(target, keyword) {
+  // 키워드가 초성으로만 이루어진 경우
+  var isChosong = keyword.split('').every(function(c) { return CHOSONG.indexOf(c) >= 0; });
+  if (isChosong) {
+    return getChosong(target).indexOf(keyword) >= 0;
+  }
+  return false;
+}
+function escapeReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// 바깥 클릭 시 드롭다운 닫기
+document.addEventListener('click', function(e) {
+  var search = document.getElementById('vendorSearch');
+  var dd = document.getElementById('searchDropdown');
+  if (search && !search.contains(e.target) && dd && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>
