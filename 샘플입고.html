@@ -162,6 +162,10 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
     <!-- 이미지 업로드 -->
     <div class="card">
       <div class="card-label">거래명세서 사진</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:600; color:var(--gray-600);">거래명세서 사진</div>
+        <button onclick="openReceiptGuide()" style="background:var(--gray-100); border:1.5px solid var(--gray-200); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:var(--gray-600);">❓ 촬영 방법</button>
+      </div>
       <div class="upload-area" id="uploadArea">
         <input type="file" id="fileInput" accept="image/*" multiple>
         <div class="upload-icon" id="uploadIcon">📄</div>
@@ -270,6 +274,77 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
   </div>
 </div>
 
+<!-- 영수증 촬영 방법 팝업 -->
+<div id="receiptGuideModal" onclick="closeReceiptGuide()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:flex-end; justify-content:center;">
+  <div onclick="event.stopPropagation()" style="background:white; border-radius:20px 20px 0 0; padding:24px 20px 40px; width:100%; max-width:680px; max-height:80vh; overflow-y:auto; animation:slideUpModal 0.3s ease;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+      <div style="font-size:16px; font-weight:700;">📸 영수증 촬영 방법</div>
+      <button onclick="closeReceiptGuide()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#888; padding:0;">✕</button>
+    </div>
+
+    <!-- 공통 주의사항 -->
+    <div style="background:#FDECEA; border-left:4px solid #E8756A; border-radius:8px; padding:11px 14px; margin-bottom:18px; font-size:12px; color:#C0392B; line-height:1.8; font-weight:600;">
+      ⚠️ 공통 주의사항<br>
+      <span style="font-weight:400;">영수증이 잘 보이게 평평하게 펴서 찍어주세요 · 글자가 선명하게 나와야 AI가 잘 읽어요</span>
+    </div>
+
+    <!-- CASE 1 -->
+    <div style="background:#F7F6F3; border-radius:12px; padding:16px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+        <div style="background:#111; color:white; border-radius:20px; padding:3px 14px; font-size:12px; font-weight:700;">CASE 1</div>
+        <div style="font-size:14px; font-weight:700;">짧은 영수증</div>
+      </div>
+      <div style="font-size:12px; color:#444; line-height:1.9;">
+        영수증 전체가 한 화면에 들어오면 <strong>1장</strong>으로 찍어요.
+      </div>
+      <div style="background:white; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12px; color:#2D6A4F; border:1px solid #B8DCCA;">
+        📱 1장 업로드 → AI 인식 → 완료
+      </div>
+    </div>
+
+    <!-- CASE 2 -->
+    <div style="background:#F7F6F3; border-radius:12px; padding:16px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+        <div style="background:#111; color:white; border-radius:20px; padding:3px 14px; font-size:12px; font-weight:700;">CASE 2</div>
+        <div style="font-size:14px; font-weight:700;">중간 영수증 — 2장으로 나눠 찍기</div>
+      </div>
+      <div style="font-size:12px; color:#444; line-height:1.9;">
+        영수증이 길어서 한 화면에 안 들어오면 <strong>위/아래 2장</strong>으로 나눠요.
+      </div>
+      <div style="background:white; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12px; color:#6B6760; border:1px solid #E6E3DE; line-height:2;">
+        📷 1장: 영수증 위쪽 절반<br>
+        📷 2장: 영수증 아래쪽 절반<br>
+        → <strong>2장 동시에 선택해서 업로드!</strong>
+      </div>
+    </div>
+
+    <!-- CASE 3 -->
+    <div style="background:#F7F6F3; border-radius:12px; padding:16px; margin-bottom:20px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+        <div style="background:#111; color:white; border-radius:20px; padding:3px 14px; font-size:12px; font-weight:700;">CASE 3</div>
+        <div style="font-size:14px; font-weight:700;">긴 영수증 — 3장으로 나눠 찍기</div>
+      </div>
+      <div style="font-size:12px; color:#444; line-height:1.9;">
+        영수증이 아주 길면 <strong>위/중간/아래 3장</strong>으로 나눠요.
+      </div>
+      <div style="background:white; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12px; color:#6B6760; border:1px solid #E6E3DE; line-height:2;">
+        📷 1장: 영수증 위쪽<br>
+        📷 2장: 영수증 중간<br>
+        📷 3장: 영수증 아래쪽<br>
+        → <strong>3장 동시에 선택해서 업로드!</strong>
+      </div>
+      <div style="background:#EBF2FC; border-radius:8px; padding:10px 14px; margin-top:8px; font-size:12px; color:#1A56A0;">
+        💡 겹치는 부분 없이 순서대로 찍어주세요. AI가 알아서 합쳐서 인식해요!
+      </div>
+    </div>
+
+    <div style="font-size:11px; color:#B0ADA7; text-align:center;">
+      용량은 자동으로 조절되니까 신경 안 써도 돼요 😊
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -318,21 +393,38 @@ async function loadVendorDB() {
   } catch(e) { console.error('거래처 DB 로드 실패', e); }
 }
 
+// 특수문자/공백 제거 정규화
+function normalizeForMatch(s) {
+  return (s || '').toLowerCase().replace(/[()\[\]{}\-\.,·\s]/g, '');
+}
+
 // 거래처명으로 DB에서 검색
 function findVendorInfo(name) {
   if (!name || !vendorDB.length) return null;
-  var target = name.toLowerCase().replace(/\s/g, '');
-  // 정확히 일치
+  var targetNorm = normalizeForMatch(name);
+
+  // 1. 정확히 일치
   for (var i = 0; i < vendorDB.length; i++) {
-    var v = vendorDB[i];
-    var vname = (v['업체명'] || '').toLowerCase().replace(/\s/g, '');
-    if (vname === target) return v;
+    if ((vendorDB[i]['업체명']||'').toLowerCase() === name.toLowerCase()) return vendorDB[i];
   }
-  // 포함 관계
+  // 2. 특수문자 제거 후 일치
   for (var i = 0; i < vendorDB.length; i++) {
-    var v = vendorDB[i];
-    var vname = (v['업체명'] || '').toLowerCase().replace(/\s/g, '');
-    if (vname.indexOf(target) >= 0 || target.indexOf(vname) >= 0) return v;
+    var vnNorm = normalizeForMatch(vendorDB[i]['업체명']);
+    if (vnNorm === targetNorm && targetNorm.length > 1) return vendorDB[i];
+  }
+  // 3. 포함 관계 + 단어 매칭
+  for (var i = 0; i < vendorDB.length; i++) {
+    var vnNorm = normalizeForMatch(vendorDB[i]['업체명']);
+    if (targetNorm.length > 2 && vnNorm.length > 2) {
+      if (targetNorm.indexOf(vnNorm) >= 0 || vnNorm.indexOf(targetNorm) >= 0) return vendorDB[i];
+      var tWords = targetNorm.split(/[^a-z0-9가-힣]+/).filter(function(w){return w.length>2;});
+      var vWords = vnNorm.split(/[^a-z0-9가-힣]+/).filter(function(w){return w.length>2;});
+      for (var j=0; j<tWords.length; j++) {
+        for (var k=0; k<vWords.length; k++) {
+          if (tWords[j]===vWords[k]) return vendorDB[i];
+        }
+      }
+    }
   }
   return null;
 }
@@ -506,11 +598,40 @@ function readFileAsBase64(file) {
   return new Promise(function(resolve) {
     var reader = new FileReader();
     reader.onload = function(ev) {
-      resolve({
-        base64: ev.target.result.split(',')[1],
-        type: file.type,
-        name: file.name
-      });
+      var img = new Image();
+      img.onload = function() {
+        // 5MB 이하면 그대로, 초과면 Canvas로 압축
+        var MAX_BYTES = 4.5 * 1024 * 1024; // 4.5MB 안전마진
+        var base64 = ev.target.result.split(',')[1];
+        var byteSize = Math.ceil(base64.length * 0.75);
+
+        if (byteSize <= MAX_BYTES) {
+          resolve({ base64: base64, type: file.type, name: file.name });
+          return;
+        }
+
+        // Canvas로 리사이즈 압축
+        var canvas = document.createElement('canvas');
+        var ratio = Math.sqrt(MAX_BYTES / byteSize);
+        canvas.width  = Math.floor(img.width  * ratio);
+        canvas.height = Math.floor(img.height * ratio);
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // 품질 조정하며 압축
+        var quality = 0.85;
+        var compressed;
+        do {
+          compressed = canvas.toDataURL('image/jpeg', quality);
+          quality -= 0.05;
+        } while (compressed.length * 0.75 > MAX_BYTES && quality > 0.3);
+
+        var compressedBase64 = compressed.split(',')[1];
+        var newSize = Math.round(compressedBase64.length * 0.75 / 1024);
+        console.log('이미지 압축 완료: ' + Math.round(byteSize/1024) + 'KB → ' + newSize + 'KB');
+        resolve({ base64: compressedBase64, type: 'image/jpeg', name: file.name });
+      };
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   });
@@ -883,6 +1004,13 @@ function resetAll() {
   document.getElementById('loading').classList.remove('show');
 
   showToast('🔄 초기화 완료!');
+}
+
+function openReceiptGuide() {
+  document.getElementById('receiptGuideModal').style.display = 'flex';
+}
+function closeReceiptGuide() {
+  document.getElementById('receiptGuideModal').style.display = 'none';
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
