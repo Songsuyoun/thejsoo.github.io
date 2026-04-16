@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>샘플 요청 | 더제이수</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
 :root {
@@ -271,9 +272,14 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 <!-- 저장 버튼 -->
 <div class="save-all-wrap" id="saveAllWrap">
   <div class="save-all-inner">
-    <button class="btn-save-all" id="btnSaveAll" onclick="saveToSheet()">
-      📊 구글 시트에 전체 저장 (<span id="totalCount">0</span>개)
-    </button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-save-all" id="btnSaveAll" onclick="saveToSheet()" style="flex:1;">
+        📊 구글 시트 저장 (<span id="totalCount">0</span>개)
+      </button>
+      <button class="btn-save-all" onclick="downloadSampleExcel()" style="flex:1; background:var(--green);">
+        📥 엑셀 다운로드
+      </button>
+    </div>
   </div>
 </div>
 
@@ -863,6 +869,8 @@ async function saveToSheet() {
   btn.disabled = false;
   btn.innerHTML = '📊 구글 시트에 전체 저장 (<span id="totalCount">' + products.length + '</span>개)';
   showToast('✅ ' + success + '개 저장 완료!');
+  // 엑셀도 자동 다운로드
+  downloadSampleExcel();
 }
 
 
@@ -940,6 +948,50 @@ function syncSameVendor(i, field, value) {
       if (field === 'phone') p.연락처 = value;
     }
   });
+}
+
+// ── 스마트비즈 샘플차감 엑셀 생성 ──
+function downloadSampleExcel() {
+  if (!products.length) { showToast('먼저 상품을 파싱해주세요'); return; }
+
+  var today = new Date().toISOString().split('T')[0];
+
+  // 시트1: 샘플차감 등록양식
+  var rows1 = [['업체명(필수)', '연락처(필수)', '주소(필수)', '내용(필수)']];
+  products.forEach(function(p, i) {
+    var name   = document.getElementById('name-'   + i) ? document.getElementById('name-'   + i).value : p.상품명;
+    var vendor = document.getElementById('vendor-' + i) ? document.getElementById('vendor-' + i).value : p.거래처;
+    var phone  = document.getElementById('phone-'  + i) ? document.getElementById('phone-'  + i).value : (p.연락처 || '');
+    var addr   = document.getElementById('addr-'   + i) ? document.getElementById('addr-'   + i).value : (p.주소   || '');
+    rows1.push([vendor, phone, addr, name]);
+  });
+
+  var ws1 = XLSX.utils.aoa_to_sheet(rows1);
+  ws1['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 24 }, { wch: 50 }];
+
+  // 헤더 스타일 (굵게)
+  var headerRange = XLSX.utils.decode_range(ws1['!ref']);
+  for (var c = headerRange.s.c; c <= headerRange.e.c; c++) {
+    var cell = ws1[XLSX.utils.encode_cell({ r: 0, c: c })];
+    if (cell) cell.s = { font: { bold: true } };
+  }
+
+  // 시트2: 상품 목록 (참고용)
+  var rows2 = [['거래처', '상품명', '요청일', '상태']];
+  products.forEach(function(p, i) {
+    var name   = document.getElementById('name-'   + i) ? document.getElementById('name-'   + i).value : p.상품명;
+    var vendor = document.getElementById('vendor-' + i) ? document.getElementById('vendor-' + i).value : p.거래처;
+    rows2.push([vendor, name, today, '요청중']);
+  });
+  var ws2 = XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols'] = [{ wch: 22 }, { wch: 45 }, { wch: 14 }, { wch: 10 }];
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, '샘플차감 등록양식');
+  XLSX.utils.book_append_sheet(wb, ws2, '상품 목록');
+
+  XLSX.writeFile(wb, '스마트비즈_샘플요청_' + today + '.xlsx');
+  showToast('📥 엑셀 다운로드 완료!');
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
