@@ -956,21 +956,23 @@ function renderAIResults(items) {
           '<button class="btn-match-new" onclick="setAction(' + i + ',\'new\')">➕ 새 행으로 추가</button>' +
           '<button class="btn-match-select" onclick="setAction(' + i + ',\'select\')">✓ 선택한 항목에 매칭</button>' +
         '</div>' +
-        // 거래처 별칭 연결 UI
-        (showAliasUI ? '<div style="margin-top:10px; padding:10px; background:#FFF8E7; border:1.5px solid var(--amber); border-radius:8px;">' : '') +
-          '<div style="font-size:11px; font-weight:700; color:var(--amber); margin-bottom:6px;">🔗 기존 거래처와 연결 (별칭 자동 등록)</div>' +
-          '<div style="position:relative;">' +
-            '<input type="text" id="aliasSearch-' + i + '" placeholder="거래처 검색 (예: osro, ㄹㄴ → 라이크워터)" ' +
-              'oninput="onAliasSearch(' + i + ', this.value)" ' +
-              'style="width:100%; border:1.5px solid var(--gray-200); border-radius:8px; padding:8px 12px; font-size:12px; font-family:var(--font); background:white; outline:none; box-sizing:border-box;">' +
-            '<div id="aliasDropdown-' + i + '" style="display:none; position:absolute; top:calc(100% + 2px); left:0; right:0; background:white; border:1.5px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); z-index:300; max-height:160px; overflow-y:auto;"></div>' +
-          '</div>' +
-          '<input type="hidden" id="aliasSelIdx-' + i + '" value="">' +
-          '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">' +
-            '<div style="font-size:10px; color:#888;">' + esc(p.거래처) + ' → 선택한 거래처의 별칭으로 등록</div>' +
-            '<button onclick="linkAlias(' + i + ')" style="padding:6px 12px; border-radius:8px; border:none; background:var(--amber); color:white; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; white-space:nowrap;">별칭 등록</button>' +
-          '</div>' +
-        (showAliasUI ? '</div>' : '');
+        // 거래처 별칭 연결 UI (거래처 DB 미등록일 때만 표시)
+        (!p.연락처 && !p.주소 ?
+          '<div style="margin-top:10px; padding:10px; background:#FFF8E7; border:1.5px solid var(--amber); border-radius:8px;">' +
+            '<div style="font-size:11px; font-weight:700; color:var(--amber); margin-bottom:6px;">🔗 기존 거래처와 연결 (별칭 자동 등록)</div>' +
+            '<div style="position:relative;">' +
+              '<input type="text" id="aliasSearch-' + i + '" placeholder="거래처 검색 (예: osro, ㄹㄴ → 라이크워터)" ' +
+                'oninput="onAliasSearch(' + i + ', this.value)" ' +
+                'style="width:100%; border:1.5px solid var(--gray-200); border-radius:8px; padding:8px 12px; font-size:12px; font-family:var(--font); background:white; outline:none; box-sizing:border-box;">' +
+              '<div id="aliasDropdown-' + i + '" style="display:none; position:absolute; top:calc(100% + 2px); left:0; right:0; background:white; border:1.5px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); z-index:300; max-height:160px; overflow-y:auto;"></div>' +
+            '</div>' +
+            '<input type="hidden" id="aliasSelIdx-' + i + '" value="">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">' +
+              '<div style="font-size:10px; color:#888;">' + esc(p.거래처) + ' → 선택한 거래처의 별칭으로 등록</div>' +
+              '<button onclick="linkAlias(' + i + ')" style="padding:6px 12px; border-radius:8px; border:none; background:var(--amber); color:white; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; white-space:nowrap;">별칭 등록</button>' +
+            '</div>' +
+          '</div>'
+        : '');
     }
 
     card.innerHTML =
