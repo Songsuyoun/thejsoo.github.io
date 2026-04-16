@@ -663,7 +663,7 @@ async function analyzeImage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'claude-opus-4-5', max_tokens: 1500,
+          model: 'claude-opus-4-5', max_tokens: 4096,
           messages: [{ role: 'user', content: [
             { type: 'image', source: { type: 'base64', media_type: imgData.type, data: imgData.base64 } },
             { type: 'text', text: '이 영수증/거래명세서를 분석해줘.\n\n중요: 영수증의 \'거래처명\'은 우리 회사(더제이수)야. 실제 거래처는 영수증 상단의 업체명(예: 페니엘, PENIEL 등 상호명)이야.\n\n추출 규칙:\n- 거래처: 영수증 상단 업체 상호명 (거래처명 항목 말고!)\n- 상품명: 상품 목록의 각 상품명 (색상/사이즈 포함)\n- 같은 상품이 수량 2개면 → 2개의 row로 분리\n\nJSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
@@ -693,50 +693,41 @@ async function analyzeImage() {
 
 // ── AI 매칭 함수 ──
 async function aiMatch(items) {
-  if (sheetRows.length === 0) {
-    // 시트에 요청중 항목 없으면 매칭 없이 반환
-    return items.map(function(item) {
-      return { 상품명: item['상품명'], 거래처: item['거래처'], matchedSheetIdx: -1 };
-    });
+  // 옵션 제거 함수: "빈츠BL/검정/S" → "빈츠BL"
+  function stripOption(name) {
+    return (name || '').split('/')[0].trim();
   }
 
-  var sheetList = sheetRows.map(function(r, i) {
-    return i + '. ' + r['상품명'] + ' / ' + r['거래처'];
-  }).join('\n');
+  // 정규화: 대소문자·공백 무시
+  function normalize(s) {
+    return (s || '').toLowerCase().replace(/\s/g, '');
+  }
 
-  var invoiceList = items.map(function(item, i) {
-    return i + '. ' + item['상품명'] + ' / ' + item['거래처'];
-  }).join('\n');
+  return items.map(function(item) {
+    // 영수증 상품명에서 옵션 제거
+    var invoiceName = stripOption(item['상품명']);
+    var invoiceNorm = normalize(invoiceName);
 
-  var prompt = '아래는 구글 시트의 [요청중] 상품 목록이야:\n' + sheetList +
-    '\n\n아래는 거래명세서에서 인식한 상품 목록이야:\n' + invoiceList +
-    '\n\n각 영수증 상품이 시트 목록 중 어떤 항목과 같은 상품인지 판단해줘.' +
-    '\n상품명이 줄임말이거나 다르게 표기돼도 같은 상품이면 매칭해줘.' +
-    '\n매칭 없으면 sheetIdx를 -1로 해줘.' +
-    '\nJSON만 반환: [{"invoiceIdx":0,"sheetIdx":0}, ...]';
+    var matchedIdx = -1;
 
-  var resp = await fetch('https://anthropic-proxy.so0474.workers.dev', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'claude-opus-4-5', max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  var data = await resp.json();
-  var matchText = data.content[0].text;
-  var matchResult = JSON.parse(matchText.replace(/```json|```/g, '').trim());
+    // 시트에서 매칭: 시트 상품명에 영수증 상품명이 포함되어 있으면 매칭
+    for (var i = 0; i < sheetRows.length; i++) {
+      var sheetNorm = normalize(sheetRows[i]['상품명']);
+      if (invoiceNorm.length >= 2 && sheetNorm.indexOf(invoiceNorm) >= 0) {
+        matchedIdx = i;
+        break;
+      }
+      // 반대로 시트명이 영수증명에 포함되는 경우도 체크
+      if (sheetNorm.length >= 2 && invoiceNorm.indexOf(sheetNorm) >= 0) {
+        matchedIdx = i;
+        break;
+      }
+    }
 
-  // 결과 합치기
-  return items.map(function(item, i) {
-    var m = matchResult.find(function(r) { return r.invoiceIdx === i; });
-    var sheetIdx = m ? m.sheetIdx : -1;
     return {
       상품명: item['상품명'],
       거래처: item['거래처'],
-      matchedSheetIdx: sheetIdx
+      matchedSheetIdx: matchedIdx
     };
   });
 }
