@@ -944,6 +944,9 @@ function renderAIResults(items) {
         return '<option value="' + vi + '">' + v['업체명'] + '</option>';
       }).join('');
 
+      // 거래처 정보 이미 있으면 별칭 UI 불필요
+      var showAliasUI = !(p.연락처 || p.주소);
+
       actionHtml =
         '<select class="match-select" id="matchSel-' + i + '">' +
           '<option value="">-- 직접 선택 --</option>' +
@@ -954,7 +957,7 @@ function renderAIResults(items) {
           '<button class="btn-match-select" onclick="setAction(' + i + ',\'select\')">✓ 선택한 항목에 매칭</button>' +
         '</div>' +
         // 거래처 별칭 연결 UI
-        '<div style="margin-top:10px; padding:10px; background:#FFF8E7; border:1.5px solid var(--amber); border-radius:8px;">' +
+        (showAliasUI ? '<div style="margin-top:10px; padding:10px; background:#FFF8E7; border:1.5px solid var(--amber); border-radius:8px;">' : '') +
           '<div style="font-size:11px; font-weight:700; color:var(--amber); margin-bottom:6px;">🔗 기존 거래처와 연결 (별칭 자동 등록)</div>' +
           '<div style="position:relative;">' +
             '<input type="text" id="aliasSearch-' + i + '" placeholder="거래처 검색 (예: osro, ㄹㄴ → 라이크워터)" ' +
@@ -967,7 +970,7 @@ function renderAIResults(items) {
             '<div style="font-size:10px; color:#888;">' + esc(p.거래처) + ' → 선택한 거래처의 별칭으로 등록</div>' +
             '<button onclick="linkAlias(' + i + ')" style="padding:6px 12px; border-radius:8px; border:none; background:var(--amber); color:white; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; white-space:nowrap;">별칭 등록</button>' +
           '</div>' +
-        '</div>';
+        (showAliasUI ? '</div>' : '');
     }
 
     card.innerHTML =
