@@ -597,10 +597,7 @@ async function aiMatch(items) {
   var resp = await fetch('https://anthropic-proxy.so0474.workers.dev', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       model: 'claude-opus-4-5', max_tokens: 500,
