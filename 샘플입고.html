@@ -177,10 +177,10 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
     <div class="card">
       <div class="card-label">거래명세서 사진</div>
       <div class="upload-area" id="uploadArea">
-        <input type="file" id="fileInput" accept="image/*" capture="environment">
+        <input type="file" id="fileInput" accept="image/*" multiple>
         <div class="upload-icon" id="uploadIcon">📄</div>
-        <h3 id="uploadTitle">거래명세서 사진 촬영 or 업로드</h3>
-        <p id="uploadSub">AI가 상품명·거래처를 자동으로 인식해요</p>
+        <h3 id="uploadTitle">거래명세서 사진 업로드 (여러 장 가능)</h3>
+        <p id="uploadSub">여러 장 선택하면 순서대로 자동 처리해요</p>
       </div>
       <img id="previewImg" class="preview-img" alt="">
       <button class="btn-primary" id="btnAnalyze" onclick="analyzeImage()" style="display:none;">
@@ -495,64 +495,102 @@ function showApiStatus(msg, ok) {
 function getApiKey() { return localStorage.getItem('anthropic_key') || document.getElementById('apiKey').value.trim(); }
 
 // ── 이미지 업로드 ──
+var _pendingFiles = []; // 업로드된 파일 목록
+
 document.getElementById('fileInput').addEventListener('change', function(e) {
-  if (e.target.files[0]) handleFile(e.target.files[0]);
-});
-function handleFile(file) {
+  var files = Array.from(e.target.files);
+  if (!files.length) return;
+
+  // 최대 20장 제한
+  if (files.length > 20) {
+    showToast('❌ 최대 20장까지 가능해요 (현재 ' + files.length + '장)');
+    e.target.value = '';
+    return;
+  }
+
+  _pendingFiles = files;
+
+  var area = document.getElementById('uploadArea');
+  area.classList.add('has-image');
+  document.getElementById('uploadIcon').textContent = '✅';
+  document.getElementById('uploadTitle').textContent = files.length + '장 등록됨';
+  var timeEst = files.length <= 3 ? '약 15~30초' : files.length <= 5 ? '약 30~50초' : '약 1분+';
+  document.getElementById('uploadSub').textContent = files.length + '장 · 예상 소요시간 ' + timeEst;
+  document.getElementById('btnAnalyze').style.display = 'block';
+
+  // 미리보기는 첫 번째 이미지만
   var reader = new FileReader();
   reader.onload = function(ev) {
-    var area = document.getElementById('uploadArea');
-    area.classList.add('has-image');
-    document.getElementById('uploadIcon').textContent = '✅';
-    document.getElementById('uploadTitle').textContent = '사진 등록됨';
-    document.getElementById('uploadSub').textContent = file.name;
     document.getElementById('previewImg').src = ev.target.result;
     document.getElementById('previewImg').style.display = 'block';
-    document.getElementById('btnAnalyze').style.display = 'block';
-    window._imgBase64 = ev.target.result.split(',')[1];
-    window._imgType = file.type;
   };
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(files[0]);
+});
+
+function readFileAsBase64(file) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      resolve({
+        base64: ev.target.result.split(',')[1],
+        type: file.type,
+        name: file.name
+      });
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 // ── AI 분석 ──
 async function analyzeImage() {
   var key = getApiKey();
   if (!key) { showToast('❌ API 키를 입력해주세요'); return; }
-  if (!window._imgBase64) { showToast('❌ 사진을 올려주세요'); return; }
+  if (!_pendingFiles.length) { showToast('❌ 사진을 올려주세요'); return; }
 
   document.getElementById('btnAnalyze').disabled = true;
   document.getElementById('loading').classList.add('show');
   document.getElementById('aiResults').style.display = 'none';
 
-  try {
-    // STEP 1: 이미지에서 상품명·거래처 추출
-    document.getElementById('loadingMsg').textContent = '상품 인식 중...';
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5', max_tokens: 1500,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: window._imgType, data: window._imgBase64 } },
-          { type: 'text', text: '이 영수증/거래명세서를 분석해줘.\n\n중요: 영수증의 \'거래처명\'은 우리 회사(더제이수)야. 실제 거래처는 영수증 상단의 업체명(예: 페니엘, PENIEL 등 상호명)이야.\n\n추출 규칙:\n- 거래처: 영수증 상단 업체 상호명 (거래처명 항목 말고!)\n- 상품명: 상품 목록의 각 상품명 (색상/사이즈 포함)\n- 같은 상품이 수량 2개면 → 2개의 row로 분리\n\nJSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
-        ]}]
-      })
-    });
-    var data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    var text = data.content[0].text;
-    var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+  var allParsed = [];
 
-    // STEP 2: 시트 요청중 목록과 AI 매칭
+  try {
+    for (var fi = 0; fi < _pendingFiles.length; fi++) {
+      var file = _pendingFiles[fi];
+      document.getElementById('loadingMsg').textContent =
+        '(' + (fi+1) + '/' + _pendingFiles.length + ') ' + file.name + ' 인식 중...';
+
+      // base64 변환
+      var imgData = await readFileAsBase64(file);
+
+      // AI 인식
+      var resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-opus-4-5', max_tokens: 1500,
+          messages: [{ role: 'user', content: [
+            { type: 'image', source: { type: 'base64', media_type: imgData.type, data: imgData.base64 } },
+            { type: 'text', text: '이 영수증/거래명세서를 분석해줘.\n\n중요: 영수증의 \'거래처명\'은 우리 회사(더제이수)야. 실제 거래처는 영수증 상단의 업체명(예: 페니엘, PENIEL 등 상호명)이야.\n\n추출 규칙:\n- 거래처: 영수증 상단 업체 상호명 (거래처명 항목 말고!)\n- 상품명: 상품 목록의 각 상품명 (색상/사이즈 포함)\n- 같은 상품이 수량 2개면 → 2개의 row로 분리\n\nJSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
+          ]}]
+        })
+      });
+      var data = await resp.json();
+      if (data.error) throw new Error(data.error.message);
+      var text = data.content[0].text;
+      var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+      allParsed = allParsed.concat(parsed);
+    }
+
+    // 전체 합친 결과로 시트 매칭
     document.getElementById('loadingMsg').textContent = '시트 상품과 매칭 중...';
-    var matched = await aiMatch(parsed, key);
+    var matched = await aiMatch(allParsed, key);
     renderAIResults(matched);
+
   } catch(e) {
     showToast('❌ 인식 실패: ' + e.message);
   } finally {
