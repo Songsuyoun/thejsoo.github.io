@@ -229,6 +229,11 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
   </div>
 </div>
 
+<!-- 이미지 확대 모달 -->
+<div id="imgModal" onclick="closeImgModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:600; align-items:center; justify-content:center; cursor:zoom-out;">
+  <img id="imgModalSrc" src="" style="max-width:92vw; max-height:92vh; border-radius:12px; object-fit:contain; display:block;">
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -385,8 +390,9 @@ function renderList() {
       var cardClass = 'product-card ' + ddayClass + (item.checked ? ' checked' : '');
       var checkClass = 'card-check' + (item.checked ? ' on' : '');
       var thumbUrl = driveThumb(item['이미지URL']);
+      var fullUrl = item['이미지URL'] || '';
       var imgHtml = thumbUrl
-        ? '<div class="card-img"><img src="' + thumbUrl + '" onerror="this.parentElement.innerHTML=\'👗\'" loading="lazy"></div>'
+        ? '<div class="card-img card-img-clickable" data-url="' + esc(fullUrl) + '" style="cursor:zoom-in;"><img src="' + thumbUrl + '" onerror="this.parentElement.innerHTML=\'👗\'" loading="lazy"></div>'
         : '<div class="card-img">👗</div>';
 
       html += '<div class="' + cardClass + '" id="pcard-' + rowNum + '" onclick="toggleCard(' + rowNum + ')">';
@@ -408,6 +414,14 @@ function renderList() {
 
   document.getElementById('itemList').innerHTML = html;
   updateSaveBtn();
+
+  // 이미지 클릭 이벤트 위임
+  document.querySelectorAll('.card-img-clickable').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openImgModal(this.getAttribute('data-url'));
+    });
+  });
 }
 
 // ── 카드 체크 토글 ──
@@ -666,6 +680,20 @@ document.addEventListener('click', function(e) {
   if (search && !search.contains(e.target) && dd && !dd.contains(e.target)) {
     dd.style.display = 'none';
   }
+});
+
+function openImgModal(url) {
+  if (!url) return;
+  document.getElementById('imgModalSrc').src = url;
+  document.getElementById('imgModal').style.display = 'flex';
+}
+function closeImgModal() {
+  document.getElementById('imgModal').style.display = 'none';
+  document.getElementById('imgModalSrc').src = '';
+}
+// ESC 키로 닫기
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeImgModal();
 });
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
