@@ -594,34 +594,67 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
   reader.readAsDataURL(files[0]);
 });
 
-// ── 이미지 자동 분할 ──
-// 세로로 긴 이미지를 비율에 따라 2~3등분으로 자름
+// ── 이미지 자동 분할 + 회전 처리 ──
 function splitImageIfLong(dataUrl, type) {
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
-      var ratio = img.height / img.width;
+      var w = img.width, h = img.height;
+
+      // 가로로 찍힌 경우 세로로 회전
+      var isLandscape = w > h;
+      var effectiveW = isLandscape ? h : w;
+      var effectiveH = isLandscape ? w : h;
+
+      var ratio = effectiveH / effectiveW;
       var parts = 1;
       if (ratio >= 5) parts = 3;
       else if (ratio >= 2.5) parts = 2;
 
-      if (parts === 1) {
+      console.log('이미지: ' + w + 'x' + h + ' 비율=' + ratio.toFixed(1) + ' 회전=' + isLandscape + ' ' + parts + '등분');
+
+      // 1장이고 용량도 작으면 그대로
+      var b64len = dataUrl.split(',')[1].length;
+      if (parts === 1 && b64len <= 6500000) {
         resolve([{ dataUrl: dataUrl, type: type }]);
         return;
       }
 
       var results = [];
-      var partH = Math.floor(img.height / parts);
+      var partH = Math.floor(effectiveH / parts);
 
       for (var p = 0; p < parts; p++) {
         var canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = (p === parts - 1) ? img.height - partH * p : partH;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, p * partH, img.width, canvas.height, 0, 0, img.width, canvas.height);
-        results.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.9), type: 'image/jpeg' });
+        var segH = (p === parts - 1) ? effectiveH - partH * p : partH;
+
+        if (isLandscape) {
+          // 가로 이미지: 회전해서 자르기
+          canvas.width = effectiveW;
+          canvas.height = segH;
+          var ctx = canvas.getContext('2d');
+          ctx.save();
+          ctx.translate(effectiveW, 0);
+          ctx.rotate(Math.PI / 2);
+          ctx.drawImage(img, p * partH, 0, segH, effectiveW, 0, 0, segH, effectiveW);
+          ctx.restore();
+        } else {
+          canvas.width = w;
+          canvas.height = segH;
+          var ctx2 = canvas.getContext('2d');
+          ctx2.drawImage(img, 0, p * partH, w, segH, 0, 0, w, segH);
+        }
+
+        // 각 조각 압축 (5MB 이하로)
+        var MAX_B64 = 6500000;
+        var q = 0.85;
+        var result;
+        do {
+          result = canvas.toDataURL('image/jpeg', q);
+          q -= 0.05;
+        } while (result.split(',')[1].length > MAX_B64 && q > 0.2);
+
+        results.push({ dataUrl: result, type: 'image/jpeg' });
       }
-      console.log('이미지 분할: 비율=' + ratio.toFixed(1) + ' → ' + parts + '등분');
       resolve(results);
     };
     img.src = dataUrl;
