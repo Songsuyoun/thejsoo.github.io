@@ -425,6 +425,20 @@ function findVendorInfo(name) {
       }
     }
   }
+
+  // 4. 별칭으로 검색 (NYMPH FNC → 님프 찾기)
+  for (var i = 0; i < vendorDB.length; i++) {
+    var aliases = (vendorDB[i]['별칭'] || '').split(',');
+    for (var j = 0; j < aliases.length; j++) {
+      var aliasNorm = normalizeForMatch(aliases[j].trim());
+      if (aliasNorm.length > 1 && (aliasNorm === targetNorm ||
+          aliasNorm.indexOf(targetNorm) >= 0 ||
+          targetNorm.indexOf(aliasNorm) >= 0)) {
+        return vendorDB[i];
+      }
+    }
+  }
+
   return null;
 }
 
