@@ -498,10 +498,10 @@ function openKakao(vendor) {
 
   document.getElementById('kakaoVendorName').textContent = vendor;
   document.getElementById('kakaoText').value =
-    '안녕하세요 더제이수입니다 😊\n' +
-    vendor + ' 샘플 반납 건으로 연락드려요!\n\n' +
-    '· ' + names + '\n\n' +
-    '반납 일정 조율 가능하실까요? 감사합니다 🙏';
+    '언니~ 더제이수에요!\n' +
+    '샘플 반납 건으로 연락드려요!\n' +
+    '· ' + names + '\n' +
+    '반납 일정 조율 가능하실까요? 감사합니다^^';
 
   document.getElementById('kakaoModal').classList.add('show');
 }
@@ -684,7 +684,13 @@ document.addEventListener('click', function(e) {
 
 function openImgModal(url) {
   if (!url) return;
-  document.getElementById('imgModalSrc').src = url;
+  // 드라이브 URL에서 파일 ID 추출 후 직접 보기 URL로 변환
+  var viewUrl = url;
+  var match = url.match(/[?&]id=([^&]+)/);
+  if (match) {
+    viewUrl = 'https://lh3.googleusercontent.com/d/' + match[1];
+  }
+  document.getElementById('imgModalSrc').src = viewUrl;
   document.getElementById('imgModal').style.display = 'flex';
 }
 function closeImgModal() {
