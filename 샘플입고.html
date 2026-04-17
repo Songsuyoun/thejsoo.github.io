@@ -615,7 +615,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
 // ── 이미지 압축 + 자동 분할 ──
 function compressBase64(dataUrl) {
   return new Promise(function(resolve) {
-    var MAX = 3500000; // 약 2.6MB 실제 크기 → base64 후 4.6MB 이하 (안전마진 충분히)
+    var MAX = 6400000; // base64 기준 4.8MB → API 5MB 제한 안전마진
     var b64 = dataUrl.split(',')[1];
     if (b64.length <= MAX) { resolve(dataUrl); return; }
 
@@ -694,7 +694,7 @@ function readFileAsBase64(file) {
       var img = new Image();
       img.onload = function() {
         // base64 기준 최대 크기 (API 5MB 제한)
-        var MAX_B64 = 4500000; // 약 3.3MB 실제 크기 → base64 후 4.5MB 이하 // ~4.8MB base64 = ~3.6MB 실제
+        var MAX_B64 = 6400000; // base64 기준 4.8MB → API 5MB 제한 안전마진
         var base64 = ev.target.result.split(',')[1];
         var origSize = base64.length;
 
