@@ -1157,9 +1157,10 @@ async function saveAll() {
 
       var memo = document.getElementById('memo-' + i) ? document.getElementById('memo-' + i).value.trim() : '';
       if (p.action === 'match' || p.action === 'select') {
-        // 기존 행 업데이트 (연락처·주소도 같이 업데이트)
+        // 기존 행 업데이트 (영수증 상품명으로 덮어쓰기 + 연락처·주소)
         var payload = encodeURIComponent(JSON.stringify({
           '_row': p.rowNum,
+          '상품명': p.상품명,
           '상태': '보유중',
           '입고일': p.입고일,
           '반납기한': p.반납기한,
