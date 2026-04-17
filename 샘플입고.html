@@ -1073,7 +1073,10 @@ function renderAIResults(items) {
             'oninput="pendingRows[' + i + '].상품명=this.value" onblur="saveName(' + i + ')" onkeydown="if(event.key===\'Enter\'){saveName(' + i + ')}">' +
           optionTags +
         '</div>' +
-        '<span class="result-badge ' + (p.matched ? 'ok' : 'warn') + '">' + (p.matched ? '✓ 자동매칭' : '⚠ 미매칭') + '</span>' +
+        '<div style="display:flex; align-items:center; gap:6px;">' +
+          '<span class="result-badge ' + (p.matched ? 'ok' : 'warn') + '">' + (p.matched ? '✓ 자동매칭' : '⚠ 미매칭') + '</span>' +
+          '<button onclick="deleteCard(' + i + ')" style="border:none; background:#FFE8E8; color:#E53E3E; border-radius:6px; padding:3px 8px; font-size:11px; font-family:var(--font); cursor:pointer;">✕ 삭제</button>' +
+        '</div>' +
       '</div>' +
       '<div class="result-info">' + esc(p.거래처) +
         (p.연락처 || p.주소
@@ -1135,6 +1138,8 @@ async function saveAll() {
 
   for (var i = 0; i < pendingRows.length; i++) {
     var p = pendingRows[i];
+    // 삭제된 항목 제외
+    if (p.deleted) continue;
     // 미매칭은 무조건 새 행으로 추가
     if (p.action === 'ask') p.action = 'new';
 
@@ -1372,6 +1377,21 @@ async function linkAlias(i) {
 }
 
 // 상품명 수정
+// 카드 삭제
+function deleteCard(i) {
+  var card = document.getElementById('rcard-' + i);
+  if (card) {
+    card.style.opacity = '0.4';
+    card.style.pointerEvents = 'none';
+    card.style.textDecoration = 'line-through';
+  }
+  pendingRows[i].deleted = true;
+  // 저장 카운트 업데이트
+  var activeCount = pendingRows.filter(function(r) { return !r.deleted; }).length;
+  document.getElementById('saveCount').textContent = activeCount;
+  showToast('삭제됐어요. 저장 시 제외돼요!');
+}
+
 function editName(i) {
   var display = document.getElementById('nameDisplay-' + i);
   var input = document.getElementById('nameEdit-' + i);
