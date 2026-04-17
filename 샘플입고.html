@@ -772,22 +772,41 @@ async function analyzeImage() {
         if (data.error) throw new Error(data.error.message);
         var text = data.content[0].text;
         var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+        // 각 조각 안에서 거래처 채우기
+        var segVendor = '';
+        parsed.forEach(function(item) {
+          if (item['거래처'] && item['거래처'].length > 1) segVendor = item['거래처'];
+          else if ((!item['거래처'] || item['거래처'].length <= 1) && segVendor) item['거래처'] = segVendor;
+        });
+        // 이전 조각 거래처도 활용
+        if (!segVendor && allParsed.length > 0) {
+          var prevVendor = '';
+          for (var pi2 = allParsed.length-1; pi2 >= 0; pi2--) {
+            if (allParsed[pi2]['거래처'] && allParsed[pi2]['거래처'].length > 1) {
+              prevVendor = allParsed[pi2]['거래처']; break;
+            }
+          }
+          if (prevVendor) parsed.forEach(function(item) {
+            if (!item['거래처'] || item['거래처'].length <= 1) item['거래처'] = prevVendor;
+          });
+        }
+
         allParsed = allParsed.concat(parsed);
       }
     }
 
-    // 거래처 없는 항목 → 전체 배치에서 앞뒤로 채우기
-    var lastVendor = '';
-    // 앞에서 뒤로
+    // 한 번에 올린 사진은 모두 같은 거래처 → 첫 번째 발견된 거래처를 전체에 적용
+    var batchVendor = '';
     allParsed.forEach(function(item) {
-      if (item['거래처'] && item['거래처'].length > 1) lastVendor = item['거래처'];
-      else if ((!item['거래처'] || item['거래처'].length <= 1) && lastVendor) item['거래처'] = lastVendor;
+      if (!batchVendor && item['거래처'] && item['거래처'].length > 1) {
+        batchVendor = item['거래처'];
+      }
     });
-    // 뒤에서 앞으로 (첫 번째 조각에 거래처 없을 경우 대비)
-    var nextVendor = '';
-    for (var ri = allParsed.length - 1; ri >= 0; ri--) {
-      if (allParsed[ri]['거래처'] && allParsed[ri]['거래처'].length > 1) nextVendor = allParsed[ri]['거래처'];
-      else if ((!allParsed[ri]['거래처'] || allParsed[ri]['거래처'].length <= 1) && nextVendor) allParsed[ri]['거래처'] = nextVendor;
+    if (batchVendor) {
+      allParsed.forEach(function(item) {
+        item['거래처'] = batchVendor;
+      });
     }
 
     // 옵션 제거 + 거래처별 상품명 중복 제거 + 옵션 수집
@@ -796,9 +815,36 @@ async function analyzeImage() {
     allParsed.forEach(function(item) {
       var parts = (item['상품명'] || '').split('/');
       var baseName = parts[0].trim();
-      var option = parts.slice(1).join('/').replace(/FREE/gi, '').replace(/S$|F$|M$/, '').trim();
+      var rawOption = parts.slice(1).join('/').replace(/FREE/gi, '').replace(/\/?(S|F|M|XL|XS|L)$/i, '').trim();
+      // 컬러 교정 사전
+      var colorFix = {
+        '검청': '검정', '검정색': '검정', '블랙': '검정', 'BLACK': '검정',
+        '고색': '곤색', '군색': '곤색', '감색': '곤색', '네이비': '곤색', 'NAVY': '곤색',
+        '아이보리': '아이', '아이보리색': '아이', 'IVORY': '아이', '연베이지': '아이',
+        '베이지색': '베이지', 'BEIGE': '베이지',
+        '화이트': '흰색', 'WHITE': '흰색',
+        '그레이': '회색', '그레이색': '회색', 'GRAY': '회색', 'GREY': '회색',
+        '민트색': '민트', 'MINT': '민트',
+        '핑크색': '핑크', 'PINK': '핑크',
+        '소라색': '소라', '스카이': '소라',
+        '브라운': '브라운', 'BROWN': '브라운',
+        '옐로우': '옐로', '노란색': '옐로', '노랑': '옐로', 'YELLOW': '옐로',
+        '레드': '빨강', '빨간색': '빨강', 'RED': '빨강',
+        '카키': '카키', 'KHAKI': '카키',
+        '먹색': '먹색', '차콜': '차콜', 'CHARCOAL': '차콜',
+        '블루': '블루', 'BLUE': '블루',
+      };
+      var option = rawOption;
+      if (colorFix[rawOption]) option = colorFix[rawOption];
+      // 부분 매칭
+      if (!colorFix[rawOption]) {
+        Object.keys(colorFix).forEach(function(k) {
+          if (rawOption.indexOf(k) >= 0) option = colorFix[k];
+        });
+      }
       var vendor = item['거래처'] || '';
-      var uniqKey = vendor + '||' + baseName.toLowerCase().replace(/\s/g, '');
+      // 같은 배치 = 같은 거래처 → 상품명만으로 중복 제거
+      var uniqKey = baseName.toLowerCase().replace(/\s/g, '');
       if (!seen[uniqKey]) {
         seen[uniqKey] = true;
         deduped.push({ '상품명': baseName, '거래처': vendor, '옵션목록': option ? [option] : [] });
@@ -1012,9 +1058,9 @@ function renderAIResults(items) {
     card.innerHTML =
       '<div class="result-header">' +
         '<div style="flex:1; min-width:0;">' +
-          '<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">' +
+          '<div style="display:flex; align-items:center; gap:2px;">' +
             '<span class="result-name" id="nameDisplay-' + i + '" onclick="editName(' + i + ')" style="cursor:pointer;">' + esc(p.상품명) + '</span>' +
-            '<span onclick="editName(' + i + ')" style="font-size:11px; color:#bbb; cursor:pointer;">✏️</span>' +
+            '<span onclick="editName(' + i + ')" style="font-size:11px; color:#bbb; cursor:pointer; margin-left:2px;">✏️</span>' +
           '</div>' +
           '<input id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
             'style="display:none; width:100%; border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:14px; font-weight:700; font-family:var(--font); outline:none; color:var(--black); padding:2px 0; box-sizing:border-box;" ' +
