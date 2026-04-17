@@ -1000,14 +1000,14 @@ function renderAIResults(items) {
 
     card.innerHTML =
       '<div class="result-header">' +
-        '<div style="flex:1;">' +
-          '<div style="display:flex; align-items:center; gap:6px;">' +
-            '<div class="result-name" id="nameDisplay-' + i + '" onclick="editName(' + i + ')" style="cursor:pointer; flex:1;">' + esc(p.상품명) + '</div>' +
-            '<span title="클릭해서 수정" onclick="editName(' + i + ')" style="font-size:11px; color:#aaa; cursor:pointer;">✏️</span>' +
+        '<div style="flex:1; min-width:0;">' +
+          '<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">' +
+            '<span class="result-name" id="nameDisplay-' + i + '" onclick="editName(' + i + ')" style="cursor:pointer;">' + esc(p.상품명) + '</span>' +
+            '<span onclick="editName(' + i + ')" style="font-size:11px; color:#bbb; cursor:pointer; flex-shrink:0;">✏️</span>' +
           '</div>' +
-          '<input class="card-name-input" id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
-            'style="display:none; border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:15px; font-weight:700; font-family:var(--font); width:100%; outline:none; color:var(--black); margin-top:2px;" ' +
-            'oninput="pendingRows[' + i + '].상품명=this.value" onblur="saveName(' + i + ')" onkeydown="if(event.key===\'Enter\') saveName(' + i + ')">' +
+          '<input id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
+            'style="display:none; width:100%; border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:14px; font-weight:700; font-family:var(--font); outline:none; color:var(--black); padding:2px 0; box-sizing:border-box;" ' +
+            'oninput="pendingRows[' + i + '].상품명=this.value" onblur="saveName(' + i + ')" onkeydown="if(event.key===\'Enter\'){saveName(' + i + ')}">' +
           optionTags +
         '</div>' +
         '<span class="result-badge ' + (p.matched ? 'ok' : 'warn') + '">' + (p.matched ? '✓ 자동매칭' : '⚠ 미매칭') + '</span>' +
