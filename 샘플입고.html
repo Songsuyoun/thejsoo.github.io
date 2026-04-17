@@ -983,12 +983,12 @@ function renderAIResults(items) {
         : '');
     }
 
-    card.innerHTML =
-      var isHandwritten = document.getElementById('chkHandwritten') && document.getElementById('chkHandwritten').checked;
-      var nameBadge = isHandwritten
-        ? '<span style="font-size:10px; background:#4A7AE0; color:white; border-radius:10px; padding:2px 8px; margin-left:6px;">✏️ 수기</span>'
-        : '';
+    var isHandwritten = document.getElementById('chkHandwritten') && document.getElementById('chkHandwritten').checked;
+    var nameBadge = isHandwritten
+      ? '<span style="font-size:10px; background:#4A7AE0; color:white; border-radius:10px; padding:2px 8px; margin-left:6px;">✏️ 수기</span>'
+      : '';
 
+    card.innerHTML =
       '<div class="result-header">' +
         '<div class="result-name">' +
           (isHandwritten
