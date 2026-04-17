@@ -612,32 +612,39 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
   reader.readAsDataURL(files[0]);
 });
 
-// ── 이미지 압축 + 자동 분할 ──
-function compressBase64(dataUrl) {
+// ── 이미지를 1500px로 리사이즈 (화질 유지하면서 용량 감소) ──
+function resizeForAPI(dataUrl) {
   return new Promise(function(resolve) {
-    var MAX = 6400000; // base64 기준 4.8MB → API 5MB 제한 안전마진
-    var b64 = dataUrl.split(',')[1];
-    if (b64.length <= MAX) { resolve(dataUrl); return; }
-
     var img = new Image();
     img.onload = function() {
-      var scale = Math.sqrt(MAX / b64.length) * 0.8;
+      var TARGET = 1500; // 가로 최대 1500px
+      var w = img.width, h = img.height;
+
+      // 이미 충분히 작으면 그대로
+      if (w <= TARGET && h <= TARGET) {
+        resolve(dataUrl);
+        return;
+      }
+
+      // 긴 쪽 기준으로 리사이즈
+      var scale = TARGET / Math.max(w, h);
       var canvas = document.createElement('canvas');
-      canvas.width  = Math.floor(img.width  * scale);
-      canvas.height = Math.floor(img.height * scale);
+      canvas.width  = Math.floor(w * scale);
+      canvas.height = Math.floor(h * scale);
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      var q = 0.85, result;
-      do {
-        result = canvas.toDataURL('image/jpeg', q);
-        q -= 0.05;
-      } while (result.split(',')[1].length > MAX && q > 0.2);
-
-      console.log('압축: ' + Math.round(b64.length/1024) + 'KB → ' + Math.round(result.split(',')[1].length/1024) + 'KB');
+      var result = canvas.toDataURL('image/jpeg', 0.95);
+      console.log('리사이즈: ' + w + 'x' + h + ' → ' + canvas.width + 'x' + canvas.height +
+        ' (' + Math.round(result.split(',')[1].length/1024) + 'KB)');
       resolve(result);
     };
     img.src = dataUrl;
   });
+}
+
+// compressBase64는 resizeForAPI로 대체
+function compressBase64(dataUrl) {
+  return resizeForAPI(dataUrl);
 }
 
 function splitImageIfLong(dataUrl) {
@@ -691,38 +698,12 @@ function readFileAsBase64(file) {
   return new Promise(function(resolve) {
     var reader = new FileReader();
     reader.onload = function(ev) {
-      var img = new Image();
-      img.onload = function() {
-        // base64 기준 최대 크기 (API 5MB 제한)
-        var MAX_B64 = 6400000; // base64 기준 4.8MB → API 5MB 제한 안전마진
-        var base64 = ev.target.result.split(',')[1];
-        var origSize = base64.length;
-
-        if (origSize <= MAX_B64) {
-          resolve({ base64: base64, type: file.type, name: file.name });
-          return;
-        }
-
-        // Canvas로 리사이즈 + 품질 압축
-        var canvas = document.createElement('canvas');
-        var ratio = Math.sqrt(MAX_B64 / origSize) * 0.85;
-        canvas.width  = Math.floor(img.width  * ratio);
-        canvas.height = Math.floor(img.height * ratio);
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        var quality = 0.85;
-        var compressed;
-        do {
-          compressed = canvas.toDataURL('image/jpeg', quality);
-          quality -= 0.05;
-        } while (compressed.split(',')[1].length > MAX_B64 && quality > 0.2);
-
-        var compressedBase64 = compressed.split(',')[1];
-        console.log('압축: ' + Math.round(origSize/1024) + 'KB → ' + Math.round(compressedBase64.length/1024) + 'KB');
-        resolve({ base64: compressedBase64, type: 'image/jpeg', name: file.name });
-      };
-      img.src = ev.target.result;
+      resolve({
+        base64: ev.target.result.split(',')[1],
+        type: file.type,
+        name: file.name,
+        dataUrl: ev.target.result
+      });
     };
     reader.readAsDataURL(file);
   });
