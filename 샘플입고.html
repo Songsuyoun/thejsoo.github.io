@@ -822,6 +822,15 @@ async function analyzeImage() {
       });
     }
 
+    // 상품명 아닌 키워드 필터링
+    var excludeKeywords = ['샘플', 'sp', '더제이수', '제이수', 'sb제이수', 'sb 제이수'];
+    allParsed = allParsed.filter(function(item) {
+      var name = (item['상품명'] || '').toLowerCase().replace(/\s/g, '');
+      return !excludeKeywords.some(function(kw) {
+        return name === kw.replace(/\s/g, '');
+      });
+    });
+
     // 옵션 제거 + 거래처별 상품명 중복 제거 + 옵션 수집
     var deduped = [];
     var seen = {};
@@ -1151,14 +1160,16 @@ async function saveAll() {
     if (p.action === 'ask') p.action = 'new';
 
     try {
-      // 수기 영수증이면 수정된 상품명 반영
+      // 수기 영수증이면 수정된 상품명 반영 (표시 중인 경우만)
       var nameEditEl = document.getElementById('nameEdit-' + i);
-      if (nameEditEl) p.상품명 = nameEditEl.value.trim() || p.상품명;
+      if (nameEditEl && nameEditEl.style.display !== 'none' && nameEditEl.value.trim()) {
+        p.상품명 = nameEditEl.value.trim();
+      }
 
       var memo = document.getElementById('memo-' + i) ? document.getElementById('memo-' + i).value.trim() : '';
       if (p.action === 'match' || p.action === 'select') {
         // 기존 행 업데이트 (영수증 상품명으로 덮어쓰기 + 연락처·주소)
-        var payload = encodeURIComponent(JSON.stringify({
+        var updateData = {
           '_row': p.rowNum,
           '상품명': p.상품명,
           '상태': '보유중',
@@ -1167,8 +1178,10 @@ async function saveAll() {
           '연락처': p.연락처 || '',
           '주소': p.주소 || '',
           '비고': memo
-        }));
+        };
+        var payload = encodeURIComponent(JSON.stringify(updateData));
         await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
+        console.log('updateStatus 호출:', updateData);
       } else {
         // 새 행 추가
         var payload2 = encodeURIComponent(JSON.stringify({
