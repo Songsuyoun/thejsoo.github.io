@@ -777,7 +777,14 @@ async function analyzeImage() {
         var data = await resp2.json();
         if (data.error) throw new Error(data.error.message);
         var text = data.content[0].text;
-        var parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+        // JSON 추출 - AI가 텍스트로 답변해도 안전하게 처리
+        var cleanText = text.replace(/```json|```/g, '').trim();
+        var jsonMatch = cleanText.match(/\[\s*\{.*\}\s*\]/s);
+        if (!jsonMatch) {
+          console.warn('JSON 파싱 불가, 건너뜀:', cleanText.substring(0, 100));
+          continue;
+        }
+        var parsed = JSON.parse(jsonMatch[0]);
 
         // 각 조각 안에서 거래처 채우기
         var segVendor = '';
