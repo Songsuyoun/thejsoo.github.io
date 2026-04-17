@@ -653,17 +653,20 @@ function splitImageIfLong(dataUrl) {
     img.onload = function() {
       var w = img.width, h = img.height;
       // 가로 이미지면 실제 긴 쪽 기준으로 비율 계산
-      var longSide  = Math.max(w, h);
-      var shortSide = Math.min(w, h);
-      var ratio = longSide / shortSide;
+      // 가로 이미지면 세로 기준으로 계산
+      var isLandscape = w > h;
+      var effectiveW = isLandscape ? h : w;
+      var effectiveH = isLandscape ? w : h;
 
-      var parts = ratio >= 4.5 ? 3 : ratio >= 2.5 ? 2 : 1;
+      // 원본 높이 기준으로 분할 (분할 후 리사이즈하므로 원본 기준이 정확)
+      var parts = effectiveH >= 7000 ? 3 : effectiveH >= 3500 ? 2 : 1;
+      var ratio = effectiveH / effectiveW;
+      console.log('원본 높이: ' + effectiveH + 'px → ' + parts + '등분');
       console.log('분할: ' + w + 'x' + h + ' 비율=' + ratio.toFixed(1) + ' → ' + parts + '등분');
 
       if (parts === 1) { resolve([dataUrl]); return; }
 
       // 항상 세로 방향으로 통일 (가로면 회전)
-      var isLandscape = w > h;
       var drawCanvas = document.createElement('canvas');
       if (isLandscape) {
         drawCanvas.width = h; drawCanvas.height = w;
