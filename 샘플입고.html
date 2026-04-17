@@ -162,15 +162,19 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
     <!-- 이미지 업로드 -->
     <div class="card">
       <div class="card-label">거래명세서 사진</div>
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
         <div style="font-size:13px; font-weight:600; color:var(--gray-600);">거래명세서 사진</div>
         <button onclick="openReceiptGuide()" style="background:var(--gray-100); border:1.5px solid var(--gray-200); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:var(--gray-600);">❓ 촬영 방법</button>
+      </div>
+      <div style="background:#FFF3CD; border:1.5px solid #FFC107; border-radius:8px; padding:8px 12px; margin-bottom:8px; font-size:12px; color:#856404; line-height:1.6;">
+        ⚠️ <strong>거래처 1곳씩</strong> 올려주세요!<br>
+        긴 영수증은 위/아래 나눠서 찍어도 돼요 (겹쳐도 OK)
       </div>
       <div class="upload-area" id="uploadArea">
         <input type="file" id="fileInput" accept="image/*" multiple>
         <div class="upload-icon" id="uploadIcon">📄</div>
-        <h3 id="uploadTitle">거래명세서 사진 업로드 (여러 장 가능)</h3>
-        <p id="uploadSub">여러 장 선택하면 순서대로 자동 처리해요</p>
+        <h3 id="uploadTitle">거래명세서 사진 업로드</h3>
+        <p id="uploadSub">⚠️ 한 거래처 영수증만 올려주세요 · 긴 영수증은 여러 장으로 나눠 동시 업로드 OK</p>
       </div>
       <img id="previewImg" class="preview-img" alt="">
       <div style="display:flex; align-items:center; gap:8px; margin-top:10px; padding:10px 14px; background:#F0F4FF; border-radius:8px; border:1.5px solid #C5D5F5;">
@@ -772,12 +776,19 @@ async function analyzeImage() {
       }
     }
 
-    // 거래처 없는 항목 → 같은 배치에서 거래처 채우기
+    // 거래처 없는 항목 → 전체 배치에서 앞뒤로 채우기
     var lastVendor = '';
+    // 앞에서 뒤로
     allParsed.forEach(function(item) {
       if (item['거래처'] && item['거래처'].length > 1) lastVendor = item['거래처'];
-      else if (!item['거래처'] && lastVendor) item['거래처'] = lastVendor;
+      else if ((!item['거래처'] || item['거래처'].length <= 1) && lastVendor) item['거래처'] = lastVendor;
     });
+    // 뒤에서 앞으로 (첫 번째 조각에 거래처 없을 경우 대비)
+    var nextVendor = '';
+    for (var ri = allParsed.length - 1; ri >= 0; ri--) {
+      if (allParsed[ri]['거래처'] && allParsed[ri]['거래처'].length > 1) nextVendor = allParsed[ri]['거래처'];
+      else if ((!allParsed[ri]['거래처'] || allParsed[ri]['거래처'].length <= 1) && nextVendor) allParsed[ri]['거래처'] = nextVendor;
+    }
 
     // 옵션 제거 + 거래처별 상품명 중복 제거 + 옵션 수집
     var deduped = [];
@@ -1003,7 +1014,7 @@ function renderAIResults(items) {
         '<div style="flex:1; min-width:0;">' +
           '<div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">' +
             '<span class="result-name" id="nameDisplay-' + i + '" onclick="editName(' + i + ')" style="cursor:pointer;">' + esc(p.상품명) + '</span>' +
-            '<span onclick="editName(' + i + ')" style="font-size:11px; color:#bbb; cursor:pointer; flex-shrink:0;">✏️</span>' +
+            '<span onclick="editName(' + i + ')" style="font-size:11px; color:#bbb; cursor:pointer;">✏️</span>' +
           '</div>' +
           '<input id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
             'style="display:none; width:100%; border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:14px; font-weight:700; font-family:var(--font); outline:none; color:var(--black); padding:2px 0; box-sizing:border-box;" ' +
