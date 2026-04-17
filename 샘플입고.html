@@ -772,16 +772,33 @@ async function analyzeImage() {
       }
     }
 
-    // 옵션 제거 + 거래처별 상품명 중복 제거
+    // 거래처 없는 항목 → 같은 배치에서 거래처 채우기
+    var lastVendor = '';
+    allParsed.forEach(function(item) {
+      if (item['거래처'] && item['거래처'].length > 1) lastVendor = item['거래처'];
+      else if (!item['거래처'] && lastVendor) item['거래처'] = lastVendor;
+    });
+
+    // 옵션 제거 + 거래처별 상품명 중복 제거 + 옵션 수집
     var deduped = [];
     var seen = {};
     allParsed.forEach(function(item) {
-      var baseName = (item['상품명'] || '').split('/')[0].trim();
+      var parts = (item['상품명'] || '').split('/');
+      var baseName = parts[0].trim();
+      var option = parts.slice(1).join('/').replace(/FREE/gi, '').replace(/S$|F$|M$/, '').trim();
       var vendor = item['거래처'] || '';
       var uniqKey = vendor + '||' + baseName.toLowerCase().replace(/\s/g, '');
       if (!seen[uniqKey]) {
         seen[uniqKey] = true;
-        deduped.push({ '상품명': baseName, '거래처': vendor });
+        deduped.push({ '상품명': baseName, '거래처': vendor, '옵션목록': option ? [option] : [] });
+      } else {
+        // 이미 있으면 옵션만 추가
+        var existing = deduped.find(function(d) {
+          return d['거래처'] === vendor && d['상품명'].toLowerCase().replace(/\s/g,'') === baseName.toLowerCase().replace(/\s/g,'');
+        });
+        if (existing && option && existing['옵션목록'].indexOf(option) < 0) {
+          existing['옵션목록'].push(option);
+        }
       }
     });
 
@@ -881,6 +898,7 @@ async function aiMatch(items) {
     return {
       상품명: item['상품명'],
       거래처: item['거래처'],
+      옵션목록: item['옵션목록'] || [],
       matchedSheetIdx: matchedIdx
     };
   });
@@ -901,6 +919,7 @@ function renderAIResults(items) {
     return {
       상품명: item['상품명'],
       거래처: item['거래처'],
+      옵션목록: item['옵션목록'] || [],
       연락처: vendorInfo ? (vendorInfo['전화번호'] || '') : '',
       주소:   vendorInfo ? (vendorInfo['위치'] || '') : '',
       입고일: today,
@@ -968,19 +987,28 @@ function renderAIResults(items) {
     }
 
     var isHandwritten = document.getElementById('chkHandwritten') && document.getElementById('chkHandwritten').checked;
-    var nameBadge = isHandwritten
-      ? '<span style="font-size:10px; background:#4A7AE0; color:white; border-radius:10px; padding:2px 8px; margin-left:6px;">✏️ 수기</span>'
-      : '';
+
+    // 옵션 태그 HTML
+    var optionTags = '';
+    if (p.옵션목록 && p.옵션목록.length > 0) {
+      optionTags = '<div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">' +
+        p.옵션목록.map(function(opt) {
+          return '<span style="font-size:10px; background:#F0EDE8; color:#6B6760; border-radius:10px; padding:2px 8px;">' + esc(opt) + '</span>';
+        }).join('') +
+      '</div>';
+    }
 
     card.innerHTML =
       '<div class="result-header">' +
-        '<div class="result-name">' +
-          (isHandwritten
-            ? '<input class="card-name-input" id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
-              'style="border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:15px; font-weight:700; font-family:var(--font); width:100%; outline:none; color:var(--black);" ' +
-              'oninput="pendingRows[' + i + '].상품명=this.value">'
-            : esc(p.상품명)) +
-          nameBadge +
+        '<div style="flex:1;">' +
+          '<div style="display:flex; align-items:center; gap:6px;">' +
+            '<div class="result-name" id="nameDisplay-' + i + '" onclick="editName(' + i + ')" style="cursor:pointer; flex:1;">' + esc(p.상품명) + '</div>' +
+            '<span title="클릭해서 수정" onclick="editName(' + i + ')" style="font-size:11px; color:#aaa; cursor:pointer;">✏️</span>' +
+          '</div>' +
+          '<input class="card-name-input" id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
+            'style="display:none; border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:15px; font-weight:700; font-family:var(--font); width:100%; outline:none; color:var(--black); margin-top:2px;" ' +
+            'oninput="pendingRows[' + i + '].상품명=this.value" onblur="saveName(' + i + ')" onkeydown="if(event.key===\'Enter\') saveName(' + i + ')">' +
+          optionTags +
         '</div>' +
         '<span class="result-badge ' + (p.matched ? 'ok' : 'warn') + '">' + (p.matched ? '✓ 자동매칭' : '⚠ 미매칭') + '</span>' +
       '</div>' +
@@ -1277,6 +1305,24 @@ async function linkAlias(i) {
   if (aliasDiv) {
     aliasDiv.parentElement.parentElement.innerHTML =
       '<div style="font-size:11px; color:var(--green); padding:4px 0;">✅ ' + selectedVendor['업체명'] + ' 별칭으로 등록됐어요</div>';
+  }
+}
+
+// 상품명 수정
+function editName(i) {
+  var display = document.getElementById('nameDisplay-' + i);
+  var input = document.getElementById('nameEdit-' + i);
+  if (display) display.style.display = 'none';
+  if (input) { input.style.display = 'block'; input.focus(); input.select(); }
+}
+function saveName(i) {
+  var display = document.getElementById('nameDisplay-' + i);
+  var input = document.getElementById('nameEdit-' + i);
+  if (input) {
+    var newName = input.value.trim() || pendingRows[i].상품명;
+    pendingRows[i].상품명 = newName;
+    if (display) { display.textContent = newName; display.style.display = 'block'; }
+    input.style.display = 'none';
   }
 }
 
