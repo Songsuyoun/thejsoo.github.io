@@ -724,6 +724,12 @@ async function analyzeImage() {
   document.getElementById('loading').classList.add('show');
   document.getElementById('aiResults').style.display = 'none';
 
+  // vendorDB 없으면 먼저 로드
+  if (vendorDB.length === 0) {
+    document.getElementById('loadingMsg').textContent = '거래처 DB 로딩 중...';
+    await loadVendorDB();
+  }
+
   var allParsed = [];
 
   try {
