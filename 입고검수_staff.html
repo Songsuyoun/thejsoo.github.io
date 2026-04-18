@@ -352,7 +352,6 @@ async function saveMod(){
     if(!result.ok) toast('저장 실패: '+(result.error||''));
   }catch(e){toast('오류: '+e.message);console.error('saveMod error:',e);}
 }
-}
 async function markX(){document.getElementById('modQty').value=0;await saveMod();}
 
 /* ═══ 이미지 ═══ */
