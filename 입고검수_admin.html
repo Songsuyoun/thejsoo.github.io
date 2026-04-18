@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>입고검수 관리자 · 더제이수</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+:root{--bg:#F4F5F7;--surface:#fff;--s2:#F8F9FA;--border:#E4E7EC;--b2:#D0D5DD;--accent:#1D4ED8;--al:#EFF6FF;--green:#16A34A;--gl:#F0FDF4;--amber:#D97706;--aml:#FFFBEB;--red:#DC2626;--rl:#FEF2F2;--text:#111827;--t2:#374151;--muted:#6B7280;--m2:#9CA3AF;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;padding-bottom:40px;}
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;position:sticky;top:0;z-index:100;}
+.hdr-row{display:flex;align-items:center;gap:12px;max-width:1400px;margin:0 auto;}
+.hdr-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#7C3AED);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.main{max-width:1400px;margin:0 auto;padding:20px 24px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.card-title{font-size:13px;font-weight:700;color:var(--t2);margin-bottom:12px;}
+.sess-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--surface);margin-bottom:6px;transition:all .15s;}
+.sess-row:hover,.sess-row.sel{border-color:var(--accent);background:var(--al);}
+.sid{font-family:monospace;font-size:12px;font-weight:700;color:var(--accent);min-width:80px;}
+.sdate{font-size:11px;color:var(--muted);min-width:85px;}
+.sworkers{font-size:12px;color:var(--t2);flex:1;}
+.sst{font-size:12px;color:var(--muted);font-family:monospace;display:flex;gap:12px;}
+.sbadge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;}
+.sbadge.진행중{background:var(--aml);color:var(--amber);}
+.sbadge.완료{background:var(--gl);color:var(--green);}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+.st-box{padding:12px;border-radius:8px;text-align:center;}
+.st-box .l{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.st-box .v{font-family:monospace;font-size:22px;font-weight:500;}
+.sb-blue{background:var(--al);} .sb-blue .v{color:var(--accent);}
+.sb-green{background:var(--gl);} .sb-green .v{color:var(--green);}
+.sb-amber{background:var(--aml);} .sb-amber .v{color:var(--amber);}
+.sb-red{background:var(--rl);} .sb-red .v{color:var(--red);}
+.sb-gray{background:var(--s2);} .sb-gray .v{color:var(--muted);}
+.wp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.wp{padding:12px 14px;border:1px solid var(--border);border-radius:10px;}
+.wp-n{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;}
+.wp-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.wp-fill{height:100%;border-radius:99px;}
+.wp-fill.done{background:var(--green);}.wp-fill.prog{background:var(--accent);}
+.wp-s{font-size:10px;color:var(--muted);font-family:monospace;}
+.btn-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.btn{padding:11px 16px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#fff;transition:transform .1s;}
+.btn:hover{transform:translateY(-1px);}
+.btn-g{background:linear-gradient(135deg,var(--green),#15803D);}
+.btn-b{background:linear-gradient(135deg,var(--accent),#4F46E5);}
+.filt-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.filt-row input,.filt-row select{padding:8px 12px;border:1px solid var(--b2);border-radius:7px;font-family:inherit;font-size:12px;outline:none;background:#fff;}
+.filt-row input{flex:1;min-width:200px;}
+.tbl-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:500px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:#2F5496;color:#fff;padding:8px;font-weight:700;position:sticky;top:0;white-space:nowrap;font-size:11px;}
+th.l{text-align:left;}
+td{padding:7px 8px;border-bottom:1px solid var(--border);}
+td.c{text-align:center;font-family:monospace;}
+td.l{text-align:left;}
+td.n{font-weight:500;color:var(--text);}
+tr.r-ok{background:var(--gl);} tr.r-ok:hover{background:#DCFCE7;}
+tr.r-mod{background:var(--aml);} tr.r-mod:hover{background:#FEF3C7;}
+tr.r-x{background:var(--rl);} tr.r-x:hover{background:#FEE2E2;}
+tr.r-p{background:var(--s2);} tr.r-p:hover{background:#EAECEF;}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;font-family:monospace;color:#fff;}
+.b-ok{background:var(--green);}.b-mod{background:var(--amber);}.b-x{background:var(--red);}.b-p{background:var(--m2);}
+.empty{text-align:center;padding:40px;color:var(--m2);font-size:13px;}
+.ld{display:none;text-align:center;padding:30px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="hdr-row">
+  <div class="hdr-logo">📊</div>
+  <div><div style="font-size:15px;font-weight:700;">입고검수 관리자</div><div style="font-size:11px;color:var(--muted);">검수 현황 확인 · 통합 엑셀 다운로드</div></div>
+</div></div>
+<div class="main">
+  <div class="card">
+    <div class="card-title">📅 검수 세션 목록</div>
+    <div id="sessList"></div>
+    <div class="ld" id="sessLoading">불러오는 중...</div>
+    <div style="margin-top:10px;text-align:right;"><button class="btn btn-b" onclick="loadSessions()" style="font-size:11px;padding:7px 12px;">🔄 새로고침</button></div>
+  </div>
+  <div class="card" id="detailCard" style="display:none;">
+    <div class="card-title">✓ 검수 결과 (<span id="detailSid"></span>)</div>
+    <div class="stats" id="statsGrid"></div>
+    <div class="wp-grid" id="wpGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-g" onclick="downloadAll()">📥 통합 엑셀 다운로드</button>
+      <button class="btn btn-b" onclick="downloadIssues()">⚠ 이슈만 다운로드</button>
+    </div>
+    <div class="filt-row">
+      <input type="text" id="sb" placeholder="🔍 상품명/공급처 검색...">
+      <select id="fs"><option value="all">모든 상태</option><option value="O">정상만</option><option value="수정">수정만</option><option value="X">미입고만</option><option value="">미검수만</option></select>
+      <select id="fw"><option value="all">모든 담당자</option></select>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th>담당</th><th class="l">공급처</th><th class="l">상품명</th><th class="l">옵션</th><th>예정</th><th>실제</th><th>상태</th><th class="l">메모</th>
+    </tr></thead><tbody id="tb"></tbody></table></div>
+  </div>
+</div>
+<script>
+const GAS_URL = localStorage.getItem('insp_gas_url') || 'YOUR_GAS_WEB_APP_URL_HERE';
+let state = { sessions: [], selectedSession: null, items: [] };
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    const u = prompt('GAS Web App URL을 입력해주세요:');
+    if (u) { localStorage.setItem('insp_gas_url', u); location.reload(); }
+    return;
+  }
+  loadSessions();
+  document.getElementById('sb').addEventListener('input', renderTable);
+  document.getElementById('fs').addEventListener('change', renderTable);
+  document.getElementById('fw').addEventListener('change', renderTable);
+});
+
+async function callGAS(action, params = {}) {
+  const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action, ...params }), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+  return await r.json();
+}
+
+async function loadSessions() {
+  document.getElementById('sessLoading').style.display = 'block';
+  document.getElementById('sessList').innerHTML = '';
+  try {
+    const r = await callGAS('getAdmin');
+    if (!r.ok) { alert('불러오기 실패'); return; }
+    state.sessions = r.sessions;
+    renderSessions();
+  } catch (e) { alert('오류: ' + e.message); }
+  finally { document.getElementById('sessLoading').style.display = 'none'; }
+}
+
+function renderSessions() {
+  if (state.sessions.length === 0) {
+    document.getElementById('sessList').innerHTML = '<div class="empty">아직 세션이 없어요</div>';
+    return;
+  }
+  document.getElementById('sessList').innerHTML = state.sessions.map(s => {
+    const sel = s.sessionId === state.selectedSession;
+    return `<div class="sess-row${sel ? ' sel' : ''}" onclick="selectSession('${s.sessionId}')">
+      <div class="sid">${s.sessionId}</div><div class="sdate">${s.검수일자||''}</div>
+      <div class="sworkers">👥 ${s.담당자목록||'-'}</div>
+      <div class="sst"><span>📦 ${s.총상품수}건</span><span>📊 ${s.총수량}개</span></div>
+      <div class="sbadge ${s.상태}">${s.상태}</div>
+    </div>`;
+  }).join('');
+}
+
+async function selectSession(sid) {
+  state.selectedSession = sid;
+  renderSessions();
+  try {
+    const r = await callGAS('getAdmin', { sessionId: sid });
+    if (!r.ok) { alert('상세 불러오기 실패'); return; }
+    state.items = r.items;
+    renderDetail();
+  } catch (e) { alert('오류: ' + e.message); }
+}
+
+function renderDetail() {
+  document.getElementById('detailCard').style.display = 'block';
+  document.getElementById('detailSid').textContent = state.selectedSession;
+  const st = { total: state.items.length, ok: 0, mod: 0, x: 0, pending: 0 };
+  const bw = {};
+  state.items.forEach(it => {
+    const s = it.검수상태;
+    if (s === 'O') st.ok++; else if (s === '수정') st.mod++; else if (s === 'X') st.x++; else st.pending++;
+    const w = it.담당자;
+    if (!bw[w]) bw[w] = { total: 0, done: 0 };
+    bw[w].total++; if (s) bw[w].done++;
+  });
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="st-box sb-blue"><div class="l">총 상품</div><div class="v">${st.total}</div></div>
+    <div class="st-box sb-green"><div class="l">정상</div><div class="v">${st.ok}</div></div>
+    <div class="st-box sb-amber"><div class="l">수량 수정</div><div class="v">${st.mod}</div></div>
+    <div class="st-box sb-red"><div class="l">미입고</div><div class="v">${st.x}</div></div>
+    <div class="st-box sb-gray"><div class="l">미검수</div><div class="v">${st.pending}</div></div>`;
+  document.getElementById('wpGrid').innerHTML = Object.entries(bw).map(([w, d]) => {
+    const pct = d.total > 0 ? d.done / d.total * 100 : 0;
+    const cls = pct >= 100 ? 'done' : 'prog';
+    return `<div class="wp"><div class="wp-n"><span>${w}</span><span style="color:${pct>=100?'var(--green)':'var(--accent)'};font-family:monospace;font-size:12px;">${d.done}/${d.total}${pct>=100?' ✓':''}</span></div>
+      <div class="wp-bar"><div class="wp-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="wp-s">${Math.round(pct)}% 완료</div></div>`;
+  }).join('');
+  // 담당자 필터 업데이트
+  const fw = document.getElementById('fw');
+  const workers = [...new Set(state.items.map(i => i.담당자))];
+  fw.innerHTML = '<option value="all">모든 담당자</option>' + workers.map(w => `<option value="${w}">${w}</option>`).join('');
+  renderTable();
+}
+
+function renderTable() {
+  const search = document.getElementById('sb').value.toLowerCase();
+  const sf = document.getElementById('fs').value;
+  const wf = document.getElementById('fw').value;
+  const fil = state.items.filter(it => {
+    if (search && !(it.상품명 || '').toLowerCase().includes(search) && !(it.공급처 || '').toLowerCase().includes(search)) return false;
+    if (sf !== 'all' && it.검수상태 !== sf) return false;
+    if (wf !== 'all' && it.담당자 !== wf) return false;
+    return true;
+  });
+  const tb = document.getElementById('tb');
+  if (fil.length === 0) { tb.innerHTML = '<tr><td colspan="8" class="empty">검색 결과 없음</td></tr>'; return; }
+  tb.innerHTML = fil.map(it => {
+    const s = it.검수상태;
+    const rc = s === 'O' ? 'r-ok' : s === '수정' ? 'r-mod' : s === 'X' ? 'r-x' : 'r-p';
+    const badge = s === 'O' ? '<span class="badge b-ok">정상</span>' : s === '수정' ? '<span class="badge b-mod">수정</span>' : s === 'X' ? '<span class="badge b-x">미입고</span>' : '<span class="badge b-p">대기</span>';
+    const actC = s === '수정' ? 'color:var(--amber);font-weight:700;' : s === 'X' ? 'color:var(--red);font-weight:700;' : '';
+    const act = it.실제수량 === '' || it.실제수량 === undefined ? '-' : it.실제수량;
+    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${it.상품명||''}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
+  }).join('');
+}
+
+function downloadAll() {
+  if (!state.items.length) { alert('데이터 없음'); return; }
+  const rows = state.items.map(it => ({
+    '담당자': it.담당자, '공급처': it.공급처, '사입명': it.사입명, '상품명': it.상품명, '옵션': it.옵션,
+    '예정수량': it.입고수량, '실제수량': it.실제수량 === '' ? it.입고수량 : it.실제수량,
+    '검수상태': it.검수상태 || '미검수', '바코드': it.바코드, '상품메모1': it.상품메모1, '검수메모': it.검수메모,
+    '검수완료시간': it.검수완료시간 ? new Date(it.검수완료시간).toLocaleString('ko-KR') : ''
+  }));
+  exportXlsx(rows, `입고검수_${state.selectedSession}_전체.xlsx`);
+}
+
+function downloadIssues() {
+  const issues = state.items.filter(it => it.검수상태 === '수정' || it.검수상태 === 'X');
+  if (!issues.length) { alert('이슈 없음 ✓'); return; }
+  const rows = issues.map(it => ({
+    '담당자': it.담당자, '공급처': it.공급처, '사입명': it.사입명, '상품명': it.상품명, '옵션': it.옵션,
+    '예정수량': it.입고수량, '실제수량': it.실제수량,
+    '차이': (Number(it.실제수량) || 0) - (Number(it.입고수량) || 0),
+    '검수상태': it.검수상태, '바코드': it.바코드, '검수메모': it.검수메모
+  }));
+  exportXlsx(rows, `입고검수_${state.selectedSession}_이슈만.xlsx`);
+}
+
+function exportXlsx(rows, fn) {
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '검수결과');
+  XLSX.writeFile(wb, fn);
+}
+</script>
+</body>
+</html>

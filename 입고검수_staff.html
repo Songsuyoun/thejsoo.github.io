@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1D4ED8">
+<title>입고검수 · 더제이수</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+:root{--bg:#F4F5F7;--surface:#fff;--s2:#F8F9FA;--border:#E4E7EC;--b2:#D0D5DD;--accent:#1D4ED8;--al:#EFF6FF;--green:#16A34A;--gl:#F0FDF4;--amber:#D97706;--aml:#FFFBEB;--red:#DC2626;--rl:#FEF2F2;--text:#111827;--t2:#374151;--muted:#6B7280;--m2:#9CA3AF;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;padding-bottom:90px;font-size:15px;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.h-row{display:flex;align-items:center;gap:10px;}
+.h-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#7C3AED);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.h-info{flex:1;}
+.h-title{font-size:15px;font-weight:700;}
+.h-sub{font-size:11px;color:var(--muted);font-family:monospace;margin-top:1px;}
+.h-prog{margin-top:10px;}
+.h-prog-text{display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-bottom:5px;font-weight:500;}
+.h-prog-num{font-family:monospace;color:var(--accent);font-weight:700;}
+.prog-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),#7C3AED);border-radius:99px;width:0%;transition:width .4s;}
+.sup-bar{background:var(--surface);padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sup-bar label{font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap;}
+.sup-bar select{flex:1;padding:10px 32px 10px 12px;border:1px solid var(--b2);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%236B7280" d="M6 8L2 4h8z"/></svg>') no-repeat right 10px center;-webkit-appearance:none;appearance:none;outline:none;}
+.fbar{display:flex;gap:5px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+.fc{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--b2);background:var(--surface);color:var(--muted);white-space:nowrap;cursor:pointer;}
+.fc.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.list{padding:12px;}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:all .2s;}
+.item.done-ok{border-color:var(--green);background:linear-gradient(to right,var(--gl),var(--surface) 30%);}
+.item.done-mod{border-color:var(--amber);background:linear-gradient(to right,var(--aml),var(--surface) 30%);}
+.item.done-x{border-color:var(--red);background:linear-gradient(to right,var(--rl),var(--surface) 30%);}
+.item-top{padding:14px 14px 10px;}
+.item-sup{display:inline-block;font-size:10px;font-weight:500;letter-spacing:.5px;color:var(--muted);background:var(--s2);padding:3px 8px;border-radius:4px;margin-bottom:7px;}
+.item-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:4px;}
+.item-opt{font-size:13px;color:var(--t2);margin-bottom:8px;}
+.item-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);font-family:monospace;flex-wrap:wrap;}
+.item-qty{background:var(--al);color:var(--accent);padding:3px 9px;border-radius:6px;font-weight:700;font-size:13px;}
+.item-memo-tag{font-size:11px;color:var(--amber);background:var(--aml);padding:3px 7px;border-radius:5px;margin-top:6px;display:inline-block;}
+.item-bigo-tag{font-size:11px;color:var(--red);background:var(--rl);padding:3px 7px;border-radius:5px;margin-top:4px;display:inline-block;}
+.item-actions{display:flex;border-top:1px solid var(--border);}
+.ba{flex:1;padding:13px 6px;border:none;background:var(--surface);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--t2);}
+.ba:not(:last-child){border-right:1px solid var(--border);}
+.ba:active{background:var(--s2);}
+.ba-ok{color:var(--green);}.ba-ok.on{background:var(--green);color:#fff;}
+.ba-mod{color:var(--amber);}.ba-mod.on{background:var(--amber);color:#fff;}
+.ba-img{color:var(--accent);}
+.item-st{padding:10px 14px;border-top:1px solid var(--border);font-size:12px;}
+.st-ok{background:var(--gl);color:#166534;}
+.st-mod{background:var(--aml);color:#92400E;}
+.st-x{background:var(--rl);color:#991B1B;}
+.st-row{display:flex;justify-content:space-between;align-items:center;}
+.st-memo{margin-top:5px;font-style:italic;font-size:11.5px;opacity:.85;}
+/* 모달 */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal.show{display:flex;}
+.mbox{background:var(--surface);border-radius:16px;padding:20px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;}
+.mbox h3{font-size:16px;font-weight:700;margin-bottom:4px;}
+.mbox .msub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.mlabel{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+.qty-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.qbtn{width:44px;height:44px;border:1px solid var(--b2);background:var(--surface);border-radius:8px;font-size:20px;font-weight:700;cursor:pointer;color:var(--t2);}
+.qbtn:active{background:var(--s2);}
+.qinput{flex:1;border:1px solid var(--b2);border-radius:8px;padding:12px;font-family:monospace;font-size:18px;font-weight:700;text-align:center;outline:none;}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.preset{padding:8px 13px;border-radius:7px;font-size:12.5px;font-weight:500;border:1px solid var(--b2);background:var(--surface);color:var(--t2);cursor:pointer;font-family:inherit;}
+.preset.on{border-color:var(--accent);background:var(--al);color:var(--accent);}
+.mtxt{width:100%;border:1px solid var(--b2);border-radius:8px;padding:12px;font-family:inherit;font-size:14px;outline:none;resize:none;min-height:50px;margin-bottom:14px;box-sizing:border-box;}
+.mactions{display:flex;gap:7px;}
+.mbtn{flex:1;padding:12px 4px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.mb-cancel{background:var(--s2);color:var(--t2);border:1px solid var(--b2);}
+.mb-x{background:var(--red);color:#fff;}
+.mb-save{background:var(--amber);color:#fff;}
+/* 이미지 모달 */
+.img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;align-items:center;justify-content:center;padding:20px;flex-direction:column;cursor:pointer;}
+.img-modal.show{display:flex;}
+.img-modal img{max-width:100%;max-height:75vh;border-radius:8px;background:#fff;}
+.img-modal .close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;background:rgba(255,255,255,.15);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.img-modal .iname{color:#fff;font-size:13px;margin-bottom:10px;text-align:center;max-width:300px;line-height:1.5;}
+.img-modal .ihint{color:rgba(255,255,255,.5);font-size:11px;margin-top:14px;}
+.iloading{color:#fff;font-size:13px;}
+/* 하단 */
+.footer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 12px rgba(0,0,0,.06);z-index:90;}
+.btn-complete{width:100%;padding:15px;border:none;border-radius:10px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+/* 시작 */
+.start{padding:40px 20px;text-align:center;}
+.start-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#7C3AED);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:16px;}
+.start h2{font-size:18px;margin-bottom:6px;}
+.start p{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+.start input{width:100%;max-width:280px;margin:0 auto 12px;display:block;padding:12px 14px;border:1px solid var(--b2);border-radius:8px;font-family:inherit;font-size:14px;outline:none;text-align:center;}
+.start button{max-width:280px;width:100%;margin:8px auto 0;padding:14px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+/* 로딩/토스트 */
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{font-size:13px;color:var(--muted);}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(17,24,39,.95);color:#fff;padding:12px 22px;border-radius:24px;font-size:13px;font-weight:500;z-index:400;opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.empty{text-align:center;padding:60px 20px;color:var(--m2);}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4;}
+</style>
+</head>
+<body>
+
+<div id="startScreen" style="display:none;">
+  <div class="start">
+    <div class="start-logo">📦</div>
+    <h2>더제이수 입고검수</h2>
+    <p>담당자 이름과 검수일자를 입력해주세요</p>
+    <input type="text" id="startWorker" placeholder="담당자 이름 (예: 윤혜정)">
+    <input type="text" id="startSession" placeholder="세션ID (예: 20260418)" inputmode="numeric">
+    <button onclick="startManual()">시작하기</button>
+  </div>
+</div>
+
+<div id="mainScreen" style="display:none;">
+  <div class="header">
+    <div class="h-row">
+      <div class="h-logo">📦</div>
+      <div class="h-info">
+        <div class="h-title"><span id="workerName">-</span>님 입고검수</div>
+        <div class="h-sub">세션 <span id="sessionId">-</span></div>
+      </div>
+    </div>
+    <div class="h-prog">
+      <div class="h-prog-text"><span>진행률</span><span class="h-prog-num"><span id="doneCount">0</span> / <span id="totalCount">0</span></span></div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    </div>
+  </div>
+  <div class="sup-bar">
+    <label>📦 공급처</label>
+    <select id="supSelect"></select>
+  </div>
+  <div class="fbar">
+    <div class="fc on" data-f="all">전체 <span id="cAll">0</span></div>
+    <div class="fc" data-f="pending">대기 <span id="cPending">0</span></div>
+    <div class="fc" data-f="ok">정상 <span id="cOk">0</span></div>
+    <div class="fc" data-f="mod">수정 <span id="cMod">0</span></div>
+    <div class="fc" data-f="x">미입고 <span id="cX">0</span></div>
+  </div>
+  <div class="list" id="itemList"></div>
+  <div class="footer">
+    <button class="btn-complete" id="btnComplete" onclick="completeAll()" style="background:var(--m2);">완료</button>
+  </div>
+</div>
+
+<div class="modal" id="modModal">
+  <div class="mbox">
+    <h3>수량 수정 / 메모</h3>
+    <div class="msub" id="modName"></div>
+    <div class="mlabel">실제 입고 수량</div>
+    <div class="qty-row">
+      <button class="qbtn" onclick="qStep(-1)">−</button>
+      <input type="number" id="modQty" class="qinput" inputmode="numeric">
+      <button class="qbtn" onclick="qStep(1)">+</button>
+    </div>
+    <div class="mlabel">자주 쓰는 메모</div>
+    <div class="presets" id="presetWrap"></div>
+    <div class="mlabel">직접 입력</div>
+    <textarea id="modMemo" class="mtxt" placeholder="특이사항 직접 입력"></textarea>
+    <div class="mactions">
+      <button class="mbtn mb-cancel" onclick="closeMod()">취소</button>
+      <button class="mbtn mb-x" onclick="markX()">미입고</button>
+      <button class="mbtn mb-save" onclick="saveMod()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="img-modal" id="imgModal" onclick="closeImg()">
+  <div class="close">×</div>
+  <div class="iname" id="imgName"></div>
+  <div class="iloading" id="imgLoading">이미지 불러오는 중...</div>
+  <img id="imgView" style="display:none" alt="상품 이미지">
+  <div class="ihint">아무 곳이나 탭하면 닫힘</div>
+</div>
+
+<div class="loading" id="loading"><div class="spinner"></div><p id="loadingText">데이터 불러오는 중...</p></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══ 설정 ═══ */
+const GAS_URL = 'YOUR_GAS_WEB_APP_URL_HERE';
+const MEMO_PRESETS = ['사이즈 잘못 들어옴','다른 상품이 들어옴','색상 잘못 들어옴'];
+
+/* ═══ 상태 ═══ */
+let S = { worker:null, sessionId:null, items:[], filter:'all', supplier:'ALL', editing:null };
+
+/* ═══ 진입 ═══ */
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(location.search);
+  if (p.get('worker') && p.get('session')) {
+    S.worker = p.get('worker'); S.sessionId = p.get('session');
+    document.getElementById('mainScreen').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'block';
+    const d = new Date();
+    document.getElementById('startSession').value = d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  }
+  document.querySelectorAll('.fc').forEach(c => c.onclick = () => setFilter(c.dataset.f));
+  document.getElementById('supSelect').onchange = e => { S.supplier = e.target.value; render(); };
+});
+
+function startManual(){
+  const w=document.getElementById('startWorker').value.trim();
+  const s=document.getElementById('startSession').value.trim();
+  if(!w||!s){toast('이름과 세션ID를 입력해주세요');return;}
+  location.href=`?worker=${encodeURIComponent(w)}&session=${encodeURIComponent(s)}`;
+}
+
+/* ═══ GAS 호출 ═══ */
+async function callGAS(action, params={}){
+  if(GAS_URL==='YOUR_GAS_WEB_APP_URL_HERE') throw new Error('GAS_URL 미설정');
+  const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action,...params}),headers:{'Content-Type':'text/plain;charset=utf-8'}});
+  return await r.json();
+}
+
+/* ═══ 데이터 로드 ═══ */
+async function loadData(){
+  showLoading('검수 데이터 불러오는 중...');
+  try{
+    const r=await callGAS('getInspection',{sessionId:S.sessionId,worker:S.worker});
+    if(!r.ok){hideLoading();toast('불러오기 실패');return;}
+    S.items=r.items;
+    document.getElementById('workerName').textContent=S.worker;
+    document.getElementById('sessionId').textContent=S.sessionId;
+    if(S.items.length===0){
+      document.getElementById('itemList').innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div>${S.worker}님 검수 데이터가 없어요.<br>세션ID(${S.sessionId})를 확인해주세요.</div></div>`;
+    }
+    render(); hideLoading();
+  }catch(err){hideLoading();toast('오류: '+err.message);console.error(err);}
+}
+
+/* ═══ 렌더링 ═══ */
+function render(){
+  const cn={all:S.items.length,pending:0,ok:0,mod:0,x:0};
+  S.items.forEach(i=>{const s=i.검수상태;if(s==='O')cn.ok++;else if(s==='수정')cn.mod++;else if(s==='X')cn.x++;else cn.pending++;});
+  document.getElementById('cAll').textContent=cn.all;
+  document.getElementById('cPending').textContent=cn.pending;
+  document.getElementById('cOk').textContent=cn.ok;
+  document.getElementById('cMod').textContent=cn.mod;
+  document.getElementById('cX').textContent=cn.x;
+  const done=cn.ok+cn.mod+cn.x;
+  document.getElementById('doneCount').textContent=done;
+  document.getElementById('totalCount').textContent=cn.all;
+  document.getElementById('progFill').style.width=(cn.all>0?done/cn.all*100:0)+'%';
+  const btn=document.getElementById('btnComplete');
+  if(done===cn.all&&cn.all>0){btn.style.background='var(--green)';btn.textContent='✓ 검수 완료';}
+  else{btn.style.background='var(--m2)';btn.textContent=`완료 (남은 항목 ${cn.all-done}개)`;}
+
+  // 공급처 select
+  const sups=['ALL',...new Set(S.items.map(i=>i.공급처))];
+  const sel=document.getElementById('supSelect');
+  sel.innerHTML=sups.map(s=>{
+    const lb=s==='ALL'?'전체':s;
+    const ct=s==='ALL'?S.items.length:S.items.filter(i=>i.공급처===s).length;
+    const dc=s==='ALL'?S.items.filter(i=>i.검수상태).length:S.items.filter(i=>i.공급처===s&&i.검수상태).length;
+    const chk=ct>0&&dc===ct?'✓ ':'';
+    return `<option value="${s}"${s===S.supplier?' selected':''}>${chk}${lb} (${dc}/${ct})</option>`;
+  }).join('');
+
+  // 필터 적용
+  const fil=S.items.filter(i=>{
+    if(S.supplier!=='ALL'&&i.공급처!==S.supplier) return false;
+    if(S.filter==='all') return true;
+    if(S.filter==='pending') return !i.검수상태;
+    if(S.filter==='ok') return i.검수상태==='O';
+    if(S.filter==='mod') return i.검수상태==='수정';
+    if(S.filter==='x') return i.검수상태==='X';
+  });
+
+  const list=document.getElementById('itemList');
+  if(fil.length===0){list.innerHTML='<div class="empty"><div class="empty-icon">✨</div><div>해당하는 항목이 없어요</div></div>';return;}
+
+  list.innerHTML=fil.map(it=>{
+    const s=it.검수상태;
+    const cls=s==='O'?'done-ok':s==='수정'?'done-mod':s==='X'?'done-x':'';
+    const hasImg=it.대표이미지주소&&String(it.대표이미지주소).trim();
+    const memo=it.메모&&String(it.메모).trim();
+    const bigo=it.비고&&String(it.비고).trim();
+
+    let stHtml='';
+    if(s==='O') stHtml=`<div class="item-st st-ok"><div class="st-row"><strong>✓ 정상 입고</strong><span style="font-family:monospace">${it.입고수량}개</span></div></div>`;
+    else if(s==='수정') stHtml=`<div class="item-st st-mod"><div class="st-row"><strong>⚠ 수량 수정</strong><span style="font-family:monospace">예정 ${it.입고수량}개 → 실제 <strong>${it.실제수량}개</strong></span></div>${it.검수메모?`<div class="st-memo">📝 ${esc(it.검수메모)}</div>`:''}</div>`;
+    else if(s==='X') stHtml=`<div class="item-st st-x"><div class="st-row"><strong>✗ 미입고</strong><span style="font-family:monospace">예정 ${it.입고수량}개 → 0개</span></div>${it.검수메모?`<div class="st-memo">📝 ${esc(it.검수메모)}</div>`:''}</div>`;
+
+    return `<div class="item ${cls}" data-row="${it.행번호}">
+      <div class="item-top">
+        <div class="item-sup">${esc(it.공급처||'-')}</div>
+        <div class="item-name">${esc(it.상품명||'-')}</div>
+        <div class="item-opt">${esc(it.옵션||'')}</div>
+        <div class="item-meta">
+          <span class="item-qty">${it.입고수량}개</span>
+          ${it.바코드?`<span>📊 ${esc(String(it.바코드))}</span>`:''}
+        </div>
+        ${memo?`<div class="item-memo-tag">💬 ${esc(String(memo))}</div>`:''}
+        ${bigo?`<div class="item-bigo-tag">⚠ ${esc(String(bigo))}</div>`:''}
+      </div>
+      <div class="item-actions">
+        <button class="ba ba-ok${s==='O'?' on':''}" onclick="markOK(${it.행번호})">✓ 정상</button>
+        <button class="ba ba-mod${s==='수정'||s==='X'?' on':''}" onclick="openMod(${it.행번호})">✎ 수정/X</button>
+        ${hasImg?`<button class="ba ba-img" onclick="showImg(${it.행번호})">📷 이미지</button>`:`<button class="ba" style="color:var(--m2)" disabled>📷 없음</button>`}
+      </div>
+      ${stHtml}
+    </div>`;
+  }).join('');
+}
+
+/* ═══ 정상 체크 ═══ */
+async function markOK(rn){
+  const it=S.items.find(i=>i.행번호===rn);if(!it)return;
+  it.검수상태='O';it.실제수량=it.입고수량;it.검수메모='';render();
+  try{const r=await callGAS('updateItem',{sessionId:S.sessionId,worker:S.worker,rowNum:rn,status:'O',actualQty:it.입고수량,memo:''});if(!r.ok){it.검수상태='';render();toast('저장 실패');}}
+  catch(e){it.검수상태='';render();toast('네트워크 오류');}
+}
+
+/* ═══ 수정 모달 ═══ */
+function openMod(rn){
+  const it=S.items.find(i=>i.행번호===rn);if(!it)return;
+  S.editing=it;
+  document.getElementById('modName').textContent=`${it.공급처} · ${it.상품명} (${it.옵션})`;
+  document.getElementById('modQty').value=it.실제수량!==undefined&&it.실제수량!==''?it.실제수량:it.입고수량;
+  document.getElementById('modMemo').value=it.검수메모||'';
+  renderPresets();
+  document.getElementById('modModal').classList.add('show');
+}
+function closeMod(){document.getElementById('modModal').classList.remove('show');S.editing=null;}
+function qStep(d){const i=document.getElementById('modQty');i.value=Math.max(0,(parseInt(i.value)||0)+d);}
+function renderPresets(){
+  const cur=document.getElementById('modMemo').value;
+  document.getElementById('presetWrap').innerHTML=MEMO_PRESETS.map(p=>
+    `<button class="preset${cur===p?' on':''}" onclick="pickPreset('${p}')">${p}</button>`
+  ).join('');
+}
+function pickPreset(p){
+  const m=document.getElementById('modMemo');
+  m.value=m.value===p?'':p;renderPresets();
+}
+async function saveMod(){
+  if(!S.editing)return;
+  const q=parseInt(document.getElementById('modQty').value)||0;
+  const memo=document.getElementById('modMemo').value.trim();
+  let status;if(q===0)status='X';else if(q===Number(S.editing.입고수량))status='O';else status='수정';
+  S.editing.검수상태=status;S.editing.실제수량=q;S.editing.검수메모=memo;closeMod();render();
+  try{await callGAS('updateItem',{sessionId:S.sessionId,worker:S.worker,rowNum:S.editing.행번호,status,actualQty:q,memo});}catch(e){toast('네트워크 오류');}
+}
+async function markX(){document.getElementById('modQty').value=0;await saveMod();}
+
+/* ═══ 이미지 ═══ */
+function showImg(rn){
+  const it=S.items.find(i=>i.행번호===rn);if(!it||!it.대표이미지주소)return;
+  const m=document.getElementById('imgModal'),img=document.getElementById('imgView'),ld=document.getElementById('imgLoading');
+  document.getElementById('imgName').textContent=`${it.공급처} · ${it.상품명} (${it.옵션})`;
+  img.style.display='none';ld.style.display='block';ld.textContent='이미지 불러오는 중...';m.classList.add('show');
+  img.onload=()=>{img.style.display='block';ld.style.display='none';};
+  img.onerror=()=>{ld.textContent='⚠ 이미지를 불러올 수 없습니다';};
+  img.src=String(it.대표이미지주소).trim();
+}
+function closeImg(){document.getElementById('imgModal').classList.remove('show');}
+
+/* ═══ 필터 ═══ */
+function setFilter(f){
+  S.filter=f;
+  document.querySelectorAll('.fc').forEach(c=>{const on=c.dataset.f===f;c.classList.toggle('on',on);});
+  render();
+}
+
+/* ═══ 완료 ═══ */
+async function completeAll(){
+  const undone=S.items.filter(i=>!i.검수상태);
+  if(undone.length>0&&!confirm(`아직 ${undone.length}건 남았어요. 그래도 완료?`)) return;
+  showLoading('완료 처리 중...');
+  try{const r=await callGAS('completeWorker',{sessionId:S.sessionId,worker:S.worker});hideLoading();
+    if(r.ok){alert('✓ 검수 완료되었습니다!');document.getElementById('btnComplete').disabled=true;document.getElementById('btnComplete').textContent='✓ 완료됨';}
+    else toast('실패: '+(r.error||''));
+  }catch(e){hideLoading();toast('네트워크 오류');}
+}
+
+/* ═══ 유틸 ═══ */
+function showLoading(t){document.getElementById('loadingText').textContent=t||'로딩 중...';document.getElementById('loading').style.display='flex';}
+function hideLoading(){document.getElementById('loading').style.display='none';}
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
