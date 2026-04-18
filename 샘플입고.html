@@ -177,11 +177,6 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
         <p id="uploadSub">⚠️ 한 거래처 영수증만 올려주세요 · 긴 영수증은 여러 장으로 나눠 동시 업로드 OK</p>
       </div>
       <img id="previewImg" class="preview-img" alt="">
-      <div style="display:flex; align-items:center; gap:8px; margin-top:10px; padding:10px 14px; background:#F0F4FF; border-radius:8px; border:1.5px solid #C5D5F5;">
-        <input type="checkbox" id="chkHandwritten" style="width:16px; height:16px; cursor:pointer; accent-color:#4A7AE0;">
-        <label for="chkHandwritten" style="font-size:12px; font-weight:600; color:#4A7AE0; cursor:pointer;">✏️ 수기 영수증 — AI가 읽은 후 상품명 직접 수정 가능</label>
-      </div>
-
       <button class="btn-primary" id="btnAnalyze" onclick="analyzeImage()" style="display:none;">
         🤖 AI로 입고 상품 인식하기
       </button>
@@ -286,11 +281,33 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 <!-- 영수증 촬영 방법 팝업 -->
 <div id="receiptGuideModal" onclick="closeReceiptGuide()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:flex-end; justify-content:center;">
   <div onclick="event.stopPropagation()" style="background:white; border-radius:20px 20px 0 0; padding:24px 20px 40px; width:100%; max-width:680px; max-height:80vh; overflow-y:auto; animation:slideUpModal 0.3s ease;">
-
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-      <div style="font-size:16px; font-weight:700;">📸 영수증 촬영 방법</div>
-      <button onclick="closeReceiptGuide()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#888; padding:0;">✕</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h3 style="font-size:16px; font-weight:700; color:var(--black);">❓ 샘플입고 사용 가이드</h3>
+      <button onclick="closeReceiptGuide()" style="border:none; background:none; font-size:20px; cursor:pointer; color:var(--gray-600);">✕</button>
     </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="padding:14px; background:#FFF8E7; border-radius:12px; border-left:4px solid var(--amber);">
+        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">⚠️ 미매칭이란?</div>
+        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">AI가 영수증 상품을 샘플 요청 목록에서 찾지 못한 경우예요. 요청 안 한 샘플이거나, AI가 상품명을 잘못 읽은 거예요. ✏️를 눌러 상품명을 수정하면 자동으로 다시 매칭 시도해요.</div>
+      </div>
+      <div style="padding:14px; background:#FFF0F0; border-radius:12px; border-left:4px solid #E53E3E;">
+        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">✕ 삭제는 언제?</div>
+        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">영수증 안내문, 혼용률 정보 등 AI가 상품으로 잘못 인식한 항목을 지울 때 눌러요. 저장 시 자동으로 제외돼요.</div>
+      </div>
+      <div style="padding:14px; background:#F0F4FF; border-radius:12px; border-left:4px solid #4A7AE0;">
+        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">↓ 요청했던 상품 중 선택</div>
+        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">AI가 상품명을 잘못 읽어서 미매칭이 됐을 때, 드롭다운에서 실제로 요청했던 상품을 직접 골라요. 그 다음 <b>선택한 항목에 매칭</b>을 눌러야 적용돼요.</div>
+      </div>
+      <div style="padding:14px; background:#F0FFF4; border-radius:12px; border-left:4px solid var(--green);">
+        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">➕ 새 행으로 추가</div>
+        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">요청하지 않았지만 받은 샘플이에요. 눌러서 시트에 새로 추가해요.</div>
+      </div>
+      <div style="padding:14px; background:#F8F8F8; border-radius:12px; border-left:4px solid var(--gray-400);">
+        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">📝 메모</div>
+        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">특이사항을 적어요. 예: "블랙 누락", "파손 있음", "사이즈 S만 입고" 등. 시트 비고 컬럼에 저장돼요.</div>
+      </div>
+    </div>
+  </div>
 
     <!-- 공통 주의사항 -->
     <div style="background:#FDECEA; border-left:4px solid #E8756A; border-radius:8px; padding:11px 14px; margin-bottom:18px; font-size:12px; color:#C0392B; line-height:1.8; font-weight:600;">
@@ -1039,7 +1056,7 @@ function renderAIResults(items) {
 
       actionHtml =
         '<select class="match-select" id="matchSel-' + i + '">' +
-          '<option value="">-- 직접 선택 --</option>' +
+          '<option value="">↓ 요청했던 상품 중 선택</option>' +
           options +
         '</select>' +
         '<div class="match-actions">' +
@@ -1422,12 +1439,70 @@ function editName(i) {
 function saveName(i) {
   var display = document.getElementById('nameDisplay-' + i);
   var input = document.getElementById('nameEdit-' + i);
-  if (input) {
-    var newName = input.value.trim() || pendingRows[i].상품명;
-    pendingRows[i].상품명 = newName;
-    if (display) { display.textContent = newName; display.style.display = 'block'; }
-    input.style.display = 'none';
+  if (!input) return;
+
+  var newName = input.value.trim() || pendingRows[i].상품명;
+  pendingRows[i].상품명 = newName;
+  if (display) { display.textContent = newName; display.style.display = 'block'; }
+  input.style.display = 'none';
+
+  // 미매칭 상태면 수정된 상품명으로 재매칭 시도
+  if (!pendingRows[i].matched) {
+    var rematch = tryRematch(newName, pendingRows[i].거래처);
+    if (rematch) {
+      pendingRows[i].matched = rematch;
+      pendingRows[i].matchedIdx = rematch._rowIdx;
+      pendingRows[i].rowNum = rematch['_row'];
+      pendingRows[i].action = 'match';
+
+      // 카드 UI 업데이트
+      var card = document.getElementById('rcard-' + i);
+      if (card) {
+        card.className = 'result-card matched';
+        var badge = card.querySelector('.result-badge');
+        if (badge) { badge.textContent = '✓ 자동매칭'; badge.className = 'result-badge ok'; }
+        var actionDiv = card.querySelector('div[style*="margin-top:10px"]');
+        if (actionDiv) actionDiv.remove();
+        // 매칭된 상품명 표시
+        var existingInfo = card.querySelector('.rematch-info');
+        if (!existingInfo) {
+          var infoDiv = document.createElement('div');
+          infoDiv.className = 'rematch-info result-info';
+          infoDiv.style.color = 'var(--green)';
+          infoDiv.textContent = '→ ' + rematch['상품명'] + ' / ' + rematch['거래처'];
+          card.querySelector('.result-info').after(infoDiv);
+        }
+      }
+      showToast('✅ "' + newName + '" 재매칭 성공!');
+    }
   }
+}
+
+// 상품명으로 시트에서 재매칭 시도
+function tryRematch(name, vendor) {
+  function normalize(s) { return (s || '').toLowerCase().replace(/[\s()\[\]{}]/g, ''); }
+  function normalizeVendor(s) { return (s || '').toLowerCase().replace(/[\s()\[\]{}.\-]/g, ''); }
+
+  var nameNorm = normalize(name.split('/')[0].trim());
+  var vendorNorm = normalizeVendor(vendor);
+
+  // 거래처 필터 후 상품명 매칭
+  var filtered = sheetRows.filter(function(r) {
+    var sv = normalizeVendor(r['거래처'] || '');
+    return sv.length > 0 && vendorNorm.length > 0 &&
+      (sv.indexOf(vendorNorm) >= 0 || vendorNorm.indexOf(sv) >= 0);
+  });
+  if (!filtered.length) filtered = sheetRows;
+
+  for (var i = 0; i < filtered.length; i++) {
+    var sheetNorm = normalize(filtered[i]['상품명']);
+    if (nameNorm.length >= 2 && sheetNorm.indexOf(nameNorm) >= 0) {
+      var result = filtered[i];
+      result._rowIdx = sheetRows.indexOf(filtered[i]);
+      return result;
+    }
+  }
+  return null;
 }
 
 function openReceiptGuide() {
