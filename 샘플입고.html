@@ -164,7 +164,7 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
       <div class="card-label">거래명세서 사진</div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
         <div style="font-size:13px; font-weight:600; color:var(--gray-600);">거래명세서 사진</div>
-        <button onclick="openReceiptGuide()" style="background:var(--gray-100); border:1.5px solid var(--gray-200); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:var(--gray-600);">❓ 촬영 방법</button>
+        <button onclick="openReceiptGuide()" style="background:var(--gray-100); border:1.5px solid var(--gray-200); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:var(--gray-600);">❓ 사용 가이드</button>
       </div>
       <div style="background:#FFF3CD; border:1.5px solid #FFC107; border-radius:8px; padding:8px 12px; margin-bottom:8px; font-size:12px; color:#856404; line-height:1.6;">
         ⚠️ <strong>거래처 1곳씩</strong> 올려주세요!<br>
@@ -278,7 +278,7 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
   </div>
 </div>
 
-<!-- 영수증 촬영 방법 팝업 -->
+<!-- 사용 가이드 팝업 -->
 <div id="receiptGuideModal" onclick="closeReceiptGuide()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:flex-end; justify-content:center;">
   <div onclick="event.stopPropagation()" style="background:white; border-radius:20px 20px 0 0; padding:24px 20px 40px; width:100%; max-width:680px; max-height:80vh; overflow-y:auto; animation:slideUpModal 0.3s ease;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -299,8 +299,12 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
         <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">AI가 상품명을 잘못 읽어서 미매칭이 됐을 때, 드롭다운에서 실제로 요청했던 상품을 직접 골라요. 그 다음 <b>선택한 항목에 매칭</b>을 눌러야 적용돼요.</div>
       </div>
       <div style="padding:14px; background:#F0FFF4; border-radius:12px; border-left:4px solid var(--green);">
-        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">➕ 새 행으로 추가</div>
-        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">요청하지 않았지만 받은 샘플이에요. 눌러서 시트에 새로 추가해요.</div>
+        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">📥 입고 처리 버튼</div>
+        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">삭제하지 않은 항목을 한 번에 저장해요. 매칭된 건 상태 업데이트, 미매칭인 건 시트에 새로 추가돼요.</div>
+      </div>
+      <div style="padding:14px; background:#F5F5F5; border-radius:12px; border-left:4px solid #999;">
+        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">✏️ 상품명 수정</div>
+        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">AI가 잘못 읽은 상품명을 수정하면 자동으로 샘플 요청 목록에서 다시 검색해요. 매칭되면 초록으로 바뀌어요!</div>
       </div>
       <div style="padding:14px; background:#F8F8F8; border-radius:12px; border-left:4px solid var(--gray-400);">
         <div style="font-size:13px; font-weight:700; margin-bottom:6px;">📝 메모</div>
@@ -308,66 +312,9 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
       </div>
     </div>
   </div>
+</div>
 
-    <!-- 공통 주의사항 -->
-    <div style="background:#FDECEA; border-left:4px solid #E8756A; border-radius:8px; padding:11px 14px; margin-bottom:18px; font-size:12px; color:#C0392B; line-height:1.8; font-weight:600;">
-      ⚠️ 공통 주의사항<br>
-      <span style="font-weight:400;">영수증이 잘 보이게 평평하게 펴서 찍어주세요 · 글자가 선명하게 나와야 AI가 잘 읽어요</span>
-    </div>
 
-    <!-- CASE 1 -->
-    <div style="background:#F7F6F3; border-radius:12px; padding:16px; margin-bottom:12px;">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-        <div style="background:#111; color:white; border-radius:20px; padding:3px 14px; font-size:12px; font-weight:700;">CASE 1</div>
-        <div style="font-size:14px; font-weight:700;">짧은 영수증</div>
-      </div>
-      <div style="font-size:12px; color:#444; line-height:1.9;">
-        상품이 <strong>15줄 이하</strong>면 1장으로 찍어요. 영수증이 화면에 꽉 차게 찍어주세요!
-      </div>
-      <div style="background:white; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12px; color:#2D6A4F; border:1px solid #B8DCCA;">
-        📱 1장 업로드 → AI 인식 → 완료
-      </div>
-    </div>
-
-    <!-- CASE 2 -->
-    <div style="background:#F7F6F3; border-radius:12px; padding:16px; margin-bottom:12px;">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-        <div style="background:#111; color:white; border-radius:20px; padding:3px 14px; font-size:12px; font-weight:700;">CASE 2</div>
-        <div style="font-size:14px; font-weight:700;">중간 영수증 — 2장으로 나눠 찍기</div>
-      </div>
-      <div style="font-size:12px; color:#444; line-height:1.9;">
-        상품이 <strong>16~30줄</strong>이면 위/아래 2장으로 나눠요. 각각 15줄씩 찍어주세요!
-      </div>
-      <div style="background:white; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12px; color:#6B6760; border:1px solid #E6E3DE; line-height:2;">
-        📷 1장: 영수증 위쪽 절반<br>
-        📷 2장: 영수증 아래쪽 절반<br>
-        → <strong>2장 동시에 선택해서 업로드!</strong>
-      </div>
-    </div>
-
-    <!-- CASE 3 -->
-    <div style="background:#F7F6F3; border-radius:12px; padding:16px; margin-bottom:20px;">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-        <div style="background:#111; color:white; border-radius:20px; padding:3px 14px; font-size:12px; font-weight:700;">CASE 3</div>
-        <div style="font-size:14px; font-weight:700;">긴 영수증 — 3장으로 나눠 찍기</div>
-      </div>
-      <div style="font-size:12px; color:#444; line-height:1.9;">
-        상품이 <strong>31줄 이상</strong>이면 위/중간/아래 3장으로 나눠요. 각각 10~15줄씩 찍어주세요!
-      </div>
-      <div style="background:white; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12px; color:#6B6760; border:1px solid #E6E3DE; line-height:2;">
-        📷 1장: 영수증 위쪽<br>
-        📷 2장: 영수증 중간<br>
-        📷 3장: 영수증 아래쪽<br>
-        → <strong>3장 동시에 선택해서 업로드!</strong>
-      </div>
-      <div style="background:#EBF2FC; border-radius:8px; padding:10px 14px; margin-top:8px; font-size:12px; color:#1A56A0;">
-        💡 겹치는 부분 없이 순서대로 찍어주세요. AI가 알아서 합쳐서 인식해요!
-      </div>
-    </div>
-
-    <div style="font-size:11px; color:#B0ADA7; text-align:center;">
-      용량은 자동으로 조절되니까 신경 안 써도 돼요 😊
-    </div>
   </div>
 </div>
 
@@ -1060,7 +1007,6 @@ function renderAIResults(items) {
           options +
         '</select>' +
         '<div class="match-actions">' +
-          '<button class="btn-match-new" onclick="setAction(' + i + ',\'new\')">➕ 새 행으로 추가</button>' +
           '<button class="btn-match-select" onclick="setAction(' + i + ',\'select\')">✓ 선택한 항목에 매칭</button>' +
         '</div>' +
         // 거래처 별칭 연결 UI (거래처 DB 미등록일 때만 표시)
@@ -1139,27 +1085,25 @@ function renderAIResults(items) {
 // ── 미매칭 액션 설정 ──
 function setAction(i, action) {
   var sel = document.getElementById('matchSel-' + i);
-  if (action === 'select' && sel.value === '') { showToast('요청중 상품을 선택해주세요'); return; }
+  if (sel.value === '') { showToast('요청중 상품을 선택해주세요'); return; }
 
-  pendingRows[i].action = action;
-  if (action === 'select') {
-    var ri = parseInt(sel.value);
-    pendingRows[i].matched = sheetRows[ri];
-    pendingRows[i].rowNum = sheetRows[ri]['_row'];
-    pendingRows[i].matchedIdx = ri;
-  }
+  var ri = parseInt(sel.value);
+  pendingRows[i].action = 'select';
+  pendingRows[i].matched = sheetRows[ri];
+  pendingRows[i].rowNum = sheetRows[ri]['_row'];
+  pendingRows[i].matchedIdx = ri;
 
   var card = document.getElementById('rcard-' + i);
-  card.className = 'result-card ' + (action === 'new' ? 'new-row' : 'matched');
+  card.className = 'result-card matched';
 
   var badge = card.querySelector('.result-badge');
-  badge.textContent = action === 'new' ? '➕ 새 행 추가' : '✓ 매칭됨';
-  badge.className = 'result-badge ' + (action === 'new' ? 'new' : 'ok');
+  badge.textContent = '✓ 매칭됨';
+  badge.className = 'result-badge ok';
 
-  card.querySelector('div[style="margin-top:10px;"]')?.remove?.() ||
-  (function() { var el = card.querySelector('.match-select'); if(el) el.closest('div').remove?.(); })();
+  var actionWrap = card.querySelector('div[style*="margin-top:10px"]');
+  if (actionWrap) actionWrap.remove();
 
-  showToast(action === 'new' ? '➕ 새 행으로 추가됩니다' : '✓ 매칭 완료!');
+  showToast('✓ 매칭 완료!');
 }
 
 // ── AI 탭 저장 ──
