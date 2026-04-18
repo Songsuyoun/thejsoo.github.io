@@ -801,47 +801,14 @@ async function analyzeImage() {
     allParsed.forEach(function(item) {
       var parts = (item['상품명'] || '').split('/');
       var baseName = parts[0].trim();
-      var rawOption = parts.slice(1).join('/').replace(/FREE/gi, '').replace(/\/?(S|F|M|XL|XS|L)$/i, '').trim();
-      // 컬러 교정 사전
-      var colorFix = {
-        '검청': '검정', '검정색': '검정', '블랙': '검정', 'BLACK': '검정',
-        '고색': '곤색', '군색': '곤색', '감색': '곤색', '네이비': '곤색', 'NAVY': '곤색',
-        '아이보리': '아이', '아이보리색': '아이', 'IVORY': '아이', '연베이지': '아이',
-        '베이지색': '베이지', 'BEIGE': '베이지',
-        '화이트': '흰색', 'WHITE': '흰색',
-        '그레이': '회색', '그레이색': '회색', 'GRAY': '회색', 'GREY': '회색',
-        '민트색': '민트', 'MINT': '민트',
-        '핑크색': '핑크', 'PINK': '핑크',
-        '소라색': '소라', '스카이': '소라',
-        '브라운': '브라운', 'BROWN': '브라운',
-        '옐로우': '옐로', '노란색': '옐로', '노랑': '옐로', 'YELLOW': '옐로',
-        '레드': '빨강', '빨간색': '빨강', 'RED': '빨강',
-        '카키': '카키', 'KHAKI': '카키',
-        '먹색': '먹색', '차콜': '차콜', 'CHARCOAL': '차콜',
-        '블루': '블루', 'BLUE': '블루',
-      };
-      var option = rawOption;
-      if (colorFix[rawOption]) option = colorFix[rawOption];
-      // 부분 매칭
-      if (!colorFix[rawOption]) {
-        Object.keys(colorFix).forEach(function(k) {
-          if (rawOption.indexOf(k) >= 0) option = colorFix[k];
-        });
-      }
-      var vendor = item['거래처'] || '';
+      // 옵션 미사용
+      
+var vendor = item['거래처'] || '';
       // 같은 배치 = 같은 거래처 → 상품명만으로 중복 제거
       var uniqKey = baseName.toLowerCase().replace(/\s/g, '');
       if (!seen[uniqKey]) {
         seen[uniqKey] = true;
-        deduped.push({ '상품명': baseName, '거래처': vendor, '옵션목록': option ? [option] : [] });
-      } else {
-        // 이미 있으면 옵션만 추가
-        var existing = deduped.find(function(d) {
-          return d['거래처'] === vendor && d['상품명'].toLowerCase().replace(/\s/g,'') === baseName.toLowerCase().replace(/\s/g,'');
-        });
-        if (existing && option && existing['옵션목록'].indexOf(option) < 0) {
-          existing['옵션목록'].push(option);
-        }
+        deduped.push({ '상품명': baseName, '거래처': vendor });
       }
     });
 
@@ -941,7 +908,6 @@ async function aiMatch(items) {
     return {
       상품명: item['상품명'],
       거래처: item['거래처'],
-      옵션목록: item['옵션목록'] || [],
       matchedSheetIdx: matchedIdx
     };
   });
@@ -962,7 +928,6 @@ function renderAIResults(items) {
     return {
       상품명: item['상품명'],
       거래처: item['거래처'],
-      옵션목록: item['옵션목록'] || [],
       연락처: vendorInfo ? (vendorInfo['전화번호'] || '') : '',
       주소:   vendorInfo ? (vendorInfo['위치'] || '') : '',
       입고일: today,
@@ -1030,17 +995,9 @@ function renderAIResults(items) {
 
     var isHandwritten = document.getElementById('chkHandwritten') && document.getElementById('chkHandwritten').checked;
 
-    // 옵션 태그 HTML
     var optionTags = '';
-    if (p.옵션목록 && p.옵션목록.length > 0) {
-      optionTags = '<div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">' +
-        p.옵션목록.map(function(opt) {
-          return '<span style="font-size:10px; background:#F0EDE8; color:#6B6760; border-radius:10px; padding:2px 8px;">' + esc(opt) + '</span>';
-        }).join('') +
-      '</div>';
-    }
 
-    card.innerHTML =
+        card.innerHTML =
       '<div class="result-header">' +
         '<div style="flex:1; min-width:0;">' +
           '<div style="display:flex; align-items:center; gap:2px;">' +
@@ -1359,6 +1316,33 @@ async function linkAlias(i) {
 }
 
 // 상품명 수정
+// 옵션 수정
+function editOption(i) {
+  var display = document.getElementById('optDisplay-' + i);
+  var input = document.getElementById('optEdit-' + i);
+  if (display) display.style.display = 'none';
+  if (input) { input.style.display = 'inline-block'; input.focus(); input.select(); }
+}
+function saveOption(i) {
+  var display = document.getElementById('optDisplay-' + i);
+  var input = document.getElementById('optEdit-' + i);
+  if (!input) return;
+
+  var newOpts = input.value.split(',').map(function(o) { return o.trim(); }).filter(Boolean);
+  pendingRows[i].옵션목록 = newOpts;
+
+  // 태그 UI 업데이트
+  if (display) {
+    display.innerHTML = newOpts.length > 0
+      ? newOpts.map(function(opt) {
+          return '<span style="font-size:10px; background:#F0EDE8; color:#6B6760; border-radius:10px; padding:2px 8px;">' + esc(opt) + '</span>';
+        }).join('')
+      : '<span style="font-size:10px; color:#bbb;">옵션 없음</span>';
+    display.style.display = 'flex';
+  }
+  input.style.display = 'none';
+}
+
 // 카드 삭제
 function deleteCard(i) {
   var card = document.getElementById('rcard-' + i);
