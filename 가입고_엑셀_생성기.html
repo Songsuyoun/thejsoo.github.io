@@ -477,8 +477,9 @@
     <table id="previewTable"></table>
   </div>
 
-  <button class="btn" id="downloadBtn" onclick="downloadFile()">⬇ CSV 다운로드</button>
+  <button class="btn" id="saveBtn" onclick="downloadAndUpload()" style="margin-top:20px;">⬇ CSV 저장 + ☁ 드라이브 업로드</button>
   <button class="btn btn-secondary" onclick="resetAll()">↩ 다른 파일 처리하기</button>
+  <div id="driveAlert" class="alert" style="margin-top:12px;"></div>
 </div>
 
 <footer>the J.Soo 내부 전용 · 외부 공유 금지</footer>
@@ -486,6 +487,8 @@
 <script>
 let processedData = null;
 let originalFileName = '';
+let originalFile = null;
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwnuoc6PrRBFKpbZplvoQKw4iqQh0TaryIBI5KWtuJKehdUAVQEGKS02kbF1zy4gdHN/exec';
 
 const fileInput = document.getElementById('fileInput');
 const dropZone = document.getElementById('dropZone');
@@ -511,6 +514,7 @@ function showAlert(type, msg) {
 
 function processFile(file) {
   originalFileName = file.name;
+  originalFile = file;
   document.getElementById('fileName').textContent = file.name;
   document.getElementById('fileMeta').textContent = (file.size / 1024).toFixed(1) + ' KB';
   document.getElementById('fileInfo').classList.add('show');
@@ -628,6 +632,48 @@ function downloadFile() {
   URL.revokeObjectURL(url);
 }
 
+function downloadAndUpload() {
+  if (!processedData || !originalFile) return;
+
+  const btn = document.getElementById('saveBtn');
+  const alertBox = document.getElementById('driveAlert');
+  btn.disabled = true;
+  btn.textContent = '⏳ 처리 중...';
+  alertBox.className = 'alert';
+
+  // 1. CSV 다운로드
+  downloadFile();
+
+  // 2. 원본 엑셀 파일을 드라이브에 업로드 (base64로 변환)
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64 = e.target.result.split(',')[1];
+    fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        fileName: originalFile.name,
+        fileData: base64,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      })
+    })
+    .then(() => {
+      btn.disabled = false;
+      btn.textContent = '⬇ CSV 저장 + ☁ 드라이브 업로드';
+      alertBox.className = 'alert show success animate';
+      alertBox.innerHTML = `✅ CSV 다운로드 + <b>${originalFile.name}</b> 드라이브 업로드 완료!`;
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = '⬇ CSV 저장 + ☁ 드라이브 업로드';
+      alertBox.className = 'alert show error animate';
+      alertBox.innerHTML = '❌ 드라이브 업로드 실패: ' + err.message;
+    });
+  };
+  reader.readAsDataURL(originalFile);
+}
+
 function resetAll() {
   processedData = null;
   originalFileName = '';
@@ -637,6 +683,10 @@ function resetAll() {
   document.getElementById('alertBox').className = 'alert';
   document.getElementById('previewCard').style.display = 'none';
   document.getElementById('previewTable').innerHTML = '';
+  document.getElementById('driveAlert').className = 'alert';
+  originalFile = null;
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '⬇ CSV 저장 + ☁ 드라이브 업로드'; }
 }
 </script>
 
