@@ -169,15 +169,10 @@ tr.r-p{background:var(--s2);} tr.r-p:hover{background:#EAECEF;}
   </div>
 </div>
 <script>
-const GAS_URL = localStorage.getItem('insp_gas_url') || 'YOUR_GAS_WEB_APP_URL_HERE';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyOWOcCSzNgeotauLnEzLPs8O8x4SICREqE_76qKlfLbdxQFjEJVNzq7X6nv46dMgOI/exec';
 let state = { sessions: [], selectedSession: null, items: [] };
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
-    const u = prompt('GAS Web App URL을 입력해주세요:');
-    if (u) { localStorage.setItem('insp_gas_url', u); location.reload(); }
-    return;
-  }
   loadSessions();
   document.getElementById('sb').addEventListener('input', renderTable);
   document.getElementById('fs').addEventListener('change', renderTable);
