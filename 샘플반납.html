@@ -2,784 +2,362 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>샘플 반납 | 더제이수</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>더제이수 샘플 반납 엑셀 생성기</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
-:root {
-  --bg: #F7F6F3; --white: #FFF; --black: #111;
-  --gray-100: #F2F1EE; --gray-200: #E6E3DE; --gray-400: #B0ADA7; --gray-600: #6B6760;
-  --green: #2D6A4F; --green-light: #EAF4EE;
-  --blue: #1A56A0; --blue-light: #EBF2FC;
-  --red: #C0392B; --red-light: #FDECEA;
-  --amber: #B8860B; --amber-light: #FEF9E7;
-  --accent: #E8756A;
-  --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.07); --font: 'Noto Sans KR', sans-serif;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: var(--font); background: var(--bg); color: var(--black); min-height: 100vh; padding-bottom: 120px; }
-
-header { background: var(--black); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-.logo { color: white; font-size: 16px; font-weight: 700; }
-.logo span { color: var(--accent); }
-.step-badge { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; padding: 4px 12px; border-radius: 20px; }
-.main { max-width: 680px; margin: 0 auto; padding: 20px 16px; width: 100%; }
-
-/* 대시보드 */
-.dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-.dash-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 14px 10px; text-align: center; box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s; }
-.dash-card.active.red { border: 2px solid var(--red); background: var(--red-light); }
-.dash-card.active.amber { border: 2px solid var(--amber); background: var(--amber-light); }
-.dash-card.active.green { border: 2px solid var(--green); background: var(--green-light); }
-.dash-num { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
-.dash-num.red { color: var(--red); }
-.dash-num.amber { color: var(--amber); }
-.dash-num.green { color: var(--green); }
-.dash-label { font-size: 10px; color: var(--gray-600); font-weight: 600; }
-
-/* 필터 */
-.filter-bar { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
-.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--gray-200); background: var(--white); font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; white-space: nowrap; color: var(--gray-600); }
-.filter-btn.active { background: var(--black); border-color: var(--black); color: white; }
-
-/* 거래처 그룹 */
-.vendor-group { margin-bottom: 20px; }
-.vendor-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 8px; box-shadow: var(--shadow); }
-.vendor-name { font-size: 14px; font-weight: 700; }
-.vendor-meta { font-size: 11px; color: var(--gray-600); }
-.btn-kakao { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #F0D060; background: var(--amber-light); color: var(--amber); font-size: 11px; font-weight: 700; font-family: var(--font); cursor: pointer; white-space: nowrap; }
-
-/* 상품 카드 */
-.product-cards { display: flex; flex-direction: column; gap: 8px; }
-.product-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); transition: all 0.15s; cursor: pointer; }
-.product-card.checked { border-color: var(--green); background: #FAFFFC; }
-.product-card.urgent { border-left: 4px solid var(--red); }
-.product-card.warning { border-left: 4px solid var(--amber); }
-.product-card.checked.urgent, .product-card.checked.warning { border-left: 4px solid var(--green); }
-
-.card-inner { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
-
-/* 체크박스 */
-.card-check { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--gray-200); background: var(--gray-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; transition: all 0.15s; }
-.card-check.on { background: var(--green); border-color: var(--green); color: white; }
-
-/* 이미지 */
-.card-img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; border: 1px solid var(--gray-200); flex-shrink: 0; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 22px; overflow: hidden; }
-.card-img img { width: 100%; height: 100%; object-fit: cover; }
-
-/* 카드 정보 */
-.card-info { flex: 1; min-width: 0; }
-.card-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-vendor { font-size: 12px; color: var(--gray-600); margin-bottom: 4px; }
-.card-dday { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-.card-dday.urgent { background: var(--red-light); color: var(--red); }
-.card-dday.warning { background: var(--amber-light); color: var(--amber); }
-.card-dday.safe { background: var(--green-light); color: var(--green); }
-
-/* 로딩 */
-.loading { text-align: center; padding: 40px 20px; }
-.spinner { width: 30px; height: 30px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* 빈 화면 */
-.empty { text-align: center; padding: 60px 20px; color: var(--gray-400); }
-.empty-icon { font-size: 48px; margin-bottom: 12px; }
-.empty-text { font-size: 14px; font-weight: 600; }
-
-/* 카톡 팝업 */
-.kakao-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: flex-end; justify-content: center; }
-.kakao-modal.show { display: flex; }
-.kakao-inner { background: white; border-radius: 20px 20px 0 0; padding: 24px 16px 40px; width: 100%; max-width: 680px; animation: slideUp 0.3s ease; }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.kakao-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-.kakao-textarea { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; font-size: 13px; font-family: var(--font); background: var(--gray-100); outline: none; resize: vertical; min-height: 120px; color: var(--black); line-height: 1.7; }
-.kakao-textarea:focus { border-color: var(--black); background: white; }
-.kakao-actions { display: flex; gap: 10px; margin-top: 12px; }
-.btn-copy { flex: 1; padding: 13px; border-radius: 10px; border: none; background: var(--amber); color: white; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; }
-.btn-close-modal { flex: 0; padding: 13px 18px; border-radius: 10px; border: 1.5px solid var(--gray-200); background: white; color: var(--gray-600); font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; }
-
-/* 저장 버튼 */
-.save-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px; z-index: 50; }
-.save-inner { max-width: 680px; margin: 0 auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.checked-info { font-size: 12px; color: var(--gray-600); white-space: nowrap; }
-.btn-save { flex: 1; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: background 0.15s; }
-.btn-save:disabled { background: var(--gray-400) !important; cursor: not-allowed !important; }
-
-.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 300; max-width: calc(100vw - 40px); text-align: center; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ── 모바일 최적화 ── */
-@media (max-width: 480px) {
-  .main { padding: 14px 12px; }
-  .miss-form-row { grid-template-columns: 1fr !important; }
-  .input-row { grid-template-columns: 1fr !important; }
-  .dashboard { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .dash-num { font-size: 22px; }
-  .dash-label { font-size: 9px; }
-  .card-main { gap: 8px; padding: 10px; }
-  .card-thumb, .card-img { width: 52px; height: 52px; }
-  .tabs { gap: 4px; }
-  .tab { font-size: 11px; padding: 9px 6px; }
-  .vendor-header { flex-wrap: wrap; gap: 8px; }
-  .filter-bar { gap: 6px; }
-  .filter-btn { padding: 6px 10px; font-size: 11px; }
-  .btn-kakao { font-size: 10px; padding: 5px 10px; }
-  .save-inner { flex-direction: column; gap: 8px; }
-  .save-inner .checked-info { text-align: center; }
-  .kakao-inner { padding: 20px 16px 32px; }
-  .match-actions { flex-direction: column; }
-  .api-row { flex-direction: column; }
-  .btn-sm { width: 100%; }
-  .results-actions { gap: 4px; }
-  .card-name-input { font-size: 13px; }
-}
-
-/* 터치 타겟 최소 44px, 폰트 줌 방지 */
-input, select, textarea, button { touch-action: manipulation; }
-input[type="text"], input[type="password"], input[type="date"], select, textarea {
-  font-size: 16px !important; /* iOS 줌 방지 */
-}
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+  :root {
+    --primary: #1a1a2e; --accent: #e94560; --bg: #f8f7f4;
+    --surface: #ffffff; --border: #e8e4de; --text: #1a1a2e;
+    --muted: #8a8680; --success: #16a34a; --tag-bg: #f0ede8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { background: var(--primary); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { color: #fff; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .header-sub { color: rgba(255,255,255,0.4); font-size: 12px; font-weight: 300; }
+  main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  .section-title { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1rem; }
+  .db-panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; margin-bottom: 1.5rem; overflow: hidden; }
+  .db-panel-header { padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; transition: background 0.15s; }
+  .db-panel-header:hover { background: #fafaf8; }
+  .db-panel-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+  .db-badge { font-size: 11px; background: var(--tag-bg); color: var(--muted); padding: 2px 10px; border-radius: 20px; font-weight: 400; }
+  .db-badge.ok { background: #dcfce7; color: #15803d; }
+  .db-chevron { color: var(--muted); transition: transform 0.2s; font-size: 18px; line-height: 1; }
+  .db-chevron.open { transform: rotate(180deg); }
+  .db-panel-body { display: none; padding: 1rem 1.5rem 1.5rem; border-top: 1px solid var(--border); }
+  .db-panel-body.open { display: block; }
+  .add-vendor-form { background: #fafaf8; border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 1rem; }
+  .add-vendor-form-header { padding: 8px 14px; background: var(--tag-bg); font-size: 12px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .add-vendor-form-body { padding: 14px; display: grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap: 8px; align-items: end; }
+  .form-field label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; font-weight: 500; }
+  .form-field input { width: 100%; height: 38px; border: 1.5px solid var(--border); border-radius: 8px; padding: 0 10px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; color: var(--text); background: #fff; outline: none; transition: border-color 0.15s; }
+  .form-field input:focus { border-color: var(--primary); }
+  .btn-add-vendor { height: 38px; padding: 0 16px; border: none; border-radius: 8px; background: var(--primary); color: #fff; font-size: 13px; font-weight: 500; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-add-vendor:hover { background: #2d2d4e; }
+  .btn-add-vendor:disabled { background: var(--muted); cursor: not-allowed; }
+  .input-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .input-grid { display: grid; grid-template-columns: 1fr 1.8fr auto; gap: 10px; align-items: start; margin-bottom: 8px; }
+  .input-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+  .inp { width: 100%; height: 44px; border: 1.5px solid var(--border); border-radius: 10px; padding: 0 12px; font-size: 14px; font-family: 'Noto Sans KR', sans-serif; color: var(--text); background: #fafaf8; transition: border-color 0.15s, background 0.15s; outline: none; }
+  .inp:focus { border-color: var(--primary); background: #fff; }
+  .inp.matched { border-color: var(--success); background: #f0fdf4; }
+  .inp.no-match { border-color: #f59e0b; background: #fffbeb; }
+  .del-btn { width: 44px; height: 44px; border: 1.5px solid var(--border); border-radius: 10px; background: transparent; cursor: pointer; font-size: 18px; color: var(--muted); display: flex; align-items: center; justify-content: center; transition: all 0.15s; align-self: flex-end; }
+  .del-btn:hover { background: #fef2f2; border-color: #fca5a5; color: var(--accent); }
+  .match-preview { font-size: 11.5px; color: var(--success); padding: 3px 8px; margin-top: 4px; background: #f0fdf4; border-radius: 6px; display: none; }
+  .match-preview.warn { color: #92400e; background: #fffbeb; display: block; }
+  .match-preview.ok { display: block; }
+  .autocomplete-wrapper { position: relative; }
+  .autocomplete-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1.5px solid var(--primary); border-radius: 10px; z-index: 200; max-height: 200px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  .autocomplete-item { padding: 10px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover, .autocomplete-item.active { background: #f0f4ff; }
+  .autocomplete-item .ac-name { font-weight: 500; }
+  .autocomplete-item .ac-info { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .add-row-btn { width: 100%; height: 42px; border: 1.5px dashed var(--border); border-radius: 10px; background: transparent; cursor: pointer; font-size: 13px; color: var(--muted); font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .add-row-btn:hover { background: var(--tag-bg); border-color: var(--primary); color: var(--primary); }
+  .preview-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; }
+  .preview-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .preview-header h3 { font-size: 14px; font-weight: 500; }
+  .row-count { font-size: 12px; color: var(--muted); background: var(--tag-bg); padding: 3px 10px; border-radius: 20px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th { background: var(--primary); color: rgba(255,255,255,0.85); padding: 10px 12px; text-align: left; font-weight: 500; white-space: nowrap; font-size: 11.5px; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:hover { background: #fafaf8; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 9px 12px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: var(--tag-bg); color: var(--muted); font-weight: 500; }
+  .tag.auto { background: #eff6ff; color: #1d4ed8; }
+  .no-match-cell { color: #f59e0b; font-weight: 500; }
+  .action-bar { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-secondary { height: 48px; padding: 0 1.5rem; border: 1.5px solid var(--border); border-radius: 12px; background: transparent; font-size: 14px; font-family: 'Noto Sans KR', sans-serif; color: var(--text); cursor: pointer; transition: all 0.15s; }
+  .btn-secondary:hover { background: var(--tag-bg); border-color: var(--primary); }
+  .btn-primary { height: 48px; padding: 0 2rem; border: none; border-radius: 12px; background: var(--accent); font-size: 14px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; color: #fff; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+  .btn-primary:hover { background: #c73652; transform: translateY(-1px); }
+  .btn-primary svg { width: 16px; height: 16px; }
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: #fff; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index: 999; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  @media (max-width: 640px) { .input-grid { grid-template-columns: 1fr 1fr auto; } .add-vendor-form-body { grid-template-columns: 1fr 1fr; } main { padding: 1.5rem 1rem; } }
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">더제이수 <span>샘플반납</span></div>
-  <div class="step-badge">③ 반납 처리</div>
+  <div class="logo">더제이수 <span>샘플 반납</span> 엑셀 생성기</div>
+  <div class="header-sub" id="db-status-header">거래처 로딩 중...</div>
 </header>
-
-<div class="main">
-
-  <!-- 대시보드 -->
-  <div class="dashboard">
-    <div class="dash-card red" id="dashUrgent" onclick="setFilter('urgent')">
-      <div class="dash-num red" id="numUrgent">-</div>
-      <div class="dash-label">⚠️ 기한 초과</div>
+<main>
+  <div class="db-panel">
+    <div class="db-panel-header" onclick="toggleDbPanel()">
+      <div class="db-panel-title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 5h8M4 8h8M4 11h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        거래처 LIST 업데이트
+        <span class="db-badge" id="db-badge">로딩중</span>
+        <span style="font-size:11px; color:var(--muted); font-weight:400;">신규 거래처 추가 시 업데이트하세요</span>
+      </div>
+      <span class="db-chevron" id="db-chevron">&#8964;</span>
     </div>
-    <div class="dash-card amber" id="dashWarning" onclick="setFilter('warning')">
-      <div class="dash-num amber" id="numWarning">-</div>
-      <div class="dash-label">📅 3일 이내</div>
-    </div>
-    <div class="dash-card green" id="dashSafe" onclick="setFilter('safe')">
-      <div class="dash-num green" id="numSafe">-</div>
-      <div class="dash-label">✅ 여유 있음</div>
-    </div>
-  </div>
-
-  <!-- 거래처 검색 -->
-  <div style="position:relative; margin-bottom:12px;">
-    <input id="vendorSearch" type="text" placeholder="🔍 거래처 검색 (예: 이 → 이유·이프유 / ㄹㅎㅂ → 르헤베)"
-      oninput="onSearchInput(this.value)"
-      onkeydown="if(event.key==='Enter') applySearch()"
-      style="width:100%; border:1.5px solid var(--gray-200); border-radius:10px; padding:11px 16px; font-size:14px; font-family:var(--font); background:var(--white); outline:none; box-shadow:var(--shadow);">
-    <!-- 자동완성 드롭다운 -->
-    <div id="searchDropdown" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:white; border:1.5px solid var(--gray-200); border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:200; max-height:200px; overflow-y:auto;">
+    <div class="db-panel-body" id="db-panel-body">
+      <p style="font-size:12px; color:var(--muted); line-height:1.8;">아래에서 신규 거래처를 바로 추가할 수 있어요. 추가하면 구글 시트에 자동 반영됩니다.</p>
+      <div class="add-vendor-form">
+        <div class="add-vendor-form-header">새 거래처 추가</div>
+        <div class="add-vendor-form-body">
+          <div class="form-field"><label>거래처명 *</label><input type="text" id="new-name" placeholder="예: 글로우님프"></div>
+          <div class="form-field"><label>전화번호</label><input type="text" id="new-phone" placeholder="예: 2250-1890"></div>
+          <div class="form-field"><label>주소</label><input type="text" id="new-addr" placeholder="예: APM B1-8"></div>
+          <button class="btn-add-vendor" id="btn-add-vendor" onclick="addVendorToSheet()">추가하기</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 필터 바 -->
-  <div class="filter-bar">
-    <button class="filter-btn active" onclick="setFilter('all')">전체</button>
-    <button class="filter-btn" onclick="setFilter('urgent')">기한 초과</button>
-    <button class="filter-btn" onclick="setFilter('warning')">3일 이내</button>
-    <button class="filter-btn" onclick="setFilter('safe')">여유 있음</button>
-  </div>
-
-  <!-- 로딩 -->
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <p style="font-size:13px; color:var(--gray-600);">보유중 샘플 불러오는 중...</p>
-  </div>
-
-  <!-- 상품 목록 -->
-  <div id="itemList"></div>
-
-  <!-- 빈 화면 -->
-  <div class="empty" id="emptyState" style="display:none;">
-    <div class="empty-icon">🎉</div>
-    <div class="empty-text">반납할 샘플이 없어요!</div>
-  </div>
-
-</div>
-
-<!-- 카톡 멘트 팝업 -->
-<div class="kakao-modal" id="kakaoModal">
-  <div class="kakao-inner">
-    <div class="kakao-title">
-      <span>💬 카톡 멘트 — <span id="kakaoVendorName"></span></span>
-      <button onclick="closeKakao()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
-    </div>
-    <textarea class="kakao-textarea" id="kakaoText"></textarea>
-    <div class="kakao-actions">
-      <button class="btn-close-modal" onclick="closeKakao()">닫기</button>
-      <button class="btn-copy" onclick="copyKakao()">📋 복사하기</button>
-    </div>
-  </div>
-</div>
-
-<!-- 저장 버튼 -->
-<div class="save-wrap">
-  <div class="save-inner">
-    <div class="checked-info" id="checkedInfo">0개 선택</div>
-    <button class="btn-save" id="btnSave" onclick="saveReturns()" disabled
-      style="background:var(--green);">
-      ✅ 반납 처리
-    </button>
-    <button class="btn-save" id="btnExcel" onclick="downloadTodayExcel()"
-      style="background:#1A7AE0; margin-top:8px;">
-      📥 오늘 반납분 엑셀 다운로드
+  <div class="input-section">
+    <p class="section-title">발주 입력</p>
+    <div id="rows-container"></div>
+    <button class="add-row-btn" onclick="addRow()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      행 추가
     </button>
   </div>
-</div>
 
-<!-- 이미지 확대 모달 -->
-<div id="imgModal" onclick="closeImgModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:600; align-items:center; justify-content:center; cursor:zoom-out;">
-  <img id="imgModalSrc" src="" style="max-width:92vw; max-height:92vh; border-radius:12px; object-fit:contain; display:block;">
-</div>
+  <div class="preview-section">
+    <div class="preview-header"><h3>미리보기</h3><span class="row-count" id="row-count">0개 항목</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>동대문도착일</th><th>업체명</th><th>연락처</th><th>주소</th><th>상품명</th><th>옵션</th><th>원가</th><th>주문</th><th>비고</th><th>사용자관리코드</th></tr></thead>
+        <tbody id="preview-body"><tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem;">업체명 또는 상품명을 입력하면 여기에 미리보기가 표시됩니다</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 
+  <div class="action-bar">
+    <button class="btn-secondary" onclick="clearAll()">전체 초기화</button>
+    <button class="btn-primary" onclick="downloadExcel()">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 7l3 3 3-3M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      엑셀 다운로드
+    </button>
+  </div>
+</main>
 <div class="toast" id="toast"></div>
 
 <script>
-var GAS_VENDOR_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
-var GAS_SAMPLE_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
+const SHEET_ID = '1bP7Nwovu3wFV7T1UOlUhS-O56nMeZ7-3lSZ0iNHUcrc';
+const SHEET_NAME = 'Sheet1';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
+const FALLBACK_DB = [{"업체명":"JJ","전화번호":"2117-8826","주소":"디오트 B1-D-24"},{"업체명":"가스나","전화번호":"2117-8683","주소":"디오트 2-F-3"},{"업체명":"굿시스터","전화번호":"2117-8868","주소":"디오트 B1-A-9"},{"업체명":"드고유","전화번호":"2117-8046","주소":"apm place 348"},{"업체명":"그라찌","전화번호":"2117-4009","주소":"디오트 B1-E-17"},{"업체명":"그레이","전화번호":"2117-8238","주소":"디오트 B1-i-5"},{"업체명":"그루브","전화번호":"2117-4888","주소":"디오트 B2-나-9"},{"업체명":"그라티아","전화번호":"010-3390-3993","주소":"청평화 5-가-29"},{"업체명":"그리핑","전화번호":"2232-5949","주소":"청평화 B1-나-8"},{"업체명":"글로우님프","전화번호":"2250-1890","주소":"APM B1-8"},{"업체명":"글로우","전화번호":"010-4917-0833","주소":"신발상가 C-1-42"},{"업체명":"김언니","전화번호":"2117-4896","주소":"디오트4-C-8"},{"업체명":"꼬모","전화번호":"2237-4342","주소":"디오트 3-A-8"},{"업체명":"나나","전화번호":"2252-5998","주소":"청평화 4-C-22"},{"업체명":"나나제이","전화번호":"2117-8161","주소":"디오트 3-A-17"},{"업체명":"나난","전화번호":"010-3900-1148","주소":"디오트 4-H-13"},{"업체명":"네오","전화번호":"010-8011-8091","주소":"디오트 3-F-7"},{"업체명":"네온히치","전화번호":"2117-4864","주소":"디오트 4-F-10"},{"업체명":"내티","전화번호":"010-7488-9549","주소":"디오트 2-H-25"},{"업체명":"노티스","전화번호":"010-2926-4029","주소":"디오트 4-C-17"},{"업체명":"노리타","전화번호":"2256-4567","주소":"디오트 4-E-18"},{"업체명":"노블","전화번호":"2254-1957","주소":"청평화 3-가-57"},{"업체명":"노메럴","전화번호":"2117-4202","주소":"디오트 3-E-16"},{"업체명":"노이","전화번호":"010-9855-8482","주소":"누죤 5-315"},{"업체명":"노프라블럼","전화번호":"2117-8720","주소":"디오트 B1-d-23"},{"업체명":"노크노크","전화번호":"2117-8316","주소":"디오트 4-B-13"},{"업체명":"노조아","전화번호":"02-231-0408","주소":"apm luxe 2-217"},{"업체명":"누에보","전화번호":"010-3496-6780","주소":"디오트 B2-D-25"},{"업체명":"놈코어","전화번호":"2117-4178","주소":"디오트 3-E-23"},{"업체명":"누크","전화번호":"010-9139-8758","주소":"디오트 1-B-29"},{"업체명":"누벨","전화번호":"010-2663-6144","주소":"신발상가 1-37"},{"업체명":"뉴진","전화번호":"010-5956-4841","주소":"디오트 B2-가-11,12"},{"업체명":"니브","전화번호":"010-3666-0105","주소":"디오트 B2-B-5"},{"업체명":"너울","전화번호":"2236-1993","주소":"벨포스트 3-87"},{"업체명":"님프","전화번호":"2117-8489","주소":"디오트 4-H-5,6"},{"업체명":"다빈","전화번호":"2117-4479","주소":"디오트 4-E-13"},{"업체명":"다온","전화번호":"010-5286-0902","주소":"디자이너 B2-15"},{"업체명":"르와드","전화번호":"2117-4135","주소":"디오트 4-H-5"},{"업체명":"달팡","전화번호":"2117-4440","주소":"디오트 1-E-24"},{"업체명":"담다","전화번호":"010-2407-9160","주소":"신발상가 C-1-1"},{"업체명":"대영상사","전화번호":"2252-9213","주소":"신평화 1층 A동 63,21"},{"업체명":"더메인","전화번호":"2117-4850","주소":"디오트 B2-E-16"},{"업체명":"더모드9","전화번호":"2117-8936","주소":"디오트 3-J-28"},{"업체명":"더바바라","전화번호":"010-8098-4707","주소":"디오트 3-C-18"},{"업체명":"더그리다","전화번호":"2117-4782","주소":"디오트 4-i-13"},{"업체명":"더뉴","전화번호":"2117-4889","주소":"디오트 4-f-1"},{"업체명":"만식슈","전화번호":"010-4228-6656","주소":"신발상가 C-1-41"},{"업체명":"더라크림","전화번호":"010-7411-4430","주소":"디오트 3-H-3"},{"업체명":"더 준","전화번호":"010-7277-5879","주소":"디오트 3-i-4"},{"업체명":"더블인","전화번호":"010-6270-5209","주소":"디오트 3-G-7"},{"업체명":"더메인","전화번호":"2231-4749","주소":"쳥평화 4-C-32,33"},{"업체명":"더리플레르","전화번호":"010-3916-4010","주소":"디오트 3-h-9"},{"업체명":"더메인","전화번호":"2117-4850","주소":"디오트 4-D-23"},{"업체명":"더라인","전화번호":"010-2841-2874","주소":"신발상가 C-1-39"},{"업체명":"더레스트","전화번호":"2250-0228","주소":"APM 2-28"},{"업체명":"더베이지스","전화번호":"2231-2227","주소":"apm luxe 2-227"},{"업체명":"더블비","전화번호":"2117-8199","주소":"디오트 B1-L-1"},{"업체명":"더블엠","전화번호":"2117-8144","주소":"디오트 2-A-13"},{"업체명":"더블유","전화번호":"2117-8126","주소":"디오트 7-i-2"},{"업체명":"더블유네이비","전화번호":"6970-7481","주소":"퀸즈스퀘어 3-81"},{"업체명":"더블제이","전화번호":"2232-0521","주소":"청평화 5-라-4"},{"업체명":"더스티밀러","전화번호":"2117-8476","주소":"디오트 B2-C-25"},{"업체명":"더시스","전화번호":"2117-4886","주소":"디오트 4-H-5"},{"업체명":"더코인","전화번호":"2117-8498","주소":"디오트 4-G-15"},{"업체명":"더풀하우스","전화번호":"2252-2447","주소":"청평화 1-다-15"},{"업체명":"데얼바이","전화번호":"2117-8460","주소":"디오트 3-i-7"},{"업체명":"데이시크","전화번호":"010-5007-3770","주소":"디오트 2-B-28"},{"업체명":"데이트","전화번호":"2117-4015","주소":"디오트 B1-F-4"},{"업체명":"댄지","전화번호":"010-2678-7540","주소":"청평화 2-라-36"},{"업체명":"델리케이트","전화번호":"2117-4066","주소":"디오트 B1-L-9"},{"업체명":"도레미어패럴","전화번호":"2117-8091","주소":"디오트 4-A-20"},{"업체명":"도리","전화번호":"2117-4859","주소":"디오트 4-i-3"},{"업체명":"도이가","전화번호":"010-9118-6130","주소":"디오트 B1-A-7"},{"업체명":"도리스","전화번호":"2117-4717","주소":"디오트 3-F5"},{"업체명":"동대문","전화번호":"2117-4031","주소":"디오트 2-D-20"},{"업체명":"두림","전화번호":"010-7937-7071","주소":"청평화 5-나-3"},{"업체명":"두잇","전화번호":"2117-4277","주소":"디오트 3-i-19"},{"업체명":"오르디(구.듀플로)","전화번호":"2250-1132","주소":"APM 1-132"},{"업체명":"드라이블루","전화번호":"2117-4631","주소":"디오트 3-f-6"},{"업체명":"드라이플라워","전화번호":"2117-8419","주소":"디오트 B2-D-13"},{"업체명":"드마르","전화번호":"2250-1390","주소":"APM B1-20"},{"업체명":"드래이핑","전화번호":"2117-8636","주소":"디오트 B1-J-10"},{"업체명":"드레스 마피아","전화번호":"2117-4647","주소":"디오트 3-B-15"},{"업체명":"드레스웰","전화번호":"2117-4316","주소":"디오트 3-C-13"},{"업체명":"드레스코드","전화번호":"2117-8968","주소":"디오트 4-H-28"},{"업체명":"언더스탠딩","전화번호":"2250-0758","주소":"apm B1-24"},{"업체명":"드클로즈","전화번호":"2117-4664","주소":"디오트 4-D-3"},{"업체명":"드폰드","전화번호":"***-****-5470","주소":"디오트 B1-G-19"},{"업체명":"디다크","전화번호":"2117-8528","주소":"디오트 2-i-20"},{"업체명":"디뮤어(구.보니)","전화번호":"2117-8353","주소":"디오트 4-J-22"},{"업체명":"디스이즈","전화번호":"2117-8552","주소":"디오트 3-J-31"},{"업체명":"디앤제이","전화번호":"2117-8867","주소":"디오트 2-J-9"},{"업체명":"디어","전화번호":"2117-8402","주소":"디오트 4-E-29"},{"업체명":"디얼그레이","전화번호":"2117-8355","주소":"디오트 B2-C-25"},{"업체명":"디에이The A","전화번호":"2117-8296","주소":"디오트 3-E-24"},{"업체명":"디코드","전화번호":"***-****-2818","주소":"동원 B1층 132호"},{"업체명":"딘","전화번호":"2117-8417","주소":"디오트 4-f-2"},{"업체명":"딥","전화번호":"2253-6681","주소":"디오트 1-A-20"},{"업체명":"딜라이트(Delight)","전화번호":"2233-9658","주소":"청평화 4-B-46"},{"업체명":"딜라잇","전화번호":"2117-4046","주소":"디오트 B2-G25-1"},{"업체명":"뚜따","전화번호":"2117-4664","주소":"디오트 3-A-11"},{"업체명":"딸래미","전화번호":"2232-5510","주소":"청평화 5-가-555"},{"업체명":"라우쉬","전화번호":"2250-1252","주소":"APM 2-205"},{"업체명":"라이크워터","전화번호":"2117-4044","주소":"디오트 4-g-17"},{"업체명":"라미제이","전화번호":"***-****-8712","주소":"디오트 4-F-7"},{"업체명":"라비(광덕)","전화번호":"2250-1432","주소":"부산광역시 부산 진구 신앙로9\n 범천빌딩 302호"},{"업체명":"라붐","전화번호":"2117-8027","주소":"디오트 2-B-8"},{"업체명":"라스텔라","전화번호":"2117-8116","주소":"디오트3-A-6"},{"업체명":"라쏭","전화번호":"2117-8590","주소":"디오트4-I-9"},{"업체명":"라우드","전화번호":"010-4876-9272","주소":"디오트 B2-C-22"},{"업체명":"라운드제이","전화번호":"2232-4054","주소":"청평화 4-D-30,31"},{"업체명":"라운지베라","전화번호":"2117-8241","주소":"디오트 4-C-7"},{"업체명":"라이브포에버","전화번호":"2117-8525","주소":"디오트 4-G-1"},{"업체명":"랑스","전화번호":"2254-4476","주소":"청평화 4-가-34"},{"업체명":"러브샷","전화번호":"2117-8561","주소":"디오트 B1-B-1"},{"업체명":"러브앤헤이트","전화번호":"2232-7729","주소":"청평화 5-다-25"},{"업체명":"러브미모어","전화번호":"010-9808-3461","주소":"디오트 3-C-06"},{"업체명":"러브어스","전화번호":"010-6764-2694","주소":"디오트 4-H-10"},{"업체명":"러브유쏘머치","전화번호":"2117-4449","주소":"디오트 4-D-11"},{"업체명":"러블","전화번호":"010-2800-0402","주소":"디오트 4-B-26"},{"업체명":"러빗","전화번호":"2117-4973","주소":"디오트 3-E-17"},{"업체명":"러스티","전화번호":"2117-4418","주소":"디오트 4-J-21"},{"업체명":"럭키스토어","전화번호":"2117-8121","주소":"디오트 4-G-10"},{"업체명":"런던레이스","전화번호":"2117-4712","주소":"디오트 4-i-7"},{"업체명":"럽럽","전화번호":"2117-8293","주소":"디오트 4-H-12"},{"업체명":"랜느","전화번호":"010-9841-6999","주소":"신발상가 C동 1층 20호"},{"업체명":"레드제이","전화번호":"2117-4916","주소":"디오트 3-B-16"},{"업체명":"레어썸","전화번호":"2117-4237","주소":"디오트 3-F-4"},{"업체명":"레몬","전화번호":"010-6352-6142","주소":"신발상가 B-1-가25"},{"업체명":"레뜨왈","전화번호":"2231-5131","주소":"APM LUXE B1-31"},{"업체명":"레어스","전화번호":"6270-2403","주소":"유어스 3-78"},{"업체명":"레이브","전화번호":"2117-4595","주소":"디오트 3-J-13"},{"업체명":"레주르","전화번호":"010-3283-4905","주소":"청평화 5-나-44"},{"업체명":"레인우드","전화번호":"010-9756-3676","주소":"디오트 B1-D-18"},{"업체명":"레인드롭","전화번호":"2117-4856","주소":"디오트 4-B-24"},{"업체명":"레터링","전화번호":"2117-4045","주소":"디오트 4-J-7"},{"업체명":"로그","전화번호":"010-3760-0256","주소":"신발상가 c동 2F-56"},{"업체명":"레트로드레스","전화번호":"2117-8048","주소":"디오트4-A-23"},{"업체명":"로그먼트","전화번호":"2117-4750","주소":"디오트 B1-G-22"},{"업체명":"로얄치즈","전화번호":"2117-4660","주소":"디오트 4-E-3,4"},{"업체명":"로와드(구.다올)","전화번호":"2117-4135","주소":"디오트 3-B-18"},{"업체명":"로이","전화번호":"2117-4419","주소":"디오트 B1-G-24"},{"업체명":"로쉘","전화번호":"2117-8650","주소":"디오트 B1-A-8"},{"업체명":"로지","전화번호":"2117-4490","주소":"디오트 4-F-19"},{"업체명":"로하트","전화번호":"010-2245-2133","주소":"디오트 2-D-3"},{"업체명":"로프트","전화번호":"2117-4458","주소":"디오트 3-i-19"},{"업체명":"룰루12","전화번호":"2117-8213","주소":"디오트 B2-C-20"},{"업체명":"룸잉","전화번호":"2117-4666","주소":"디오트 3-F-12"},{"업체명":"루어","전화번호":"010-4205-8877","주소":"디오트 B1-G-11"},{"업체명":"르뽀렘","전화번호":"6970-7566","주소":"퀸즈스퀘어 3-115"},{"업체명":"르날드","전화번호":"6270-1030","주소":"유어스 1-63"},{"업체명":"르마레","전화번호":"010-5483-9917","주소":"청평화 1-다"},{"업체명":"로제르","전화번호":"010-4947-7076","주소":"디오트 2-A-19"},{"업체명":"르오브(구.베르디)","전화번호":"2250-1234","주소":"APM 2층 34호"},{"업체명":"르누보","전화번호":"010-2955-3990","주소":"디오트 4-E-14"},{"업체명":"르블랑","전화번호":"010-5825-6389","주소":"디오트 4-A-1"},{"업체명":"르에이","전화번호":"2117-8656","주소":"디오트 3-J-9"},{"업체명":"르솜","전화번호":"010-7912-9568","주소":"디오트 B2-A-11"},{"업체명":"르테일러","전화번호":"2117-8879","주소":"디오트 B1-J-1"},{"업체명":"리뉴얼(르레브)","전화번호":"2117-4824","주소":"디오트 4-D-19"},{"업체명":"리센스","전화번호":"2232-4010","주소":"청평화 1-다-29"},{"업체명":"리디아","전화번호":"2117-4549","주소":"디오트 1-f-19"},{"업체명":"리리","전화번호":"2117-8664","주소":"디오트 B1-H-19"},{"업체명":"리자드스탠다드","전화번호":"010-3389-0605","주소":"디오트 B2-N-68"},{"업체명":"링크","전화번호":"2117-8535","주소":"디오트 2-i-13"},{"업체명":"리미티드","전화번호":"2117-4785","주소":"디오트 3-F-13"},{"업체명":"리버티","전화번호":"2117-4547","주소":"디오트 3-E-19"},{"업체명":"리브레","전화번호":"2117-8951","주소":"디오트 B1-E-10"},{"업체명":"리썸","전화번호":"2117-4908","주소":"디오트 B2-B-13"},{"업체명":"리얼펄리","전화번호":"2117-8438","주소":"디오트 3-H-10"},{"업체명":"리플","전화번호":"2117-4405","주소":"디오트 4-G-5"},{"업체명":"리오더","전화번호":"2117-4858","주소":"디오트 4-C-30"},{"업체명":"리엔","전화번호":"010-4289-9987","주소":"청평화 3-라-14"},{"업체명":"린다","전화번호":"2117-4428","주소":"디오트 4-G-2"},{"업체명":"린제이","전화번호":"2117-4052","주소":"디오트 3-D-13"},{"업체명":"링오브노이","전화번호":"2117-4424","주소":"디오트 4-E-10"},{"업체명":"림쏭","전화번호":"2117-4853","주소":"디오트 B1-J-14"},{"업체명":"립플레이스","전화번호":"010-9087-7127","주소":"디오트 3-i-26"},{"업체명":"링(RING)","전화번호":"2117-4606","주소":"디오트 4-B-22"},{"업체명":"마니모","전화번호":"6970-7633","주소":"광희 5-58"},{"업체명":"마리드","전화번호":"010-6519-2511","주소":"디오트 2-G-5"},{"업체명":"마르셀","전화번호":"010-3319-4116","주소":"디오트 5-F-27"},{"업체명":"마스터피스","전화번호":"2250-1923","주소":"apm B1-152"},{"업체명":"마리앤","전화번호":"2117-4822","주소":"디오트 B2-H-5,6"},{"업체명":"마레모해","전화번호":"010-5573-5747","주소":"디오트 4층 H-3"},{"업체명":"무튼","전화번호":"010-2504-0177","주소":"디오트 4-4B-7"},{"업체명":"마랑","전화번호":"2252-3034","주소":"청평화 4-D-21"},{"업체명":"마블","전화번호":"2117-4648","주소":"디오트 4-i-05"},{"업체명":"마스","전화번호":"2117-8760","주소":"디오트 B1-j-26"},{"업체명":"마요네즈","전화번호":"2117-8978","주소":"디오트 3-H-15"},{"업체명":"르헤베(구.마이영)","전화번호":"2117-8083","주소":"디오트 5-J-26"},{"업체명":"마이션","전화번호":"2117-4541","주소":"디오트 4-G-4"},{"업체명":"마인디","전화번호":"2117-4108","주소":"디오트 B2-D-24"},{"업체명":"마카롱","전화번호":"2117-8807","주소":"디오트 4-E-20"},{"업체명":"말파","전화번호":"2117-4321","주소":"디오트 4-A-3"},{"업체명":"만식슈","전화번호":"010-4228-6656","주소":"신발상가 C-1-41"},{"업체명":"레인드롭","전화번호":"2117-4856","주소":"디오트 4-B-24"},{"업체명":"맨하탄","전화번호":"2117-8383","주소":"디오트 3-B-9"},{"업체명":"머시룸","전화번호":"010-4865-7332","주소":"디오트 B2-C-25"},{"업체명":"머머링","전화번호":"2117-4415","주소":"디오트 4-H-18"},{"업체명":"먼데이","전화번호":"2117-4119","주소":"디오트 B2-C-16"},{"업체명":"메르제","전화번호":"2117-8488","주소":"디오트 3-J-1"},{"업체명":"메이빈","전화번호":"010-7791-7918","주소":"디오트 3-B-13"},{"업체명":"메인","전화번호":"010-9050-6137","주소":"디오트 3-F-21"},{"업체명":"메이비앤코","전화번호":"2117-4993","주소":"디오트 3-J-23"},{"업체명":"메이크제이","전화번호":"3298-1122","주소":"디자이너 B1-9"},{"업체명":"메인스트릿","전화번호":"010-8214-4410","주소":"디오트 4-A-10"},{"업체명":"메인제이","전화번호":"2117-4984","주소":"디오트 3-H-26"},{"업체명":"멜라운지","전화번호":"2117-8715","주소":"디오트 3-H-8"},{"업체명":"멜로즈","전화번호":"2231-1741","주소":"청평화 4-B-24"},{"업체명":"멜론","전화번호":"2117-4992","주소":"디오트 1-C-18"},{"업체명":"멜티드","전화번호":"2117-8529","주소":"디오트 3-i-10"},{"업체명":"모노클","전화번호":"2117-8327","주소":"디오트 B1-J-29"},{"업체명":"모조","전화번호":"010-3671-1080","주소":"신발상가 C-2-12"},{"업체명":"모어","전화번호":"010-3221-2872","주소":"청평화 5-가-42,43"},{"업체명":"모다","전화번호":"2237-8711","주소":"디자이너 B1-34"},{"업체명":"모다","전화번호":"2252-0803","주소":"청평화 2-라-4"},{"업체명":"모던바이실","전화번호":"2117-4945","주소":"디오트 4-E-19"},{"업체명":"모리바이시스","전화번호":"2231-8926","주소":"청평화 5-라-27"},{"업체명":"모모코","전화번호":"2117-4347","주소":"디오트 B1-J-26"},{"업체명":"몽구스","전화번호":"2117-8274","주소":"디오트 B1-J-13"},{"업체명":"모이라이","전화번호":"2117-8042","주소":"디오트 4-A-13"},{"업체명":"목화씨","전화번호":"2117-4133","주소":"디오트 3-B-8"},{"업체명":"몬트","전화번호":"010-4164-2633","주소":"신발상가 C-1-45"},{"업체명":"몰디브","전화번호":"2117-8401","주소":"디오트 1-C-27"},{"업체명":"묘","전화번호":"2117-8762","주소":"디오트 B1-A-3"},{"업체명":"무드랩","전화번호":"2117-8233","주소":"디오트 B1-E-5"},{"업체명":"무드온","전화번호":"010-9618-8288","주소":"신발상가 B-2-43"},{"업체명":"무드베이지","전화번호":"2117-8461","주소":"디오트 3-J-27"},{"업체명":"무이","전화번호":"010-5744-1141","주소":"신발상가 C-1-23"},{"업체명":"무이모나","전화번호":"2117-8151","주소":"디오트 4-D-03"},{"업체명":"무브먼트","전화번호":"2117-8612","주소":"디오트 2-J-16"},{"업체명":"무이비엔","전화번호":"010-9122-0182","주소":"Apm Place 2F 263"},{"업체명":"뮤즈(MUSE)","전화번호":"2232-2890","주소":"청평화 5-라-536"},{"업체명":"미니진","전화번호":"2117-8310","주소":"디오트 B1-J-11"},{"업체명":"미네트","전화번호":"2117-4249","주소":"디오트3 -F-18"},{"업체명":"미드나잇선","전화번호":"2117-4034","주소":"디오트 4-C-16"},{"업체명":"미쓰진","전화번호":"010-4991-7888","주소":"디오트 4-G-8"},{"업체명":"미엘","전화번호":"010-3266-1411","주소":"청평화 1-나-9"},{"업체명":"미엘르","전화번호":"2117-4635","주소":"디오트 B1-i-17"},{"업체명":"민잇","전화번호":"2117-8997","주소":"디오트 B1-E-12-1"},{"업체명":"미코","전화번호":"2117-8140","주소":"디오트 4-A-17"},{"업체명":"밀도","전화번호":"2117-8938","주소":"디오트 B1-G-4"},{"업체명":"멜로우","전화번호":"010-9104-6220","주소":"신발상가 C-3-가-23"},{"업체명":"밍키","전화번호":"2231-8157","주소":"청평화 B1-바-7"},{"업체명":"바운드","전화번호":"2117-8804","주소":"디오트 5-F-14"},{"업체명":"바디펀","전화번호":"010-5409-5782","주소":"청평화 3-라-23"},{"업체명":"바니스","전화번호":"2253-2662","주소":"청평화 4-C-401"},{"업체명":"비비드","전화번호":"2117-4672","주소":"디오트 B1-L-1"},{"업체명":"바니플라워","전화번호":"2117-4338","주소":"디오트 B1-G-3"},{"업체명":"바바라부","전화번호":"2234-4515","주소":"청평화 신관B1-9"},{"업체명":"바나듐","전화번호":"2233-1736","주소":"청평화 5-라-7"},{"업체명":"바르셀로나","전화번호":"2117-8857","주소":"디오트 B1-A-1"},{"업체명":"바스","전화번호":"2117-4020","주소":"디오트 5-H-19"},{"업체명":"바스키아","전화번호":"2117-8031","주소":"디오트 4-A-8"},{"업체명":"바이라니","전화번호":"2117-8040","주소":"디오트 B1-H-9"},{"업체명":"바이릴리","전화번호":"2117-4910","주소":"디오트 1-i-5"},{"업체명":"바이미니","전화번호":"2117-4117","주소":"디오트 4-E-1"},{"업체명":"바이붐","전화번호":"2117-4377","주소":"디오트 B1-A-3"},{"업체명":"바이슈가","전화번호":"2117-4319","주소":"디오트 3-D-19"},{"업체명":"바이더슈","전화번호":"2117-4710","주소":"디오트 4-C-18"},{"업체명":"바이시아","전화번호":"2234-0626","주소":"청평화 5-가-18"},{"업체명":"바이엘","전화번호":"010-9534-9338","주소":"청평화 5-라-22"},{"업체명":"바인","전화번호":"010-3189-5024","주소":"디오트 5-A-22"},{"업체명":"바이진","전화번호":"2117-4480","주소":"디오트 3-E-29"},{"업체명":"바잉","전화번호":"010-8240-5630","주소":"청평화 4-C-20"},{"업체명":"바인야드","전화번호":"2250-1881","주소":"apm B1-25"},{"업체명":"반아","전화번호":"2236-0048","주소":"청평화 5-라-48"},{"업체명":"버블언더","전화번호":"2117-8817","주소":"디오트 4-C-17"},{"업체명":"버튼","전화번호":"010-6346-6607","주소":"신발상가 C동 1층 53호"},{"업체명":"번영사","전화번호":"2235-2816","주소":"신평화 1층 A동 58호"},{"업체명":"베니","전화번호":"010-7645-3011","주소":"청평화 4-C-45"},{"업체명":"벌스데이","전화번호":"2117-8541","주소":"디오트 3-i-2"},{"업체명":"베러","전화번호":"2117-8210","주소":"APM 1-59"},{"업체명":"베르네프","전화번호":"2231-8392","주소":"APM 4-401"},{"업체명":"베른","전화번호":"010-2870-5632","주소":"디오트 B1-F-17"},{"업체명":"베리모어","전화번호":"010-2754-3587","주소":"디오트 B1-B-3"},{"업체명":"베리베리","전화번호":"2117-8791","주소":"디오트 B1-J-5"},{"업체명":"벨르","전화번호":"010-2122-9051","주소":"디오트 2-i-20"},{"업체명":"부(BOO)","전화번호":"2117-8855","주소":"디오트 B1-L-08"},{"업체명":"부티크로즈","전화번호":"010-4582-3773","주소":"디오트 B2-i-13"},{"업체명":"붐","전화번호":"2233-5403","주소":"청평화 4-B-402"},{"업체명":"브랜디","전화번호":"2252-1215","주소":"청평화 5-라-5"},{"업체명":"블랜드","전화번호":"010-6584-5359","주소":"청평화 4-나-28"},{"업체명":"블랜딩","전화번호":"2117-8574","주소":"디오트 B1-H-1"},{"업체명":"브리즈","전화번호":"2117-4232","주소":"디오트 4-H-19"},{"업체명":"브론즈베리","전화번호":"010-7169-8545","주소":"디오트 2-F-18"},{"업체명":"브링","전화번호":"2117-8023","주소":"디오트 4-G-2"},{"업체명":"블랙폼","전화번호":"2117-4844","주소":"디오트 5층 F-22"},{"업체명":"블랙라인","전화번호":"2117-4102","주소":"디오트 3-E-5"},{"업체명":"블랙레이디","전화번호":"2117-8618","주소":"디오트 3-A-19"},{"업체명":"블랙스모키","전화번호":"2117-4930","주소":"디오트 4-E-25"},{"업체명":"블랭크","전화번호":"2117-8389","주소":"디오트 4-H-16"},{"업체명":"블러드무드","전화번호":"2117-4979","주소":"디오트 B2-i-24"},{"업체명":"블러셔","전화번호":"2117-8103","주소":"디오트 B1-F-03"},{"업체명":"블럭","전화번호":"2117-4259","주소":"디오트 4-C-14"},{"업체명":"블레스유","전화번호":"2117-4284","주소":"디오트 1-C-5"},{"업체명":"블론드","전화번호":"2234-6576","주소":"청평화 5-다-10"},{"업체명":"블루걸","전화번호":"2117-4453","주소":"디오트 3-G-4"},{"업체명":"블루레이크","전화번호":"2117-8505","주소":"디오트 2-B17"},{"업체명":"블루베어","전화번호":"2117-4587","주소":"디오트 3-E-13"},{"업체명":"블루아이","전화번호":"2236-1231","주소":"청평화 4-A-444"},{"업체명":"블룸","전화번호":"2117-4221","주소":"디오트 B1-G-17"},{"업체명":"블룸","전화번호":"010-3787-6207","주소":"청평화 5-가-26"},{"업체명":"블리스&바셀","전화번호":"2231-5096","주소":"청평화 5-나-517"},{"업체명":"블리스","전화번호":"2117-4548","주소":"디오트 B1-J-01"},{"업체명":"블로윙","전화번호":"010-7253-1680","주소":"디오트 3-H-21"},{"업체명":"블링","전화번호":"2117-4740","주소":"디오트 4-G-8"},{"업체명":"비마인","전화번호":"2117-4833","주소":"디오트 3-E-8"},{"업체명":"비비엘","전화번호":"2117-4556","주소":"디오트 2-D-10"},{"업체명":"비바글램","전화번호":"2117-8477","주소":"디오트 4-J-26"},{"업체명":"비바이숑","전화번호":"2117-8474","주소":"디오트 4-i-20"},{"업체명":"비브르","전화번호":"2117-4303","주소":"디오트 4-J-20"},{"업체명":"비앤부","전화번호":"2117-8485","주소":"디오트 3-H-5"},{"업체명":"비커밍","전화번호":"2236-4624","주소":"청평화 4-C-3"},{"업체명":"빌리지","전화번호":"2235-8553","주소":"디오트 B1-J-9"},{"업체명":"사라","전화번호":"2117-4728","주소":"디오트 B1-E-15"},{"업체명":"사운드","전화번호":"2117-4840","주소":"디오트 4-J-11"},{"업체명":"서울러","전화번호":"010-9759-2052","주소":"디오트 1-C-13"},{"업체명":"선데이","전화번호":"2117-4972","주소":"디오트 4-H-17"},{"업체명":"세라비","전화번호":"2117-8995","주소":"디오트 3-i-17"},{"업체명":"센토","전화번호":"010-9843-4889","주소":"apm place 7-25"},{"업체명":"세러데이","전화번호":"2117-4119","주소":"디오트 4-G-6"},{"업체명":"셀로나","전화번호":"010-9222-7744","주소":"디오트 5-D-16"},{"업체명":"셀렉트","전화번호":"2117-4630","주소":"디오트 3-E-10"},{"업체명":"송","전화번호":"2237-2202","주소":"청평화 4-B-414"},{"업체명":"소프","전화번호":"010-7629-3015","주소":"디오트 3-C-15"},{"업체명":"쇼퍼홀릭","전화번호":"2117-4551","주소":"디오트 B1-F-8"},{"업체명":"SOO&JUNE(수앤준)","전화번호":"6970-7779","주소":"퀸즈스퀘어 5-27"},{"업체명":"수퍼발리","전화번호":"2117-8148","주소":"디오트 B1-i-4"},{"업체명":"슈퍼","전화번호":"010-2636-8069","주소":"디오트 5-A-9"},{"업체명":"슈퍼비","전화번호":"2117-4068","주소":"디오트 4-C-11"},{"업체명":"스랍&아하","전화번호":"2117-4649","주소":"디오트 3-D-15"},{"업체명":"스타일스크랩","전화번호":"2117-8414","주소":"디오트 4-D-4"},{"업체명":"스테이블","전화번호":"2254-0250","주소":"청평화 B1-나-7"},{"업체명":"스토리태그","전화번호":"2117-4773","주소":"디오트 4-D-15"},{"업체명":"스톤베이지","전화번호":"2232-3976","주소":"청평화 5-가-49"},{"업체명":"스토리","전화번호":"010-8193-0070","주소":"서울 동대문구 장안동459-3 대일빌딩401호"},{"업체명":"스튜디오그레이","전화번호":"2117-4778","주소":"디오트 4-B-16"},{"업체명":"스크램블","전화번호":"010-3771-8813","주소":"디오트 B1-K-13"},{"업체명":"슬로우피플","전화번호":"010-4141-1629","주소":"벨포스트 2-22"},{"업체명":"슬릭","전화번호":"2117-4504","주소":"디오트 B1-H-7"},{"업체명":"심플","전화번호":"2238-3345","주소":"청평화 B1-다-10"},{"업체명":"심플먼트","전화번호":"2117-4539","주소":"디오트 3-C-26"},{"업체명":"솔트비","전화번호":"010-7731-7775","주소":"디오트 5-D-11"},{"업체명":"심플베이지","전화번호":"2117-4911","주소":"디오트 3-G-10"},{"업체명":"쏠제이(SOL.J)","전화번호":"2117-8616","주소":"디오트 B2-A-9"},{"업체명":"이안","전화번호":"2252-5252","주소":"청평화 1-가-4"},{"업체명":"이유","전화번호":"010-9927-1017","주소":"디오트 2-B-17"},{"업체명":"이르","전화번호":"2117-8166","주소":"디오트 3-B-3"},{"업체명":"아델","전화번호":"2117-4365","주소":"디오트 2-A-16"},{"업체명":"아도라","전화번호":"2117-8440","주소":"디오트 B1-i-18"},{"업체명":"아라모드","전화번호":"2117-4909","주소":"디오트 4-i-14"},{"업체명":"아페리얼","전화번호":"2117-8603","주소":"디오트 4-G-10"},{"업체명":"아리키시","전화번호":"010-3725-8716","주소":"디오트 4-E-17"},{"업체명":"아베끄","전화번호":"2117-4042","주소":"디오트 4-F-25"},{"업체명":"아보카도","전화번호":"2117-4865","주소":"디오트 4-C-9"},{"업체명":"아스카","전화번호":"2117-8614","주소":"디오트 B2-B-24"},{"업체명":"아울","전화번호":"2117-8464","주소":"디오트 4-C-09"},{"업체명":"아이유","전화번호":"010-4465-0639","주소":"디오트 4-B-15"},{"업체명":"아워","전화번호":"2117-4128","주소":"디오트 4-J-5"},{"업체명":"아이보리","전화번호":"2117-8243","주소":"디오트 4-C-6"},{"업체명":"아임히어","전화번호":"2117-4898","주소":"디오트 4-D-5"},{"업체명":"아임블링","전화번호":"6270-1193","주소":"유어스 1-33"},{"업체명":"아임파인땡큐","전화번호":"2117-8976","주소":"디오트 4-H-15"},{"업체명":"아워웨이브","전화번호":"010-3846-3888","주소":"APM LUXE 6-23"},{"업체명":"아우라","전화번호":"2117-8966","주소":"디오트 1-J-9"},{"업체명":"아지트","전화번호":"2117-4368","주소":"디오트 B1-J-18"},{"업체명":"아크미","전화번호":"2117-8602","주소":"디오트 3-D-11"},{"업체명":"아톰","전화번호":"2117-8255","주소":"디오트 2-F-10"},{"업체명":"아처","전화번호":"2250-1116","주소":"APM 1-16"},{"업체명":"안단테","전화번호":"010-6775-0820","주소":"디오트 1-C-14"},{"업체명":"아호이","전화번호":"2117-4201","주소":"디오트 4-D-11"},{"업체명":"알뤼르","전화번호":"010-4252-2451","주소":"디오트 4-D-7"},{"업체명":"알로하","전화번호":"2233-3046","주소":"청평화 3-가-46"},{"업체명":"알유핫","전화번호":"010-4409-1999","주소":"디오트 4-H-19"},{"업체명":"앙버터","전화번호":"010-5920-3052","주소":"디오트 3-i-5"},{"업체명":"앙쥬","전화번호":"2117-8470","주소":"디오트 4-C-20"},{"업체명":"애니짱","전화번호":"010-5313-5756","주소":"청평화 2-라-36"},{"업체명":"애플비","전화번호":"2231-6129","주소":"청평화 5-가-45"},{"업체명":"애플앤딜리셔스","전화번호":"010-8223-8843","주소":"디오트 B1-B-4"},{"업체명":"애플트리","전화번호":"6366-3983","주소":"뉴존 B1-523,524"},{"업체명":"앤유브라운","전화번호":"010-8777-8212","주소":"디오트 B1-E-1-1"},{"업체명":"앤드바이엘","전화번호":"2117-8405","주소":"디오트 B1-G-17"},{"업체명":"앤드꼬모","전화번호":"2117-4614","주소":"디오트 4-J-30"},{"업체명":"앤드미크","전화번호":"2117-8046","주소":"디오트 4-C-03"},{"업체명":"앤드모어","전화번호":"2117-3315","주소":"디오트 3-F-15"},{"업체명":"앤드유에디션(구.럭키그라운드)","전화번호":"2200-5094","주소":"apm place 3-23"},{"업체명":"앤써(에드프로덕트)","전화번호":"010-9913-4009","주소":"디오트 4-i-15-1"},{"업체명":"앤코","전화번호":"2117-4288","주소":"디오트B1-G-11"},{"업체명":"어나더","전화번호":"010-8477-2438","주소":"디오트 2-D-13"},{"업체명":"어라운드110","전화번호":"2117-4471","주소":"디오트 B2-E-24"},{"업체명":"어니스티","전화번호":"2117-4668","주소":"디오트 2-J-15"},{"업체명":"어라이크","전화번호":"2117-8599","주소":"디오트 3-C-9"},{"업체명":"어모먼트","전화번호":"2117-8060","주소":"디오트 B1-C-22"},{"업체명":"어메이든","전화번호":"2117-8982","주소":"디오트 5-B-6"},{"업체명":"어뮤즈","전화번호":"2117-4337","주소":"디오트 B2-E-16"},{"업체명":"어바웃페이스","전화번호":"2117-4025","주소":"디오트 3-A-24"},{"업체명":"어반스테이","전화번호":"2117-8427","주소":"디오트 2-J-26"},{"업체명":"어셈블리","전화번호":"2231-3556","주소":"APM LUXE 5-532"},{"업체명":"어스","전화번호":"2117-8342","주소":"디오트 3-H-9"},{"업체명":"어썸플레인","전화번호":"010-9281-1705","주소":"디오트 4-C-3"},{"업체명":"어텐션","전화번호":"2117-4016","주소":"디오트 4-A-15"},{"업체명":"어퍼스타","전화번호":"2117-8190","주소":"디오트 4-J-31"},{"업체명":"온니","전화번호":"2117-4559","주소":"디오트 3-C-28"},{"업체명":"언더스탠딩","전화번호":"2250-0758","주소":"apm B1-24"},{"업체명":"언더트리","전화번호":"2117-8718","주소":"디오트 4-A-19"},{"업체명":"언커먼","전화번호":"010-4627-6990","주소":"청평화 5-나-13"},{"업체명":"언커버","전화번호":"2117-8039","주소":"디오트 4-B-5"},{"업체명":"언세인","전화번호":"010-3939-4023","주소":"디오트 4-A-23"},{"업체명":"엄핏","전화번호":"010-5738-1733","주소":"디오트 2-G-7"},{"업체명":"언토이","전화번호":"2117-4963","주소":"디오트 4-A-18"},{"업체명":"업밀리언","전화번호":"010-9233-6130","주소":"청평화 1-라-34"},{"업체명":"얼로우","전화번호":"2117-8329","주소":"디오트 B1-H-17"},{"업체명":"앤드바이럴","전화번호":"2117-8405","주소":"디오트 B1-G-17"},{"업체명":"에픽","전화번호":"010-4561-8961","주소":"청평화 5-나-525"},{"업체명":"에스더블유샵","전화번호":"2117-8450","주소":"디오트 4-B-4"},{"업체명":"원썸아이","전화번호":"010-4549-2502","주소":"디오트 3-J-16"},{"업체명":"엘로이","전화번호":"010-6228-8649","주소":"디오트 4-B-23"},{"업체명":"에이트글로우","전화번호":"010-4345-8583","주소":"디오트 4-E-29"},{"업체명":"에테모와이","전화번호":"010-8887-1660","주소":"디오트 3-i-25"},{"업체명":"에르메","전화번호":"2117-4488","주소":"디오트 4-B-27"},{"업체명":"웨어미","전화번호":"2117-4159","주소":"디오트 4-J-4"},{"업체명":"웨더이즈굿","전화번호":"010-7109-3570","주소":"디오트 4-H-2"},{"업체명":"에브리썬데이","전화번호":"2117-8548","주소":"디오트 4-C-14"},{"업체명":"에브리띵 위드 미","전화번호":"2117-4530","주소":"디오트 4-i-2"},{"업체명":"에이드","전화번호":"2117-8468","주소":"디오트 3-F-5"},{"업체명":"에이미컴퍼니","전화번호":"2117-4053","주소":"디오트 4-H-20"},{"업체명":"더샌드(엘엠티(L/M/T)","전화번호":"2250-1667","주소":"APM B1-18"},{"업체명":"에이블랙","전화번호":"2117-4772","주소":"디오트 3-A-22"},{"업체명":"에이원","전화번호":"2117-8949","주소":"디오트 B1-F-07"},{"업체명":"엣디스모먼트","전화번호":"2117-8180","주소":"디오트 4-B-15"},{"업체명":"오스로","전화번호":"010-3223-5951","주소":"디오트 5-B-6"},{"업체명":"엠디","전화번호":"2235-0888","주소":"청평화 1-다-18"},{"업체명":"엠오엘(MOL)","전화번호":"010-2822-4530","주소":"디오트 5-A-8"},{"업체명":"오쓰오쓰","전화번호":"2236-4125","주소":"청평화 5-다-2"},{"업체명":"오브유","전화번호":"2200-5019","주소":"apm place 519"},{"업체명":"오예","전화번호":"2117-4502","주소":"디오트 4-G-23"},{"업체명":"오블리크","전화번호":"2236-6918","주소":"청평화 5-가-17"},{"업체명":"오프터스","전화번호":"010-5327-3843","주소":"디오트 3-D-2"},{"업체명":"오픈런","전화번호":"2117-8687","주소":"디오트 3-E-17"},{"업체명":"온더블룸","전화번호":"010-3787-6207","주소":"청평화 5-가-26"},{"업체명":"온앤온","전화번호":"010-4156-2159","주소":"신발상가 C-2-43"},{"업체명":"온도","전화번호":"2117-8867","주소":"디오트 B1-L-4"},{"업체명":"온텀","전화번호":"2117-8660","주소":"디오트 3-J-10"},{"업체명":"올제","전화번호":"02-2117-8769","주소":"디오트 4-i-16"},{"업체명":"와썹","전화번호":"010-2210-6720","주소":"신발상가 C동 1층 32호"},{"업체명":"웨이팅","전화번호":"2254-0107","주소":"청평화 B1-다-12"},{"업체명":"웨이비","전화번호":"010-9653-0620","주소":"디오트 B1-A-10"},{"업체명":"웨어로우","전화번호":"010-5480-3779","주소":"디오트 5층 f-19"},{"업체명":"웨어러블 리메이크","전화번호":"2117-8565","주소":"apm Luxe 1-106"},{"업체명":"웨어미","전화번호":"2117-4159","주소":"디오트 4-J-4"},{"업체명":"웰로우","전화번호":"2117-8351","주소":"디오트 4-f-4"},{"업체명":"위드","전화번호":"2117-8286","주소":"디오트 3-E-9"},{"업체명":"위드비","전화번호":"2117-4581","주소":"디오트 B1-G-7"},{"업체명":"위즈원","전화번호":"2117-8259","주소":"디오트 2-E-23"},{"업체명":"위즈투","전화번호":"2117-8836","주소":"디오트 1-B-15"},{"업체명":"유아뷰티풀","전화번호":"2117-4646","주소":"디오트 4-J-21"},{"업체명":"유앤미","전화번호":"2117-8696","주소":"디오트 1-F-7"},{"업체명":"이너프","전화번호":"2117-4618","주소":"디오트 4-F-21"},{"업체명":"이브닝샌드","전화번호":"2117-8929","주소":"디오트 B1-H-25"},{"업체명":"이니셜","전화번호":"2117-4171","주소":"디오트 2-C-17"},{"업체명":"이사칠","전화번호":"010-8241-2470","주소":"디오트 2-F-4"},{"업체명":"이오","전화번호":"2231-0485","주소":"apm Luxe B1-B112"},{"업체명":"이오(청평)","전화번호":"010-3541-5157","주소":"청평화 5-가-25"},{"업체명":"이음","전화번호":"02-2250-0797","주소":"apm 1층 49"},{"업체명":"이크무이","전화번호":"010-5919-3085","주소":"디오트 B1-D-4"},{"업체명":"이프유","전화번호":"2117-8921","주소":"디오트 3-G-19"},{"업체명":"이합사","전화번호":"2253-5058","주소":"청평화 B1-나-12"},{"업체명":"일미리","전화번호":"2117-4468","주소":"디오트 4-H-11"},{"업체명":"잇썸","전화번호":"2117-8364","주소":"디오트 3-F-24"},{"업체명":"재미주","전화번호":"010-9293-6130","주소":"디오트 2-F-12"},{"업체명":"잭슨","전화번호":"2117-8706","주소":"디오트 3-E-25"},{"업체명":"제이제이(JJ)","전화번호":"2117-8826","주소":"디오트 B1-C-21"},{"업체명":"제이듀","전화번호":"2236-8858","주소":"청평화 4-A-28"},{"업체명":"제이투","전화번호":"2117-8773","주소":"디오트 2-J-2"},{"업체명":"제이캣","전화번호":"2117-8085","주소":"디오트 B1-D-8"},{"업체명":"제이그레이","전화번호":"2117-4725","주소":"디오트 4-A-2"},{"업체명":"제이리커버","전화번호":"2234-2713","주소":"청평화 2-나-23"},{"업체명":"제이나인","전화번호":"2117-8903","주소":"디오트 B2-D-21"},{"업체명":"제이라떼","전화번호":"010-3718-8410","주소":"디오트 4-J-23"},{"업체명":"제이런","전화번호":"2117-4555","주소":"디오트 4-C-13"},{"업체명":"제이스토리","전화번호":"2117-4527","주소":"디오트  B1-C-2"},{"업체명":"제이앨리스","전화번호":"2117-8034","주소":"디오트 4-F-17"},{"업체명":"제이윤","전화번호":"2117-4129","주소":"디오트 3-C-10"},{"업체명":"베러","전화번호":"2250-1459","주소":"apm 1-59"},{"업체명":"제이피엑스","전화번호":"2231-3286","주소":"apm Luxe B1-110"},{"업체명":"제인","전화번호":"010-6486-6268","주소":"신발상가 C-1-14"},{"업체명":"제인모리스","전화번호":"2117-4621","주소":"디오트 4-A-21"},{"업체명":"쥬드","전화번호":"2235-8215","주소":"청평화 5-나-547"},{"업체명":"쥬디스","전화번호":"2117-8592","주소":"디오트 1-i-12"},{"업체명":"지니","전화번호":"2117-8647","주소":"디오트 4-F-23"},{"업체명":"지오","전화번호":"764-7533","주소":"신발상가 C동1층40호"},{"업체명":"지수","전화번호":"2117-4280","주소":"디오트 4-i-13"},{"업체명":"찜","전화번호":"2117-4360","주소":"디오트 3-A-18"},{"업체명":"초이스","전화번호":"010-6706-6459","주소":"청평화 2-라-3"},{"업체명":"촘촘","전화번호":"010-4124-2576","주소":"신발상가 D-2-30"},{"업체명":"찬스","전화번호":"2117-4349","주소":"디오트 B1-G-13"},{"업체명":"캐스터네츠","전화번호":"010-4246-5088","주소":"디오트 B1-K-5"},{"업체명":"캔들","전화번호":"010-9122-0182","주소":"디오트 2-A-20"},{"업체명":"커먼","전화번호":"010-8585-6809","주소":"신발상가 C동 1층 57"},{"업체명":"커밍제이","전화번호":"2117-8575","주소":"디오트 3-H-13"},{"업체명":"컴히얼","전화번호":"2117-4627","주소":"디오트 4-E-13"},{"업체명":"키키","전화번호":"010-2295-7768","주소":"청평화  B1-가-2"},{"업체명":"커버","전화번호":"2117-8546","주소":"디오트 3-C-1"},{"업체명":"케이트","전화번호":"010.4243.4288","주소":"청평화 5-다-44"},{"업체명":"키치","전화번호":"010-6586-1582","주소":"디오트 5-J-17"},{"업체명":"케미","전화번호":"2231-1400","주소":"청평화 B1-가-6"},{"업체명":"코너샵","전화번호":"2233-4521","주소":"청평화 3-라-48"},{"업체명":"코지하우스","전화번호":"010-8418-7444","주소":"디오트-3-C-3"},{"업체명":"코즈캣","전화번호":"2117-8813","주소":"디오트 3-i-15"},{"업체명":"코코리","전화번호":"2117-4617","주소":"디오트 3-H-04"},{"업체명":"코코마티니","전화번호":"2117-8486","주소":"디오트 3-H-7"},{"업체명":"코코제이닛시","전화번호":"2117-4063","주소":"디오트 4-G-9"},{"업체명":"코이","전화번호":"010-3434-5284","주소":"디오트 2-B-6"},{"업체명":"코쿤","전화번호":"2117-4972","주소":"디오트 3-D-10"},{"업체명":"콘티","전화번호":"010-3179-3663","주소":"청평화 4-A-37"},{"업체명":"크렘","전화번호":"010-5082-8208","주소":"디오트 2-J-8"},{"업체명":"쿨피스","전화번호":"2117-4070","주소":"디오트 4-D-20"},{"업체명":"쿠잉","전화번호":"2117-8935","주소":"디오트 3-E-27"},{"업체명":"크림","전화번호":"010-7604-1340","주소":"신발상가 C-1-34"},{"업체명":"크롱","전화번호":"2117-4210","주소":"디오트 3-C-2"},{"업체명":"클린","전화번호":"010-8328-5758","주소":"디오트 B1-i-18"},{"업체명":"클라썸","전화번호":"2117-8780","주소":"디오트 3-J-18"},{"업체명":"클레오","전화번호":"2235-8140","주소":"청평화 2-나-27"},{"업체명":"클로스","전화번호":"2231-6943","주소":"apm Luxe 203"},{"업체명":"타히티","전화번호":"2117-4431","주소":"디오트 4-J-13"},{"업체명":"탭페이지","전화번호":"2117-4112","주소":"디오트3-H-4"},{"업체명":"탱크걸","전화번호":"2117-4142","주소":"디오트 4-H-23"},{"업체명":"테라이즈","전화번호":"010-4995-0521","주소":"디오트 2-F-4"},{"업체명":"테이크","전화번호":"010-7597-0600","주소":"신평화 4-A-443"},{"업체명":"테일즈","전화번호":"010-3510-0818","주소":"디오트 4-J-28"},{"업체명":"투유","전화번호":"2117-8201","주소":"디오트 4-E-25"},{"업체명":"트로피","전화번호":"2117-4716","주소":"디오트 4-J-16"},{"업체명":"트릴리언","전화번호":"010-3317-0528","주소":"디오트 B1-B-10"},{"업체명":"티엔","전화번호":"2117-4214","주소":"디오트 B1-J-20"},{"업체명":"트웬티","전화번호":"2117-4570","주소":"디오트 3-D-21"},{"업체명":"티케","전화번호":"2250-1297","주소":"apm B1-39"},{"업체명":"티니","전화번호":"010-7259-0223","주소":"청평화 5-다-28"},{"업체명":"트웰브","전화번호":"2117-4882","주소":"디오트 4-F-12"},{"업체명":"토레","전화번호":"010-6644-5589","주소":"apm Luxe B2-1"},{"업체명":"틴트","전화번호":"2235-1151","주소":"디오트 3-E-6"},{"업체명":"파니니","전화번호":"2117-4245","주소":"디오트 B2-D-30"},{"업체명":"파이버","전화번호":"010-9598-0060","주소":"디오트 3-E-12"},{"업체명":"팍써","전화번호":"2117-8278","주소":"디오트 B2-G-25"},{"업체명":"팔팔","전화번호":"2117-8663","주소":"디오트 4-i-20"},{"업체명":"페어링","전화번호":"010-4647-4170","주소":"APM LUXE 4-17"},{"업체명":"패키지","전화번호":"2117-4697","주소":"디오트 4-F-22"},{"업체명":"퍼블릭","전화번호":"2117-4144","주소":"디오트 1-E-12"},{"업체명":"퍼번트","전화번호":"010-6774-2356","주소":"디오트 B1-k-11"},{"업체명":"퍼스트런","전화번호":"2117-8708","주소":"디오트 3-G-14"},{"업체명":"퍼플","전화번호":"2117-4560","주소":"디오트 4-H-01"},{"업체명":"핑크펌킨","전화번호":"2117-4552","주소":"디오트 3-B-02"},{"업체명":"펀치","전화번호":"2252-6406","주소":"청평화 B1-신관-5호"},{"업체명":"페니엘","전화번호":"2238-8649","주소":"청평화 4-B-44"},{"업체명":"페이버","전화번호":"2117-8834","주소":"디오트 3-i-12"},{"업체명":"페퍼","전화번호":"2117-4678","주소":"디오트 3-F-16"},{"업체명":"페퍼솔트","전화번호":"2117-4678","주소":"디오트 4-G-19"},{"업체명":"페이지원","전화번호":"2234-5060","주소":"청평화 5-가-6"},{"업체명":"페라리","전화번호":"2117-4675","주소":"디오트 4-H-15"},{"업체명":"포니테일","전화번호":"010-2223-7801","주소":"디오트 B1-F-13"},{"업체명":"포러데이","전화번호":"2117-4450","주소":"디오트 3-i-16"},{"업체명":"포레스트","전화번호":"2117-8514","주소":"디오트 3-D-16"},{"업체명":"포에트","전화번호":"2117-8733","주소":"디오트 4-J-10"},{"업체명":"포마드","전화번호":"2117-8311","주소":"디오트 4-D-9"},{"업체명":"포커페이스","전화번호":"2117-8694","주소":"디오트 4-E-10"},{"업체명":"포티포우먼(구.팔팔)","전화번호":"010-8006-5009","주소":"디오트 B1-H-16"},{"업체명":"포포","전화번호":"2117-4863","주소":"디오트 4-B-12"},{"업체명":"폼스튜디오","전화번호":"2117-4366","주소":"디오트 3-J-15"},{"업체명":"프로퍼","전화번호":"2117-4155","주소":"디오트 5-A-11"},{"업체명":"프레즐","전화번호":"010-8698-5021","주소":"디오트 3-I-26"},{"업체명":"프롬디","전화번호":"010-5176-2871","주소":"서울시 중구 신당동 다산로 \n 29길 66번지 정우빌딩 3층"},{"업체명":"프릴","전화번호":"010-5858-5646","주소":"디오트 5-j1-j2"},{"업체명":"플라밍고","전화번호":"2117-4048","주소":"디오트 3-i-4"},{"업체명":"플라워웨이브","전화번호":"2231-9182","주소":"청평화 5-라-519"},{"업체명":"플로어","전화번호":"2250-1157","주소":"APM 1-57"},{"업체명":"플랜","전화번호":"2117-8595","주소":"디오트 3-B-30"},{"업체명":"플리즈","전화번호":"010-6701-5806","주소":"디오트 5-C-7"},{"업체명":"플러버","전화번호":"2117-8252","주소":"apm place B1-104"},{"업체명":"플러터","전화번호":"2117-8336","주소":"디오트 5-J-19"},{"업체명":"플레이마켓","전화번호":"2117-4770","주소":"디오트 4-J-5"},{"업체명":"플레인노트","전화번호":"2117-4132","주소":"디오트 4-B-28"},{"업체명":"플로우","전화번호":"2117-4433","주소":"디오트 B2-G-24"},{"업체명":"필모그래피","전화번호":"2117-8457","주소":"디오트 2-i-27"},{"업체명":"피크닉","전화번호":"010-5844-9991","주소":"디오트 1-D-9"},{"업체명":"피오니","전화번호":"2117-4589","주소":"디오트 B2-A-10"},{"업체명":"피버","전화번호":"2117-4885","주소":"디오트 4-D-9"},{"업체명":"하마","전화번호":"2253-4630","주소":"청평화 3-다-26"},{"업체명":"하라","전화번호":"010-3047-2263","주소":"디오트 1-B-4"},{"업체명":"하프","전화번호":"2117-8610","주소":"디오트 3-B-1호"},{"업체명":"하우디","전화번호":"010-2822-4530","주소":"디오트 4-D-10"},{"업체명":"하우","전화번호":"2233-4403","주소":"청평화 3-다-1~2호"},{"업체명":"하우룩글로벌","전화번호":"2237-4403","주소":"청평화 1-다-2A호"},{"업체명":"하루하","전화번호":"02-2117-4036","주소":"디오트 B1-L-3-1"},{"업체명":"허니허니","전화번호":"2117-8563","주소":"디오트 1-E-14호"},{"업체명":"해브","전화번호":"2117-4079","주소":"디오트 4-i-15-1"},{"업체명":"해시","전화번호":"010-8585-3163","주소":"신발상가 C동1층31호"},{"업체명":"허니비","전화번호":"2252-5558","주소":"청평화 4-D-48"},{"업체명":"허니콤","전화번호":"2233-8898","주소":"청평화 4-C-28"},{"업체명":"허쉬","전화번호":"2117-8369","주소":"디오트 2-H-6"},{"업체명":"허즈비","전화번호":"2117-4100","주소":"디오트 B2-D-16"},{"업체명":"헤브","전화번호":"2117-4079","주소":"디오트 4-i-15-1"},{"업체명":"헤르모드","전화번호":"2117-8074","주소":"디오트 B1-F-3"},{"업체명":"헤이무드","전화번호":"010-7643-3597","주소":"디오트 B1-J-2"},{"업체명":"헤이노크","전화번호":"010-7110-0133","주소":"디오트 3-F-2"},{"업체명":"헤이빌리","전화번호":"2117-4974","주소":"디오트 B1-A-15"},{"업체명":"헤이","전화번호":"2117-8677","주소":"디오트 3-A-24"},{"업체명":"헤일로","전화번호":"010-2771-2241","주소":"청평화 5-나-534"},{"업체명":"해크니","전화번호":"2117-4884","주소":"디오트 B1-L5-2"},{"업체명":"호시","전화번호":"2117-8580","주소":""}];
+var VENDOR_DB = [];
+var rowId = 0;
 
-var allItems = [];
-var currentFilter = 'all';
-
-// ── 초기화 ──
-window.addEventListener('load', function() {
-  loadItems();
-});
-
-// ── 시트에서 보유중 목록 로드 ──
-async function loadItems() {
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('loading').innerHTML = '<div class="spinner"></div><p style="font-size:13px;color:var(--gray-600);" id="loadingMsg">보유중 샘플 불러오는 중...</p>';
-  document.getElementById('itemList').innerHTML = '';
-  document.getElementById('emptyState').style.display = 'none';
-
-  // 10초 timeout
-  var controller = new AbortController();
-  var timer = setTimeout(function() { controller.abort(); }, 10000);
-
+async function loadVendorDB() {
   try {
-    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll', { signal: controller.signal });
-    clearTimeout(timer);
-    var data = await res.json();
-    if (data.result === 'ok') {
-      allItems = data.rows
-        .filter(function(r) { return r['상태'] === '보유중'; })
-        .map(function(r) {
-          var dday = calcDday(r['반납기한']);
-          var urgency = dday < 0 ? 'urgent' : dday <= 3 ? 'warning' : 'safe';
-          return Object.assign({}, r, { dday: dday, urgency: urgency, checked: false });
-        })
-        .sort(function(a, b) { return a.dday - b.dday; });
-      updateDashboard();
-      renderList();
-    } else {
-      throw new Error('응답 오류');
-    }
+    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(SHEET_NAME);
+    var res = await fetch(url);
+    var text = await res.text();
+    var start = text.indexOf('(');
+    var end = text.lastIndexOf(')');
+    var json = JSON.parse(text.slice(start + 1, end));
+    var parsed = [];
+    json.table.rows.forEach(function(row) {
+      var n = (row.c[0] && row.c[0].v) ? String(row.c[0].v).trim() : '';
+      var p = (row.c[1] && row.c[1].v) ? String(row.c[1].v).trim() : '';
+      var a = (row.c[2] && row.c[2].v) ? String(row.c[2].v).trim() : '';
+      if (n && n !== '거래처명' && n !== '업체명') parsed.push({업체명:n, 전화번호:p, 주소:a});
+    });
+    if (parsed.length > 0) {
+      VENDOR_DB = parsed;
+      setStatus(VENDOR_DB.length, '구글 시트 연동');
+    } else throw new Error('empty');
   } catch(e) {
-    clearTimeout(timer);
-    var msg = e.name === 'AbortError' ? '⏱ 응답 시간 초과' : '❌ 로드 실패';
-    document.getElementById('loading').innerHTML =
-      '<div style="font-size:32px;margin-bottom:12px;">😢</div>' +
-      '<p style="font-size:13px;color:var(--gray-600);margin-bottom:16px;">' + msg + '<br>Apps Script 배포 상태를 확인해주세요</p>' +
-      '<button onclick="loadItems()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--black);color:white;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">🔄 다시 시도</button>';
-    return;
-  } finally {
-    if (!document.getElementById('loading').querySelector('button')) {
-      document.getElementById('loading').style.display = 'none';
-    }
+    VENDOR_DB = FALLBACK_DB;
+    setStatus(VENDOR_DB.length, '로컬 데이터');
   }
 }
 
-function calcDday(dateStr) {
-  if (!dateStr) return 999;
-  var deadline = new Date(dateStr);
-  var today = new Date();
-  today.setHours(0,0,0,0);
-  deadline.setHours(0,0,0,0);
-  return Math.floor((deadline - today) / (1000 * 60 * 60 * 24));
-}
+function addVendorToSheet() {
+  var name = document.getElementById('new-name').value.trim();
+  var phone = document.getElementById('new-phone').value.trim();
+  var addr = document.getElementById('new-addr').value.trim();
+  if (!name) { showToast('거래처명을 입력해주세요'); document.getElementById('new-name').focus(); return; }
+  var btn = document.getElementById('btn-add-vendor');
+  btn.disabled = true; btn.textContent = '추가 중...';
 
-function ddayLabel(dday) {
-  if (dday < 0) return 'D+' + Math.abs(dday) + ' 초과';
-  if (dday === 0) return 'D-Day';
-  return 'D-' + dday;
-}
+  // 사이즈 입력기와 동일한 방식: action=save + data=encodeURIComponent(JSON)
+  var payload = { name: name, phone: phone, addr: addr };
+  var url = APPS_SCRIPT_URL
+    + '?action=save'
+    + '&data=' + encodeURIComponent(JSON.stringify(payload));
 
-function updateDashboard() {
-  var urgent = allItems.filter(function(r) { return r.urgency === 'urgent'; }).length;
-  var warning = allItems.filter(function(r) { return r.urgency === 'warning'; }).length;
-  var safe = allItems.filter(function(r) { return r.urgency === 'safe'; }).length;
-  document.getElementById('numUrgent').textContent = urgent;
-  document.getElementById('numWarning').textContent = warning;
-  document.getElementById('numSafe').textContent = safe;
-}
-
-// ── 필터 ──
-function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-  document.querySelectorAll('.dash-card').forEach(function(b) { b.classList.remove('active'); });
-  var btns = document.querySelectorAll('.filter-btn');
-  var idx = ['all','urgent','warning','safe'].indexOf(f);
-  if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
-  if (f === 'urgent') document.getElementById('dashUrgent').classList.add('active');
-  if (f === 'warning') document.getElementById('dashWarning').classList.add('active');
-  if (f === 'safe') document.getElementById('dashSafe').classList.add('active');
-  renderList();
-}
-
-// ── 목록 렌더링 (거래처별 그룹) ──
-function renderList() {
-  var filtered = currentFilter === 'all' ? allItems : allItems.filter(function(r) { return r.urgency === currentFilter; });
-
-  // 거래처 검색 필터 적용
-  if (searchKeyword) {
-    filtered = filtered.filter(function(r) {
-      var v = r['거래처'] || '';
-      return v.toLowerCase().indexOf(searchKeyword.toLowerCase()) >= 0 ||
-             matchChosong(v, searchKeyword);
+  fetch(url, { method: 'GET', mode: 'no-cors' })
+    .then(function() {
+      VENDOR_DB.push({업체명: name, 전화번호: phone, 주소: addr});
+      setStatus(VENDOR_DB.length, '구글 시트 연동');
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-phone').value = '';
+      document.getElementById('new-addr').value = '';
+      document.getElementById('new-name').focus();
+      updatePreview();
+      showToast('✓ ' + name + ' 추가 완료! 구글 시트에 반영됩니다.');
+      btn.disabled = false; btn.textContent = '추가하기';
+    })
+    .catch(function() {
+      showToast('추가 실패. 잠시 후 다시 시도해주세요.');
+      btn.disabled = false; btn.textContent = '추가하기';
     });
-  }
+}
 
-  if (!filtered.length) {
-    document.getElementById('itemList').innerHTML = '';
-    document.getElementById('emptyState').style.display = 'block';
-    return;
-  }
-  document.getElementById('emptyState').style.display = 'none';
+function setStatus(count, src) {
+  document.getElementById('db-badge').textContent = count + '개';
+  document.getElementById('db-badge').className = src === '구글 시트 연동' ? 'db-badge ok' : 'db-badge';
+  document.getElementById('db-status-header').textContent = src + ' · ' + count + '개';
+}
 
-  // 거래처별 그룹핑
-  var groups = {};
-  filtered.forEach(function(item) {
-    var v = item['거래처'] || '기타';
-    if (!groups[v]) groups[v] = [];
-    groups[v].push(item);
-  });
+function toggleDbPanel() {
+  document.getElementById('db-panel-body').classList.toggle('open');
+  document.getElementById('db-chevron').classList.toggle('open');
+}
 
-  var html = '';
-  // 거래처 그룹도 dday 오름차순 정렬
-  Object.keys(groups).forEach(function(vendor) {
-    groups[vendor].sort(function(a, b) { return a.dday - b.dday; });
-  });
+function findVendor(name) {
+  if (!name || !name.trim()) return null;
+  var q = name.trim();
+  return VENDOR_DB.find(function(v){ return v.업체명 === q; }) ||
+         VENDOR_DB.find(function(v){ return v.업체명.includes(q) || q.includes(v.업체명); }) || null;
+}
 
-  // 거래처 그룹 자체도 그룹 내 최소 dday 기준 정렬
-  var sortedVendors = Object.keys(groups).sort(function(a, b) {
-    var minA = Math.min.apply(null, groups[a].map(function(r) { return r.dday; }));
-    var minB = Math.min.apply(null, groups[b].map(function(r) { return r.dday; }));
-    return minA - minB;
-  });
+function searchVendors(q) {
+  if (!q || q.length < 1) return [];
+  return VENDOR_DB.filter(function(v){ return v.업체명.includes(q) || q.includes(v.업체명); }).slice(0, 8);
+}
 
-  sortedVendors.forEach(function(vendor) {
-    var items = groups[vendor];
-    var vendorInfo = items[0];
-    html += '<div class="vendor-group">';
-    html += '<div class="vendor-header">';
-    html += '<div>';
-    html += '<div class="vendor-name">' + esc(vendor) + '</div>';
-    html += '<div class="vendor-meta">' + esc(vendorInfo['연락처'] || '') + (vendorInfo['주소'] ? ' · ' + esc(vendorInfo['주소']) : '') + '</div>';
-    html += '</div>';
-    html += '<button class="btn-kakao" onclick="openKakao(\'' + esc(vendor) + '\')">💬 카톡 멘트</button>';
-    html += '</div>';
-    html += '<div class="product-cards">';
+function addRow() {
+  var id = rowId++;
+  var container = document.getElementById('rows-container');
+  var div = document.createElement('div');
+  div.id = 'row-' + id;
+  div.style.marginBottom = '10px';
+  div.innerHTML =
+    '<div class="input-grid">' +
+      '<div><div class="input-label">업체명</div>' +
+        '<div class="autocomplete-wrapper">' +
+          '<input class="inp" id="vendor-' + id + '" placeholder="업체명 입력" autocomplete="off">' +
+          '<div class="autocomplete-list" id="ac-' + id + '" style="display:none;"></div>' +
+        '</div>' +
+        '<div class="match-preview" id="mp-' + id + '"></div></div>' +
+      '<div><div class="input-label">상품명</div><input class="inp" id="product-' + id + '" placeholder="상품명 입력"></div>' +
+      '<div style="display:flex;align-items:flex-end;"><button class="del-btn" onclick="removeRow(' + id + ')">×</button></div>' +
+    '</div>';
+  container.appendChild(div);
+  var vi = document.getElementById('vendor-' + id);
+  var pi = document.getElementById('product-' + id);
+  vi.addEventListener('input', function(){ onVendorInput(id); });
+  vi.addEventListener('blur', function(){ setTimeout(function(){ var a=document.getElementById('ac-'+id); if(a) a.style.display='none'; },150); });
+  vi.addEventListener('keydown', function(e){ onVendorKey(e,id); });
+  pi.addEventListener('input', function(){ updatePreview(); });
+  pi.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addRow(); } });
+  vi.focus();
+  updatePreview();
+}
 
-    items.forEach(function(item) {
-      var rowNum = item['_row'];
-      var ddayClass = item.urgency;
-      var cardClass = 'product-card ' + ddayClass + (item.checked ? ' checked' : '');
-      var checkClass = 'card-check' + (item.checked ? ' on' : '');
-      var thumbUrl = driveThumb(item['이미지URL']);
-      var fullUrl = item['이미지URL'] || '';
-      var imgHtml = thumbUrl
-        ? '<div class="card-img card-img-clickable" data-url="' + esc(fullUrl) + '" style="cursor:zoom-in;"><img src="' + thumbUrl + '" onerror="this.parentElement.innerHTML=\'👗\'" loading="lazy"></div>'
-        : '<div class="card-img">👗</div>';
-
-      html += '<div class="' + cardClass + '" id="pcard-' + rowNum + '" onclick="toggleCard(' + rowNum + ')">';
-      html += '<div class="card-inner">';
-      html += '<div class="' + checkClass + '" id="chk-' + rowNum + '">' + (item.checked ? '✓' : '') + '</div>';
-      html += imgHtml;
-      html += '<div class="card-info">';
-      html += '<div class="card-name">' + esc(item['상품명']) + '</div>';
-      html += '<div class="card-vendor">' + esc(item['거래처']) + ' · 입고 ' + fmtDate(item['입고일']) + '</div>';
-      html += '<span class="card-dday ' + ddayClass + '">' + ddayLabel(item.dday) + ' · ' + fmtDate(item['반납기한']) + '</span>';
-      if (item['비고']) html += '<div style="margin-top:5px; font-size:11px; color:var(--amber); background:var(--amber-light); border-radius:6px; padding:3px 8px; display:inline-block;">📝 ' + esc(item['비고']) + '</div>';
-      html += '</div>';
-      html += '</div>';
-      html += '</div>';
+function onVendorInput(id) {
+  var val = document.getElementById('vendor-'+id).value;
+  var ac = document.getElementById('ac-'+id);
+  var inp = document.getElementById('vendor-'+id);
+  var mp = document.getElementById('mp-'+id);
+  if (!ac||!inp||!mp) return;
+  var results = searchVendors(val);
+  if (val.length>0 && results.length>0) {
+    ac.innerHTML = results.map(function(v){
+      return '<div class="autocomplete-item" data-name="'+v.업체명.replace(/"/g,'&quot;')+'"><div class="ac-name">'+v.업체명+'</div><div class="ac-info">'+v.전화번호+' · '+v.주소+'</div></div>';
+    }).join('');
+    ac.querySelectorAll('.autocomplete-item').forEach(function(item){
+      item.addEventListener('mousedown', function(){ selectVendor(id, item.getAttribute('data-name')); });
     });
+    ac.style.display='block';
+  } else { ac.style.display='none'; }
+  var match = findVendor(val);
+  if (val.length>0) {
+    if (match) { inp.className='inp matched'; mp.textContent='✓ '+match.전화번호+' · '+match.주소; mp.className='match-preview ok'; }
+    else { inp.className='inp no-match'; mp.textContent='거래처 목록에 없는 업체 (수동 확인 필요)'; mp.className='match-preview warn'; }
+  } else { inp.className='inp'; mp.className='match-preview'; }
+  updatePreview();
+}
 
-    html += '</div></div>';
+function selectVendor(id, name) {
+  var inp=document.getElementById('vendor-'+id); var ac=document.getElementById('ac-'+id);
+  if(inp) inp.value=name; if(ac) ac.style.display='none';
+  onVendorInput(id);
+  setTimeout(function(){ var p=document.getElementById('product-'+id); if(p) p.focus(); },50);
+}
+
+function onVendorKey(e,id) {
+  var ac=document.getElementById('ac-'+id); if(!ac) return;
+  var items=ac.querySelectorAll('.autocomplete-item'); var active=ac.querySelector('.active');
+  if (e.key==='ArrowDown') { e.preventDefault(); if(!active&&items[0]) items[0].classList.add('active'); else if(active){ var n=active.nextElementSibling; active.classList.remove('active'); if(n) n.classList.add('active'); } }
+  else if (e.key==='ArrowUp') { e.preventDefault(); if(active){ var p=active.previousElementSibling; active.classList.remove('active'); if(p) p.classList.add('active'); } }
+  else if (e.key==='Enter') { if(active){ e.preventDefault(); active.dispatchEvent(new MouseEvent('mousedown')); } else { var pi=document.getElementById('product-'+id); if(pi){ e.preventDefault(); pi.focus(); } } }
+  else if (e.key==='Tab') { ac.style.display='none'; }
+}
+
+function removeRow(id) { var el=document.getElementById('row-'+id); if(el) el.remove(); updatePreview(); }
+
+function today() {
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function getRows() {
+  var rows=[];
+  document.querySelectorAll('[id^="row-"]').forEach(function(el){
+    var id=el.id.replace('row-','');
+    var ve=document.getElementById('vendor-'+id); var pe=document.getElementById('product-'+id);
+    if(ve||pe) rows.push({vendor:ve?ve.value.trim():'',product:pe?pe.value.trim():''});
   });
-
-  document.getElementById('itemList').innerHTML = html;
-  updateSaveBtn();
-
-  // 이미지 클릭 이벤트 위임
-  document.querySelectorAll('.card-img-clickable').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      openImgModal(this.getAttribute('data-url'));
-    });
-  });
+  return rows;
 }
 
-// ── 카드 체크 토글 ──
-function toggleCard(rowNum) {
-  var item = allItems.find(function(r) { return r['_row'] === rowNum; });
-  if (!item) return;
-  item.checked = !item.checked;
-
-  var card = document.getElementById('pcard-' + rowNum);
-  var chk  = document.getElementById('chk-' + rowNum);
-  if (item.checked) {
-    card.classList.add('checked');
-    chk.classList.add('on'); chk.textContent = '✓';
-  } else {
-    card.classList.remove('checked');
-    chk.classList.remove('on'); chk.textContent = '';
-  }
-  updateSaveBtn();
-}
-
-function updateSaveBtn() {
-  var cnt = allItems.filter(function(r) { return r.checked; }).length;
-  document.getElementById('checkedInfo').textContent = cnt + '개 선택';
-  var btn = document.getElementById('btnSave');
-  btn.disabled = cnt === 0;
-  btn.style.cursor = cnt === 0 ? 'not-allowed' : 'pointer';
-  btn.textContent = cnt > 0 ? '✅ 반납 처리 + 엑셀 저장 (' + cnt + '개)' : '✅ 반납 처리 + 엑셀 저장';
-}
-
-// ── 반납 처리 + 엑셀 저장 통합 ──
-async function saveAndExcel() {
-  var checked = allItems.filter(function(r) { return r.checked; });
-  if (!checked.length) return;
-
-  // 엑셀 먼저 생성 (반납 처리 전 상태로)
-  downloadExcel();
-
-  // 반납 처리
-  await saveReturns();
-}
-
-// ── 반납 저장 ──
-async function saveReturns() {
-  var checked = allItems.filter(function(r) { return r.checked; });
-  if (!checked.length) return;
-
-  var btn = document.getElementById('btnSave');
-  btn.disabled = true; btn.textContent = '처리 중...';
-
-  var today = new Date().toISOString().split('T')[0];
-  var success = 0;
-
-  for (var i = 0; i < checked.length; i++) {
-    var item = checked[i];
-    try {
-      var payload = encodeURIComponent(JSON.stringify({
-        '_row': item['_row'],
-        '상태': '반납완료',
-        '반납일': today
-      }));
-      await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
-      success++;
-    } catch(e) { console.error(e); }
-  }
-
-  showToast('✅ ' + success + '개 반납 처리 완료!');
-  setTimeout(function() { loadItems(); }, 1000);
-}
-
-// ── 카톡 멘트 팝업 ──
-function openKakao(vendor) {
-  var items = allItems.filter(function(r) { return r['거래처'] === vendor && r['상태'] === '보유중'; });
-  var names = items.map(function(r) { return r['상품명']; }).join(', ');
-
-  document.getElementById('kakaoVendorName').textContent = vendor;
-  document.getElementById('kakaoText').value =
-    '언니~ 더제이수에요!\n' +
-    '샘플 반납 건으로 연락드려요!\n' +
-    '· ' + names + '\n' +
-    '반납 일정 조율 가능하실까요? 감사합니다^^';
-
-  document.getElementById('kakaoModal').classList.add('show');
-}
-function closeKakao() {
-  document.getElementById('kakaoModal').classList.remove('show');
-}
-function copyKakao() {
-  var text = document.getElementById('kakaoText').value;
-  navigator.clipboard.writeText(text).then(function() {
-    showToast('📋 카톡 멘트 복사됐어요!');
-    closeKakao();
-  }).catch(function() {
-    document.getElementById('kakaoText').select();
-    document.execCommand('copy');
-    showToast('📋 복사됐어요!');
-    closeKakao();
-  });
-}
-
-// 바깥 클릭 시 닫기
-document.getElementById('kakaoModal').addEventListener('click', function(e) {
-  if (e.target === this) closeKakao();
-});
-
-// ── 엑셀 다운로드 (스마트비즈 샘플차감 양식) ──
-// ── 오늘 반납분 엑셀 다운로드 (PC용) ──
-async function downloadTodayExcel() {
-  var btn = document.getElementById('btnExcel');
-  btn.textContent = '로딩 중...';
-  btn.disabled = true;
-
-  // 최신 데이터 다시 불러오기
-  try {
-    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll');
-    var data = await res.json();
-    var today = new Date().toISOString().split('T')[0];
-
-    // 오늘 반납완료된 항목만 필터 (한국 시간 기준)
-    function toKoreaDate(val) {
-      if (!val) return '';
-      var d = new Date(val);
-      if (isNaN(d)) return (val + '').substring(0, 10);
-      // UTC → 한국 시간 (+9시간)
-      var kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-      return kst.toISOString().substring(0, 10);
-    }
-    var todayItems = (data.rows || []).filter(function(r) {
-      return r['상태'] === '반납완료' && toKoreaDate(r['반납일']) === today;
-    });
-
-    if (!todayItems.length) {
-      showToast('오늘 반납처리된 항목이 없어요!');
-      btn.textContent = '📥 오늘 반납분 엑셀 다운로드';
-      btn.disabled = false;
-      return;
-    }
-
-    // 시트1: 샘플차감 등록양식
-    var rows = [['업체명(필수)', '연락처(필수)', '주소(필수)', '내용(필수)']];
-    todayItems.forEach(function(item) {
-      rows.push([
-        item['거래처'] || '',
-        item['연락처'] || '',
-        item['주소']   || '',
-        item['상품명'] || ''
-      ]);
-    });
-    var ws1 = XLSX.utils.aoa_to_sheet(rows);
-    ws1['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 24 }, { wch: 50 }];
-
-    // 시트2: 반납 목록 (참고용)
-    var rows2 = [['상품명', '거래처', '반납일']];
-    todayItems.forEach(function(item) {
-      rows2.push([item['상품명'] || '', item['거래처'] || '', item['반납일'] || '']);
-    });
-    var ws2 = XLSX.utils.aoa_to_sheet(rows2);
-    ws2['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 14 }];
-
-    var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws1, '샘플차감등록');
-    XLSX.utils.book_append_sheet(wb, ws2, '반납목록');
-
-    var fileName = '샘플반납_' + today + '.xlsx';
-    XLSX.writeFile(wb, fileName);
-    showToast('✅ ' + todayItems.length + '건 엑셀 다운로드 완료!');
-  } catch(e) {
-    showToast('❌ 다운로드 실패: ' + e.message);
-  } finally {
-    btn.textContent = '📥 오늘 반납분 엑셀 다운로드';
-    btn.disabled = false;
-  }
+function updatePreview() {
+  var valid=getRows().filter(function(r){ return r.vendor||r.product; });
+  document.getElementById('row-count').textContent=valid.length+'개 항목';
+  var tbody=document.getElementById('preview-body');
+  if (!valid.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem;">업체명 또는 상품명을 입력하면 여기에 미리보기가 표시됩니다</td></tr>'; return; }
+  tbody.innerHTML=valid.map(function(r){
+    var v=findVendor(r.vendor);
+    var phone=v?v.전화번호:(r.vendor?'<span class="no-match-cell">미매칭</span>':'');
+    return '<tr><td>'+today()+'</td><td>'+r.vendor+'</td><td>'+phone+'</td><td>'+(v?v.주소:'')+'</td><td>'+(r.product||'')+'</td><td><span class="tag auto">전색상</span></td><td><span class="tag">1</span></td><td><span class="tag">1</span></td><td><span class="tag auto">샘플반납</span></td><td></td></tr>';
+  }).join('');
 }
 
 function downloadExcel() {
-  var checked = allItems.filter(function(r) { return r.checked; });
-  if (!checked.length) { showToast('반납할 상품을 선택해주세요'); return; }
-
-  // 시트1: 샘플차감 등록양식
-  var rows = [['업체명(필수)', '연락처(필수)', '주소(필수)', '내용(필수)']];
-  checked.forEach(function(item) {
-    rows.push([
-      item['거래처'] || '',
-      item['연락처'] || '',
-      item['주소']   || '',
-      item['상품명'] || ''
-    ]);
+  var rows=getRows().filter(function(r){ return r.vendor||r.product; });
+  if (!rows.length) { showToast('입력된 데이터가 없습니다'); return; }
+  var wb=XLSX.utils.book_new();
+  var headers=['동대문도착일','업체명','연락처','주소','상품명','옵션','원가','주문','비고','사용자관리코드'];
+  var data=[headers];
+  rows.forEach(function(r){
+    var v=findVendor(r.vendor);
+    data.push([today(),r.vendor||'',v?v.전화번호:'',v?v.주소:'',r.product||'',(r.vendor||r.product)?'전색상':'',(r.vendor||r.product)?1:'',(r.vendor||r.product)?1:'',(r.vendor||r.product)?'샘플반납':'','']);
   });
-
-  var ws1 = XLSX.utils.aoa_to_sheet(rows);
-
-  // 열 너비 설정
-  ws1['!cols'] = [
-    { wch: 22 }, // 업체명
-    { wch: 18 }, // 연락처
-    { wch: 24 }, // 주소
-    { wch: 50 }  // 내용
-  ];
-
-  // 시트2: 반납 목록 (참고용)
-  var rows2 = [['상품명', '거래처', '입고일', '반납기한', '반납일', 'D-day']];
-  var today = new Date().toISOString().split('T')[0];
-  checked.forEach(function(item) {
-    rows2.push([
-      item['상품명']   || '',
-      item['거래처']   || '',
-      fmtDate(item['입고일']),
-      fmtDate(item['반납기한']),
-      today,
-      ddayLabel(item.dday)
-    ]);
-  });
-  var ws2 = XLSX.utils.aoa_to_sheet(rows2);
-  ws2['!cols'] = [
-    { wch: 40 }, { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 }
-  ];
-
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws1, '샘플차감 등록양식');
-  XLSX.utils.book_append_sheet(wb, ws2, '반납 목록');
-
-  var today2 = new Date().toISOString().split('T')[0];
-  XLSX.writeFile(wb, '스마트비즈_샘플반납_' + today2 + '.xlsx');
-  showToast('📥 엑셀 파일 다운로드 완료!');
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:14},{wch:18},{wch:15},{wch:28},{wch:32},{wch:9},{wch:7},{wch:7},{wch:12},{wch:18}];
+  XLSX.utils.book_append_sheet(wb,ws,'발주서');
+  XLSX.writeFile(wb,'더제이수_샘플반납_'+today().replace(/-/g,'')+'.xlsx');
+  showToast(rows.length+'개 항목 엑셀 다운로드 완료!');
 }
 
-// 날짜 포맷 (2026-04-10T15:00:00.000Z → 2026-04-10)
-function fmtDate(s) {
-  if (!s) return '-';
-  return String(s).split('T')[0];
-}
+function clearAll() { document.getElementById('rows-container').innerHTML=''; rowId=0; updatePreview(); addRow(); addRow(); }
 
-// 구글 드라이브 URL → 썸네일 URL로 변환 (CORS 우회)
-function driveThumb(url) {
-  if (!url) return '';
-  var match = url.match(/[?&]id=([^&]+)/);
-  if (match) return 'https://drive.google.com/thumbnail?id=' + match[1] + '&sz=w200';
-  return url;
-}
-
-// ── 거래처 검색 ──
-var searchKeyword = '';
-
-function onSearchInput(val) {
-  searchKeyword = val.trim();
-  var dropdown = document.getElementById('searchDropdown');
-
-  if (!searchKeyword) {
-    dropdown.style.display = 'none';
-    renderList();
-    return;
-  }
-
-  // 거래처 목록에서 초성/부분 매칭
-  var vendors = [...new Set(allItems.map(function(r) { return r['거래처'] || ''; }))];
-  var matched = vendors.filter(function(v) {
-    return v.toLowerCase().indexOf(searchKeyword.toLowerCase()) >= 0 ||
-           matchChosong(v, searchKeyword);
-  });
-
-  if (matched.length === 0) {
-    dropdown.style.display = 'none';
-    renderList();
-    return;
-  }
-
-  // 드롭다운 표시
-  dropdown.innerHTML = '';
-    var ddHtml = '';
-  matched.forEach(function(v) {
-    var div = document.createElement('div');
-    div.style.cssText = 'padding:10px 16px; cursor:pointer; font-size:13px; border-bottom:1px solid #E6E3DE;';
-    div.innerHTML = v.replace(new RegExp('(' + escapeReg(searchKeyword) + ')', 'gi'), '<strong style="color:#E8756A;">$1</strong>');
-    div.addEventListener('mouseover', function() { this.style.background = '#F2F1EE'; });
-    div.addEventListener('mouseout',  function() { this.style.background = ''; });
-    div.addEventListener('click', function() { selectVendor(v); });
-    dropdown.appendChild(div);
-  });
-  dropdown.style.display = 'block';
-
-  // 동시에 목록도 필터링
-  renderList();
-}
-
-function selectVendor(vendor) {
-  document.getElementById('vendorSearch').value = vendor;
-  searchKeyword = vendor;
-  document.getElementById('searchDropdown').style.display = 'none';
-  renderList();
-}
-
-function applySearch() {
-  document.getElementById('searchDropdown').style.display = 'none';
-  renderList();
-}
-
-// 초성 매칭 (간단 버전)
-var CHOSONG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
-function getChosong(str) {
-  var result = '';
-  for (var i = 0; i < str.length; i++) {
-    var code = str.charCodeAt(i) - 0xAC00;
-    if (code >= 0 && code <= 11171) {
-      result += CHOSONG[Math.floor(code / 588)];
-    } else {
-      result += str[i];
-    }
-  }
-  return result;
-}
-function matchChosong(target, keyword) {
-  // 키워드가 초성으로만 이루어진 경우
-  var isChosong = keyword.split('').every(function(c) { return CHOSONG.indexOf(c) >= 0; });
-  if (isChosong) {
-    return getChosong(target).indexOf(keyword) >= 0;
-  }
-  return false;
-}
-function escapeReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-// 바깥 클릭 시 드롭다운 닫기
-document.addEventListener('click', function(e) {
-  var search = document.getElementById('vendorSearch');
-  var dd = document.getElementById('searchDropdown');
-  if (search && !search.contains(e.target) && dd && !dd.contains(e.target)) {
-    dd.style.display = 'none';
-  }
-});
-
-function openImgModal(url) {
-  if (!url) return;
-  // 드라이브 URL에서 파일 ID 추출 후 직접 보기 URL로 변환
-  var viewUrl = url;
-  var match = url.match(/[?&]id=([^&]+)/);
-  if (match) {
-    viewUrl = 'https://lh3.googleusercontent.com/d/' + match[1];
-  }
-  document.getElementById('imgModalSrc').src = viewUrl;
-  document.getElementById('imgModal').style.display = 'flex';
-}
-function closeImgModal() {
-  document.getElementById('imgModal').style.display = 'none';
-  document.getElementById('imgModalSrc').src = '';
-}
-// ESC 키로 닫기
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeImgModal();
-});
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(function() { t.classList.remove('show'); }, 3000);
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); },2800);
 }
+
+loadVendorDB();
+addRow(); addRow();
+setTimeout(function(){ var f=document.getElementById('vendor-0'); if(f) f.focus(); },400);
 </script>
 </body>
 </html>
