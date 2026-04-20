@@ -21,6 +21,44 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .h-prog-num{font-family:monospace;color:var(--accent);font-weight:700;}
 .prog-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),#7C3AED);border-radius:99px;width:0%;transition:width .4s;}
+/* 오늘 접을 양 배너 */
+.total-banner{margin-top:10px;background:linear-gradient(135deg,#EFF6FF,#F5F3FF);border:1px solid #C7D2FE;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;}
+
+/* ★ v2.4: 작업시간 기록 카드 (컴팩트) */
+.wt-card{margin:10px 14px 0;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;}
+.wt-title{font-size:12px;font-weight:700;color:#92400E;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.wt-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+.wt-btn{background:#fff;border:1.5px solid #FDE68A;border-radius:8px;padding:6px 6px;font-family:inherit;font-size:11px;font-weight:600;color:#92400E;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .15s;min-height:42px;}
+.wt-btn:active{transform:scale(.96);}
+.wt-btn.done{background:#D1FAE5;border-color:#10B981;color:#065F46;}
+.wt-btn.done .wt-ico{color:#10B981;}
+.wt-btn:hover:not(.done){background:#FEF3C7;}
+/* ★ 이모지 + 라벨을 가로로 배치 */
+.wt-btn-main{display:flex;align-items:center;justify-content:center;gap:4px;line-height:1;}
+.wt-ico{font-size:13px;line-height:1;}
+.wt-lbl{font-size:11px;font-weight:700;line-height:1.15;}
+.wt-time{font-size:10.5px;font-family:'DM Mono',monospace;color:#059669;font-weight:700;margin-top:1px;line-height:1;}
+.wt-time:empty{display:none;}
+.tb-main{flex:1;min-width:0;}
+.tb-label{font-size:10.5px;color:var(--muted);font-weight:500;}
+.tb-total{font-size:22px;font-weight:700;color:var(--accent);font-family:monospace;letter-spacing:-.5px;line-height:1.2;}
+.tb-total .tb-unit{font-size:12px;font-weight:600;margin-left:2px;}
+.tb-split{display:flex;gap:6px;flex-shrink:0;}
+.tb-chip{padding:5px 9px;border-radius:7px;font-size:10px;font-weight:600;text-align:center;min-width:54px;line-height:1.3;}
+.tb-chip .n{font-size:14px;font-weight:700;display:block;font-family:monospace;margin-top:1px;}
+.tb-chip.normal{background:var(--al);color:var(--accent);}
+.tb-chip.steam{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;}
+/* 일반/스팀 탭 바 */
+.mode-bar{display:flex;gap:8px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+.mb-tab{flex:1;padding:10px 6px;border-radius:9px;font-size:13px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;transition:all .15s;}
+.mb-tab .mb-count{font-family:monospace;font-size:11px;padding:2px 7px;border-radius:10px;background:var(--s2);color:var(--muted);font-weight:700;}
+.mb-tab.on.normal{border-color:var(--accent);background:var(--al);color:var(--accent);}
+.mb-tab.on.normal .mb-count{background:var(--accent);color:#fff;}
+.mb-tab.on.steam{border-color:#EA580C;background:#FFF7ED;color:#C2410C;}
+.mb-tab.on.steam .mb-count{background:#EA580C;color:#fff;}
+.mb-tab.done::after{content:' ✓';color:var(--green);}
+/* 스팀 배지 (리스트 아이템 안) */
+.item-steam-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.5px;background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;}
 .sup-bar{background:var(--surface);padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .sup-bar label{font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap;}
 .sup-bar select{flex:1;padding:10px 32px 10px 12px;border:1px solid var(--b2);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%236B7280" d="M6 8L2 4h8z"/></svg>') no-repeat right 10px center;-webkit-appearance:none;appearance:none;outline:none;}
@@ -39,6 +77,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .item-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);font-family:monospace;flex-wrap:wrap;}
 .item-qty{background:var(--al);color:var(--accent);padding:3px 9px;border-radius:6px;font-weight:700;font-size:13px;}
 .item-memo-tag{font-size:11px;color:var(--amber);background:var(--aml);padding:3px 7px;border-radius:5px;margin-top:6px;display:inline-block;}
+.item-memo1{font-size:11.5px;color:var(--accent);font-weight:600;margin-top:3px;line-height:1.35;}
+/* 사입명 - 영수증 매칭용 키 정보. 큼직하고 눈에 확 띄게 */
+.item-sanip-box{display:inline-flex;align-items:center;gap:5px;margin-top:2px;margin-bottom:8px;background:#FEF3C7;border:1.5px solid #FBBF24;padding:5px 11px;border-radius:8px;font-size:15px;font-weight:700;color:#78350F;font-family:monospace;letter-spacing:.3px;}
+.item-sanip-box .sl{font-size:10px;font-weight:600;color:#92400E;font-family:'Noto Sans KR',sans-serif;letter-spacing:0;}
 .item-bigo-tag{font-size:11px;color:var(--red);background:var(--rl);padding:3px 7px;border-radius:5px;margin-top:4px;display:inline-block;}
 .item-actions{display:flex;border-top:1px solid var(--border);}
 .ba{flex:1;padding:13px 6px;border:none;background:var(--surface);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--t2);}
@@ -84,6 +126,47 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 /* 하단 */
 .footer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -4px 12px rgba(0,0,0,.06);z-index:90;}
 .btn-complete{width:100%;padding:15px;border:none;border-radius:10px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+/* ★ 추가입고 버튼 (footer 2개 나란히) */
+.footer-row{display:flex;gap:8px;}
+.btn-addnew{flex:0 0 auto;padding:15px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(147,51,234,.25);}
+.btn-addnew:active{transform:scale(.97);}
+/* ★ 추가입고 모달 */
+.add-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:220;align-items:flex-end;justify-content:center;padding:0;}
+.add-modal.show{display:flex;}
+.add-box{background:var(--surface);border-radius:16px 16px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.add-title{font-size:17px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.add-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.add-section{margin-bottom:14px;}
+.add-label{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;display:block;}
+.add-label .req{color:var(--red);margin-left:2px;}
+.add-label .opt{color:var(--m2);font-weight:400;margin-left:4px;}
+.add-input{width:100%;padding:12px 14px;border:1px solid var(--b2);border-radius:8px;font-family:inherit;font-size:14px;outline:none;background:#fff;}
+.add-input:focus{border-color:#9333EA;box-shadow:0 0 0 3px rgba(147,51,234,.12);}
+.add-row-grid{display:grid;grid-template-columns:2fr 1fr;gap:8px;}
+.add-kind-row{display:flex;gap:6px;flex-wrap:wrap;}
+.add-kind{flex:1;min-width:0;padding:10px 8px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;color:var(--t2);transition:all .15s;}
+.add-kind.on{border-color:#9333EA;background:#FAF5FF;color:#7E22CE;}
+.add-qty-row{display:flex;align-items:center;gap:10px;}
+.add-qty-row input{flex:1;text-align:center;font-size:20px;font-weight:700;font-family:monospace;}
+.add-qbtn{width:44px;height:44px;border:1.5px solid var(--b2);border-radius:8px;background:#fff;font-size:22px;font-weight:700;cursor:pointer;color:var(--t2);}
+.add-qbtn:active{transform:scale(.95);background:var(--s2);}
+.add-actions{display:flex;gap:10px;margin-top:16px;}
+.add-btn{flex:1;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+.add-btn-cancel{background:var(--s2);color:var(--t2);border:1px solid var(--b2);}
+.add-btn-save{background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;box-shadow:0 2px 6px rgba(147,51,234,.25);}
+.add-btn-save:active{transform:scale(.98);}
+/* ★ 추가입고 행 리스트에 표시 (보라색 강조) */
+.item-row.added{border-left:3px solid #9333EA;}
+.item-row.added .product-name::before{content:'➕ ';color:#9333EA;font-weight:700;}
+.add-badge{display:inline-block;background:#F3E8FF;color:#7E22CE;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+/* ★ 방금 추가된 카드 반짝 하이라이트 */
+@keyframes just-added-pulse{
+  0%{box-shadow:0 0 0 0 rgba(147,51,234,.55);background:#FAF5FF;}
+  60%{box-shadow:0 0 0 12px rgba(147,51,234,0);background:#FAF5FF;}
+  100%{box-shadow:0 0 0 0 rgba(147,51,234,0);background:transparent;}
+}
+.item.just-added{animation:just-added-pulse 2.4s ease-out;border-color:#9333EA !important;}
 /* 시작 */
 .start{padding:40px 20px;text-align:center;}
 .start-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#7C3AED);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:16px;}
@@ -91,6 +174,22 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .start p{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
 .start input{width:100%;max-width:280px;margin:0 auto 12px;display:block;padding:12px 14px;border:1px solid var(--b2);border-radius:8px;font-family:inherit;font-size:14px;outline:none;text-align:center;}
 .start button{max-width:280px;width:100%;margin:8px auto 0;padding:14px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+/* 담당자 선택 버튼 */
+.worker-btns{display:flex;flex-direction:column;gap:12px;max-width:320px;margin:20px auto 16px;}
+.worker-btn{width:100%;padding:22px 20px;border:2px solid var(--border);border-radius:14px;background:var(--surface);font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+.worker-btn:active{transform:scale(.98);}
+.worker-btn.w-1{border-color:var(--accent);background:linear-gradient(135deg,#EFF6FF,#F5F3FF);}
+.worker-btn.w-2{border-color:#EC4899;background:linear-gradient(135deg,#FDF2F8,#FFF1F2);}
+.wb-icon{font-size:30px;line-height:1;}
+.wb-name{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.5px;}
+.worker-btn.w-1 .wb-name{color:var(--accent);}
+.worker-btn.w-2 .wb-name{color:#DB2777;}
+.wb-hint{font-size:12px;color:var(--muted);font-weight:500;}
+/* 고급 옵션 (details) */
+.advanced-opt{max-width:320px;margin:10px auto 0;}
+.advanced-opt summary{padding:10px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;}
+.advanced-opt summary:hover{color:var(--t2);}
+.adv-body{padding:8px 0 4px;}
 /* 로딩/토스트 */
 .loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px;}
@@ -108,10 +207,27 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
   <div class="start">
     <div class="start-logo">📦</div>
     <h2>더제이수 입고검수</h2>
-    <p>담당자 이름과 검수일자를 입력해주세요</p>
-    <input type="text" id="startWorker" placeholder="담당자 이름 (예: 윤혜정)">
-    <input type="text" id="startSession" placeholder="세션ID (예: 20260418)" inputmode="numeric">
-    <button onclick="startManual()">시작하기</button>
+    <p>담당자를 선택해주세요</p>
+    <div class="worker-btns">
+      <button class="worker-btn w-1" onclick="startAs('이혜정')">
+        <span class="wb-icon">👤</span>
+        <span class="wb-name">이혜정</span>
+        <span class="wb-hint">일반 + 🔥 스팀</span>
+      </button>
+      <button class="worker-btn w-2" onclick="startAs('윤혜정')">
+        <span class="wb-icon">👤</span>
+        <span class="wb-name">윤혜정</span>
+        <span class="wb-hint">일반</span>
+      </button>
+    </div>
+    <details class="advanced-opt">
+      <summary>다른 담당자 · 작업번호 직접 입력</summary>
+      <div class="adv-body">
+        <input type="text" id="startWorker" placeholder="담당자 이름">
+        <input type="text" id="startSession" placeholder="작업번호 (예: 20260418 = 오늘 날짜)" inputmode="numeric">
+        <button onclick="startManual()">시작하기</button>
+      </div>
+    </details>
   </div>
 </div>
 
@@ -121,13 +237,41 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
       <div class="h-logo">📦</div>
       <div class="h-info">
         <div class="h-title"><span id="workerName">-</span>님 입고검수</div>
-        <div class="h-sub">세션 <span id="sessionId">-</span></div>
       </div>
     </div>
-    <div class="h-prog">
-      <div class="h-prog-text"><span>진행률</span><span class="h-prog-num"><span id="doneCount">0</span> / <span id="totalCount">0</span></span></div>
-      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="total-banner">
+      <div class="tb-main">
+        <div class="tb-label">오늘 접을 양</div>
+        <div class="tb-total"><span id="tbTotal">0</span><span class="tb-unit">개</span></div>
+      </div>
+      <div class="tb-split">
+        <div class="tb-chip normal">📦 일반<span class="n" id="tbNormal">0</span></div>
+        <div class="tb-chip steam" id="tbSteamChip" style="display:none;">🔥 스팀<span class="n" id="tbSteam">0</span></div>
+      </div>
     </div>
+  </div>
+  <!-- ★ v2.4: 작업시간 기록 카드 -->
+  <div class="wt-card">
+    <div class="wt-title">⏱️ 오늘 작업 시간</div>
+    <div class="wt-btns">
+      <button class="wt-btn" id="wtStart" onclick="recordWorkTime('start')">
+        <span class="wt-btn-main"><span class="wt-ico">🕐</span><span class="wt-lbl">작업 시작</span></span>
+        <span class="wt-time" id="wtTimeStart"></span>
+      </button>
+      <button class="wt-btn" id="wtCheck" onclick="recordWorkTime('check')">
+        <span class="wt-btn-main"><span class="wt-ico">✅</span><span class="wt-lbl">물건 확인 완료</span></span>
+        <span class="wt-time" id="wtTimeCheck"></span>
+      </button>
+      <button class="wt-btn" id="wtPack" onclick="recordWorkTime('pack')">
+        <span class="wt-btn-main"><span class="wt-ico">📦</span><span class="wt-lbl">포장 완료</span></span>
+        <span class="wt-time" id="wtTimePack"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mode-bar" id="modeBar">
+    <button class="mb-tab normal on" data-mode="normal" onclick="setMode('normal')">📦 일반 <span class="mb-count" id="mbCountNormal">0</span></button>
+    <button class="mb-tab steam" data-mode="steam" onclick="setMode('steam')" style="display:none;">🔥 스팀 <span class="mb-count" id="mbCountSteam">0</span></button>
   </div>
   <div class="sup-bar">
     <label>📦 공급처</label>
@@ -142,7 +286,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
   </div>
   <div class="list" id="itemList"></div>
   <div class="footer">
-    <button class="btn-complete" id="btnComplete" onclick="completeAll()" style="background:var(--m2);">완료</button>
+    <div class="footer-row">
+      <button class="btn-addnew" onclick="openAddModal()" title="리스트에 없는 상품">➕ 추가 입고</button>
+      <button class="btn-complete" id="btnComplete" onclick="completeAll()" style="background:var(--m2);flex:1;">완료</button>
+    </div>
   </div>
 </div>
 
@@ -168,6 +315,66 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
   </div>
 </div>
 
+<!-- ★ 추가 입고 모달 -->
+<div class="add-modal" id="addModal">
+  <div class="add-box">
+    <div class="add-title">➕ 리스트에 없는 상품 추가</div>
+    <div class="add-sub">
+      예정 리스트에 없는데 들어온 상품을 추가해주세요.<br>
+      (예: 교환건, 신상품, 누락된 것 등)
+    </div>
+
+    <div class="add-section">
+      <label class="add-label">어떤 경우인가요? <span class="req">*</span></label>
+      <div class="add-kind-row" id="addKindRow">
+        <button class="add-kind on" data-kind="교환건" onclick="setAddKind('교환건')">🔁 교환건</button>
+        <button class="add-kind" data-kind="신상품" onclick="setAddKind('신상품')">✨ 신상품</button>
+        <button class="add-kind" data-kind="누락/기타" onclick="setAddKind('누락/기타')">📦 누락/기타</button>
+      </div>
+    </div>
+
+    <div class="add-section">
+      <label class="add-label">사입명 <span class="opt">(장끼명)</span></label>
+      <input type="text" id="addSanip" class="add-input" placeholder="예: 봄아벨SL" inputmode="text">
+    </div>
+
+    <div class="add-section">
+      <label class="add-label">상품명 <span class="req">*</span></label>
+      <input type="text" id="addProductName" class="add-input" placeholder="예: 옆지퍼 심플 슬랙스">
+    </div>
+
+    <div class="add-row-grid">
+      <div class="add-section">
+        <label class="add-label">옵션 <span class="opt">(색상/사이즈)</span></label>
+        <input type="text" id="addOption" class="add-input" placeholder="예: 블랙,L">
+      </div>
+      <div class="add-section">
+        <label class="add-label">공급처 <span class="opt"></span></label>
+        <input type="text" id="addSupplier" class="add-input" placeholder="예: 말파">
+      </div>
+    </div>
+
+    <div class="add-section">
+      <label class="add-label">수량 <span class="req">*</span></label>
+      <div class="add-qty-row">
+        <button class="add-qbtn" onclick="addQtyStep(-1)">−</button>
+        <input type="number" id="addQty" class="add-input" value="1" inputmode="numeric" min="1">
+        <button class="add-qbtn" onclick="addQtyStep(1)">+</button>
+      </div>
+    </div>
+
+    <div class="add-section">
+      <label class="add-label">메모 <span class="opt">(특이사항)</span></label>
+      <input type="text" id="addMemo" class="add-input" placeholder="예: 25SS 교환건">
+    </div>
+
+    <div class="add-actions">
+      <button class="add-btn add-btn-cancel" onclick="closeAddModal()">취소</button>
+      <button class="add-btn add-btn-save" onclick="saveAddItem()">➕ 추가</button>
+    </div>
+  </div>
+</div>
+
 <div class="img-modal" id="imgModal" onclick="closeImg()">
   <div class="close">×</div>
   <div class="iname" id="imgName"></div>
@@ -182,10 +389,30 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 <script>
 /* ═══ 설정 ═══ */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyOWOcCSzNgeotauLnEzLPs8O8x4SICREqE_76qKlfLbdxQFjEJVNzq7X6nv46dMgOI/exec';
-const MEMO_PRESETS = ['사이즈 잘못 들어옴','다른 상품이 들어옴','색상 잘못 들어옴'];
+const MEMO_PRESETS = ['사이즈 잘못 들어옴','다른 상품이 들어옴','색상 잘못 들어옴','수량 잘못 들어옴'];
 
 /* ═══ 상태 ═══ */
-let S = { worker:null, sessionId:null, items:[], filter:'all', supplier:'ALL', editing:null };
+let S = { worker:null, sessionId:null, items:[], filter:'all', supplier:'ALL', mode:'normal', editing:null };
+
+/* 스팀 상품 판별 - 상품메모1에 "스팀" 포함 여부로 결정
+   (index_1.html 분배 로직과 동일한 기준) */
+function isSteam(item){
+  return String(item.상품메모1||'').includes('스팀');
+}
+function modeOf(item){
+  return isSteam(item) ? 'steam' : 'normal';
+}
+
+/* 탭 전환 */
+function setMode(m){
+  if(S.mode===m) return;
+  S.mode=m;
+  S.filter='all';      // 탭 바꿀 때 상태필터 리셋
+  S.supplier='ALL';    // 공급처 필터도 리셋 (탭마다 공급처 다를 수 있음)
+  document.querySelectorAll('.mb-tab').forEach(t=>t.classList.toggle('on', t.dataset.mode===m));
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 
 /* ═══ 진입 ═══ */
 window.addEventListener('DOMContentLoaded', () => {
@@ -207,8 +434,15 @@ window.addEventListener('DOMContentLoaded', () => {
 function startManual(){
   const w=document.getElementById('startWorker').value.trim();
   const s=document.getElementById('startSession').value.trim();
-  if(!w||!s){toast('이름과 세션ID를 입력해주세요');return;}
+  if(!w||!s){toast('이름과 작업번호를 입력해주세요');return;}
   location.href=`?worker=${encodeURIComponent(w)}&session=${encodeURIComponent(s)}`;
+}
+
+/* 담당자 버튼으로 바로 진입 - 오늘 날짜를 작업번호로 자동 사용 */
+function startAs(name){
+  const d=new Date();
+  const sid=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  location.href=`?worker=${encodeURIComponent(name)}&session=${sid}`;
 }
 
 /* ═══ GAS 호출 ═══ */
@@ -226,44 +460,95 @@ async function loadData(){
     if(!r.ok){hideLoading();toast('불러오기 실패');return;}
     S.items=r.items;
     document.getElementById('workerName').textContent=S.worker;
-    document.getElementById('sessionId').textContent=S.sessionId;
     if(S.items.length===0){
-      document.getElementById('itemList').innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div>${S.worker}님 검수 데이터가 없어요.<br>세션ID(${S.sessionId})를 확인해주세요.</div></div>`;
+      document.getElementById('itemList').innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div>${S.worker}님 검수 데이터가 없어요.<br>작업번호(${S.sessionId})를 확인해주세요.</div></div>`;
     }
     render(); hideLoading();
+    // ★ v2.4: 기존 작업시간 기록 복원 (다른 기기에서 기록했을 수도)
+    loadExistingWorkTime();
   }catch(err){hideLoading();toast('오류: '+err.message);console.error(err);}
 }
 
 /* ═══ 렌더링 ═══ */
 function render(){
-  const cn={all:S.items.length,pending:0,ok:0,mod:0,x:0};
-  S.items.forEach(i=>{const s=i.검수상태;if(s==='O')cn.ok++;else if(s==='수정')cn.mod++;else if(s==='X')cn.x++;else cn.pending++;});
+  // 0. 전체 총합 배너 (일반/스팀 수량 합)
+  const normalItems = S.items.filter(i=>!isSteam(i));
+  const steamItems  = S.items.filter(i=>isSteam(i));
+  const normalQtySum = normalItems.reduce((a,i)=>a+(Number(i.입고수량)||0),0);
+  const steamQtySum  = steamItems.reduce((a,i)=>a+(Number(i.입고수량)||0),0);
+  const totalQtySum  = normalQtySum + steamQtySum;
+  document.getElementById('tbTotal').textContent = totalQtySum;
+  document.getElementById('tbNormal').textContent = normalQtySum;
+  document.getElementById('tbSteam').textContent = steamQtySum;
+  // 스팀이 0개면 스팀 칩/탭 자체를 숨겨서 UI가 깔끔해짐 (일반 담당자용)
+  const hasSteam = steamItems.length > 0;
+  document.getElementById('tbSteamChip').style.display = hasSteam ? '' : 'none';
+  document.querySelector('.mb-tab.steam').style.display = hasSteam ? '' : 'none';
+  // 스팀이 없으면 모드도 강제로 normal
+  if(!hasSteam && S.mode==='steam') S.mode='normal';
+
+  // 현재 탭의 상품만 대상으로 이하 로직
+  const modeItems = S.items.filter(i=>modeOf(i)===S.mode);
+
+  // 1. 탭 진행도 (탭 각각에 몇개 완료됐는지 배지로)
+  ['normal','steam'].forEach(m=>{
+    const arr = m==='steam' ? steamItems : normalItems;
+    const done = arr.filter(i=>i.검수상태).length;
+    const el = document.getElementById('mbCount'+(m==='normal'?'Normal':'Steam'));
+    if(el) el.textContent = `${done}/${arr.length}`;
+    // 다 끝났으면 탭에 체크마크
+    const tab = document.querySelector(`.mb-tab[data-mode="${m}"]`);
+    if(tab) tab.classList.toggle('done', arr.length>0 && done===arr.length);
+  });
+
+  // 2. 현재 탭 기준 상태별 카운트
+  const cn={all:modeItems.length,pending:0,ok:0,mod:0,x:0};
+  modeItems.forEach(i=>{const s=i.검수상태;if(s==='O')cn.ok++;else if(s==='수정')cn.mod++;else if(s==='X')cn.x++;else cn.pending++;});
   document.getElementById('cAll').textContent=cn.all;
   document.getElementById('cPending').textContent=cn.pending;
   document.getElementById('cOk').textContent=cn.ok;
   document.getElementById('cMod').textContent=cn.mod;
   document.getElementById('cX').textContent=cn.x;
-  const done=cn.ok+cn.mod+cn.x;
-  document.getElementById('doneCount').textContent=done;
-  document.getElementById('totalCount').textContent=cn.all;
-  document.getElementById('progFill').style.width=(cn.all>0?done/cn.all*100:0)+'%';
-  const btn=document.getElementById('btnComplete');
-  if(done===cn.all&&cn.all>0){btn.style.background='var(--green)';btn.textContent='✓ 검수 완료';}
-  else{btn.style.background='var(--m2)';btn.textContent=`완료 (남은 항목 ${cn.all-done}개)`;}
 
-  // 공급처 select
-  const sups=['ALL',...new Set(S.items.map(i=>i.공급처))];
+  // 3. 진행률 계산 (완료 버튼 로직에서 사용)
+  const done=cn.ok+cn.mod+cn.x;
+  // (h-prog 영역은 제거됨 — 대신 탭 바의 카운트 배지가 진행률 역할)
+
+  // 4. 완료 버튼: 두 탭 모두 완료해야 초록색
+  const totalDone = S.items.filter(i=>i.검수상태).length;
+  const btn=document.getElementById('btnComplete');
+  if(totalDone===S.items.length && S.items.length>0){
+    btn.style.background='var(--green)';btn.textContent='✓ 전체 검수 완료';
+  } else {
+    btn.style.background='var(--m2)';
+    // 현재 탭 남은 개수를 보여주되, 다른 탭에도 남은게 있으면 알림
+    const otherMode = S.mode==='steam' ? 'normal' : 'steam';
+    const otherArr = otherMode==='steam' ? steamItems : normalItems;
+    const otherRemain = otherArr.filter(i=>!i.검수상태).length;
+    const thisRemain = cn.all-done;
+    if(thisRemain>0){
+      btn.textContent = `완료 (이 탭 ${thisRemain}개 남음)`;
+    } else if(otherRemain>0){
+      const otherName = otherMode==='steam' ? '🔥 스팀' : '📦 일반';
+      btn.textContent = `완료 (${otherName} 탭 ${otherRemain}개 남음)`;
+    } else {
+      btn.textContent = `완료`;
+    }
+  }
+
+  // 5. 공급처 select (현재 탭 상품만)
+  const sups=['ALL',...new Set(modeItems.map(i=>i.공급처))];
   const sel=document.getElementById('supSelect');
   sel.innerHTML=sups.map(s=>{
     const lb=s==='ALL'?'전체':s;
-    const ct=s==='ALL'?S.items.length:S.items.filter(i=>i.공급처===s).length;
-    const dc=s==='ALL'?S.items.filter(i=>i.검수상태).length:S.items.filter(i=>i.공급처===s&&i.검수상태).length;
+    const ct=s==='ALL'?modeItems.length:modeItems.filter(i=>i.공급처===s).length;
+    const dc=s==='ALL'?modeItems.filter(i=>i.검수상태).length:modeItems.filter(i=>i.공급처===s&&i.검수상태).length;
     const chk=ct>0&&dc===ct?'✓ ':'';
     return `<option value="${s}"${s===S.supplier?' selected':''}>${chk}${lb} (${dc}/${ct})</option>`;
   }).join('');
 
-  // 필터 적용
-  const fil=S.items.filter(i=>{
+  // 6. 최종 필터 적용 (탭 + 공급처 + 상태 필터)
+  const fil=modeItems.filter(i=>{
     if(S.supplier!=='ALL'&&i.공급처!==S.supplier) return false;
     if(S.filter==='all') return true;
     if(S.filter==='pending') return !i.검수상태;
@@ -281,16 +566,25 @@ function render(){
     const hasImg=it.대표이미지주소&&String(it.대표이미지주소).trim();
     const memo=it.메모&&String(it.메모).trim();
     const bigo=it.비고&&String(it.비고).trim();
+    const sanip=it.사입명&&String(it.사입명).trim();
+    // 상품메모1: '스팀' 단어는 이미 상단 배지로 표시되므로 중복 제거
+    // (예: "스팀" → 안보임, "스팀주의사항" → "주의사항"만 표시, "포장주의" → 그대로 표시)
+    const memo1Raw = it.상품메모1&&String(it.상품메모1).trim();
+    let memo1 = memo1Raw ? memo1Raw.replace(/스팀/g,'') : '';
+    // '스팀' 제거 후 잔재 정리: ',,' → ',' / 연속 공백 → 1칸 / 앞뒤 구두점/공백 제거
+    memo1 = memo1.replace(/,\s*,+/g,',').replace(/\s+/g,' ').replace(/^[\s,]+|[\s,]+$/g,'').trim();
 
     let stHtml='';
     if(s==='O') stHtml=`<div class="item-st st-ok"><div class="st-row"><strong>✓ 정상 입고</strong><span style="font-family:monospace">${it.입고수량}개</span></div></div>`;
     else if(s==='수정') stHtml=`<div class="item-st st-mod"><div class="st-row"><strong>⚠ 수량 수정</strong><span style="font-family:monospace">예정 ${it.입고수량}개 → 실제 <strong>${it.실제수량}개</strong></span></div>${it.검수메모?`<div class="st-memo">📝 ${esc(it.검수메모)}</div>`:''}</div>`;
     else if(s==='X') stHtml=`<div class="item-st st-x"><div class="st-row"><strong>✗ 미입고</strong><span style="font-family:monospace">예정 ${it.입고수량}개 → 0개</span></div>${it.검수메모?`<div class="st-memo">📝 ${esc(it.검수메모)}</div>`:''}</div>`;
 
-    return `<div class="item ${cls}" data-row="${it.행번호}">
+    return `<div class="item ${cls}${it.추가입고?' added':''}" data-row="${it.행번호}">
       <div class="item-top">
-        <div class="item-sup">${esc(it.공급처||'-')}</div>
+        <div class="item-sup">${esc(it.공급처||'-')}${isSteam(it)?'<span class="item-steam-badge">🔥 스팀</span>':''}${it.추가입고?`<span class="add-badge">➕ ${esc(it.추가입고종류||'추가')}</span>`:''}</div>
+        ${sanip?`<div class="item-sanip-box"><span class="sl">사입명</span> ${esc(sanip)}</div>`:''}
         <div class="item-name">${esc(it.상품명||'-')}</div>
+        ${memo1?`<div class="item-memo1">📌 ${esc(memo1)}</div>`:''}
         <div class="item-opt">${esc(it.옵션||'')}</div>
         <div class="item-meta">
           <span class="item-qty">${it.입고수량}개</span>
@@ -375,8 +669,15 @@ function setFilter(f){
 
 /* ═══ 완료 ═══ */
 async function completeAll(){
-  const undone=S.items.filter(i=>!i.검수상태);
-  if(undone.length>0&&!confirm(`아직 ${undone.length}건 남았어요. 그래도 완료?`)) return;
+  const undoneNormal = S.items.filter(i=>!i.검수상태 && !isSteam(i));
+  const undoneSteam  = S.items.filter(i=>!i.검수상태 && isSteam(i));
+  const undoneTotal  = undoneNormal.length + undoneSteam.length;
+  if(undoneTotal>0){
+    const parts = [];
+    if(undoneNormal.length>0) parts.push(`📦 일반 ${undoneNormal.length}건`);
+    if(undoneSteam.length>0)  parts.push(`🔥 스팀 ${undoneSteam.length}건`);
+    if(!confirm(`아직 ${parts.join(', ')} 남았어요. 그래도 완료할까요?`)) return;
+  }
   showLoading('완료 처리 중...');
   try{const r=await callGAS('completeWorker',{sessionId:S.sessionId,worker:S.worker});hideLoading();
     if(r.ok){alert('✓ 검수 완료되었습니다!');document.getElementById('btnComplete').disabled=true;document.getElementById('btnComplete').textContent='✓ 완료됨';}
@@ -389,6 +690,207 @@ function showLoading(t){document.getElementById('loadingText').textContent=t||'�
 function hideLoading(){document.getElementById('loading').style.display='none';}
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ═══ ➕ 추가 입고 (리스트에 없는 상품) ═══ */
+let addKind = '교환건';  // 기본값
+
+/* ═══ ⏱️ 작업시간 기록 (v2.4) ═══ */
+let wtFirstClick = { start: true, check: true, pack: true };  // 최초 1회 확인 팝업용
+
+async function recordWorkTime(type){
+  if(!S.sessionId || !S.worker){ toast('먼저 담당자를 선택해주세요'); return; }
+
+  // 최초 1회 확인 팝업 (실수 방지)
+  const labels = { start: '작업 시작', check: '물건 확인 완료', pack: '포장 완료' };
+  if(wtFirstClick[type]){
+    if(!confirm(`"${labels[type]}"을(를) 지금 시각으로 기록할까요?\n\n(현재 시각이 자동으로 저장됩니다)`)){
+      return;
+    }
+    wtFirstClick[type] = false;
+  }
+
+  const btn = document.getElementById('wt' + type.charAt(0).toUpperCase() + type.slice(1));
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+
+  try{
+    const r = await callGAS('updateWorkTime', {
+      sessionId: S.sessionId,
+      worker: S.worker,
+      type: type  // 'start' | 'check' | 'pack'
+    });
+    if(!r.ok){
+      toast('기록 실패: ' + (r.error || ''));
+      btn.disabled = false; btn.style.opacity = '';
+      return;
+    }
+    // UI 업데이트
+    applyWorkTimeState(r.times, r.perItemMin);
+    toast(`✓ ${labels[type]} 기록 완료 (${r.time})`);
+
+    // 포장 완료 시 외부 시트 동기화 결과 표시
+    if(type === 'pack' && r.syncedToExternalSheet){
+      if(r.syncedToExternalSheet.ok){
+        setTimeout(() => toast('✓ 관리 시트에도 자동 저장됨'), 2000);
+      }else{
+        console.warn('외부 시트 동기화 실패:', r.syncedToExternalSheet.error);
+      }
+    }
+  }catch(e){
+    toast('네트워크 오류: ' + e.message);
+    btn.disabled = false; btn.style.opacity = '';
+  }
+}
+
+function applyWorkTimeState(times, perItemMin){
+  // 각 버튼 done 상태 표시 + 시간 텍스트
+  ['start','check','pack'].forEach(t => {
+    const btn = document.getElementById('wt' + t.charAt(0).toUpperCase() + t.slice(1));
+    const timeEl = document.getElementById('wtTime' + t.charAt(0).toUpperCase() + t.slice(1));
+    const val = times && times[t];
+    if(val){
+      btn.classList.add('done');
+      timeEl.textContent = val;
+    }else{
+      btn.classList.remove('done');
+      timeEl.textContent = '';
+    }
+    btn.disabled = false;
+    btn.style.opacity = '';
+  });
+  // (개당 포장 시간은 admin 화면에만 표시, staff에선 제거됨)
+}
+
+// 페이지 로드 시 기존 기록 불러오기 (다른 탭/폰에서 작업한 기록 복원)
+async function loadExistingWorkTime(){
+  if(!S.sessionId || !S.worker) return;
+  try{
+    const r = await callGAS('getWorkTimes', { sessionId: S.sessionId });
+    if(!r.ok) return;
+    const mine = (r.workTimes || []).find(w => String(w.담당자) === String(S.worker));
+    if(mine){
+      applyWorkTimeState({
+        start: mine.시작시간,
+        check: mine.물건확인시간,
+        pack: mine.포장완료시간
+      }, mine.개당포장시간);
+      // 이미 기록된 것은 확인 팝업 안 뜨게
+      if(mine.시작시간) wtFirstClick.start = false;
+      if(mine.물건확인시간) wtFirstClick.check = false;
+      if(mine.포장완료시간) wtFirstClick.pack = false;
+    }
+  }catch(e){ /* 조용히 실패 */ }
+}
+
+function openAddModal(){
+  // 초기화
+  addKind = '교환건';
+  document.querySelectorAll('#addKindRow .add-kind').forEach(b=>b.classList.toggle('on', b.dataset.kind==='교환건'));
+  document.getElementById('addSanip').value = '';
+  document.getElementById('addProductName').value = '';
+  document.getElementById('addOption').value = '';
+  document.getElementById('addSupplier').value = '';
+  document.getElementById('addQty').value = 1;
+  document.getElementById('addMemo').value = '';
+  document.getElementById('addModal').classList.add('show');
+  setTimeout(()=>document.getElementById('addProductName').focus(), 250);
+}
+
+function closeAddModal(){
+  document.getElementById('addModal').classList.remove('show');
+}
+
+function setAddKind(k){
+  addKind = k;
+  document.querySelectorAll('#addKindRow .add-kind').forEach(b=>b.classList.toggle('on', b.dataset.kind===k));
+}
+
+function addQtyStep(d){
+  const el = document.getElementById('addQty');
+  const v = Math.max(1, (parseInt(el.value)||1) + d);
+  el.value = v;
+}
+
+async function saveAddItem(){
+  const sanip = document.getElementById('addSanip').value.trim();
+  const productName = document.getElementById('addProductName').value.trim();
+  const option = document.getElementById('addOption').value.trim();
+  const supplier = document.getElementById('addSupplier').value.trim();
+  const qty = parseInt(document.getElementById('addQty').value) || 0;
+  const memo = document.getElementById('addMemo').value.trim();
+
+  // 검증
+  if(!productName){toast('상품명을 입력해주세요');return;}
+  if(qty < 1){toast('수량은 1개 이상이어야 해요');return;}
+
+  // 메모 조합: [종류] 사용자메모
+  const fullMemo = memo ? `[${addKind}] ${memo}` : `[${addKind}]`;
+
+  showLoading('추가하는 중...');
+  try{
+    const r = await callGAS('addItem', {
+      sessionId: S.sessionId,
+      worker: S.worker,
+      공급처: supplier || '[추가입고]',
+      사입명: sanip,           // ★ 장끼명
+      상품명: productName,
+      옵션: option,
+      입고수량: qty,            // 예정수량 = 실제 들어온 수량
+      실제수량: qty,            // 실제수량도 같은 값
+      바코드: '',               // ★ 추가입고는 바코드 없음 (스마트비즈 업로드 시 매칭 대신 행 추가)
+      검수상태: 'O',             // 추가한 즉시 '정상'으로 처리 (이미 받은 물건이니까)
+      검수메모: fullMemo,
+      추가입고: true,
+      추가입고종류: addKind     // 교환건/신상품/누락/기타
+    });
+    hideLoading();
+    if(!r.ok){toast('추가 실패: '+(r.error||''));return;}
+    // 로컬 items에도 즉시 반영 (서버 응답 대기 없이 UI 반응)
+    const newItem = {
+      행번호: r.rowNum || (Date.now()),
+      담당자: S.worker,
+      공급처: supplier || '[추가입고]',
+      사입명: sanip,
+      상품명: productName,
+      옵션: option,
+      입고수량: qty,
+      실제수량: qty,
+      바코드: '',
+      상품메모1: '',
+      메모: '',
+      비고: '',
+      대표이미지주소: '',
+      검수상태: 'O',
+      검수메모: fullMemo,
+      추가입고: true,
+      추가입고종류: addKind
+    };
+    S.items.push(newItem);
+
+    // ★ 추가한 상품이 화면에 보이도록 필터 초기화
+    S.filter = 'all';                    // 상태 필터: 전체
+    S.supplier = 'ALL';                   // 공급처 필터: 전체
+    // 필터 UI도 동기화 (전체 탭에 .on 표시)
+    document.querySelectorAll('.fc').forEach(c => c.classList.toggle('on', c.dataset.f === 'all'));
+
+    closeAddModal();
+    render();
+    toast('✓ 추가되었어요');
+
+    // ★ 추가한 카드까지 스크롤 + 반짝 효과
+    setTimeout(() => {
+      const card = document.querySelector(`.item[data-row="${newItem.행번호}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('just-added');
+        setTimeout(() => card.classList.remove('just-added'), 2400);
+      }
+    }, 150);
+  }catch(e){
+    hideLoading();
+    toast('네트워크 오류: '+e.message);
+  }
+}
 </script>
 </body>
 </html>

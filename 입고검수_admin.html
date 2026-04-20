@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>입고검수 관리자 · 더제이수</title>
+<title>입고검수 결과 확인 · 더제이수</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
@@ -16,6 +16,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .main{max-width:1400px;margin:0 auto;padding:20px 24px;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .card-title{font-size:13px;font-weight:700;color:var(--t2);margin-bottom:12px;}
+.card-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.card-title-row .card-title{margin-bottom:0;}
 .sess-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--surface);margin-bottom:6px;transition:all .15s;}
 .sess-row:hover,.sess-row.sel{border-color:var(--accent);background:var(--al);}
 .sid{font-family:monospace;font-size:12px;font-weight:700;color:var(--accent);min-width:80px;}
@@ -26,7 +28,23 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .sbadge.진행중{background:var(--aml);color:var(--amber);}
 .sbadge.완료{background:var(--gl);color:var(--green);}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
-.st-box{padding:12px;border-radius:8px;text-align:center;}
+.st-box{padding:12px;border-radius:8px;text-align:center;cursor:pointer;transition:all .15s;border:2px solid transparent;user-select:none;position:relative;}
+.st-box:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.st-box:active{transform:translateY(0);}
+.st-box.active{border-color:currentColor;box-shadow:0 0 0 3px rgba(29,78,216,.1);}
+.st-box.sb-blue.active{box-shadow:0 0 0 3px rgba(29,78,216,.15);}
+.st-box.sb-green.active{box-shadow:0 0 0 3px rgba(22,163,74,.15);}
+.st-box.sb-amber.active{box-shadow:0 0 0 3px rgba(217,119,6,.15);}
+.st-box.sb-red.active{box-shadow:0 0 0 3px rgba(220,38,38,.15);}
+.st-box.sb-gray.active{box-shadow:0 0 0 3px rgba(107,114,128,.15);}
+.st-box.sb-purple.active{box-shadow:0 0 0 3px rgba(147,51,234,.2);}
+.st-box .active-mark{position:absolute;top:4px;right:7px;font-size:10px;font-weight:700;color:#fff;background:var(--accent);padding:1px 6px;border-radius:10px;display:none;}
+.st-box.sb-green .active-mark{background:var(--green);}
+.st-box.sb-amber .active-mark{background:var(--amber);}
+.st-box.sb-red .active-mark{background:var(--red);}
+.st-box.sb-gray .active-mark{background:var(--muted);}
+.st-box.sb-purple .active-mark{background:#9333EA;}
+.st-box.active .active-mark{display:inline-block;}
 .st-box .l{font-size:10px;color:var(--muted);margin-bottom:4px;}
 .st-box .v{font-family:monospace;font-size:22px;font-weight:500;}
 .sb-blue{background:var(--al);} .sb-blue .v{color:var(--accent);}
@@ -42,6 +60,40 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .wp-fill.done{background:var(--green);}.wp-fill.prog{background:var(--accent);}
 .wp-s{font-size:10px;color:var(--muted);font-family:monospace;}
 .btn-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.btn-sb{background:linear-gradient(135deg,#9333EA,#7C3AED);box-shadow:0 2px 8px rgba(147,51,234,.3);}
+.btn-sb:hover{transform:translateY(-1px);}
+.sb-purple{background:#F3E8FF;} .sb-purple .v{color:#9333EA;}
+/* 추가입고 행 */
+tr.r-add{background:#FAF5FF;} tr.r-add:hover{background:#F3E8FF;}
+.b-add{background:#9333EA;}
+.add-row-mark{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;background:#F3E8FF;color:#7E22CE;margin-right:4px;}
+
+/* ★ v2.4: 작업시간 섹션 */
+.wt-section{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+.wt-sec-title{font-size:13px;font-weight:700;color:#92400E;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.wt-sec-title-left{display:flex;align-items:center;gap:6px;}
+.wt-refresh{background:#fff;border:1px solid #FDE68A;border-radius:6px;padding:5px 10px;font-family:inherit;font-size:11px;font-weight:600;color:#92400E;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;}
+.wt-refresh:hover:not(:disabled){background:#FEF3C7;border-color:#F59E0B;}
+.wt-refresh:active{transform:scale(.96);}
+.wt-refresh:disabled{opacity:.5;cursor:wait;}
+.wt-refresh .spin{display:inline-block;animation:spinRot 1s linear infinite;}
+@keyframes spinRot{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.wt-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:10px;align-items:start !important;}
+.wt-worker{background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;display:block;min-height:0;height:auto;align-self:start !important;}
+.wt-w-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:5px;margin-bottom:6px;border-bottom:1px dashed #FDE68A;}
+.wt-w-name{font-size:13px;font-weight:700;color:#92400E;}
+.wt-w-qty{font-size:12px;font-family:'Courier New',monospace;color:#059669;font-weight:700;}
+.wt-w-times{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:11px;margin-bottom:6px;}
+.wt-w-tt{text-align:center;}
+.wt-w-ll{color:var(--muted);font-size:10px;margin-bottom:2px;line-height:1.2;}
+.wt-w-vv{font-family:'Courier New',monospace;font-weight:600;color:var(--t2);font-size:11px;line-height:1.2;}
+.wt-w-vv.empty{color:#D1D5DB;}
+.wt-w-vv.empty::before{content:'—';}
+.wt-w-bottom{padding-top:5px;border-top:1px dashed #FDE68A;display:flex;justify-content:space-between;font-size:11px;color:#78350F;line-height:1.2;}
+.wt-w-bottom .wt-perItem{font-family:'Courier New',monospace;font-weight:700;color:#059669;}
+.wt-w-bottom .wt-perItem.empty{color:#D1D5DB;font-family:inherit;font-weight:400;}
+.wt-w-bottom .wt-perItem.empty::before{content:'기록 대기';}
+@media(max-width:640px){.wt-grid{grid-template-columns:1fr;}}
 .btn{padding:11px 16px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#fff;transition:transform .1s;}
 .btn:hover{transform:translateY(-1px);}
 .btn-g{background:linear-gradient(135deg,var(--green),#15803D);}
@@ -70,26 +122,45 @@ tr.r-p{background:var(--s2);} tr.r-p:hover{background:#EAECEF;}
 <body>
 <div class="hdr"><div class="hdr-row">
   <div class="hdr-logo">📊</div>
-  <div><div style="font-size:15px;font-weight:700;">입고검수 관리자</div><div style="font-size:11px;color:var(--muted);">검수 현황 확인 · 통합 엑셀 다운로드</div></div>
+  <div><div style="font-size:15px;font-weight:700;">입고검수 결과 확인</div><div style="font-size:11px;color:var(--muted);">직원들 검수 현황 보기 · 결과 엑셀 다운로드</div></div>
 </div></div>
 <div class="main">
   <div class="card">
-    <div class="card-title">📅 검수 세션 목록</div>
+    <div class="card-title-row">
+      <div class="card-title" style="margin:0;">📅 날짜별 검수 내역</div>
+      <button class="wt-refresh" id="sessRefreshBtn" onclick="refreshSessions()" title="날짜별 검수 내역 새로고침">
+        <span class="wt-refresh-ico">🔄</span>
+        <span class="wt-refresh-lbl">새로고침</span>
+      </button>
+    </div>
     <div id="sessList"></div>
     <div class="ld" id="sessLoading">불러오는 중...</div>
-    <div style="margin-top:10px;text-align:right;"><button class="btn btn-b" onclick="loadSessions()" style="font-size:11px;padding:7px 12px;">🔄 새로고침</button></div>
   </div>
   <div class="card" id="detailCard" style="display:none;">
-    <div class="card-title">✓ 검수 결과 (<span id="detailSid"></span>)</div>
+    <div class="card-title-row">
+      <div class="card-title" style="margin:0;">✓ 검수 결과 (작업번호: <span id="detailSid"></span>)</div>
+      <button class="wt-refresh" id="detailRefreshBtn" onclick="refreshDetail()" title="검수 결과 전체 새로고침">
+        <span class="wt-refresh-ico">🔄</span>
+        <span class="wt-refresh-lbl">새로고침</span>
+      </button>
+    </div>
     <div class="stats" id="statsGrid"></div>
     <div class="wp-grid" id="wpGrid"></div>
+    <!-- ★ v2.4: 작업시간 섹션 (기록 있을 때만 표시) -->
+    <div class="wt-section" id="wtSection" style="display:none;">
+      <div class="wt-sec-title">
+        <span class="wt-sec-title-left">⏱️ 작업 시간 기록</span>
+      </div>
+      <div class="wt-grid" id="wtGrid"></div>
+    </div>
     <div class="btn-row">
-      <button class="btn btn-g" onclick="downloadAll()">📥 통합 엑셀 다운로드</button>
-      <button class="btn btn-b" onclick="downloadIssues()">⚠ 이슈만 다운로드</button>
+      <button class="btn btn-sb" onclick="downloadSmartbiz()">🏪 스마트비즈 업로드 파일</button>
+      <button class="btn btn-g" onclick="downloadAll()">📥 통합 검수결과</button>
+      <button class="btn btn-b" onclick="downloadIssues()">⚠ 이슈만 (공급처용)</button>
     </div>
     <div class="filt-row">
       <input type="text" id="sb" placeholder="🔍 상품명/공급처 검색...">
-      <select id="fs"><option value="all">모든 상태</option><option value="O">정상만</option><option value="수정">수정만</option><option value="X">미입고만</option><option value="">미검수만</option></select>
+      <select id="fs"><option value="all">모든 상태</option><option value="O">정상만</option><option value="수정">수정만</option><option value="X">미입고만</option><option value="">미검수만</option><option value="added">➕ 추가입고만</option></select>
       <select id="fw"><option value="all">모든 담당자</option></select>
     </div>
     <div class="tbl-wrap"><table><thead><tr>
@@ -132,13 +203,13 @@ async function loadSessions() {
 
 function renderSessions() {
   if (state.sessions.length === 0) {
-    document.getElementById('sessList').innerHTML = '<div class="empty">아직 세션이 없어요</div>';
+    document.getElementById('sessList').innerHTML = '<div class="empty">아직 검수 기록이 없어요</div>';
     return;
   }
   document.getElementById('sessList').innerHTML = state.sessions.map(s => {
     const sel = s.sessionId === state.selectedSession;
     return `<div class="sess-row${sel ? ' sel' : ''}" onclick="selectSession('${s.sessionId}')">
-      <div class="sid">${s.sessionId}</div><div class="sdate">${s.검수일자||''}</div>
+      <div class="sid" title="작업번호"># ${s.sessionId}</div><div class="sdate">${s.검수일자||''}</div>
       <div class="sworkers">👥 ${s.담당자목록||'-'}</div>
       <div class="sst"><span>📦 ${s.총상품수}건</span><span>📊 ${s.총수량}개</span></div>
       <div class="sbadge ${s.상태}">${s.상태}</div>
@@ -154,27 +225,163 @@ async function selectSession(sid) {
     if (!r.ok) { alert('상세 불러오기 실패'); return; }
     state.items = r.items;
     renderDetail();
+    // ★ v2.4: 작업시간도 같이 로드
+    loadWorkTimes(sid);
   } catch (e) { alert('오류: ' + e.message); }
+}
+
+/* ★ v2.4: 세션의 작업시간 조회 후 렌더 */
+async function loadWorkTimes(sid) {
+  try {
+    const r = await callGAS('getWorkTimes', { sessionId: sid });
+    if (!r.ok) return;
+    renderWorkTimes(r.workTimes || []);
+  } catch(e) { /* 조용히 실패 (작업시간은 부가 기능) */ }
+}
+
+/* ★ 날짜별 검수 내역 새로고침 */
+async function refreshSessions() {
+  const btn = document.getElementById('sessRefreshBtn');
+  const ico = btn.querySelector('.wt-refresh-ico');
+  const lbl = btn.querySelector('.wt-refresh-lbl');
+  // 로딩 상태
+  btn.disabled = true;
+  ico.classList.add('spin');
+  lbl.textContent = '불러오는 중...';
+  try {
+    const r = await callGAS('getAdmin');
+    if (!r.ok) { alert('새로고침 실패: ' + (r.error || '')); return; }
+    state.sessions = r.sessions;
+    renderSessions();
+    // 성공 피드백
+    ico.classList.remove('spin');
+    ico.textContent = '✓';
+    lbl.textContent = '업데이트 완료';
+    setTimeout(() => {
+      ico.textContent = '🔄';
+      lbl.textContent = '새로고침';
+    }, 1500);
+  } catch(e) {
+    alert('네트워크 오류: ' + e.message);
+    ico.classList.remove('spin');
+    ico.textContent = '🔄';
+    lbl.textContent = '새로고침';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ★ v2.4: 검수 결과 전체 새로고침 (통계 + 진행률 + 작업시간 + 테이블) */
+async function refreshDetail() {
+  if (!state.selectedSession) { alert('먼저 작업번호를 선택해주세요'); return; }
+  const btn = document.getElementById('detailRefreshBtn');
+  const ico = btn.querySelector('.wt-refresh-ico');
+  const lbl = btn.querySelector('.wt-refresh-lbl');
+  // 로딩 상태
+  btn.disabled = true;
+  ico.classList.add('spin');
+  lbl.textContent = '불러오는 중...';
+  try {
+    // 1. 검수 결과 (통계, 진행률, 테이블) 다시 조회
+    const r1 = await callGAS('getAdmin', { sessionId: state.selectedSession });
+    if (!r1.ok) { alert('새로고침 실패: ' + (r1.error || '')); return; }
+    state.items = r1.items;
+    renderDetail();
+
+    // 2. 작업시간도 같이 조회
+    const r2 = await callGAS('getWorkTimes', { sessionId: state.selectedSession });
+    if (r2.ok) renderWorkTimes(r2.workTimes || []);
+
+    // 성공 피드백
+    ico.classList.remove('spin');
+    ico.textContent = '✓';
+    lbl.textContent = '업데이트 완료';
+    setTimeout(() => {
+      ico.textContent = '🔄';
+      lbl.textContent = '새로고침';
+    }, 1500);
+  } catch(e) {
+    alert('네트워크 오류: ' + e.message);
+    ico.classList.remove('spin');
+    ico.textContent = '🔄';
+    lbl.textContent = '새로고침';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderWorkTimes(workTimes) {
+  const section = document.getElementById('wtSection');
+  const grid = document.getElementById('wtGrid');
+  if (!workTimes || workTimes.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  grid.innerHTML = workTimes.map(w => {
+    const emptyCls = v => v ? '' : ' empty';
+    const perItem = w.개당포장시간;
+    const perItemText = (perItem && Number(perItem) > 0) ? Number(perItem).toFixed(2) + '분' : '';
+    // ★ 박스 높이를 "완료 상태" 기준으로 고정 (120px, 모든 콘텐츠 박스 안에 포함)
+    const workerStyle = 'background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:10px 12px;display:block;height:120px;min-height:120px;max-height:120px;box-sizing:border-box;overflow:hidden;align-self:start;';
+    return `<div class="wt-worker" style="${workerStyle}">
+      <div class="wt-w-head" style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:5px;margin-bottom:6px;border-bottom:1px dashed #FDE68A;">
+        <span class="wt-w-name">👤 ${w.담당자}</span>
+        <span class="wt-w-qty">${w.총갯수 || 0}개</span>
+      </div>
+      <div class="wt-w-times" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:11px;margin-bottom:6px;">
+        <div class="wt-w-tt">
+          <div class="wt-w-ll">🕐 시작</div>
+          <div class="wt-w-vv${emptyCls(w.시작시간)}">${w.시작시간 || ''}</div>
+        </div>
+        <div class="wt-w-tt">
+          <div class="wt-w-ll">✅ 물건 확인 완료</div>
+          <div class="wt-w-vv${emptyCls(w.물건확인시간)}">${w.물건확인시간 || ''}</div>
+        </div>
+        <div class="wt-w-tt">
+          <div class="wt-w-ll">📦 포장완료</div>
+          <div class="wt-w-vv${emptyCls(w.포장완료시간)}">${w.포장완료시간 || ''}</div>
+        </div>
+      </div>
+      <div class="wt-w-bottom" style="padding-top:5px;border-top:1px dashed #FDE68A;display:flex;justify-content:space-between;font-size:11px;color:#78350F;line-height:1.2;margin-top:0;">
+        <span>개당 포장 시간</span>
+        <span class="wt-perItem${perItemText ? '' : ' empty'}">${perItemText}</span>
+      </div>
+    </div>`;
+  }).join('');
+  // ★ grid 자체에도 인라인 스타일 적용 (stretch 방지)
+  grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;';
 }
 
 function renderDetail() {
   document.getElementById('detailCard').style.display = 'block';
   document.getElementById('detailSid').textContent = state.selectedSession;
-  const st = { total: state.items.length, ok: 0, mod: 0, x: 0, pending: 0 };
+  const st = { total: state.items.length, ok: 0, mod: 0, x: 0, pending: 0, added: 0 };
   const bw = {};
   state.items.forEach(it => {
     const s = it.검수상태;
     if (s === 'O') st.ok++; else if (s === '수정') st.mod++; else if (s === 'X') st.x++; else st.pending++;
+    if (it.추가입고) st.added++;
     const w = it.담당자;
     if (!bw[w]) bw[w] = { total: 0, done: 0 };
     bw[w].total++; if (s) bw[w].done++;
   });
+  // 추가입고 박스는 건수 있을 때만 표시
+  const sf = document.getElementById('fs').value;
+  const isActive = (val) => sf === val ? ' active' : '';
+  const mark = '<span class="active-mark">✓ 필터중</span>';
+  const addBox = st.added > 0 
+    ? `<div class="st-box sb-purple${isActive('added')}" onclick="quickFilter('added')"><div class="l">➕ 추가입고</div><div class="v">${st.added}</div>${mark}</div>` 
+    : '';
   document.getElementById('statsGrid').innerHTML = `
-    <div class="st-box sb-blue"><div class="l">총 상품</div><div class="v">${st.total}</div></div>
-    <div class="st-box sb-green"><div class="l">정상</div><div class="v">${st.ok}</div></div>
-    <div class="st-box sb-amber"><div class="l">수량 수정</div><div class="v">${st.mod}</div></div>
-    <div class="st-box sb-red"><div class="l">미입고</div><div class="v">${st.x}</div></div>
-    <div class="st-box sb-gray"><div class="l">미검수</div><div class="v">${st.pending}</div></div>`;
+    <div class="st-box sb-blue${isActive('all')}" onclick="quickFilter('all')"><div class="l">총 상품</div><div class="v">${st.total}</div>${mark}</div>
+    <div class="st-box sb-green${isActive('O')}" onclick="quickFilter('O')"><div class="l">정상</div><div class="v">${st.ok}</div>${mark}</div>
+    <div class="st-box sb-amber${isActive('수정')}" onclick="quickFilter('수정')"><div class="l">수량 수정</div><div class="v">${st.mod}</div>${mark}</div>
+    <div class="st-box sb-red${isActive('X')}" onclick="quickFilter('X')"><div class="l">미입고</div><div class="v">${st.x}</div>${mark}</div>
+    <div class="st-box sb-gray${isActive('')}" onclick="quickFilter('')"><div class="l">미검수</div><div class="v">${st.pending}</div>${mark}</div>
+    ${addBox}`;
+  // 통계가 6개면 grid 6열로 변경
+  document.getElementById('statsGrid').style.gridTemplateColumns = st.added > 0 ? 'repeat(6, 1fr)' : 'repeat(5, 1fr)';
   document.getElementById('wpGrid').innerHTML = Object.entries(bw).map(([w, d]) => {
     const pct = d.total > 0 ? d.done / d.total * 100 : 0;
     const cls = pct >= 100 ? 'done' : 'prog';
@@ -189,13 +396,27 @@ function renderDetail() {
   renderTable();
 }
 
+/* ★ 통계 박스 클릭으로 빠른 필터링 */
+function quickFilter(val) {
+  const sel = document.getElementById('fs');
+  // 이미 같은 필터면 해제 (전체로)
+  if (sel.value === val) {
+    sel.value = 'all';
+  } else {
+    sel.value = val;
+  }
+  // renderDetail 다시 호출하면 박스 active 상태도 업데이트
+  renderDetail();
+}
+
 function renderTable() {
   const search = document.getElementById('sb').value.toLowerCase();
   const sf = document.getElementById('fs').value;
   const wf = document.getElementById('fw').value;
   const fil = state.items.filter(it => {
     if (search && !(it.상품명 || '').toLowerCase().includes(search) && !(it.공급처 || '').toLowerCase().includes(search)) return false;
-    if (sf !== 'all' && it.검수상태 !== sf) return false;
+    if (sf === 'added') { if (!it.추가입고) return false; }
+    else if (sf !== 'all' && it.검수상태 !== sf) return false;
     if (wf !== 'all' && it.담당자 !== wf) return false;
     return true;
   });
@@ -203,11 +424,15 @@ function renderTable() {
   if (fil.length === 0) { tb.innerHTML = '<tr><td colspan="8" class="empty">검색 결과 없음</td></tr>'; return; }
   tb.innerHTML = fil.map(it => {
     const s = it.검수상태;
-    const rc = s === 'O' ? 'r-ok' : s === '수정' ? 'r-mod' : s === 'X' ? 'r-x' : 'r-p';
-    const badge = s === 'O' ? '<span class="badge b-ok">정상</span>' : s === '수정' ? '<span class="badge b-mod">수정</span>' : s === 'X' ? '<span class="badge b-x">미입고</span>' : '<span class="badge b-p">대기</span>';
+    // 추가입고 행이면 보라색 (검수상태 무관)
+    const rc = it.추가입고 ? 'r-add' : (s === 'O' ? 'r-ok' : s === '수정' ? 'r-mod' : s === 'X' ? 'r-x' : 'r-p');
+    const badge = it.추가입고 
+      ? `<span class="badge b-add">➕ ${it.추가입고종류 || '추가'}</span>` 
+      : (s === 'O' ? '<span class="badge b-ok">정상</span>' : s === '수정' ? '<span class="badge b-mod">수정</span>' : s === 'X' ? '<span class="badge b-x">미입고</span>' : '<span class="badge b-p">대기</span>');
     const actC = s === '수정' ? 'color:var(--amber);font-weight:700;' : s === 'X' ? 'color:var(--red);font-weight:700;' : '';
     const act = it.실제수량 === '' || it.실제수량 === undefined ? '-' : it.실제수량;
-    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${it.상품명||''}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
+    const prodMark = it.추가입고 ? '<span class="add-row-mark">➕</span>' : '';
+    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodMark}${it.상품명||''}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
   }).join('');
 }
 
@@ -239,6 +464,137 @@ function exportXlsx(rows, fn) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '검수결과');
   XLSX.writeFile(wb, fn);
+}
+
+/* ═══════════════════════════════════════
+   🏪 스마트비즈 업로드 파일 생성
+   - GAS에 저장된 원본 SBODWL 파일 base64 가져오기
+   - L열(입고수량)을 실제 검수 수량으로 업데이트
+     · 정상(O): 예정수량 그대로
+     · 수정: 실제수량으로 변경
+     · 미입고(X): 0으로 변경 + R열(관리메모)에 '미입고' 표시
+     · 미검수: 예정수량 유지
+   - 추가입고 상품은 맨 아래에 행 추가
+═══════════════════════════════════════ */
+async function downloadSmartbiz() {
+  if (!state.items.length) { alert('데이터 없음'); return; }
+  if (!state.selectedSession) { alert('작업번호를 먼저 선택해주세요'); return; }
+
+  // 1. GAS에서 원본 파일 가져오기
+  let r;
+  try {
+    r = await callGAS('getOriginalFile', { sessionId: state.selectedSession });
+  } catch(e) { alert('네트워크 오류: ' + e.message); return; }
+
+  if (!r || !r.ok) {
+    alert('❌ 원본 파일을 찾을 수 없어요.\n\n' + (r && r.error ? r.error : '') +
+          '\n\n원인: 이 작업번호는 원본 파일이 저장되지 않았거나, 어드민 최신 버전으로 생성되지 않았을 수 있어요.');
+    return;
+  }
+
+  if (!r.base64) {
+    alert('❌ 원본 파일 데이터가 비어 있어요.');
+    return;
+  }
+
+  // 2. base64 → ArrayBuffer
+  const bin = atob(r.base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+
+  // 3. XLSX로 파싱
+  const wb = XLSX.read(bytes, { type: 'array', cellStyles: true });
+  const sheetName = wb.SheetNames.includes('입고내역') ? '입고내역' : wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  if (!ws) { alert('❌ 입고내역 시트를 찾을 수 없어요'); return; }
+
+  // 4. 바코드 → 행번호 매핑 생성 (U열 = 21번째)
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  const barcodeMap = {};  // {바코드문자열: 행번호(1-indexed)}
+  for (let rowIdx = range.s.r + 1; rowIdx <= range.e.r; rowIdx++) { // 헤더 제외 (+1)
+    const bcCell = ws[XLSX.utils.encode_cell({ r: rowIdx, c: 20 })]; // U열 = 20 (0-indexed)
+    if (bcCell && bcCell.v !== undefined && bcCell.v !== null) {
+      barcodeMap[String(bcCell.v).trim()] = rowIdx;
+    }
+  }
+
+  // 5. 검수 결과 적용
+  let updatedCount = 0, zeroCount = 0, unmatched = 0;
+  const unmatchedList = [];
+
+  state.items.forEach(it => {
+    if (it.추가입고) return;  // 추가입고는 아래에서 따로 처리
+    const barcode = String(it.바코드 || '').trim();
+    if (!barcode) return;
+    if (!(barcode in barcodeMap)) { unmatched++; unmatchedList.push(`${it.상품명}(${it.옵션})`); return; }
+
+    const rowIdx = barcodeMap[barcode];
+    const s = it.검수상태;
+
+    // L열 = 12번째 = column 11 (0-indexed)
+    const lAddr = XLSX.utils.encode_cell({ r: rowIdx, c: 11 });
+    const rAddr = XLSX.utils.encode_cell({ r: rowIdx, c: 17 }); // R열 = 18번째 = 17
+
+    if (s === 'X') {
+      // 미입고: L열 0으로, R열에 '미입고' 표시
+      ws[lAddr] = { t: 'n', v: 0 };
+      // 기존 관리메모 보존 후 미입고 추가
+      const existing = ws[rAddr] && ws[rAddr].v ? String(ws[rAddr].v) : '';
+      const newMemo = existing ? `미입고 / ${existing}` : '미입고';
+      ws[rAddr] = { t: 's', v: newMemo };
+      zeroCount++;
+    } else if (s === '수정') {
+      // 수량 수정: 실제수량으로
+      const actualQty = Number(it.실제수량) || 0;
+      ws[lAddr] = { t: 'n', v: actualQty };
+      updatedCount++;
+    }
+    // 정상(O)은 원본 L열 값 그대로 (아무것도 안 함)
+    // 미검수도 원본 그대로
+  });
+
+  // 6. 추가입고 행을 맨 아래에 추가
+  const addedItems = state.items.filter(it => it.추가입고);
+  let addedRowCount = 0;
+  if (addedItems.length > 0) {
+    let newRowIdx = range.e.r + 1;
+    addedItems.forEach(it => {
+      // C열(3) 공급처, G열(7) 상품명, H열(8) 옵션, L열(12) 입고수량=실제수량, R열(18) 관리메모, S열(19) 메모, U열(21) 바코드
+      ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 2 })] = { t: 's', v: it.공급처 || '[추가입고]' };
+      ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 6 })] = { t: 's', v: it.상품명 || '' };
+      ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 7 })] = { t: 's', v: it.옵션 || '' };
+      ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 9 })] = { t: 'n', v: 0 }; // J열 주문수량 0
+      ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 10 })] = { t: 'n', v: 0 }; // K열 출고수량 0
+      ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 11 })] = { t: 'n', v: Number(it.실제수량) || 0 }; // L열 입고수량
+      const memoText = `[추가입고:${it.추가입고종류 || '기타'}] ${it.검수메모 || ''}`.trim();
+      ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 17 })] = { t: 's', v: memoText }; // R열
+      if (it.바코드) {
+        ws[XLSX.utils.encode_cell({ r: newRowIdx, c: 20 })] = { t: 's', v: String(it.바코드) }; // U열
+      }
+      newRowIdx++;
+      addedRowCount++;
+    });
+    // 시트 범위 업데이트
+    ws['!ref'] = XLSX.utils.encode_range({ s: range.s, e: { r: newRowIdx - 1, c: range.e.c } });
+  }
+
+  // 7. 파일 이름 & 다운로드
+  const origName = (r.fileName || 'SBODWL.xlsx').replace(/\.xlsx$/i, '');
+  const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const outName = `${origName}_스마트비즈업로드_${dateStr}.xlsx`;
+  XLSX.writeFile(wb, outName);
+
+  // 8. 결과 알림
+  let msg = `✅ 스마트비즈 업로드 파일 생성 완료!\n\n`;
+  msg += `📝 수량 수정: ${updatedCount}건\n`;
+  msg += `🚫 미입고 (0 처리): ${zeroCount}건\n`;
+  msg += `➕ 추가입고: ${addedRowCount}건\n`;
+  if (unmatched > 0) {
+    msg += `\n⚠️ 바코드 매칭 실패: ${unmatched}건 (원본에 없는 바코드)\n`;
+    msg += unmatchedList.slice(0, 3).map(n => ` - ${n}`).join('\n');
+    if (unmatchedList.length > 3) msg += `\n ...외 ${unmatchedList.length - 3}건`;
+  }
+  alert(msg);
 }
 </script>
 </body>

@@ -33,6 +33,23 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .card:nth-child(2){animation-delay:.05s;}.card:nth-child(3){animation-delay:.1s;}.card:nth-child(4){animation-delay:.15s;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .dropzone{border:2px dashed var(--border2);border-radius:10px;padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+/* ★ 드라이브 자동 불러오기 박스 */
+.drive-box{background:linear-gradient(135deg,#EFF6FF,#F5F3FF);border:1px solid #C7D2FE;border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+.drive-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.drive-info{flex:1;min-width:220px;}
+.drive-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.drive-hint{font-size:11.5px;color:var(--muted);line-height:1.5;}
+.drive-hint strong{color:var(--accent);font-family:'DM Mono',monospace;}
+.btn-drive{padding:11px 18px;border:none;border-radius:8px;background:linear-gradient(135deg,#1D4ED8,#7C3AED);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(29,78,216,.25);white-space:nowrap;transition:transform .1s;}
+.btn-drive:hover:not(:disabled){transform:translateY(-1px);}
+.btn-drive:disabled{background:var(--border);color:var(--muted2);cursor:not-allowed;box-shadow:none;}
+.drive-status{margin-top:10px;font-size:12px;font-family:'DM Mono',monospace;display:none;padding:8px 12px;border-radius:6px;}
+.drive-status.show{display:block;}
+.drive-status.loading{background:#FEF3C7;color:#92400E;}
+.drive-status.success{background:#DCFCE7;color:#166534;}
+.drive-status.error{background:#FEE2E2;color:#991B1B;}
+.or-sep{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted2);font-size:11px;font-weight:500;}
+.or-sep::before,.or-sep::after{content:'';flex:1;height:1px;background:var(--border);}
 .dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .dropzone:hover,.dropzone.drag{border-color:var(--accent);background:var(--accent-light);}
 .dz-icon{font-size:40px;margin-bottom:10px;transition:transform .3s;}
@@ -54,6 +71,28 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .btn-run:disabled{background:var(--border);color:var(--muted2);cursor:not-allowed;box-shadow:none;}
 .btn-dl{background:linear-gradient(135deg,var(--green),#15803D);color:#fff;box-shadow:0 4px 20px rgba(22,163,74,.25);}
 .btn-dl:hover{transform:translateY(-2px);}
+.btn-insp{background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;box-shadow:0 4px 20px rgba(147,51,234,.25);}
+.btn-insp:hover:not(:disabled){transform:translateY(-2px);}
+.insp-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.insp-modal.show{display:flex;}
+.insp-box{background:var(--surface);border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.insp-box h3{font-size:16px;font-weight:700;margin-bottom:4px;}
+.insp-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.insp-section{margin-bottom:14px;}
+.insp-label{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+.insp-input{width:100%;border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none;}
+.insp-link-row{display:flex;align-items:center;gap:8px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;padding:10px 14px;margin-bottom:6px;}
+.insp-link-name{font-weight:700;color:var(--accent);min-width:80px;font-size:13px;}
+.insp-link-url{flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.insp-copy{padding:6px 12px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.insp-status{padding:10px 14px;background:var(--green-light);border:1px solid var(--green);border-radius:8px;font-size:13px;color:#166534;margin-bottom:12px;display:none;}
+.insp-status.show{display:block;}
+.insp-error{padding:10px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:13px;color:#DC2626;margin-bottom:12px;display:none;}
+.insp-error.show{display:block;}
+.insp-actions{display:flex;gap:10px;margin-top:16px;}
+.insp-btn{flex:1;padding:12px;border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.insp-btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.insp-btn-ok{background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;}
 .progress-wrap{display:none;margin-top:14px;}
 .progress-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
 .progress-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
@@ -125,27 +164,111 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .emp-row td{background:#FDF4FF!important;}
 .emp-row:hover td{background:#F3E8FF!important;}
 @media(max-width:480px){.stat-grid{grid-template-columns:1fr 1fr;}.worker-grid{grid-template-columns:1fr;}.main{padding:20px 14px 0;}}
+
+/* ── ✨ 자동 안내 박스 (오늘 파일 자동 로드) ── */
+.auto-info-box{background:linear-gradient(135deg,#EFF6FF,#F5F3FF);border:1px solid #C7D2FE;border-radius:10px;padding:16px 18px;margin-bottom:12px;}
+.auto-info-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.auto-info-desc{font-size:12px;color:var(--muted);line-height:1.55;}
+.auto-info-desc strong{color:var(--accent);font-family:'DM Mono',monospace;}
+
+/* ── 📁 수동 업로드 접힘 영역 ── */
+.manual-upload-wrap{border:1px solid var(--border);border-radius:10px;margin-bottom:0;overflow:hidden;background:var(--surface2);}
+.manual-upload-wrap summary{cursor:pointer;padding:12px 16px;font-size:12.5px;font-weight:600;color:var(--muted);list-style:none;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background .15s;}
+.manual-upload-wrap summary:hover{background:#F0F2F5;color:var(--text2);}
+.manual-upload-wrap summary::-webkit-details-marker{display:none;}
+.manual-upload-wrap summary::after{content:'▼';font-size:10px;color:var(--muted2);transition:transform .2s;}
+.manual-upload-wrap[open] summary::after{transform:rotate(180deg);}
+.manual-upload-wrap[open] summary{border-bottom:1px solid var(--border);background:#F0F2F5;}
+.manual-upload-body{padding:14px 16px;background:var(--surface);}
+.manual-upload-hint{font-size:11.5px;color:var(--muted2);margin-bottom:10px;line-height:1.5;}
+
+/* ── 작업자 이름 설정 힌트 ── */
+.worker-info-hint{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#92400E;line-height:1.55;}
+.worker-info-hint strong{color:#78350F;}
+
+/* ── 드라이브 상태 (공통) ── */
+.drive-status-msg{margin-top:10px;font-size:12px;font-family:'DM Mono',monospace;display:none;padding:9px 14px;border-radius:6px;}
+.drive-status-msg.show{display:block;}
+.drive-status-msg.loading{background:#FEF3C7;color:#92400E;}
+.drive-status-msg.success{background:#DCFCE7;color:#166534;}
+.drive-status-msg.error{background:#FEE2E2;color:#991B1B;}
+
+/* ── 📭 드라이브 파일 없음 모달 ── */
+.drive-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease;}
+.drive-modal.show{display:flex;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.dm-box{background:var(--surface);border-radius:14px;padding:26px 28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeUp .3s ease;}
+.dm-icon{font-size:40px;margin-bottom:10px;text-align:center;}
+.dm-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;text-align:center;}
+.dm-sub{font-size:13px;color:var(--muted);margin-bottom:18px;text-align:center;line-height:1.6;}
+.dm-sub code{background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--accent);}
+.dm-section{margin-bottom:16px;}
+.dm-section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.dm-file-list{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px;max-height:160px;overflow-y:auto;}
+.dm-file-item{padding:8px 12px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.dm-file-item:last-child{border-bottom:none;}
+.dm-file-item .dm-file-date{color:var(--muted2);font-size:11px;}
+.dm-help{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:12px 14px;font-size:12.5px;color:#92400E;line-height:1.7;}
+.dm-help ol{margin-left:18px;margin-top:4px;}
+.dm-actions{display:flex;gap:10px;margin-top:20px;}
+.dm-btn{flex:1;padding:12px;border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;}
+.dm-btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.dm-btn-cancel:hover{background:#E5E7EB;}
+.dm-btn-retry{background:linear-gradient(135deg,var(--accent),#4F46E5);color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.25);}
+.dm-btn-retry:hover{transform:translateY(-1px);}
+
+/* ── 📋 처리 로그 접힘 영역 ── */
+.log-details{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface2);margin-top:18px;}
+.log-details summary{cursor:pointer;padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);list-style:none;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background .15s;}
+.log-details summary:hover{background:#F0F2F5;color:var(--text2);}
+.log-details summary::-webkit-details-marker{display:none;}
+.log-details summary::after{content:'▼';font-size:9px;color:var(--muted2);transition:transform .2s;text-transform:none;letter-spacing:0;}
+.log-details[open] summary::after{transform:rotate(180deg);}
+.log-details[open] summary{border-bottom:1px solid var(--border);background:#F0F2F5;}
+.log-details .log-wrap{border:none;border-radius:0;margin:0;max-height:220px;}
 </style>
 </head>
 <body>
 <header class="header">
   <div class="header-logo">📦</div>
-  <div><div class="header-title">더제이수 물류 작업자별 분배</div><div class="header-sub">SBODWL → 작업자별 엑셀 자동 분배</div></div>
-  <div class="header-badge">v3.3</div>
+  <div><div class="header-title">더제이수 물류 작업자별 분배</div><div class="header-sub">SBAODL → 작업자별 엑셀 자동 분배 + 검수</div></div>
+  <div class="header-badge">v4.0</div>
 </header>
 <main class="main">
   <div class="card">
     <div class="sec-title"><span class="sec-num">1</span>파일 선택</div>
-    <div class="dropzone" id="drop">
-      <input type="file" id="fileInput" accept=".xlsx" onchange="onFile(this)">
-      <div class="dz-icon" id="dzIcon">📂</div>
-      <div class="dz-text">파일을 드래그하거나 클릭해서 선택</div>
-      <div class="dz-hint">SBODWL_*.xlsx 파일</div>
-      <div class="dz-file" id="dzFile"></div>
+
+    <!-- ★ 자동 안내 배너 -->
+    <div class="auto-info-box">
+      <div class="auto-info-title">📁 구글드라이브에서 오늘 날짜 파일 자동 로드</div>
+      <div class="auto-info-desc">
+        아래 <strong>⚡ 파일 생성하기</strong> 버튼을 누르면<br>
+        폴더에서 <strong>SBODWL_YYYYMMDD.xlsx</strong> 오늘 파일을 자동으로 찾아 처리합니다
+      </div>
+      <div class="drive-status-msg" id="driveStatus"></div>
     </div>
+
+    <!-- ★ 수동 업로드 (접힘, 예외 상황용) -->
+    <details class="manual-upload-wrap">
+      <summary>▸ 직접 파일 업로드 (예외 상황용)</summary>
+      <div class="manual-upload-body">
+        <div class="manual-upload-hint">드라이브에 파일이 없거나, 과거 날짜 파일을 처리할 때 사용하세요.</div>
+        <div class="dropzone" id="drop">
+          <input type="file" id="fileInput" accept=".xlsx" onchange="onFile(this)">
+          <div class="dz-icon" id="dzIcon">📂</div>
+          <div class="dz-text">파일을 드래그하거나 클릭해서 선택</div>
+          <div class="dz-hint">SBAODL_*.xlsx 또는 SBODWL_*.xlsx 파일</div>
+          <div class="dz-file" id="dzFile"></div>
+        </div>
+      </div>
+    </details>
   </div>
   <div class="card">
     <div class="sec-title"><span class="sec-num">2</span>작업자 이름 설정</div>
+    <div class="worker-info-hint">
+      💡 <strong>작업자가 바뀌었을 경우</strong> 아래 이름을 새로 입력하면 됩니다.<br>
+      직원 폰 검수 화면에도 자동으로 반영돼요.
+    </div>
     <div class="worker-grid">
       <div class="w-box">
         <label><span class="w-dot d1"></span>작업자 1 · 먼저 처리 + 스팀 포함</label>
@@ -159,7 +282,14 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
   </div>
   <div class="card">
     <div class="sec-title"><span class="sec-num">3</span>파일 생성</div>
-    <button class="btn btn-run" id="runBtn" onclick="run()" disabled>⚡ 파일 생성하기</button>
+    <div style="margin-bottom:14px;padding:12px 14px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:1px solid #C4B5FD;border-radius:10px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">📱</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#6D28D9;">직원 폰 검수 링크도 함께 준비돼요</div>
+        <div style="font-size:11.5px;color:#7C3AED;margin-top:2px;">파일 생성 후 담당자별 검수 페이지 바로가기 링크가 자동으로 만들어집니다</div>
+      </div>
+    </div>
+    <button class="btn btn-run" id="runBtn" onclick="run()">⚡ 파일 생성하기</button>
     <div class="progress-wrap" id="progWrap">
       <div class="progress-label"><span id="progLabel">처리 중...</span><span id="progPct">0%</span></div>
       <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
@@ -172,9 +302,25 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
     <div class="result-body">
       <div class="stat-grid" id="statGrid"></div>
       <div class="file-chips" id="fileChips"></div>
-      <button class="btn btn-dl" id="dlBtn">⬇️ &nbsp;ZIP 파일 다운로드</button>
-      <div class="log-header">처리 로그</div>
-      <div class="log-wrap" id="logWrap"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-dl" id="dlBtn" style="flex:1;min-width:180px;">⬇️ &nbsp;ZIP 파일 다운로드</button>
+      </div>
+      <!-- 검수 링크 (자동 표시) -->
+      <div id="inspResultSection" style="display:none;margin-top:14px;padding:16px 18px;background:linear-gradient(135deg,#FAF5FF,#F3E8FF);border:1px solid #9333EA;border-radius:10px;">
+        <div style="font-size:14px;font-weight:700;color:#7E22CE;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+          📱 직원 폰 검수 링크 준비 완료
+        </div>
+        <div id="inspResultStatus" style="font-size:12px;color:#6B21A8;margin-bottom:12px;"></div>
+        <div style="font-size:11.5px;color:#7E22CE;margin-bottom:8px;line-height:1.5;">👇 아래 <strong>바로가기</strong> 버튼을 누르면 담당자별 검수 페이지가 새 창으로 열립니다</div>
+        <div id="inspResultLinks"></div>
+      </div>
+      <div id="inspResultError" style="display:none;margin-top:14px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;font-size:13px;color:#DC2626;"></div>
+
+      <!-- 처리 로그 (접힘) -->
+      <details class="log-details">
+        <summary>처리 로그 보기</summary>
+        <div class="log-wrap" id="logWrap"></div>
+      </details>
 
       <!-- 미리보기 -->
       <div class="preview-section">
@@ -213,7 +359,46 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
     </div>
   </div>
 </main>
+
+<!-- ═══ 드라이브 파일 없음 모달 ═══ -->
+<div class="drive-modal" id="driveModal">
+  <div class="dm-box">
+    <div class="dm-icon">📭</div>
+    <div class="dm-title">오늘 날짜 파일이 없어요</div>
+    <div class="dm-sub">
+      구글드라이브 폴더에서<br>
+      <code>SBODWL_YYYYMMDD.xlsx</code> 또는 <code>SBAODL_YYYYMMDD.xlsx</code><br>
+      오늘 날짜 파일을 찾을 수 없습니다
+    </div>
+
+    <div class="dm-section" id="dmFileSection" style="display:none;">
+      <div class="dm-section-title">📁 폴더에 있는 최근 파일</div>
+      <div class="dm-file-list" id="dmFileList"></div>
+    </div>
+
+    <div class="dm-help">
+      <strong>해결 방법</strong>
+      <ol>
+        <li>구글드라이브에 오늘 날짜 파일을 올리고 <strong>다시 시도</strong></li>
+        <li>또는 위의 <strong>"직접 파일 업로드"</strong>를 펼쳐서 수동 업로드</li>
+      </ol>
+    </div>
+
+    <div class="dm-actions">
+      <button class="dm-btn dm-btn-cancel" onclick="closeDriveModal()">닫기</button>
+      <button class="dm-btn dm-btn-retry" onclick="retryDriveLoad()">🔄 다시 시도</button>
+    </div>
+  </div>
+</div>
 <script>
+/* ════════════════════════════════════
+   고정 설정 (이 값들은 항상 같이 동작)
+   - 입고검수 GAS Web App URL
+   - 직원 폰 검수 페이지 URL
+═══════════════════════════════════════ */
+const INSP_GAS_URL   = 'https://script.google.com/macros/s/AKfycbyOWOcCSzNgeotauLnEzLPs8O8x4SICREqE_76qKlfLbdxQFjEJVNzq7X6nv46dMgOI/exec';
+const INSP_STAFF_URL = 'https://songsuyoun.github.io/thejsoo.github.io/입고검수_staff.html';
+
 let selFile=null,resultZip=null,zipName='output.zip';
 const logs=[];
 
@@ -239,8 +424,124 @@ function onFile(inp){
   document.getElementById('drop').classList.add('ok');
   document.getElementById('dzIcon').textContent='✅';
   document.getElementById('dzFile').textContent=selFile.name;
-  document.getElementById('runBtn').disabled=false;
 }
+
+/* ════════════════════════════════════
+   ★ 구글드라이브 최신 SBAODL/SBODWL 불러오기 (v2 - 오늘 파일만 자동)
+   - 입고검수 GAS의 getLatestSBAODL 액션 호출
+   - 받은 파일의 dateStr이 오늘 날짜와 일치할 때만 selFile 투입
+   - 오늘 파일이 없으면 모달 표시 (폴더 내 파일 목록 포함)
+═══════════════════════════════════════ */
+
+function setDriveStatus(msg, kind){
+  const el = document.getElementById('driveStatus');
+  el.className = 'drive-status-msg show ' + (kind||'');
+  el.textContent = msg;
+}
+
+function hideDriveStatus(){
+  const el = document.getElementById('driveStatus');
+  el.className = 'drive-status-msg';
+  el.textContent = '';
+}
+
+/**
+ * 오늘 날짜 파일을 드라이브에서 자동 로드
+ * @returns {Promise<boolean>} 성공 여부 (false면 모달 이미 표시됨)
+ */
+async function loadTodayFromDrive(){
+  setDriveStatus('📡 구글드라이브에서 오늘 날짜 파일 검색 중...', 'loading');
+
+  try{
+    const res = await fetch(INSP_GAS_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'getLatestSBAODL'})
+    });
+    const r = await res.json();
+
+    if(!r.ok){
+      setDriveStatus('❌ ' + (r.error||'알 수 없는 오류'), 'error');
+      showDriveModal(null, r.error);
+      return false;
+    }
+
+    // 오늘 날짜 확인
+    const today = todayStr('');  // YYYYMMDD
+    const fileDateStr = r.dateStr || '';
+
+    if(fileDateStr !== today){
+      // 오늘 파일 아님 → 모달 표시
+      hideDriveStatus();
+      showDriveModal(r.recentFiles || [{fileName:r.fileName, dateStr:fileDateStr, updated:r.updated}], null);
+      return false;
+    }
+
+    // base64 → Uint8Array → File 복원
+    const bin = atob(r.base64);
+    const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    const blob = new Blob([bytes], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const file = new File([blob], r.fileName, {type: blob.type});
+
+    // 기존 처리 로직 진입
+    selFile = file;
+
+    const updated = r.updated ? new Date(r.updated).toLocaleString('ko-KR') : '';
+    const sizeKb = Math.round(r.sizeBytes/1024);
+    setDriveStatus(
+      `✓ ${r.fileName} · ${sizeKb}KB · 업데이트: ${updated}`,
+      'success'
+    );
+    return true;
+  }catch(err){
+    console.error(err);
+    setDriveStatus('❌ 네트워크 오류: ' + err.message, 'error');
+    showDriveModal(null, '네트워크 오류: ' + err.message);
+    return false;
+  }
+}
+
+/**
+ * 오늘 날짜 파일이 없을 때 모달 표시
+ */
+function showDriveModal(recentFiles, errorMsg){
+  const modal = document.getElementById('driveModal');
+  const listEl = document.getElementById('dmFileList');
+  const sectionEl = document.getElementById('dmFileSection');
+
+  // 폴더 내 파일 목록
+  if(recentFiles && recentFiles.length > 0){
+    sectionEl.style.display = 'block';
+    listEl.innerHTML = recentFiles.map(f => {
+      const ds = f.dateStr || '';
+      const dateDisplay = ds.length === 8 ? `${ds.slice(4,6)}/${ds.slice(6,8)}` : ds;
+      return `<div class="dm-file-item">
+        <span>📄 ${f.fileName||'(이름없음)'}</span>
+        <span class="dm-file-date">${dateDisplay}</span>
+      </div>`;
+    }).join('');
+  }else{
+    sectionEl.style.display = 'none';
+    listEl.innerHTML = '';
+  }
+
+  modal.classList.add('show');
+}
+
+function closeDriveModal(){
+  document.getElementById('driveModal').classList.remove('show');
+}
+
+async function retryDriveLoad(){
+  closeDriveModal();
+  const ok = await loadTodayFromDrive();
+  if(ok){
+    // 재시도 성공 → run() 계속 진행
+    run();
+  }
+}
+
 const drop=document.getElementById('drop');
 drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag');});
 drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
@@ -252,7 +553,6 @@ drop.addEventListener('drop',e=>{
     document.getElementById('drop').classList.add('ok');
     document.getElementById('dzIcon').textContent='✅';
     document.getElementById('dzFile').textContent=f.name;
-    document.getElementById('runBtn').disabled=false;
   }
 });
 
@@ -426,7 +726,11 @@ function buildSheet(wb, sheetName, nsRows, stmRows, worker, hasStream, colWidths
    메인
 ══════════════════════════════════════════ */
 async function run(){
-  if(!selFile)return;
+  // selFile 없으면 드라이브에서 오늘 파일 자동 로드 시도
+  if(!selFile){
+    const ok = await loadTodayFromDrive();
+    if(!ok) return;  // 모달 이미 떠있음, 중단 (재시도 시 retryDriveLoad가 run() 재호출)
+  }
   const w1=document.getElementById('w1').value.trim()||'이혜정';
   const w2=document.getElementById('w2').value.trim()||'윤혜정';
   logs.length=0;
@@ -439,26 +743,72 @@ async function run(){
   setProgress(0,'파일 읽는 중...');
 
   try{
-    // 0. 로드
+    // 0. 로드 (SBAODL / SBODWL 자동 감지)
     markStep(0,'active');
     const buf=await selFile.arrayBuffer();
     const rawWb=XLSX.read(buf,{type:'array'});
-    const rawWs=rawWb.Sheets['입고내역'];
-    if(!rawWs) throw new Error('"입고내역" 시트를 찾을 수 없습니다.');
-    const raw=XLSX.utils.sheet_to_json(rawWs,{defval:''});
-    pushLog('0',`입고내역 로드: ${raw.length}행`);
+    // 시트 자동 감지: '입고내역' 또는 'Worksheet' 또는 첫 시트
+    let rawWs=rawWb.Sheets['입고내역'] || rawWb.Sheets['Worksheet'] || rawWb.Sheets[rawWb.SheetNames[0]];
+    if(!rawWs) throw new Error('시트를 찾을 수 없습니다.');
+    let raw=XLSX.utils.sheet_to_json(rawWs,{defval:'',header:1});
+
+    // 헤더 자동 감지: 첫 행이 '공급처' 포함하면 바로 헤더, 아니면 '공급처' 찾을 때까지 스캔
+    let headerIdx=0;
+    for(let i=0;i<Math.min(5,raw.length);i++){
+      if(raw[i] && raw[i].some(c=>String(c).trim()==='공급처')){headerIdx=i;break;}
+    }
+    const headers=raw[headerIdx].map(h=>String(h||'').trim());
+    const dataRows=raw.slice(headerIdx+1).map(row=>{
+      const obj={};
+      headers.forEach((h,i)=>{obj[h]=row[i]!==undefined?row[i]:'';});
+      return obj;
+    });
+
+    // 컬럼명 호환 매핑 (SBAODL ↔ SBODWL 자동 판별)
+    // SBAODL 파일(오늘 입고 확정분): H열=주문수, I열=출고수, J열=입고수
+    //   → 실제로 "오늘 들어온 양"은 J열 '입고수'. 이 값을 기준으로 담당자에게 분배
+    //   → 입고수=0인 행은 아직 안 들어온 상품이므로 필터로 제거
+    // SBODWL 파일(발주 기반): '입고수량' 컬럼이 같은 역할
+    const hasIpgosu = headers.includes('입고수');    // SBAODL 신호
+    const hasIpgoSuryang = headers.includes('입고수량'); // SBODWL 신호
+    const COL_MAP = {
+      '입고수량': hasIpgosu ? ['입고수'] : ['입고수량'],
+      '바코드번호': ['바코드번호','바코드'],
+    };
+    const fileType = hasIpgosu ? 'SBAODL(J열 입고수 사용)' : (hasIpgoSuryang ? 'SBODWL(입고수량 사용)' : '알 수 없음');
+    function getCol(row, key){
+      const candidates = COL_MAP[key] || [key];
+      for(const c of candidates){ if(row[c]!==undefined && row[c]!=='') return row[c]; }
+      return '';
+    }
+    const hasImgCol = headers.includes('대표이미지주소');
+    const hasMemoCol = headers.includes('메모');
+    const hasBigoCol = headers.includes('비고');
+
+    // 공급처 forward fill (SBAODL 병합셀 대응)
+    let lastSupplier='';
+    dataRows.forEach(r=>{
+      const sup=String(r['공급처']||'').trim();
+      if(sup) lastSupplier=sup;
+      else r['공급처']=lastSupplier;
+    });
+
+    pushLog('0',`로드: ${dataRows.length}행 (헤더행:${headerIdx+1}, 형식:${fileType}, 이미지:${hasImgCol?'O':'X'})`);
     markStep(0,'done'); setProgress(12,'필터링...');
 
     // 1+2. 정렬/필터
     markStep(1,'active');
-    let data=raw.map(r=>({
+    let data=dataRows.map(r=>({
       공급처:  String(r['공급처'] ||'').trim(),
       사입명:  String(r['사입명'] ||'').trim(),
       상품명:  String(r['상품명'] ||'').trim(),
       옵션:    String(r['옵션']   ||'').trim(),
-      입고수량:parseFloat(r['입고수량'])||0,
-      바코드번호:r['바코드번호']??'',
-      상품메모1:String(r['상품메모1']||'').trim(),
+      입고수량: parseFloat(getCol(r,'입고수량'))||0,
+      바코드번호: getCol(r,'바코드번호')??'',
+      상품메모1: String(r['상품메모1']||'').trim(),
+      대표이미지주소: hasImgCol ? String(r['대표이미지주소']||'').trim() : '',
+      메모: hasMemoCol ? String(r['메모']||'').trim() : '',
+      비고: hasBigoCol ? String(r['비고']||'').trim() : '',
     }));
     const before=data.length;
     data=data.filter(r=>r.입고수량>0);
@@ -653,6 +1003,9 @@ async function run(){
 
     document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'start'});
 
+    // 체크박스 ON이면 자동으로 검수 세션 생성
+    await autoCreateInspection();
+
   }catch(err){
     document.getElementById('errBox').style.display='block';
     document.getElementById('errBox').textContent='오류: '+err.message;
@@ -764,6 +1117,104 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   a.href=URL.createObjectURL(resultZip);
   a.download=zipName; a.click();
 });
+
+/* ═══════════════════════════════════════
+   검수 체크박스 연동
+═══════════════════════════════════════ */
+let lastDistribution = null;
+
+// renderPreview를 hook해서 분배 결과 캡처
+const _origRenderPreview = renderPreview;
+renderPreview = function(w1name, w2name, w1rows, w2rows, stmRows, empRows){
+  lastDistribution = { w1name, w2name, w1rows, w2rows, stmRows, empRows };
+  return _origRenderPreview.apply(this, arguments);
+};
+
+// run() 완료 후 항상 자동 호출 (직원 폰 검수 세션 자동 생성)
+async function autoCreateInspection(){
+  if(!lastDistribution) return;
+
+  const gasUrl = INSP_GAS_URL;
+  const staffUrl = INSP_STAFF_URL;
+
+  // 직원별 데이터 합치기
+  const items = [];
+  const d = lastDistribution;
+  d.w1rows.forEach(r => items.push({ 담당자:d.w1name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
+  d.w2rows.forEach(r => items.push({ 담당자:d.w2name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
+  // ★ 스팀 상품은 담당자1(이혜정)에게 추가. 상품메모1에 '스팀' 단어가 있으므로
+  //   staff 화면에서 isSteam() 판별로 자동 스팀 탭에 분리됨
+  if(d.stmRows && d.stmRows.length > 0){
+    d.stmRows.forEach(r => items.push({ 담당자:d.w1name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
+  }
+
+  // ★★ 원본 SBODWL 파일을 base64로 같이 전송 (스마트비즈 업로드용) ★★
+  let originalFileBase64 = '';
+  let originalFileName = '';
+  try {
+    if(selFile){
+      const arrBuf = await selFile.arrayBuffer();
+      const bytes = new Uint8Array(arrBuf);
+      // 10MB 제한 체크 (GAS 전송 한계 고려)
+      if(bytes.length < 10 * 1024 * 1024){
+        let binStr = '';
+        const chunk = 8192;
+        for(let i=0; i<bytes.length; i+=chunk){
+          binStr += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i+chunk, bytes.length)));
+        }
+        originalFileBase64 = btoa(binStr);
+        originalFileName = selFile.name;
+      }
+    }
+  } catch(e){ console.warn('원본 파일 인코딩 실패 (스마트비즈 업로드 기능 제약 있을 수 있음):', e); }
+
+  try {
+    const payload = {
+      action: 'createSession',
+      items,
+      originalFile: originalFileBase64,     // ★ SBODWL 원본 base64
+      originalFileName: originalFileName    // ★ 파일명 (예: SBODWL_20260419.xlsx)
+    };
+    const res = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'text/plain;charset=utf-8'} });
+    const result = await res.json();
+    if(!result.ok){
+      document.getElementById('inspResultError').textContent = '직원 폰 검수 링크 생성 실패: '+(result.error||'');
+      document.getElementById('inspResultError').style.display = 'block';
+      return;
+    }
+    const sid = result.sessionId;
+    const base = staffUrl.replace(/\/$/,'').replace(/\?.*$/,'');
+    document.getElementById('inspResultStatus').textContent = `작업번호: ${sid} · 총 ${result.totalItems}건 / ${result.totalQty}개`;
+    document.getElementById('inspResultLinks').innerHTML = result.workers.map(w => {
+      const url = `${base}?worker=${encodeURIComponent(w)}&session=${sid}`;
+      const urlEsc = url.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #9333EA;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+        <span style="font-weight:700;color:#9333EA;min-width:70px;font-size:14px;">👤 ${w}</span>
+        <span style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${url}">${url}</span>
+        <button onclick="openLink('${urlEsc}')" style="padding:8px 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;box-shadow:0 2px 6px rgba(147,51,234,.25);">🔗 바로가기</button>
+        <button onclick="copyLink('${urlEsc}',this)" title="링크 복사" style="padding:8px 10px;border:1px solid #D8B4FE;border-radius:8px;background:#fff;color:#9333EA;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">📋</button>
+      </div>`;
+    }).join('');
+    document.getElementById('inspResultSection').style.display = 'block';
+    document.getElementById('inspResultError').style.display = 'none';
+  } catch(err) {
+    document.getElementById('inspResultError').textContent = '네트워크 오류: '+err.message;
+    document.getElementById('inspResultError').style.display = 'block';
+  }
+}
+
+/* 새 탭에서 링크 열기 (메인 기능) */
+function openLink(url){
+  window.open(url, '_blank', 'noopener');
+}
+
+/* 링크 복사 (보조 기능) */
+function copyLink(url,btn){
+  navigator.clipboard.writeText(url).then(()=>{
+    const orig=btn.textContent;btn.textContent='✓';btn.style.background='var(--green)';btn.style.color='#fff';btn.style.borderColor='var(--green)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.background='';btn.style.color='';btn.style.borderColor='';},1500);
+  });
+}
 </script>
 </body>
 </html>
