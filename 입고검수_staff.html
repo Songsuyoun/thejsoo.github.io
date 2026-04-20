@@ -74,6 +74,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .item-sup{display:inline-block;font-size:10px;font-weight:500;letter-spacing:.5px;color:var(--muted);background:var(--s2);padding:3px 8px;border-radius:4px;margin-bottom:7px;}
 .item-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:4px;}
 .item-opt{font-size:13px;color:var(--t2);margin-bottom:8px;}
+/* ★ 상품명 + 옵션 인라인 뱃지 (튀는 색상) */
+.item-name-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:4px;}
+.item-opt-badge{display:inline-flex;align-items:center;gap:4px;background:#FEF3C7;color:#B45309;border:1.5px solid #F59E0B;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:700;font-family:'DM Mono','Courier New',monospace;letter-spacing:0.02em;line-height:1.3;}
+.item-opt-badge::before{content:'/';color:#D97706;font-weight:400;margin-right:2px;}
 .item-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);font-family:monospace;flex-wrap:wrap;}
 .item-qty{background:var(--al);color:var(--accent);padding:3px 9px;border-radius:6px;font-weight:700;font-size:13px;}
 .item-memo-tag{font-size:11px;color:var(--amber);background:var(--aml);padding:3px 7px;border-radius:5px;margin-top:6px;display:inline-block;}
@@ -334,22 +338,22 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
     </div>
 
     <div class="add-section">
-      <label class="add-label">사입명 <span class="opt">(장끼명)</span></label>
+      <label class="add-label">사입명 <span class="req">*</span> <span class="opt">(장끼명)</span></label>
       <input type="text" id="addSanip" class="add-input" placeholder="예: 봄아벨SL" inputmode="text">
     </div>
 
     <div class="add-section">
-      <label class="add-label">상품명 <span class="req">*</span></label>
+      <label class="add-label">상품명 <span class="opt">(선택)</span></label>
       <input type="text" id="addProductName" class="add-input" placeholder="예: 옆지퍼 심플 슬랙스">
     </div>
 
     <div class="add-row-grid">
       <div class="add-section">
-        <label class="add-label">옵션 <span class="opt">(색상/사이즈)</span></label>
+        <label class="add-label">옵션 <span class="req">*</span> <span class="opt">(색상/사이즈)</span></label>
         <input type="text" id="addOption" class="add-input" placeholder="예: 블랙,L">
       </div>
       <div class="add-section">
-        <label class="add-label">공급처 <span class="opt"></span></label>
+        <label class="add-label">공급처 <span class="req">*</span></label>
         <input type="text" id="addSupplier" class="add-input" placeholder="예: 말파">
       </div>
     </div>
@@ -583,9 +587,11 @@ function render(){
       <div class="item-top">
         <div class="item-sup">${esc(it.공급처||'-')}${isSteam(it)?'<span class="item-steam-badge">🔥 스팀</span>':''}${it.추가입고?`<span class="add-badge">➕ ${esc(it.추가입고종류||'추가')}</span>`:''}</div>
         ${sanip?`<div class="item-sanip-box"><span class="sl">사입명</span> ${esc(sanip)}</div>`:''}
-        <div class="item-name">${esc(it.상품명||'-')}</div>
+        <div class="item-name-wrap">
+          <span class="item-name">${esc(it.상품명||'-')}</span>
+          ${it.옵션?`<span class="item-opt-badge">${esc(it.옵션)}</span>`:''}
+        </div>
         ${memo1?`<div class="item-memo1">📌 ${esc(memo1)}</div>`:''}
-        <div class="item-opt">${esc(it.옵션||'')}</div>
         <div class="item-meta">
           <span class="item-qty">${it.입고수량}개</span>
           ${it.바코드?`<span>📊 ${esc(String(it.바코드))}</span>`:''}
@@ -793,7 +799,7 @@ function openAddModal(){
   document.getElementById('addQty').value = 1;
   document.getElementById('addMemo').value = '';
   document.getElementById('addModal').classList.add('show');
-  setTimeout(()=>document.getElementById('addProductName').focus(), 250);
+  setTimeout(()=>document.getElementById('addSanip').focus(), 250);
 }
 
 function closeAddModal(){
@@ -820,8 +826,13 @@ async function saveAddItem(){
   const memo = document.getElementById('addMemo').value.trim();
 
   // 검증
-  if(!productName){toast('상품명을 입력해주세요');return;}
+  if(!sanip){toast('사입명을 입력해주세요');return;}
+  if(!option){toast('옵션을 입력해주세요 (예: 블랙,L)');return;}
+  if(!supplier){toast('공급처를 입력해주세요');return;}
   if(qty < 1){toast('수량은 1개 이상이어야 해요');return;}
+
+  // 상품명이 비어있으면 사입명으로 대체
+  const finalProductName = productName || sanip;
 
   // 메모 조합: [종류] 사용자메모
   const fullMemo = memo ? `[${addKind}] ${memo}` : `[${addKind}]`;
@@ -832,8 +843,8 @@ async function saveAddItem(){
       sessionId: S.sessionId,
       worker: S.worker,
       공급처: supplier || '[추가입고]',
-      사입명: sanip,           // ★ 장끼명
-      상품명: productName,
+      사입명: sanip,           // ★ 장끼명 (필수)
+      상품명: finalProductName, // ★ 비어있으면 사입명으로 대체
       옵션: option,
       입고수량: qty,            // 예정수량 = 실제 들어온 수량
       실제수량: qty,            // 실제수량도 같은 값

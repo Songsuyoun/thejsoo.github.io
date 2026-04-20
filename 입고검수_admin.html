@@ -67,6 +67,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 tr.r-add{background:#FAF5FF;} tr.r-add:hover{background:#F3E8FF;}
 .b-add{background:#9333EA;}
 .add-row-mark{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;background:#F3E8FF;color:#7E22CE;margin-right:4px;}
+/* ★ 추가입고 행에서 사입명 표시 */
+.add-sanip-label{margin-top:3px;font-size:11px;color:#7E22CE;background:#F3E8FF;padding:2px 8px;border-radius:4px;display:inline-block;font-weight:600;}
 
 /* ★ v2.4: 작업시간 섹션 */
 .wt-section{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;margin-bottom:14px;}
@@ -427,7 +429,11 @@ function renderTable() {
     const actC = s === '수정' ? 'color:var(--amber);font-weight:700;' : s === 'X' ? 'color:var(--red);font-weight:700;' : '';
     const act = it.실제수량 === '' || it.실제수량 === undefined ? '-' : it.실제수량;
     const prodMark = it.추가입고 ? '<span class="add-row-mark">➕</span>' : '';
-    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodMark}${it.상품명||''}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
+    // ★ 추가입고인 경우 사입명도 같이 표시 (직원들이 사입명만 아는 경우가 많아서)
+    const sanipLabel = it.추가입고 && it.사입명 
+      ? `<div class="add-sanip-label">📋 사입명: ${it.사입명}</div>` 
+      : '';
+    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodMark}${it.상품명||''}${sanipLabel}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
   }).join('');
 }
 
