@@ -811,10 +811,20 @@ async function run(){
       비고: hasBigoCol ? String(r['비고']||'').trim() : '',
     }));
     const before=data.length;
+    // ★ 추가입고 후보 수집: 입고수량=0 + 상품명이 '['로 시작 ([미송], [반품], [선주문] 등)
+    window._addCandidates = data
+      .filter(r => (Number(r.입고수량) || 0) <= 0 && /^\s*\[/.test(r.상품명))
+      .map(r => ({
+        공급처: r.공급처,
+        사입명: r.사입명,
+        상품명: r.상품명,  // 수식어 포함된 원본 상품명
+        옵션: r.옵션,
+        상품메모1: r.상품메모1 || ''
+      }));
     data=data.filter(r=>r.입고수량>0);
     // 영문→한글 순서 (엑셀/파이썬과 동일하게 기본 유니코드 정렬)
     data.sort((a,b)=>a.공급처<b.공급처?-1:a.공급처>b.공급처?1:0);
-    pushLog('1-2',`0/빈칸 ${before-data.length}건 제거 → ${data.length}행`);
+    pushLog('1-2',`0/빈칸 ${before-data.length}건 제거 → ${data.length}행 / 추가입고 후보 ${window._addCandidates.length}건 수집`);
     markStep(1,'done'); setProgress(25,'스팀 분리...');
 
     // 3. 스팀
@@ -1173,7 +1183,8 @@ async function autoCreateInspection(){
       action: 'createSession',
       items,
       originalFile: originalFileBase64,     // ★ SBODWL 원본 base64
-      originalFileName: originalFileName    // ★ 파일명 (예: SBODWL_20260419.xlsx)
+      originalFileName: originalFileName,   // ★ 파일명 (예: SBODWL_20260419.xlsx)
+      addCandidates: window._addCandidates || []  // ★ 추가입고 후보 ([미송],[반품],[선주문] 등)
     };
     const res = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'text/plain;charset=utf-8'} });
     const result = await res.json();

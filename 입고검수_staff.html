@@ -65,8 +65,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .fbar{display:flex;gap:5px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
 .fc{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--b2);background:var(--surface);color:var(--muted);white-space:nowrap;cursor:pointer;}
 .fc.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+/* ★ 추가입고 필터 버튼 (보라색 강조) */
+.fc.fc-added{border-color:#C4B5FD;color:#7E22CE;background:#F5F3FF;}
+.fc.fc-added.on{background:#9333EA;color:#fff;border-color:#9333EA;}
+.fc.fc-added .fc-ico{font-size:12px;margin-right:2px;}
 .list{padding:12px;}
 .item{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:all .2s;}
+/* ★ 추가입고 아이템 - 보라색 배경 + 왼쪽 테두리 */
+.item.added{background:#FAF5FF;border-color:#C4B5FD;border-left:4px solid #9333EA;}
+.item.added .item-top{background:#FAF5FF;}
+.item.added .item-sup{color:#7E22CE;}
 .item.done-ok{border-color:var(--green);background:linear-gradient(to right,var(--gl),var(--surface) 30%);}
 .item.done-mod{border-color:var(--amber);background:linear-gradient(to right,var(--aml),var(--surface) 30%);}
 .item.done-x{border-color:var(--red);background:linear-gradient(to right,var(--rl),var(--surface) 30%);}
@@ -93,6 +101,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .ba-ok{color:var(--green);}.ba-ok.on{background:var(--green);color:#fff;}
 .ba-mod{color:var(--amber);}.ba-mod.on{background:var(--amber);color:#fff;}
 .ba-img{color:var(--accent);}
+/* ★ 추가입고 수정 버튼 */
+.ba-edit-add{color:#fff;background:#9333EA;border-color:#9333EA;}
+.ba-edit-add:hover{background:#7E22CE;}
 .item-st{padding:10px 14px;border-top:1px solid var(--border);font-size:12px;}
 .st-ok{background:var(--gl);color:#166534;}
 .st-mod{background:var(--aml);color:#92400E;}
@@ -146,6 +157,30 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .add-label .req{color:var(--red);margin-left:2px;}
 .add-label .opt{color:var(--m2);font-weight:400;margin-left:4px;}
 .add-input{width:100%;padding:12px 14px;border:1px solid var(--b2);border-radius:8px;font-family:inherit;font-size:14px;outline:none;background:#fff;}
+
+/* ★ 콤보박스 (검색 드롭다운) */
+.combo-wrap{position:relative;}
+.combo-input{padding-right:40px !important;}
+.combo-toggle{position:absolute;right:2px;top:2px;bottom:2px;width:36px;border:none;background:transparent;color:#9333EA;font-size:12px;cursor:pointer;border-radius:6px;transition:background .1s;}
+.combo-toggle:hover{background:#F3E8FF;}
+.combo-toggle:active{transform:scale(.9);}
+.combo-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #C4B5FD;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);z-index:100;}
+.combo-dropdown.show{display:block;}
+.combo-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #F3F4F6;font-size:13px;line-height:1.4;display:flex;flex-direction:column;gap:2px;}
+.combo-item:last-child{border-bottom:none;}
+.combo-item:hover, .combo-item.active{background:#F5F3FF;}
+.combo-item-main{font-weight:600;color:#1F2937;}
+.combo-item-sub{font-size:11px;color:#6B7280;display:flex;gap:6px;flex-wrap:wrap;}
+.combo-item-sub span{background:#F3F4F6;padding:1px 6px;border-radius:4px;}
+.combo-item-hl{color:#9333EA;font-weight:700;}
+/* 첫 항목: 직접 입력 */
+.combo-item.combo-item-manual{background:#FEF3C7;border-left:3px solid #F59E0B;}
+.combo-item.combo-item-manual:hover, .combo-item.combo-item-manual.active{background:#FDE68A;}
+.combo-item.combo-item-manual .combo-item-main{color:#B45309;}
+/* 검색 결과 없음 */
+.combo-empty{padding:16px;text-align:center;color:#9CA3AF;font-size:12px;}
+/* 힌트 */
+.add-hint{margin-top:5px;font-size:11px;color:#6B7280;padding:0 2px;}
 .add-input:focus{border-color:#9333EA;box-shadow:0 0 0 3px rgba(147,51,234,.12);}
 .add-row-grid{display:grid;grid-template-columns:2fr 1fr;gap:8px;}
 .add-kind-row{display:flex;gap:6px;flex-wrap:wrap;}
@@ -160,9 +195,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .add-btn-cancel{background:var(--s2);color:var(--t2);border:1px solid var(--b2);}
 .add-btn-save{background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;box-shadow:0 2px 6px rgba(147,51,234,.25);}
 .add-btn-save:active{transform:scale(.98);}
-/* ★ 추가입고 행 리스트에 표시 (보라색 강조) */
-.item-row.added{border-left:3px solid #9333EA;}
-.item-row.added .product-name::before{content:'➕ ';color:#9333EA;font-weight:700;}
 .add-badge{display:inline-block;background:#F3E8FF;color:#7E22CE;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;}
 /* ★ 방금 추가된 카드 반짝 하이라이트 */
 @keyframes just-added-pulse{
@@ -287,6 +319,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
     <div class="fc" data-f="ok">정상 <span id="cOk">0</span></div>
     <div class="fc" data-f="mod">수정 <span id="cMod">0</span></div>
     <div class="fc" data-f="x">미입고 <span id="cX">0</span></div>
+    <div class="fc fc-added" data-f="added" id="fcAdded" style="display:none;"><span class="fc-ico">➕</span>추가 <span id="cAdded">0</span></div>
   </div>
   <div class="list" id="itemList"></div>
   <div class="footer">
@@ -322,7 +355,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 <!-- ★ 추가 입고 모달 -->
 <div class="add-modal" id="addModal">
   <div class="add-box">
-    <div class="add-title">➕ 리스트에 없는 상품 추가</div>
+    <div class="add-title" id="addModalTitle">➕ 리스트에 없는 상품 추가</div>
     <div class="add-sub">
       예정 리스트에 없는데 들어온 상품을 추가해주세요.<br>
       (예: 교환건, 신상품, 누락된 것 등)
@@ -339,18 +372,29 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 
     <div class="add-section">
       <label class="add-label">사입명 <span class="req">*</span> <span class="opt">(장끼명)</span></label>
-      <input type="text" id="addSanip" class="add-input" placeholder="예: 봄아벨SL" inputmode="text">
+      <!-- ★ 콤보박스: 입력 가능 + 드롭다운 검색 (초성/부분일치) -->
+      <div class="combo-wrap" id="sanipCombo">
+        <input type="text" id="addSanip" class="add-input combo-input" placeholder="사입명 검색 또는 직접 입력" inputmode="text" autocomplete="off" onfocus="openSanipDropdown()" oninput="filterSanipDropdown()">
+        <button type="button" class="combo-toggle" onclick="toggleSanipDropdown(event)">▼</button>
+        <div class="combo-dropdown" id="sanipDropdown"></div>
+      </div>
     </div>
 
     <div class="add-section">
       <label class="add-label">상품명 <span class="opt">(선택)</span></label>
-      <input type="text" id="addProductName" class="add-input" placeholder="예: 옆지퍼 심플 슬랙스">
+      <input type="text" id="addProductName" class="add-input" placeholder="예: 옆지퍼 심플 슬랙스" readonly>
+      <div class="add-hint" id="addProductNameHint" style="display:none;">💡 사입명 선택하면 자동으로 채워져요</div>
     </div>
 
     <div class="add-row-grid">
       <div class="add-section">
         <label class="add-label">옵션 <span class="req">*</span> <span class="opt">(색상/사이즈)</span></label>
-        <input type="text" id="addOption" class="add-input" placeholder="예: 블랙,L">
+        <!-- ★ 옵션도 콤보박스 (선택된 사입명에 따라 필터링) -->
+        <div class="combo-wrap" id="optionCombo">
+          <input type="text" id="addOption" class="add-input combo-input" placeholder="옵션 선택/입력" inputmode="text" autocomplete="off" onfocus="openOptionDropdown()" oninput="filterOptionDropdown()">
+          <button type="button" class="combo-toggle" onclick="toggleOptionDropdown(event)">▼</button>
+          <div class="combo-dropdown" id="optionDropdown"></div>
+        </div>
       </div>
       <div class="add-section">
         <label class="add-label">공급처 <span class="req">*</span></label>
@@ -374,7 +418,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 
     <div class="add-actions">
       <button class="add-btn add-btn-cancel" onclick="closeAddModal()">취소</button>
-      <button class="add-btn add-btn-save" onclick="saveAddItem()">➕ 추가</button>
+      <button class="add-btn add-btn-save" id="addModalSaveBtn" onclick="saveAddItem()">➕ 추가</button>
     </div>
   </div>
 </div>
@@ -396,7 +440,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbyOWOcCSzNgeotauLnEzLPs
 const MEMO_PRESETS = ['사이즈 잘못 들어옴','다른 상품이 들어옴','색상 잘못 들어옴','수량 잘못 들어옴'];
 
 /* ═══ 상태 ═══ */
-let S = { worker:null, sessionId:null, items:[], filter:'all', supplier:'ALL', mode:'normal', editing:null };
+let S = { worker:null, sessionId:null, items:[], filter:'all', supplier:'ALL', mode:'normal', editing:null, addCandidates:[] };
 
 /* 스팀 상품 판별 - 상품메모1에 "스팀" 포함 여부로 결정
    (index_1.html 분배 로직과 동일한 기준) */
@@ -463,6 +507,8 @@ async function loadData(){
     const r=await callGAS('getInspection',{sessionId:S.sessionId,worker:S.worker});
     if(!r.ok){hideLoading();toast('불러오기 실패');return;}
     S.items=r.items;
+    // ★ 추가입고 후보 저장 (SBODWL에서 [미송],[반품],[선주문] 등)
+    S.addCandidates = r.addCandidates || [];
     document.getElementById('workerName').textContent=S.worker;
     if(S.items.length===0){
       document.getElementById('itemList').innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div>${S.worker}님 검수 데이터가 없어요.<br>작업번호(${S.sessionId})를 확인해주세요.</div></div>`;
@@ -506,13 +552,22 @@ function render(){
   });
 
   // 2. 현재 탭 기준 상태별 카운트
-  const cn={all:modeItems.length,pending:0,ok:0,mod:0,x:0};
-  modeItems.forEach(i=>{const s=i.검수상태;if(s==='O')cn.ok++;else if(s==='수정')cn.mod++;else if(s==='X')cn.x++;else cn.pending++;});
+  const cn={all:modeItems.length,pending:0,ok:0,mod:0,x:0,added:0};
+  modeItems.forEach(i=>{
+    const s=i.검수상태;
+    if(s==='O')cn.ok++;else if(s==='수정')cn.mod++;else if(s==='X')cn.x++;else cn.pending++;
+    if(i.추가입고) cn.added++;
+  });
   document.getElementById('cAll').textContent=cn.all;
   document.getElementById('cPending').textContent=cn.pending;
   document.getElementById('cOk').textContent=cn.ok;
   document.getElementById('cMod').textContent=cn.mod;
   document.getElementById('cX').textContent=cn.x;
+  // ★ 추가입고 카운트 + 건수 있을 때만 필터 버튼 표시
+  document.getElementById('cAdded').textContent=cn.added;
+  document.getElementById('fcAdded').style.display = cn.added > 0 ? '' : 'none';
+  // 추가 건수 0이 됐는데 현재 필터가 'added'면 자동으로 전체로 돌려놓기
+  if (cn.added === 0 && S.filter === 'added') S.filter = 'all';
 
   // 3. 진행률 계산 (완료 버튼 로직에서 사용)
   const done=cn.ok+cn.mod+cn.x;
@@ -559,6 +614,7 @@ function render(){
     if(S.filter==='ok') return i.검수상태==='O';
     if(S.filter==='mod') return i.검수상태==='수정';
     if(S.filter==='x') return i.검수상태==='X';
+    if(S.filter==='added') return i.추가입고 === true;
   });
 
   const list=document.getElementById('itemList');
@@ -600,9 +656,13 @@ function render(){
         ${bigo?`<div class="item-bigo-tag">⚠ ${esc(String(bigo))}</div>`:''}
       </div>
       <div class="item-actions">
-        <button class="ba ba-ok${s==='O'?' on':''}" onclick="markOK(${it.행번호})">✓ 정상</button>
-        <button class="ba ba-mod${s==='수정'||s==='X'?' on':''}" onclick="openMod(${it.행번호})">✎ 수정/X</button>
-        ${hasImg?`<button class="ba ba-img" onclick="showImg(${it.행번호})">📷 이미지</button>`:`<button class="ba" style="color:var(--m2)" disabled>📷 없음</button>`}
+        ${it.추가입고 
+          ? `<button class="ba ba-edit-add" onclick="openEditAdded(${it.행번호})">✏️ 정보 수정</button>
+             ${hasImg?`<button class="ba ba-img" onclick="showImg(${it.행번호})">📷 이미지</button>`:''}`
+          : `<button class="ba ba-ok${s==='O'?' on':''}" onclick="markOK(${it.행번호})">✓ 정상</button>
+             <button class="ba ba-mod${s==='수정'||s==='X'?' on':''}" onclick="openMod(${it.행번호})">✎ 수정/X</button>
+             ${hasImg?`<button class="ba ba-img" onclick="showImg(${it.행번호})">📷 이미지</button>`:`<button class="ba" style="color:var(--m2)" disabled>📷 없음</button>`}`
+        }
       </div>
       ${stHtml}
     </div>`;
@@ -788,22 +848,380 @@ async function loadExistingWorkTime(){
   }catch(e){ /* 조용히 실패 */ }
 }
 
+/* ═══ 추가입고 모달 (신규 등록 / 수정 겸용) ═══ */
+let editingRowNum = null;  // null이면 신규, 값 있으면 해당 행 수정
+
+/* ═══ 🎯 추가입고 콤보박스: 사입명/옵션 검색 + 초성 매칭 ═══ */
+
+/**
+ * ★ 사입명 정규화: 줄바꿈과 메타 정보 제거
+ * 예: "26SS_바닐라SK\n반품일자:2026-04-14" → "26SS_바닐라SK"
+ *     "스완BL\n메모: 확인" → "스완BL"
+ */
+function normalizeSanip(raw) {
+  if (!raw) return '';
+  const s = String(raw);
+  // 1. 첫 줄바꿈 이후 전부 제거 (반품일자:..., 메모:... 등)
+  const firstLine = s.split(/[\n\r]/)[0];
+  return firstLine.trim();
+}
+
+/**
+ * 한글 초성 추출 (예: "봄아벨" → "ㅂㅇㅂ")
+ * 한글이 아닌 문자는 그대로 유지 (영문/숫자)
+ */
+function getChosung(str) {
+  const CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  let result = '';
+  for (const ch of String(str || '')) {
+    const code = ch.charCodeAt(0);
+    if (code >= 0xAC00 && code <= 0xD7A3) {
+      // 완성된 한글 음절
+      const idx = Math.floor((code - 0xAC00) / 588);
+      result += CHO[idx];
+    } else if (code >= 0x3131 && code <= 0x314E) {
+      // 이미 초성/자모 문자
+      result += ch;
+    } else {
+      // 영문/숫자/기타 그대로 (대소문자는 소문자로)
+      result += ch.toLowerCase();
+    }
+  }
+  return result;
+}
+
+/**
+ * 검색 매칭: 일반 부분일치 + 초성 매칭
+ */
+function matchesQuery(text, query) {
+  if (!query) return true;
+  const t = String(text || '').toLowerCase();
+  const q = query.toLowerCase();
+  // 1. 부분 일치
+  if (t.includes(q)) return true;
+  // 2. 초성 검색 (쿼리가 초성/자모만 포함된 경우)
+  const qIsChosung = /^[ㄱ-ㅎ\s]+$/.test(q);
+  if (qIsChosung) {
+    return getChosung(text).includes(q);
+  }
+  return false;
+}
+
+/**
+ * 하이라이트 (매칭된 부분 강조)
+ */
+function highlightMatch(text, query) {
+  if (!query) return esc(text);
+  const t = String(text || '');
+  const q = query.toLowerCase();
+  const idx = t.toLowerCase().indexOf(q);
+  if (idx >= 0) {
+    return esc(t.substring(0, idx)) + `<span class="combo-item-hl">${esc(t.substring(idx, idx + q.length))}</span>` + esc(t.substring(idx + q.length));
+  }
+  return esc(t);
+}
+
+let isManualMode = false;  // 직접 입력 모드 여부
+
+/* === 사입명 콤보 === */
+
+function openSanipDropdown() {
+  if (isManualMode) return;  // 직접 입력 모드에서는 드롭다운 안 열림
+  renderSanipDropdown('');
+  document.getElementById('sanipDropdown').classList.add('show');
+}
+
+function toggleSanipDropdown(e) {
+  e.stopPropagation();
+  if (isManualMode) { setManualMode(false); return; }
+  const dd = document.getElementById('sanipDropdown');
+  if (dd.classList.contains('show')) {
+    dd.classList.remove('show');
+  } else {
+    openSanipDropdown();
+    document.getElementById('addSanip').focus();
+  }
+}
+
+function filterSanipDropdown() {
+  if (isManualMode) return;
+  const q = document.getElementById('addSanip').value.trim();
+  renderSanipDropdown(q);
+  document.getElementById('sanipDropdown').classList.add('show');
+}
+
+function renderSanipDropdown(query) {
+  const dd = document.getElementById('sanipDropdown');
+  const candidates = S.addCandidates || [];
+  // ★ 사입명 기준으로 유니크하게 묶기 (날짜/메타 정보 제거한 정규화 키 사용)
+  const uniqueSanip = {};
+  candidates.forEach(c => {
+    const normalizedSanip = normalizeSanip(c.사입명) || c.상품명;  // 정규화된 사입명
+    const key = normalizedSanip;
+    if (!uniqueSanip[key]) {
+      uniqueSanip[key] = { 
+        사입명: normalizedSanip,     // 표시/검색/비교용 모두 정규화된 값
+        상품명: c.상품명, 
+        공급처: c.공급처 
+      };
+    }
+  });
+  // 쿼리 필터링
+  const list = Object.values(uniqueSanip).filter(c => {
+    return matchesQuery(c.사입명, query) || matchesQuery(c.상품명, query);
+  });
+  // 직접 입력 옵션 + 검색 결과
+  let html = `<div class="combo-item combo-item-manual" onclick="setManualMode(true)">
+    <div class="combo-item-main">✏️ 직접 입력 (리스트에 없음)</div>
+    <div class="combo-item-sub"><span>사입명을 직접 타이핑하고 싶을 때</span></div>
+  </div>`;
+  if (list.length === 0 && query) {
+    html += `<div class="combo-empty">"${esc(query)}"에 해당하는 상품이 없어요<br><span style="font-size:10px;">✏️ 직접 입력을 선택하세요</span></div>`;
+  } else {
+    html += list.slice(0, 50).map(c => {
+      const sanipDisplay = c.사입명 || '(사입명 없음)';
+      const prodDisplay = c.상품명 || '';
+      return `<div class="combo-item" onclick="selectSanip(${JSON.stringify(c.사입명 || '').replace(/"/g,'&quot;')})">
+        <div class="combo-item-main">${highlightMatch(sanipDisplay, query)}</div>
+        <div class="combo-item-sub">
+          <span>📦 ${esc(c.공급처 || '-')}</span>
+          <span>🏷️ ${highlightMatch(prodDisplay, query)}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  dd.innerHTML = html;
+}
+
+function selectSanip(sanip) {
+  isManualMode = false;
+  document.getElementById('addSanip').value = sanip;
+  // ★ readOnly 걸지 않음 - 사용자가 다시 검색하고 싶을 수 있으니
+  document.getElementById('sanipDropdown').classList.remove('show');
+  // ★ 정규화된 사입명 기준으로 매칭 (반품일자 등 메타 정보 있어도 정상 매칭)
+  const matches = (S.addCandidates || []).filter(c => {
+    const normalizedC = normalizeSanip(c.사입명) || c.상품명;
+    return normalizedC === sanip;
+  });
+  if (matches.length > 0) {
+    const first = matches[0];
+    // 공급처 자동 채우기
+    document.getElementById('addSupplier').value = first.공급처 || '';
+    // 상품명 자동 채우기 (수식어 포함된 원본)
+    document.getElementById('addProductName').value = first.상품명 || '';
+    document.getElementById('addProductNameHint').style.display = 'block';
+  }
+  // 옵션 초기화
+  document.getElementById('addOption').value = '';
+  // 옵션 드롭다운에 자동 포커스 안내
+  toast('옵션을 선택하세요');
+  setTimeout(() => {
+    document.getElementById('addOption').focus();
+    openOptionDropdown();
+  }, 300);
+}
+
+/**
+ * 직접 입력 모드 전환
+ */
+function setManualMode(on) {
+  isManualMode = on;
+  const sanipInput = document.getElementById('addSanip');
+  const prodInput = document.getElementById('addProductName');
+  const optInput = document.getElementById('addOption');
+  const supInput = document.getElementById('addSupplier');
+  const hintEl = document.getElementById('addProductNameHint');
+  // ★ 사입명과 옵션은 항상 readOnly=false (타이핑으로 검색 가능해야 함)
+  sanipInput.readOnly = false;
+  optInput.readOnly = false;
+  if (on) {
+    // 직접 입력 모드 - 모든 필드 자유 입력
+    sanipInput.value = '';
+    sanipInput.placeholder = '사입명 직접 입력';
+    prodInput.readOnly = false;  // 직접 입력 모드에서만 상품명도 수동 편집
+    prodInput.value = '';
+    prodInput.placeholder = '상품명 직접 입력';
+    optInput.value = '';
+    optInput.placeholder = '옵션 직접 입력 (예: 블랙,L)';
+    supInput.value = '';
+    hintEl.style.display = 'none';
+    document.getElementById('sanipDropdown').classList.remove('show');
+    document.getElementById('optionDropdown').classList.remove('show');
+    sanipInput.focus();
+    toast('✏️ 직접 입력 모드');
+  } else {
+    // 드롭다운 모드 - 사입명은 검색 타이핑 가능, 상품명만 자동 채움용
+    sanipInput.value = '';
+    sanipInput.placeholder = '사입명 검색 또는 타이핑 (초성 가능)';
+    prodInput.readOnly = true;   // 드롭다운 모드에서는 상품명 자동 채움 (직접 편집 금지)
+    prodInput.value = '';
+    optInput.value = '';
+    optInput.placeholder = '옵션 선택/검색';
+    supInput.value = '';
+    hintEl.style.display = 'none';
+  }
+}
+
+/* === 옵션 콤보 === */
+
+function openOptionDropdown() {
+  if (isManualMode) return;
+  renderOptionDropdown('');
+  document.getElementById('optionDropdown').classList.add('show');
+}
+
+function toggleOptionDropdown(e) {
+  e.stopPropagation();
+  if (isManualMode) return;
+  const dd = document.getElementById('optionDropdown');
+  if (dd.classList.contains('show')) {
+    dd.classList.remove('show');
+  } else {
+    openOptionDropdown();
+    document.getElementById('addOption').focus();
+  }
+}
+
+function filterOptionDropdown() {
+  if (isManualMode) return;
+  const q = document.getElementById('addOption').value.trim();
+  renderOptionDropdown(q);
+  document.getElementById('optionDropdown').classList.add('show');
+}
+
+function renderOptionDropdown(query) {
+  const dd = document.getElementById('optionDropdown');
+  const selectedSanip = document.getElementById('addSanip').value.trim();
+  if (!selectedSanip) {
+    dd.innerHTML = `<div class="combo-empty">사입명 먼저 선택하세요</div>`;
+    return;
+  }
+  // ★ 정규화된 사입명 기준으로 매칭 (반품일자 등 메타 정보 있어도 정상 매칭)
+  const matches = (S.addCandidates || []).filter(c => {
+    const normalizedC = normalizeSanip(c.사입명) || c.상품명;
+    return normalizedC === selectedSanip;
+  });
+  const options = [...new Set(matches.map(c => c.옵션).filter(Boolean))];
+  // 쿼리 필터링
+  const list = options.filter(o => matchesQuery(o, query));
+  // 직접 입력 + 옵션들
+  let html = `<div class="combo-item combo-item-manual" onclick="selectOption('__manual__')">
+    <div class="combo-item-main">✏️ 직접 입력 (이 옵션 없음)</div>
+  </div>`;
+  if (list.length === 0 && query) {
+    html += `<div class="combo-empty">"${esc(query)}"에 해당하는 옵션이 없어요</div>`;
+  } else {
+    html += list.slice(0, 50).map(o => `
+      <div class="combo-item" onclick="selectOption(${JSON.stringify(o).replace(/"/g,'&quot;')})">
+        <div class="combo-item-main">${highlightMatch(o, query)}</div>
+      </div>
+    `).join('');
+  }
+  dd.innerHTML = html;
+}
+
+function selectOption(opt) {
+  const optInput = document.getElementById('addOption');
+  if (opt === '__manual__') {
+    optInput.value = '';
+    optInput.placeholder = '옵션 직접 입력 (예: 블랙,L)';
+    optInput.focus();
+  } else {
+    optInput.value = opt;
+  }
+  document.getElementById('optionDropdown').classList.remove('show');
+}
+
+/* === 드롭다운 바깥 클릭 시 닫기 === */
+document.addEventListener('click', (e) => {
+  const sanipWrap = document.getElementById('sanipCombo');
+  const optWrap = document.getElementById('optionCombo');
+  if (sanipWrap && !sanipWrap.contains(e.target)) {
+    document.getElementById('sanipDropdown').classList.remove('show');
+  }
+  if (optWrap && !optWrap.contains(e.target)) {
+    document.getElementById('optionDropdown').classList.remove('show');
+  }
+});
+
 function openAddModal(){
+  editingRowNum = null;
+  // 모달 제목 + 버튼 라벨 (신규 모드)
+  const titleEl = document.getElementById('addModalTitle');
+  const saveBtn = document.getElementById('addModalSaveBtn');
+  if(titleEl) titleEl.textContent = '리스트에 없는 상품 추가';
+  if(saveBtn) saveBtn.textContent = '➕ 추가';
   // 초기화
   addKind = '교환건';
   document.querySelectorAll('#addKindRow .add-kind').forEach(b=>b.classList.toggle('on', b.dataset.kind==='교환건'));
-  document.getElementById('addSanip').value = '';
-  document.getElementById('addProductName').value = '';
-  document.getElementById('addOption').value = '';
-  document.getElementById('addSupplier').value = '';
+  // ★ 콤보박스 상태: 후보가 있으면 드롭다운 모드, 없으면 직접 입력 모드
+  const hasCandidates = (S.addCandidates || []).length > 0;
+  if (hasCandidates) {
+    setManualMode(false);
+  } else {
+    setManualMode(true);
+  }
   document.getElementById('addQty').value = 1;
   document.getElementById('addMemo').value = '';
   document.getElementById('addModal').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('addSanip').focus();
+    if (hasCandidates) openSanipDropdown();
+  }, 250);
+}
+
+/* ★ v2.4 신규: 기존 추가입고 항목 수정 */
+function openEditAdded(rn){
+  const it = S.items.find(i => i.행번호 === rn);
+  if(!it || !it.추가입고){ toast('수정할 수 없는 항목이에요'); return; }
+  editingRowNum = rn;
+  // 모달 제목 + 버튼 라벨 (수정 모드)
+  const titleEl = document.getElementById('addModalTitle');
+  const saveBtn = document.getElementById('addModalSaveBtn');
+  if(titleEl) titleEl.textContent = '✏️ 추가입고 정보 수정';
+  if(saveBtn) saveBtn.textContent = '✓ 수정 완료';
+  // 기존 값 채우기
+  addKind = it.추가입고종류 || '기타';
+  document.querySelectorAll('#addKindRow .add-kind').forEach(b=>b.classList.toggle('on', b.dataset.kind===addKind));
+  
+  // ★ 사입명 자동 복구: 빈값이면 상품명을 사입명으로 채움 (과거 버그 데이터 보정)
+  let sanipValue = it.사입명 || '';
+  let productValue = it.상품명 || '';
+  let autoFilled = false;
+  if (!sanipValue && productValue) {
+    sanipValue = productValue;      // 상품명을 사입명으로
+    productValue = '';              // 상품명은 빈칸 (자동 대체 상태)
+    autoFilled = true;
+  }
+  // ★ 수정 모드는 항상 직접 입력 모드 (기존 값 보존/편집)
+  setManualMode(true);
+  document.getElementById('addSanip').value = sanipValue;
+  // 상품명이 사입명과 같으면 자동 대체된 것이므로 빈칸으로
+  document.getElementById('addProductName').value = (productValue && productValue !== sanipValue) ? productValue : '';
+  document.getElementById('addOption').value = it.옵션 || '';
+  document.getElementById('addSupplier').value = it.공급처 === '[추가입고]' ? '' : (it.공급처 || '');
+  document.getElementById('addQty').value = it.입고수량 || 1;
+  // 메모에서 [종류] 접두어 제거
+  const rawMemo = it.검수메모 || '';
+  const memoMatch = rawMemo.match(/^\[[^\]]+\]\s*(.*)$/);
+  document.getElementById('addMemo').value = memoMatch ? memoMatch[1] : rawMemo;
+  document.getElementById('addModal').classList.add('show');
   setTimeout(()=>document.getElementById('addSanip').focus(), 250);
+  // 자동 복구 안내
+  if (autoFilled) {
+    setTimeout(() => toast('ℹ️ 사입명이 비어있어 상품명으로 자동 채웠어요. 확인 후 저장하세요'), 400);
+  }
 }
 
 function closeAddModal(){
   document.getElementById('addModal').classList.remove('show');
+  editingRowNum = null;  // ★ 모달 닫을 때 수정 상태 초기화
+  // ★ 콤보박스 드롭다운 닫기
+  const sDd = document.getElementById('sanipDropdown');
+  const oDd = document.getElementById('optionDropdown');
+  if (sDd) sDd.classList.remove('show');
+  if (oDd) oDd.classList.remove('show');
+  isManualMode = false;
 }
 
 function setAddKind(k){
@@ -837,8 +1255,53 @@ async function saveAddItem(){
   // 메모 조합: [종류] 사용자메모
   const fullMemo = memo ? `[${addKind}] ${memo}` : `[${addKind}]`;
 
-  showLoading('추가하는 중...');
+  const isEdit = editingRowNum !== null;
+  showLoading(isEdit ? '수정하는 중...' : '추가하는 중...');
   try{
+    if(isEdit){
+      // ★ 수정 모드
+      const r = await callGAS('updateAddedItem', {
+        sessionId: S.sessionId,
+        worker: S.worker,
+        rowNum: editingRowNum,
+        공급처: supplier,
+        사입명: sanip,
+        상품명: finalProductName,
+        옵션: option,
+        입고수량: qty,
+        검수메모: memo,
+        추가입고종류: addKind
+      });
+      hideLoading();
+      if(!r.ok){toast('수정 실패: '+(r.error||''));return;}
+      // 로컬에도 반영
+      const it = S.items.find(i => i.행번호 === editingRowNum);
+      if(it){
+        it.공급처 = supplier;
+        it.사입명 = sanip;
+        it.상품명 = finalProductName;
+        it.옵션 = option;
+        it.입고수량 = qty;
+        it.실제수량 = qty;
+        it.검수메모 = fullMemo;
+        it.추가입고종류 = addKind;
+      }
+      closeAddModal();
+      render();
+      toast('✓ 수정되었어요');
+      // 수정한 카드로 스크롤 + 반짝 효과
+      setTimeout(() => {
+        const card = document.querySelector(`.item[data-row="${editingRowNum}"]`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('just-added');
+          setTimeout(() => card.classList.remove('just-added'), 2400);
+        }
+      }, 150);
+      return;
+    }
+
+    // ★ 신규 추가 모드 (기존 로직)
     const r = await callGAS('addItem', {
       sessionId: S.sessionId,
       worker: S.worker,
@@ -862,7 +1325,7 @@ async function saveAddItem(){
       담당자: S.worker,
       공급처: supplier || '[추가입고]',
       사입명: sanip,
-      상품명: productName,
+      상품명: finalProductName,
       옵션: option,
       입고수량: qty,
       실제수량: qty,
