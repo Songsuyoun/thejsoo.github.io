@@ -27,6 +27,33 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .sbadge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;}
 .sbadge.진행중{background:var(--aml);color:var(--amber);}
 .sbadge.완료{background:var(--gl);color:var(--green);}
+
+/* ★ v2.6: 오늘의 전달사항 카드 */
+.notice-card{background:linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 100%);border-color:#FDE68A;}
+.notice-today{font-size:11px;color:#92400E;font-weight:500;margin-left:6px;}
+.notice-hint{font-size:11px;color:var(--muted);}
+.notice-form{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.notice-textarea{width:100%;padding:12px 14px;border:1.5px solid #FDE68A;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;min-height:70px;outline:none;background:#fff;transition:border-color .15s;}
+.notice-textarea:focus{border-color:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.12);}
+.notice-form-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.notice-importance{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;}
+.notice-importance input{cursor:pointer;}
+.notice-importance-important{color:var(--red);}
+.notice-btn-create{padding:10px 18px;border:none;background:#F59E0B;color:#fff;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;transition:all .15s;}
+.notice-btn-create:hover{background:#D97706;transform:translateY(-1px);}
+.notice-btn-create:active{transform:translateY(0);}
+.notice-list{display:flex;flex-direction:column;gap:6px;}
+.notice-empty{padding:14px;text-align:center;color:var(--muted);font-size:12px;background:#fff;border-radius:8px;border:1px dashed var(--b2);}
+.notice-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #FDE68A;}
+.notice-item.important{border-color:#EF4444;background:#FEF2F2;}
+.notice-item-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;}
+.notice-item-badge.일반{background:#FEF3C7;color:#92400E;}
+.notice-item-badge.중요{background:#FEE2E2;color:#991B1B;}
+.notice-item-content{flex:1;font-size:13px;color:var(--t2);line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+.notice-item-time{font-size:10px;color:var(--muted);font-family:monospace;white-space:nowrap;padding-top:3px;}
+.notice-item-read{font-size:10px;color:var(--green);font-family:monospace;background:#D1FAE5;padding:1px 6px;border-radius:8px;white-space:nowrap;margin-top:2px;}
+.notice-item-del{background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:all .1s;}
+.notice-item-del:hover{background:#FEE2E2;color:var(--red);}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
 .st-box{padding:12px;border-radius:8px;text-align:center;cursor:pointer;transition:all .15s;border:2px solid transparent;user-select:none;position:relative;}
 .st-box:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08);}
@@ -66,9 +93,17 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 /* 추가입고 행 */
 tr.r-add{background:#FAF5FF;} tr.r-add:hover{background:#F3E8FF;}
 .b-add{background:#9333EA;}
+/* ★ 추가입고 종류별 배지 컬러 */
+.b-add-exchange{background:#EA580C;}   /* 교환건 = 오렌지 (돌려줘야 할 느낌) */
+.b-add-new{background:#059669;}         /* 신상품 = 초록 (새로 들어온 느낌) */
+.b-add-miss{background:#DC2626;}        /* 누락 = 빨강 (원래 와야 했는데 누락) */
+.b-add-etc{background:#6B7280;}         /* 기타 = 회색 */
 .add-row-mark{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;background:#F3E8FF;color:#7E22CE;margin-right:4px;}
-/* ★ 추가입고 행에서 사입명 표시 */
-.add-sanip-label{margin-top:3px;font-size:11px;color:#7E22CE;background:#F3E8FF;padding:2px 8px;border-radius:4px;display:inline-block;font-weight:600;}
+/* ★ 추가입고 행에서 상품명 + 사입명 표시 */
+.add-prodname-box{display:flex;flex-direction:column;gap:3px;}
+.add-prodname{font-weight:700;color:#4B5563;font-size:13px;}
+.add-sanip-label{font-size:11px;color:#7E22CE;background:#F3E8FF;padding:2px 8px;border-radius:4px;display:inline-block;font-weight:600;width:fit-content;}
+.add-sanip-label .lbl{color:#A855F7;font-weight:500;margin-right:3px;}
 
 /* ★ v2.4: 작업시간 섹션 */
 .wt-section{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;margin-bottom:14px;}
@@ -127,6 +162,32 @@ tr.r-p{background:var(--s2);} tr.r-p:hover{background:#EAECEF;}
   <div><div style="font-size:15px;font-weight:700;">입고검수 결과 확인</div><div style="font-size:11px;color:var(--muted);">직원들 검수 현황 보기 · 결과 엑셀 다운로드</div></div>
 </div></div>
 <div class="main">
+  <!-- ★ v2.6: 오늘의 전달사항 카드 -->
+  <div class="card notice-card">
+    <div class="card-title-row">
+      <div class="card-title" style="margin:0;">📢 오늘의 전달사항 <span class="notice-today" id="noticeToday"></span></div>
+      <span class="notice-hint">직원 폰 진입 시 자동 표시</span>
+    </div>
+    <!-- 입력 폼 -->
+    <div class="notice-form">
+      <textarea id="noticeInput" class="notice-textarea" placeholder="직원에게 전달할 내용을 입력하세요.&#10;예) 오늘 점심은 12:30이에요. 솔티스 스커트는 따로 박스에 담아주세요."></textarea>
+      <div class="notice-form-row">
+        <label class="notice-importance">
+          <input type="radio" name="noticeImp" value="일반" checked> 일반
+        </label>
+        <label class="notice-importance notice-importance-important">
+          <input type="radio" name="noticeImp" value="중요"> ⚠️ 중요 (팝업 강조)
+        </label>
+        <div style="flex:1;"></div>
+        <button class="notice-btn-create" onclick="createNotice()">📌 공지 등록</button>
+      </div>
+    </div>
+    <!-- 오늘 등록된 공지 리스트 -->
+    <div class="notice-list" id="noticeList">
+      <div class="notice-empty">오늘 등록된 공지가 없어요</div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-title-row">
       <div class="card-title" style="margin:0;">📅 날짜별 검수 내역</div>
@@ -176,6 +237,11 @@ let state = { sessions: [], selectedSession: null, items: [] };
 
 window.addEventListener('DOMContentLoaded', () => {
   loadSessions();
+  loadNotices();  // ★ v2.6: 공지 로드
+  // 오늘 날짜 표시
+  const d = new Date();
+  const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  document.getElementById('noticeToday').textContent = todayStr;
   document.getElementById('sb').addEventListener('input', renderTable);
   document.getElementById('fs').addEventListener('change', renderTable);
   document.getElementById('fw').addEventListener('change', renderTable);
@@ -423,17 +489,25 @@ function renderTable() {
     const s = it.검수상태;
     // 추가입고 행이면 보라색 (검수상태 무관)
     const rc = it.추가입고 ? 'r-add' : (s === 'O' ? 'r-ok' : s === '수정' ? 'r-mod' : s === 'X' ? 'r-x' : 'r-p');
+    // ★ 추가입고 종류별 뱃지 컬러 분화
+    const addKind = it.추가입고종류 || '기타';
+    const addBadgeCls = addKind === '교환건' ? 'b-add-exchange' 
+                      : addKind === '신상품' ? 'b-add-new'
+                      : addKind === '누락' ? 'b-add-miss'
+                      : 'b-add-etc';
     const badge = it.추가입고 
-      ? `<span class="badge b-add">➕ ${it.추가입고종류 || '추가'}</span>` 
+      ? `<span class="badge ${addBadgeCls}">➕ ${addKind}</span>` 
       : (s === 'O' ? '<span class="badge b-ok">정상</span>' : s === '수정' ? '<span class="badge b-mod">수정</span>' : s === 'X' ? '<span class="badge b-x">미입고</span>' : '<span class="badge b-p">대기</span>');
     const actC = s === '수정' ? 'color:var(--amber);font-weight:700;' : s === 'X' ? 'color:var(--red);font-weight:700;' : '';
     const act = it.실제수량 === '' || it.실제수량 === undefined ? '-' : it.실제수량;
-    const prodMark = it.추가입고 ? '<span class="add-row-mark">➕</span>' : '';
-    // ★ 추가입고인 경우 사입명도 같이 표시 (직원들이 사입명만 아는 경우가 많아서)
-    const sanipLabel = it.추가입고 && it.사입명 
-      ? `<div class="add-sanip-label">📋 사입명: ${it.사입명}</div>` 
-      : '';
-    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodMark}${it.상품명||''}${sanipLabel}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
+    // ★ 추가입고인 경우 상품명 + 사입명을 명확히 구조화
+    const prodCell = it.추가입고
+      ? `<div class="add-prodname-box">
+           <div class="add-prodname"><span class="add-row-mark">➕</span>${it.상품명||'(상품명 미입력)'}</div>
+           ${it.사입명 ? `<div class="add-sanip-label"><span class="lbl">📋 사입명</span>${it.사입명}</div>` : ''}
+         </div>`
+      : `${it.상품명||''}`;
+    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodCell}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
   }).join('');
 }
 
@@ -596,6 +670,88 @@ async function downloadSmartbiz() {
     if (unmatchedList.length > 3) msg += `\n ...외 ${unmatchedList.length - 3}건`;
   }
   alert(msg);
+}
+
+// ═══════════════════════════════════════════════
+// ★ v2.6: 오늘의 전달사항 (공지)
+// ═══════════════════════════════════════════════
+
+async function loadNotices() {
+  try {
+    const r = await callGAS('getTodayNotices', { worker: 'admin' });
+    if (!r.ok) return;
+    renderNoticeList(r.notices || []);
+  } catch (e) {
+    console.warn('공지 로드 실패:', e);
+  }
+}
+
+function renderNoticeList(notices) {
+  const list = document.getElementById('noticeList');
+  if (!notices || notices.length === 0) {
+    list.innerHTML = '<div class="notice-empty">오늘 등록된 공지가 없어요</div>';
+    return;
+  }
+  list.innerHTML = notices.map(n => {
+    const isImp = n.중요도 === '중요';
+    return `
+      <div class="notice-item ${isImp ? 'important' : ''}">
+        <span class="notice-item-badge ${n.중요도}">${isImp ? '⚠️ 중요' : '일반'}</span>
+        <div class="notice-item-content">${escapeHtml(n.내용)}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+          <span class="notice-item-time">${n.생성시간}</span>
+        </div>
+        <button class="notice-item-del" onclick="deleteNoticeRow('${n.공지ID}')" title="삭제">🗑️</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+async function createNotice() {
+  const input = document.getElementById('noticeInput');
+  const content = input.value.trim();
+  if (!content) {
+    alert('공지 내용을 입력하세요');
+    input.focus();
+    return;
+  }
+  const imp = document.querySelector('input[name="noticeImp"]:checked').value;
+  const btn = document.querySelector('.notice-btn-create');
+  btn.disabled = true;
+  btn.textContent = '등록 중...';
+  try {
+    const r = await callGAS('createNotice', { 내용: content, 중요도: imp });
+    if (!r.ok) {
+      alert('등록 실패: ' + (r.error || ''));
+      return;
+    }
+    input.value = '';
+    document.querySelector('input[name="noticeImp"][value="일반"]').checked = true;
+    await loadNotices();
+  } catch (e) {
+    alert('네트워크 오류: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📌 공지 등록';
+  }
+}
+
+async function deleteNoticeRow(noticeId) {
+  if (!confirm('이 공지를 삭제할까요?')) return;
+  try {
+    const r = await callGAS('deleteNotice', { 공지ID: noticeId });
+    if (!r.ok) {
+      alert('삭제 실패: ' + (r.error || ''));
+      return;
+    }
+    await loadNotices();
+  } catch (e) {
+    alert('네트워크 오류: ' + e.message);
+  }
 }
 </script>
 </body>
