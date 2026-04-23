@@ -222,9 +222,13 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 <div class="save-wrap">
   <div class="save-inner">
     <div class="checked-info" id="checkedInfo">0개 선택</div>
-    <button class="btn-save" id="btnSave" onclick="saveAndExcel()" disabled
+    <button class="btn-save" id="btnSave" onclick="saveReturns()" disabled
       style="background:var(--green);">
-      ✅ 반납 처리 + 엑셀 저장
+      ✅ 반납 처리
+    </button>
+    <button class="btn-save" id="btnExcel" onclick="downloadTodayExcel()"
+      style="background:#1A7AE0; margin-top:8px;">
+      📥 오늘 반납분 엑셀 다운로드
     </button>
   </div>
 </div>
@@ -527,6 +531,94 @@ document.getElementById('kakaoModal').addEventListener('click', function(e) {
 });
 
 // ── 엑셀 다운로드 (스마트비즈 샘플차감 양식) ──
+// ── 오늘 반납분 엑셀 다운로드 (PC용) ──
+async function downloadTodayExcel() {
+  var btn = document.getElementById('btnExcel');
+  btn.textContent = '로딩 중...';
+  btn.disabled = true;
+
+  // 최신 데이터 다시 불러오기
+  try {
+    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll');
+    var data = await res.json();
+    var today = new Date().toISOString().split('T')[0];
+
+    // 오늘 반납완료된 항목만 필터 (한국 시간 기준)
+    function toKoreaDate(val) {
+      if (!val) return '';
+      var d = new Date(val);
+      if (isNaN(d)) return (val + '').substring(0, 10);
+      // UTC → 한국 시간 (+9시간)
+      var kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+      return kst.toISOString().substring(0, 10);
+    }
+    var todayItems = (data.rows || []).filter(function(r) {
+      return r['상태'] === '반납완료' && toKoreaDate(r['반납일']) === today;
+    });
+
+    if (!todayItems.length) {
+      showToast('오늘 반납처리된 항목이 없어요!');
+      btn.textContent = '📥 오늘 반납분 엑셀 다운로드';
+      btn.disabled = false;
+      return;
+    }
+
+    // 거래처별로 상품명 묶기
+    var vendorMap = {};
+    todayItems.forEach(function(item) {
+      var key = item['거래처'] || '';
+      if (!vendorMap[key]) {
+        vendorMap[key] = {
+          거래처: item['거래처'] || '',
+          연락처: item['연락처'] || '',
+          주소: item['주소'] || '',
+          상품들: []
+        };
+      }
+      vendorMap[key].상품들.push(item['상품명'] || '');
+    });
+
+    // 스마트비즈 발주서 형식
+    var rows = [['동대문도착일(필수)', '업체명(필수)', '연락처(필수)', '주소(필수)', '사입명(필수)', '상품명(필수)', '옵션(필수)', '원가(필수)', '주문(필수)', '비고', '사용자관리코드']];
+    Object.keys(vendorMap).forEach(function(key) {
+      var v = vendorMap[key];
+      rows.push([
+        today,
+        v.거래처,
+        v.연락처,
+        v.주소,
+        v.상품들.join(', '),
+        null,
+        '전색상',
+        1,
+        1,
+        '샘플반납',
+        ''
+      ]);
+    });
+
+    var ws1 = XLSX.utils.aoa_to_sheet(rows);
+    ws1['!cols'] = [
+      { wch: 16 }, { wch: 16 }, { wch: 14 },
+      { wch: 24 }, { wch: 50 }, { wch: 10 },
+      { wch: 10 }, { wch: 8 }, { wch: 8 },
+      { wch: 12 }, { wch: 14 }
+    ];
+
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws1, '발주서');
+
+    var fileName = '샘플반납_' + today + '.xlsx';
+    XLSX.writeFile(wb, fileName);
+    showToast('✅ ' + todayItems.length + '건 엑셀 다운로드 완료!');
+  } catch(e) {
+    showToast('❌ 다운로드 실패: ' + e.message);
+  } finally {
+    btn.textContent = '📥 오늘 반납분 엑셀 다운로드';
+    btn.disabled = false;
+  }
+}
+
 function downloadExcel() {
   var checked = allItems.filter(function(r) { return r.checked; });
   if (!checked.length) { showToast('반납할 상품을 선택해주세요'); return; }
