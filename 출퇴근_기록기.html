@@ -183,11 +183,10 @@ const STAFF = [
   { code:'2026030465', name:'오윤지' },
 ];
 
-// ── 허용 IP 목록 (네이버 "내 ip" 검색 결과 입력) ──
-const ALLOWED_IPS = [
-  '121.145.247.70',
-  '221.167.0.166',
-  '221.167.1.202',
+// ── 허용 IP 대역 목록 ──
+const ALLOWED_IP_PREFIXES = [
+  '121.145.247.',  // 고정 IP 대역
+  '221.167.',      // 회사 통신사 대역 전체
 ];
 
 const staffMap = {};
@@ -202,19 +201,18 @@ async function checkIP() {
     const data = await res.json();
     const myIP = data.ip;
 
-    if (ALLOWED_IPS.length === 0 || ALLOWED_IPS.includes(myIP)) {
-      // IP 허용 — 버튼 활성화
+    const allowed = ALLOWED_IP_PREFIXES.some(prefix => myIP.startsWith(prefix));
+
+    if (allowed) {
       ipVerified = true;
       document.getElementById('ipBanner').style.display = 'none';
     } else {
-      // IP 차단 — 버튼 비활성화 + 안내
       ipVerified = false;
       document.getElementById('ipBanner').style.display = 'flex';
       document.getElementById('btnIn').disabled = true;
       document.getElementById('btnOut').disabled = true;
     }
   } catch(e) {
-    // IP 확인 실패 시 차단
     ipVerified = false;
     document.getElementById('ipBanner').style.display = 'flex';
     document.getElementById('ipBanner').querySelector('.ip-banner-msg').textContent = 'IP 확인에 실패했어요. 회사 와이파이에 연결되어 있는지 확인해주세요.';
