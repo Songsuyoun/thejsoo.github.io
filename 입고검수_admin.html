@@ -683,8 +683,8 @@ function renderTable() {
     // ★ 관리 버튼 (추가입고 필터 + 추가입고 행일 때만)
     const actionCell = isAddedFilter && it.추가입고
       ? `<td class="l"><div class="admin-row-actions">
-           <button class="ara-btn edit" onclick="openAdminEditModal(${it.행번호})" title="수정">✏️</button>
-           <button class="ara-btn del" onclick="adminQuickDelete(${it.행번호})" title="삭제">🗑️</button>
+           <button class="ara-btn edit" onclick="openAdminEditModal(${it.행번호}, '${(it.담당자||'').replace(/'/g,"\\'")}')" title="수정">✏️</button>
+           <button class="ara-btn del" onclick="adminQuickDelete(${it.행번호}, '${(it.담당자||'').replace(/'/g,"\\'")}')" title="삭제">🗑️</button>
          </div></td>`
       : (isAddedFilter ? '<td></td>' : '');
     return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodCell}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td>${actionCell}</tr>`;
@@ -954,9 +954,11 @@ async function deleteNoticeRow(noticeId) {
 // ═══════════════════════════════════════════════
 
 let _editingRowNum = null;  // 편집 중인 행번호
+let _editingWorker = null;  // ★ v2.6: 편집 중인 담당자 (행번호만으로는 유일 식별 안 됨)
 
 function openAdminAddModal() {
   _editingRowNum = null;
+  _editingWorker = null;  // ★ v2.6: 신규 등록은 담당자 정보 없음
   document.getElementById('adminAddTitle').textContent = '➕ 추가입고 등록';
   document.getElementById('aaBtnSave').textContent = '저장';
   document.getElementById('aaBtnDelete').style.display = 'none';
@@ -979,9 +981,12 @@ function openAdminAddModal() {
   document.getElementById('adminAddModal').classList.add('show');
 }
 
-function openAdminEditModal(rowNum) {
-  const it = state.items.find(i => Number(i.행번호) === Number(rowNum));
-  console.log('[openAdminEditModal] rowNum:', rowNum, '찾은 아이템:', it);
+function openAdminEditModal(rowNum, worker) {
+  // ★ v2.6: 행번호 + 담당자로 정확히 매칭 (같은 행번호여도 담당자 다른 경우 구분)
+  const it = worker 
+    ? state.items.find(i => Number(i.행번호) === Number(rowNum) && String(i.담당자) === String(worker))
+    : state.items.find(i => Number(i.행번호) === Number(rowNum));
+  console.log('[openAdminEditModal] rowNum:', rowNum, 'worker:', worker, '찾은 아이템:', it);
   if (!it) { alert('항목을 찾을 수 없어요'); return; }
   console.log('[openAdminEditModal] it.추가입고:', it.추가입고, '타입:', typeof it.추가입고);
   // ★ 추가입고 값이 boolean true, 문자열 "TRUE"/"true" 모두 허용
@@ -992,6 +997,7 @@ function openAdminEditModal(rowNum) {
   }
   
   _editingRowNum = rowNum;
+  _editingWorker = it.담당자;  // ★ v2.6: 담당자도 별도로 저장 (행번호 충돌 방지)
   document.getElementById('adminAddTitle').textContent = '✏️ 추가입고 수정';
   document.getElementById('aaBtnSave').textContent = '수정 완료';
   document.getElementById('aaBtnDelete').style.display = '';
@@ -1020,6 +1026,7 @@ function openAdminEditModal(rowNum) {
 function closeAdminAddModal() {
   document.getElementById('adminAddModal').classList.remove('show');
   _editingRowNum = null;
+  _editingWorker = null;  // ★ v2.6: 편집 상태 초기화
 }
 
 async function saveAdminAdded() {
@@ -1049,9 +1056,14 @@ async function saveAdminAdded() {
   
   try {
     const isEdit = _editingRowNum !== null;
-    // ★ 편집 모드: 원본 아이템의 '담당자'로 행을 찾아야 함 (담당자를 바꿨을 수도 있음)
-    const originalItem = isEdit ? state.items.find(i => Number(i.행번호) === Number(_editingRowNum)) : null;
-    const lookupWorker = isEdit ? (originalItem ? originalItem.담당자 : worker) : worker;
+    // ★ v2.6: 편집 모드에서는 _editingWorker(openAdminEditModal에서 저장한 원본 담당자)를 사용
+    //   행번호만으로 find하면 다른 담당자의 같은 행번호가 먼저 매칭될 수 있음!
+    const originalItem = isEdit 
+      ? state.items.find(i => Number(i.행번호) === Number(_editingRowNum) && String(i.담당자) === String(_editingWorker))
+      : null;
+    const lookupWorker = isEdit ? (originalItem ? originalItem.담당자 : _editingWorker) : worker;
+    
+    console.log('[saveAdminAdded] isEdit:', isEdit, '_editingRowNum:', _editingRowNum, '_editingWorker:', _editingWorker, 'lookupWorker:', lookupWorker, 'originalItem:', originalItem);
     
     const action = isEdit ? 'updateAddedItem' : 'addItem';
     const params = isEdit ? {
@@ -1127,8 +1139,11 @@ async function adminDeleteAdded() {
   }
 }
 
-async function adminQuickDelete(rowNum) {
-  const it = state.items.find(i => Number(i.행번호) === Number(rowNum));
+async function adminQuickDelete(rowNum, worker) {
+  // ★ v2.6: 행번호 + 담당자로 정확히 매칭 (같은 행번호여도 담당자 다른 경우 구분)
+  const it = worker 
+    ? state.items.find(i => Number(i.행번호) === Number(rowNum) && String(i.담당자) === String(worker))
+    : state.items.find(i => Number(i.행번호) === Number(rowNum));
   if (!it) return;
   // ★ 추가입고 값이 boolean true, 문자열 "TRUE"/"true" 모두 허용
   const isAdded = it.추가입고 === true || String(it.추가입고).toUpperCase() === 'TRUE';
