@@ -981,8 +981,15 @@ function openAdminAddModal() {
 
 function openAdminEditModal(rowNum) {
   const it = state.items.find(i => Number(i.행번호) === Number(rowNum));
+  console.log('[openAdminEditModal] rowNum:', rowNum, '찾은 아이템:', it);
   if (!it) { alert('항목을 찾을 수 없어요'); return; }
-  if (!it.추가입고) { alert('추가입고 항목만 편집 가능해요'); return; }
+  console.log('[openAdminEditModal] it.추가입고:', it.추가입고, '타입:', typeof it.추가입고);
+  // ★ 추가입고 값이 boolean true, 문자열 "TRUE"/"true" 모두 허용
+  const isAdded = it.추가입고 === true || String(it.추가입고).toUpperCase() === 'TRUE';
+  if (!isAdded) { 
+    alert(`추가입고 항목만 편집 가능해요\n(디버그: 값="${it.추가입고}" 타입="${typeof it.추가입고}")`); 
+    return; 
+  }
   
   _editingRowNum = rowNum;
   document.getElementById('adminAddTitle').textContent = '✏️ 추가입고 수정';
@@ -1123,7 +1130,9 @@ async function adminDeleteAdded() {
 async function adminQuickDelete(rowNum) {
   const it = state.items.find(i => Number(i.행번호) === Number(rowNum));
   if (!it) return;
-  if (!it.추가입고) { alert('추가입고 항목만 삭제 가능해요'); return; }
+  // ★ 추가입고 값이 boolean true, 문자열 "TRUE"/"true" 모두 허용
+  const isAdded = it.추가입고 === true || String(it.추가입고).toUpperCase() === 'TRUE';
+  if (!isAdded) { alert('추가입고 항목만 삭제 가능해요'); return; }
   
   const name = it.상품명 || it.사입명 || '이 항목';
   if (!confirm(`"${name}" 추가입고 상품을 정말 삭제할까요?\n\n(되돌릴 수 없어요)`)) return;
