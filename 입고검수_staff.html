@@ -824,16 +824,33 @@ function render(){
   // 4. 완료 버튼: 두 탭 모두 완료해야 초록색
   const totalDone = S.items.filter(i=>i.검수상태).length;
   const btn=document.getElementById('btnComplete');
-  // ★ 100% 미만이면 플래그 리셋 (다음에 다시 100% 도달 시 갱신 가능)
-  if(totalDone < S.items.length || S.items.length === 0) {
+  
+  // ★ v2.6: 물건확인 자동 기록 기준을 '일반(normal) 상품 100%'로 변경
+  //   이유: 이혜정은 스팀을 단기 알바에게 맡기므로, 본인 일반 상품만 끝나면 자동 기록
+  //   - 일반 상품만 있는 세션: 일반 100% = 전체 100% → 기존과 동일하게 작동
+  //   - 스팀도 있는 세션: 일반 100%면 자동 기록 (스팀 완료 안 기다림)
+  const normalDone = normalItems.filter(i=>i.검수상태).length;
+  const normalAllDone = normalItems.length > 0 && normalDone === normalItems.length;
+  const noNormalOnlySteam = normalItems.length === 0 && steamItems.length > 0;  // 스팀만 있는 경우
+  
+  // 100% 미만이면 플래그 리셋 (다음에 다시 100% 도달 시 갱신 가능)
+  // 스팀만 있는 세션: 스팀도 전부 끝나야 기록
+  // 그 외: 일반만 전부 끝나면 기록
+  const autoCheckCondition = noNormalOnlySteam 
+    ? (totalDone === S.items.length && S.items.length > 0)
+    : normalAllDone;
+  
+  if(!autoCheckCondition) {
     _lastAt100 = false;
+  } else {
+    // ★ 자동 기록 조건 만족 → 물건확인 시간 자동 기록
+    //   (중복 호출은 triggerAutoCheckTime 내부에서 _lastAt100으로 방지)
+    triggerAutoCheckTime();
   }
+  
+  // 완료 버튼 색상: 전체 100%일 때만
   if(totalDone===S.items.length && S.items.length>0){
     btn.style.background='var(--green)';btn.textContent='✓ 전체 검수 완료';
-    // ★ 100% 도달 시 물건확인 시간 자동 기록 (이미 기록 안 됐으면)
-    // - 첫 100% 도달: 기록
-    // - 이후 추가입고 등록되어 다시 100%: 시간 갱신
-    triggerAutoCheckTime();
   } else {
     btn.style.background='var(--m2)';
     // 현재 탭 남은 개수를 보여주되, 다른 탭에도 남은게 있으면 알림

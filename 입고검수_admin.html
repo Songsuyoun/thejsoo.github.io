@@ -13,6 +13,46 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;position:sticky;top:0;z-index:100;}
 .hdr-row{display:flex;align-items:center;gap:12px;max-width:1400px;margin:0 auto;}
 .hdr-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#7C3AED);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.hdr-sheet-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:linear-gradient(135deg,#0F9D58,#0B8043);color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.hdr-sheet-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(15,157,88,.3);}
+.hdr-sheet-btn:active{transform:translateY(0);}
+
+/* ★ v2.6: 완료 후 수정 이력 배지 */
+.hdr-changes-wrap{position:relative;}
+.hdr-changes-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:var(--t2);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.hdr-changes-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.hdr-changes-btn.has-changes{background:#FEF3C7;border-color:#F59E0B;color:#92400E;animation:pulse-badge 2s infinite;}
+.hdr-changes-btn.has-changes:hover{background:#FDE68A;}
+@keyframes pulse-badge{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4);}50%{box-shadow:0 0 0 6px rgba(245,158,11,0);}}
+.hdr-changes-label{display:inline;}
+.hdr-changes-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:800;min-width:18px;}
+
+.changes-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:420px;max-width:calc(100vw - 20px);max-height:500px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.15);z-index:200;overflow:hidden;display:flex;flex-direction:column;animation:chg-slide .2s;}
+@keyframes chg-slide{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.changes-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;font-size:13px;font-weight:700;}
+.changes-confirm-all{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+.changes-confirm-all:hover{background:rgba(255,255,255,.3);}
+.changes-body{flex:1;overflow-y:auto;max-height:440px;}
+.changes-empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;}
+.chg-item{padding:12px 16px;border-bottom:1px solid var(--border);transition:background .1s;}
+.chg-item:hover{background:var(--s2);}
+.chg-item:last-child{border-bottom:none;}
+.chg-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.chg-kind{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700;}
+.chg-kind.k-수량수정{background:#FEF3C7;color:#92400E;}
+.chg-kind.k-미입고{background:#FEE2E2;color:#991B1B;}
+.chg-kind.k-정상체크{background:#D1FAE5;color:#065F46;}
+.chg-kind.k-추가입고등록{background:#F3E8FF;color:#6B21A8;}
+.chg-kind.k-추가입고수정{background:#DBEAFE;color:#1E40AF;}
+.chg-kind.k-추가입고삭제{background:#F3F4F6;color:#374151;}
+.chg-time{font-size:10.5px;color:var(--muted);font-family:monospace;}
+.chg-prod{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3;}
+.chg-opt{font-size:11px;color:var(--muted);}
+.chg-content{font-size:12px;color:var(--t2);margin-top:4px;}
+.chg-meta{display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:8px;}
+.chg-worker{font-size:10.5px;color:var(--muted);}
+.chg-confirm-btn{background:#fff;border:1px solid var(--green);color:var(--green);padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .1s;}
+.chg-confirm-btn:hover{background:var(--gl);}
 .main{max-width:1400px;margin:0 auto;padding:20px 24px;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .card-title{font-size:13px;font-weight:700;color:var(--t2);margin-bottom:12px;}
@@ -33,6 +73,11 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .notice-today{font-size:11px;color:#92400E;font-weight:500;margin-left:6px;}
 .notice-hint{font-size:11px;color:var(--muted);}
 .notice-form{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+/* ★ v2.6: 자주 쓰는 멘트 프리셋 */
+.notice-presets{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#FFF;border:1px dashed #F59E0B;border-radius:8px;}
+.notice-presets-label{font-size:11px;font-weight:700;color:#92400E;white-space:nowrap;}
+.notice-preset-select{flex:1;padding:6px 10px;border:1px solid #FDE68A;border-radius:6px;background:#FFFBEB;font-family:inherit;font-size:12px;color:var(--t2);cursor:pointer;outline:none;}
+.notice-preset-select:focus{border-color:#F59E0B;box-shadow:0 0 0 2px rgba(245,158,11,.15);}
 .notice-textarea{width:100%;padding:12px 14px;border:1.5px solid #FDE68A;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;min-height:70px;outline:none;background:#fff;transition:border-color .15s;}
 .notice-textarea:focus{border-color:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.12);}
 .notice-form-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
@@ -54,6 +99,37 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .notice-item-read{font-size:10px;color:var(--green);font-family:monospace;background:#D1FAE5;padding:1px 6px;border-radius:8px;white-space:nowrap;margin-top:2px;}
 .notice-item-del{background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:all .1s;}
 .notice-item-del:hover{background:#FEE2E2;color:var(--red);}
+
+/* ★ v2.6: 관리자용 추가입고 편집 모달 */
+.admin-add-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:center;justify-content:center;padding:20px;}
+.admin-add-modal.show{display:flex;animation:aa-fadein .2s;}
+@keyframes aa-fadein{from{opacity:0;}to{opacity:1;}}
+.admin-add-box{background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.admin-add-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;}
+.admin-add-title{font-size:15px;font-weight:700;}
+.admin-add-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;}
+.admin-add-close:hover{background:rgba(255,255,255,.35);}
+.admin-add-body{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+.aa-row{display:flex;flex-direction:column;gap:6px;}
+.aa-row-2{display:grid;grid-template-columns:2fr 1fr;gap:12px;}
+.aa-row-2>div{display:flex;flex-direction:column;gap:6px;}
+.aa-row label,.aa-row-2 label{font-size:12px;font-weight:600;color:var(--t2);}
+.aa-row input,.aa-row select,.aa-row-2 input,.aa-row-2 select{padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;outline:none;transition:border-color .15s;}
+.aa-row input:focus,.aa-row select:focus,.aa-row-2 input:focus{border-color:#9333EA;box-shadow:0 0 0 3px rgba(147,51,234,.1);}
+.admin-add-footer{display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border);background:var(--s2);}
+.aa-btn{padding:11px 16px;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:all .1s;}
+.aa-btn-cancel{background:#fff;color:var(--t2);border:1px solid var(--b2);flex:1;}
+.aa-btn-save{background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;flex:2;}
+.aa-btn-save:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(147,51,234,.3);}
+.aa-btn-delete{background:var(--rl);color:var(--red);border:1px solid #FCA5A5;flex:0 0 auto;}
+.aa-btn-delete:hover{background:#FEE2E2;}
+
+/* 테이블 관리 버튼 */
+.admin-row-actions{display:flex;gap:4px;}
+.ara-btn{background:none;border:1px solid var(--b2);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:11px;color:var(--t2);transition:all .1s;}
+.ara-btn:hover{background:var(--s2);}
+.ara-btn.edit:hover{background:#EDE9FE;border-color:#9333EA;color:#7C3AED;}
+.ara-btn.del:hover{background:#FEE2E2;border-color:var(--red);color:var(--red);}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
 .st-box{padding:12px;border-radius:8px;text-align:center;cursor:pointer;transition:all .15s;border:2px solid transparent;user-select:none;position:relative;}
 .st-box:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08);}
@@ -159,7 +235,26 @@ tr.r-p{background:var(--s2);} tr.r-p:hover{background:#EAECEF;}
 <body>
 <div class="hdr"><div class="hdr-row">
   <div class="hdr-logo">📊</div>
-  <div><div style="font-size:15px;font-weight:700;">입고검수 결과 확인</div><div style="font-size:11px;color:var(--muted);">직원들 검수 현황 보기 · 결과 엑셀 다운로드</div></div>
+  <div style="flex:1;"><div style="font-size:15px;font-weight:700;">입고검수 결과 확인</div><div style="font-size:11px;color:var(--muted);">직원들 검수 현황 보기 · 결과 엑셀 다운로드</div></div>
+  <!-- ★ v2.6: 세션 완료 후 수정 사항 배지 -->
+  <div class="hdr-changes-wrap">
+    <button class="hdr-changes-btn" id="hdrChangesBtn" onclick="togglePendingChanges()" title="완료 후 수정 이력">
+      🔔 <span class="hdr-changes-label">수정사항</span>
+      <span class="hdr-changes-badge" id="hdrChangesBadge" style="display:none;">0</span>
+    </button>
+    <div class="changes-dropdown" id="changesDropdown" style="display:none;">
+      <div class="changes-head">
+        <div>📋 완료 후 수정 이력</div>
+        <button class="changes-confirm-all" onclick="confirmAllChanges()">전체 확인</button>
+      </div>
+      <div class="changes-body" id="changesBody">
+        <div class="changes-empty">확인이 필요한 수정사항이 없어요 ✨</div>
+      </div>
+    </div>
+  </div>
+  <a href="https://docs.google.com/spreadsheets/d/11GA2IJVfx9xWs6RVUB2lPRmx9w2Ik69udpeOnv3-c7o/edit" target="_blank" rel="noopener" class="hdr-sheet-btn" title="구글시트 데이터베이스 열기">
+    📋 구글시트 DB
+  </a>
 </div></div>
 <div class="main">
   <!-- ★ v2.6: 오늘의 전달사항 카드 -->
@@ -170,6 +265,14 @@ tr.r-p{background:var(--s2);} tr.r-p:hover{background:#EAECEF;}
     </div>
     <!-- 입력 폼 -->
     <div class="notice-form">
+      <!-- ★ v2.6: 자주 쓰는 멘트 콤보박스 -->
+      <div class="notice-presets">
+        <label class="notice-presets-label">💬 자주 쓰는 멘트</label>
+        <select id="noticePresetSelect" class="notice-preset-select" onchange="applyNoticePreset(this.value)">
+          <option value="">선택하면 아래에 입력됩니다...</option>
+          <option value="신상 한장씩 빼주세요!">신상 한장씩 빼주세요!</option>
+        </select>
+      </div>
       <textarea id="noticeInput" class="notice-textarea" placeholder="직원에게 전달할 내용을 입력하세요.&#10;예) 오늘 점심은 12:30이에요. 솔티스 스커트는 따로 박스에 담아주세요."></textarea>
       <div class="notice-form-row">
         <label class="notice-importance">
@@ -225,10 +328,68 @@ tr.r-p{background:var(--s2);} tr.r-p:hover{background:#EAECEF;}
       <input type="text" id="sb" placeholder="🔍 상품명/공급처 검색...">
       <select id="fs"><option value="all">모든 상태</option><option value="O">정상만</option><option value="수정">수정만</option><option value="X">미입고만</option><option value="">미검수만</option><option value="added">➕ 추가입고만</option></select>
       <select id="fw"><option value="all">모든 담당자</option></select>
+      <!-- ★ v2.6: 추가입고 필터일 때만 표시되는 '상품 추가' 버튼 -->
+      <button id="btnAddAdmin" onclick="openAdminAddModal()" style="display:none;padding:8px 14px;background:#9333EA;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">➕ 추가입고 등록</button>
     </div>
     <div class="tbl-wrap"><table><thead><tr>
-      <th>담당</th><th class="l">공급처</th><th class="l">상품명</th><th class="l">옵션</th><th>예정</th><th>실제</th><th>상태</th><th class="l">메모</th>
+      <th>담당</th><th class="l">공급처</th><th class="l">상품명</th><th class="l">옵션</th><th>예정</th><th>실제</th><th>상태</th><th class="l">메모</th><th class="l" id="thAction" style="display:none;">관리</th>
     </tr></thead><tbody id="tb"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ★ v2.6: 관리자용 추가입고 편집/등록 모달 -->
+<div class="admin-add-modal" id="adminAddModal" onclick="if(event.target.id==='adminAddModal')closeAdminAddModal()">
+  <div class="admin-add-box">
+    <div class="admin-add-head">
+      <div class="admin-add-title" id="adminAddTitle">➕ 추가입고 등록</div>
+      <button class="admin-add-close" onclick="closeAdminAddModal()">✕</button>
+    </div>
+    <div class="admin-add-body">
+      <div class="aa-row">
+        <label>담당자 *</label>
+        <select id="aaWorker"></select>
+      </div>
+      <div class="aa-row">
+        <label>공급처 *</label>
+        <input type="text" id="aaSupplier" placeholder="예: 말파">
+      </div>
+      <div class="aa-row">
+        <label>사입명</label>
+        <input type="text" id="aaSanip" placeholder="장끼명 (사입명 또는 상품명 중 하나는 필수)">
+      </div>
+      <div class="aa-row">
+        <label>상품명</label>
+        <input type="text" id="aaProduct" placeholder="예: 옆지퍼 심플 슬랙스">
+      </div>
+      <div class="aa-row-2">
+        <div>
+          <label>옵션 *</label>
+          <input type="text" id="aaOption" placeholder="예: 블랙,L">
+        </div>
+        <div>
+          <label>수량 *</label>
+          <input type="number" id="aaQty" value="1" min="1">
+        </div>
+      </div>
+      <div class="aa-row">
+        <label>종류</label>
+        <select id="aaKind">
+          <option value="교환건">교환건</option>
+          <option value="신상품">신상품</option>
+          <option value="누락">누락</option>
+          <option value="기타" selected>기타</option>
+        </select>
+      </div>
+      <div class="aa-row">
+        <label>메모 (선택)</label>
+        <input type="text" id="aaMemo" placeholder="특이사항">
+      </div>
+    </div>
+    <div class="admin-add-footer">
+      <button class="aa-btn aa-btn-cancel" onclick="closeAdminAddModal()">취소</button>
+      <button class="aa-btn aa-btn-delete" id="aaBtnDelete" onclick="adminDeleteAdded()" style="display:none;">🗑️ 삭제</button>
+      <button class="aa-btn aa-btn-save" id="aaBtnSave" onclick="saveAdminAdded()">저장</button>
+    </div>
   </div>
 </div>
 <script>
@@ -238,6 +399,9 @@ let state = { sessions: [], selectedSession: null, items: [] };
 window.addEventListener('DOMContentLoaded', () => {
   loadSessions();
   loadNotices();  // ★ v2.6: 공지 로드
+  loadPendingChanges();  // ★ v2.6: 완료 후 수정 이력 로드
+  // ★ 60초마다 배지 갱신 (다른 기기에서 수정 시 반영)
+  setInterval(loadPendingChanges, 60 * 1000);
   // 오늘 날짜 표시
   const d = new Date();
   const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -476,6 +640,14 @@ function renderTable() {
   const search = document.getElementById('sb').value.toLowerCase();
   const sf = document.getElementById('fs').value;
   const wf = document.getElementById('fw').value;
+  
+  // ★ v2.6: 추가입고 필터일 때 '추가 등록' 버튼 + '관리' 컬럼 표시
+  const isAddedFilter = sf === 'added';
+  const btnAdd = document.getElementById('btnAddAdmin');
+  const thAction = document.getElementById('thAction');
+  if (btnAdd) btnAdd.style.display = isAddedFilter ? '' : 'none';
+  if (thAction) thAction.style.display = isAddedFilter ? '' : 'none';
+  
   const fil = state.items.filter(it => {
     if (search && !(it.상품명 || '').toLowerCase().includes(search) && !(it.공급처 || '').toLowerCase().includes(search)) return false;
     if (sf === 'added') { if (!it.추가입고) return false; }
@@ -484,7 +656,8 @@ function renderTable() {
     return true;
   });
   const tb = document.getElementById('tb');
-  if (fil.length === 0) { tb.innerHTML = '<tr><td colspan="8" class="empty">검색 결과 없음</td></tr>'; return; }
+  const colspan = isAddedFilter ? 9 : 8;
+  if (fil.length === 0) { tb.innerHTML = `<tr><td colspan="${colspan}" class="empty">검색 결과 없음</td></tr>`; return; }
   tb.innerHTML = fil.map(it => {
     const s = it.검수상태;
     // 추가입고 행이면 보라색 (검수상태 무관)
@@ -507,7 +680,14 @@ function renderTable() {
            ${it.사입명 ? `<div class="add-sanip-label"><span class="lbl">📋 사입명</span>${it.사입명}</div>` : ''}
          </div>`
       : `${it.상품명||''}`;
-    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodCell}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td></tr>`;
+    // ★ 관리 버튼 (추가입고 필터 + 추가입고 행일 때만)
+    const actionCell = isAddedFilter && it.추가입고
+      ? `<td class="l"><div class="admin-row-actions">
+           <button class="ara-btn edit" onclick="openAdminEditModal(${it.행번호})" title="수정">✏️</button>
+           <button class="ara-btn del" onclick="adminQuickDelete(${it.행번호})" title="삭제">🗑️</button>
+         </div></td>`
+      : (isAddedFilter ? '<td></td>' : '');
+    return `<tr class="${rc}"><td class="c">${it.담당자}</td><td class="l">${it.공급처||''}</td><td class="l n">${prodCell}</td><td class="l" style="color:var(--muted)">${it.옵션||''}</td><td class="c">${it.입고수량||0}</td><td class="c" style="${actC}">${act}</td><td class="c">${badge}</td><td class="l" style="color:var(--amber);font-size:11px;">${it.검수메모||''}</td>${actionCell}</tr>`;
   }).join('');
 }
 
@@ -686,6 +866,21 @@ async function loadNotices() {
   }
 }
 
+/**
+ * ★ v2.6: 자주 쓰는 멘트 선택 시 textarea에 삽입
+ *   - 현재 입력 내용이 있으면 줄바꿈 후 추가
+ *   - 빈 상태면 그대로 채움
+ */
+function applyNoticePreset(preset) {
+  if (!preset) return;
+  const input = document.getElementById('noticeInput');
+  const cur = input.value.trim();
+  input.value = cur ? (cur + '\n' + preset) : preset;
+  // 셀렉트는 리셋 (다음에 또 누를 수 있게)
+  document.getElementById('noticePresetSelect').value = '';
+  input.focus();
+}
+
 function renderNoticeList(notices) {
   const list = document.getElementById('noticeList');
   if (!notices || notices.length === 0) {
@@ -753,6 +948,306 @@ async function deleteNoticeRow(noticeId) {
     alert('네트워크 오류: ' + e.message);
   }
 }
+
+// ═══════════════════════════════════════════════
+// ★ v2.6: 관리자 추가입고 편집/등록/삭제
+// ═══════════════════════════════════════════════
+
+let _editingRowNum = null;  // 편집 중인 행번호
+
+function openAdminAddModal() {
+  _editingRowNum = null;
+  document.getElementById('adminAddTitle').textContent = '➕ 추가입고 등록';
+  document.getElementById('aaBtnSave').textContent = '저장';
+  document.getElementById('aaBtnDelete').style.display = 'none';
+  
+  // 담당자 리스트 채우기 (현재 세션의 담당자들)
+  const workers = [...new Set(state.items.map(i => i.담당자))].filter(Boolean);
+  const workerSel = document.getElementById('aaWorker');
+  workerSel.innerHTML = workers.map(w => `<option value="${w}">${w}</option>`).join('');
+  workerSel.disabled = false;  // ★ 신규 등록에선 담당자 선택 가능
+  
+  // 필드 초기화
+  document.getElementById('aaSupplier').value = '';
+  document.getElementById('aaSanip').value = '';
+  document.getElementById('aaProduct').value = '';
+  document.getElementById('aaOption').value = '';
+  document.getElementById('aaQty').value = 1;
+  document.getElementById('aaKind').value = '기타';
+  document.getElementById('aaMemo').value = '';
+  
+  document.getElementById('adminAddModal').classList.add('show');
+}
+
+function openAdminEditModal(rowNum) {
+  const it = state.items.find(i => Number(i.행번호) === Number(rowNum));
+  if (!it) { alert('항목을 찾을 수 없어요'); return; }
+  if (!it.추가입고) { alert('추가입고 항목만 편집 가능해요'); return; }
+  
+  _editingRowNum = rowNum;
+  document.getElementById('adminAddTitle').textContent = '✏️ 추가입고 수정';
+  document.getElementById('aaBtnSave').textContent = '수정 완료';
+  document.getElementById('aaBtnDelete').style.display = '';
+  
+  // 담당자 리스트 - 수정 모드에선 원본 담당자 고정 표시 (변경 불가)
+  const workerSel = document.getElementById('aaWorker');
+  workerSel.innerHTML = `<option value="${it.담당자}">${it.담당자}</option>`;
+  workerSel.disabled = true;  // ★ 수정 모드에선 담당자 변경 불가
+  
+  // 기존 값 채움
+  document.getElementById('aaSupplier').value = it.공급처 === '[추가입고]' ? '' : (it.공급처 || '');
+  document.getElementById('aaSanip').value = it.사입명 || '';
+  // 상품명이 사입명과 같으면 자동 채워진 것이라 상품명 비움
+  document.getElementById('aaProduct').value = (it.상품명 && it.상품명 !== it.사입명) ? it.상품명 : '';
+  document.getElementById('aaOption').value = it.옵션 || '';
+  document.getElementById('aaQty').value = it.입고수량 || 1;
+  document.getElementById('aaKind').value = it.추가입고종류 || '기타';
+  // 메모에서 [종류] 접두어 제거
+  const rawMemo = it.검수메모 || '';
+  const memoMatch = rawMemo.match(/^\[[^\]]+\]\s*(.*)$/);
+  document.getElementById('aaMemo').value = memoMatch ? memoMatch[1] : rawMemo;
+  
+  document.getElementById('adminAddModal').classList.add('show');
+}
+
+function closeAdminAddModal() {
+  document.getElementById('adminAddModal').classList.remove('show');
+  _editingRowNum = null;
+}
+
+async function saveAdminAdded() {
+  const worker = document.getElementById('aaWorker').value;
+  const supplier = document.getElementById('aaSupplier').value.trim();
+  const sanip = document.getElementById('aaSanip').value.trim();
+  const productName = document.getElementById('aaProduct').value.trim();
+  const option = document.getElementById('aaOption').value.trim();
+  const qty = parseInt(document.getElementById('aaQty').value) || 0;
+  const kind = document.getElementById('aaKind').value;
+  const memo = document.getElementById('aaMemo').value.trim();
+  
+  // 검증
+  if (!worker) { alert('담당자를 선택해주세요'); return; }
+  if (!supplier) { alert('공급처를 입력해주세요'); return; }
+  if (!sanip && !productName) { alert('사입명 또는 상품명을 입력해주세요'); return; }
+  if (!option) { alert('옵션을 입력해주세요'); return; }
+  if (qty < 1) { alert('수량은 1개 이상이어야 해요'); return; }
+  
+  const finalSanip = sanip || productName;
+  const finalProductName = productName || sanip;
+  const fullMemo = memo ? `[${kind}] ${memo}` : `[${kind}]`;
+  
+  const btn = document.getElementById('aaBtnSave');
+  btn.disabled = true;
+  btn.textContent = '저장 중...';
+  
+  try {
+    const isEdit = _editingRowNum !== null;
+    // ★ 편집 모드: 원본 아이템의 '담당자'로 행을 찾아야 함 (담당자를 바꿨을 수도 있음)
+    const originalItem = isEdit ? state.items.find(i => Number(i.행번호) === Number(_editingRowNum)) : null;
+    const lookupWorker = isEdit ? (originalItem ? originalItem.담당자 : worker) : worker;
+    
+    const action = isEdit ? 'updateAddedItem' : 'addItem';
+    const params = isEdit ? {
+      sessionId: state.selectedSession,
+      worker: lookupWorker,        // ★ 행 찾기용 (원본 담당자)
+      rowNum: Number(_editingRowNum),  // ★ 명시적으로 Number 변환
+      공급처: supplier,
+      사입명: finalSanip,
+      상품명: finalProductName,
+      옵션: option,
+      입고수량: qty,
+      검수메모: memo,
+      추가입고종류: kind,
+      _source: 'admin'  // ★ v2.6: admin에서 호출 - Slack 알림용
+    } : {
+      sessionId: state.selectedSession,
+      worker: worker,
+      공급처: supplier,
+      사입명: finalSanip,
+      상품명: finalProductName,
+      옵션: option,
+      입고수량: qty,
+      실제수량: qty,
+      바코드: '',
+      검수상태: 'O',
+      검수메모: fullMemo,
+      추가입고: true,
+      추가입고종류: kind,
+      _source: 'admin'  // ★ v2.6: admin에서 호출 - Slack 알림용
+    };
+    
+    console.log('[saveAdminAdded] 요청:', action, params);
+    const r = await callGAS(action, params);
+    console.log('[saveAdminAdded] 응답:', r);
+    
+    if (!r.ok) { 
+      alert((isEdit ? '수정' : '추가') + ' 실패: ' + (r.error || '알 수 없는 오류')); 
+      return; 
+    }
+    
+    closeAdminAddModal();
+    // 데이터 새로 로드
+    await refreshDetail();
+  } catch (e) {
+    console.error('[saveAdminAdded] 에러:', e);
+    alert('네트워크 오류: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = _editingRowNum !== null ? '수정 완료' : '저장';
+  }
+}
+
+async function adminDeleteAdded() {
+  if (_editingRowNum === null) return;
+  const it = state.items.find(i => Number(i.행번호) === Number(_editingRowNum));
+  const name = it ? (it.상품명 || it.사입명 || '이 항목') : '이 항목';
+  if (!confirm(`"${name}" 추가입고 상품을 정말 삭제할까요?\n\n(되돌릴 수 없어요)`)) return;
+  
+  const worker = it ? it.담당자 : document.getElementById('aaWorker').value;
+  try {
+    const r = await callGAS('deleteAddedItem', {
+      sessionId: state.selectedSession,
+      worker: worker,
+      rowNum: Number(_editingRowNum),  // ★ 명시적 Number 변환
+      _source: 'admin',  // ★ v2.6: admin 호출 - Slack 알림
+      상품명: it ? (it.상품명 || it.사입명) : ''
+    });
+    if (!r.ok) { alert('삭제 실패: ' + (r.error || '알 수 없는 오류')); return; }
+    closeAdminAddModal();
+    await refreshDetail();
+  } catch (e) {
+    alert('네트워크 오류: ' + e.message);
+  }
+}
+
+async function adminQuickDelete(rowNum) {
+  const it = state.items.find(i => Number(i.행번호) === Number(rowNum));
+  if (!it) return;
+  if (!it.추가입고) { alert('추가입고 항목만 삭제 가능해요'); return; }
+  
+  const name = it.상품명 || it.사입명 || '이 항목';
+  if (!confirm(`"${name}" 추가입고 상품을 정말 삭제할까요?\n\n(되돌릴 수 없어요)`)) return;
+  
+  try {
+    const r = await callGAS('deleteAddedItem', {
+      sessionId: state.selectedSession,
+      worker: it.담당자,
+      rowNum: Number(rowNum),  // ★ 명시적 Number 변환
+      _source: 'admin',  // ★ v2.6: admin 호출 - Slack 알림
+      상품명: it.상품명 || it.사입명
+    });
+    if (!r.ok) { alert('삭제 실패: ' + (r.error || '알 수 없는 오류')); return; }
+    await refreshDetail();
+  } catch (e) {
+    alert('네트워크 오류: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// ★ v2.6: 세션 완료 후 수정 이력 (admin 배지)
+// ═══════════════════════════════════════════════
+
+let _pendingChanges = [];
+
+async function loadPendingChanges() {
+  try {
+    const r = await callGAS('getPendingChanges');
+    if (!r.ok) return;
+    _pendingChanges = r.changes || [];
+    renderChangesBadge();
+    renderChangesList();
+  } catch (e) {
+    console.warn('변경 이력 로드 실패:', e);
+  }
+}
+
+function renderChangesBadge() {
+  const btn = document.getElementById('hdrChangesBtn');
+  const badge = document.getElementById('hdrChangesBadge');
+  const count = _pendingChanges.length;
+  if (count > 0) {
+    btn.classList.add('has-changes');
+    badge.style.display = '';
+    badge.textContent = count;
+  } else {
+    btn.classList.remove('has-changes');
+    badge.style.display = 'none';
+  }
+}
+
+function renderChangesList() {
+  const body = document.getElementById('changesBody');
+  if (!_pendingChanges.length) {
+    body.innerHTML = '<div class="changes-empty">확인이 필요한 수정사항이 없어요 ✨</div>';
+    return;
+  }
+  body.innerHTML = _pendingChanges.map(c => {
+    const time = new Date(c.발생시간);
+    const timeStr = `${String(time.getMonth()+1).padStart(2,'0')}/${String(time.getDate()).padStart(2,'0')} ${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`;
+    const kindEsc = escapeHtml(c.변경종류);
+    const sourceBadge = c.수정주체 === 'admin' 
+      ? '<span style="font-size:9.5px;background:#EDE9FE;color:#7C3AED;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px;">admin</span>' 
+      : '<span style="font-size:9.5px;background:#DBEAFE;color:#1E40AF;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px;">staff</span>';
+    return `<div class="chg-item" data-log-id="${escapeHtml(c.logId)}">
+      <div class="chg-item-head">
+        <span class="chg-kind k-${kindEsc}">${kindEsc}${sourceBadge}</span>
+        <span class="chg-time">${timeStr} · ${escapeHtml(c.sessionId)}</span>
+      </div>
+      <div class="chg-prod">${escapeHtml(c.상품명 || '-')} ${c.옵션 ? `<span class="chg-opt">(${escapeHtml(c.옵션)})</span>` : ''}</div>
+      <div class="chg-content">${escapeHtml(c.변경내용 || '')}</div>
+      <div class="chg-meta">
+        <span class="chg-worker">👤 ${escapeHtml(c.담당자)}</span>
+        <button class="chg-confirm-btn" onclick="confirmChange('${escapeHtml(c.logId)}')">✓ 확인함</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePendingChanges() {
+  const dd = document.getElementById('changesDropdown');
+  const isShown = dd.style.display !== 'none';
+  dd.style.display = isShown ? 'none' : '';
+  if (!isShown) loadPendingChanges();  // 열 때 최신 데이터 다시 로드
+}
+
+async function confirmChange(logId) {
+  try {
+    const r = await callGAS('markChangeAsConfirmed', { logId: logId, 확인자: 'admin' });
+    if (!r.ok) { alert('확인 처리 실패: ' + (r.error || '')); return; }
+    // 로컬에서 제거
+    _pendingChanges = _pendingChanges.filter(c => c.logId !== logId);
+    renderChangesBadge();
+    renderChangesList();
+  } catch (e) {
+    alert('네트워크 오류: ' + e.message);
+  }
+}
+
+async function confirmAllChanges() {
+  if (!_pendingChanges.length) return;
+  if (!confirm(`${_pendingChanges.length}건을 모두 확인 처리할까요?`)) return;
+  try {
+    const r = await callGAS('confirmAllChanges', { 확인자: 'admin' });
+    if (!r.ok) { alert('처리 실패'); return; }
+    _pendingChanges = [];
+    renderChangesBadge();
+    renderChangesList();
+    // 드롭다운 닫기
+    document.getElementById('changesDropdown').style.display = 'none';
+  } catch (e) {
+    alert('네트워크 오류: ' + e.message);
+  }
+}
+
+// 드롭다운 바깥 클릭 시 닫기
+document.addEventListener('click', (e) => {
+  const wrap = document.querySelector('.hdr-changes-wrap');
+  const dd = document.getElementById('changesDropdown');
+  if (!wrap || !dd) return;
+  if (!wrap.contains(e.target) && dd.style.display !== 'none') {
+    dd.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
