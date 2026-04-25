@@ -384,7 +384,10 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #EEF1F7; color: var(
           <div id="missing-area"></div>
           <div class="card" style="background:#F0FFF2; border-color:#B2E5B9; border:0.5px solid #B2E5B9; border-radius:var(--radius-sm); padding:16px 18px; margin-top:4px;">
             <div style="font-size:12px; color:#3E7A42; font-weight:500; margin-bottom:10px;">처리 완료! 아래 버튼으로 파일을 저장하세요.</div>
-            <button class="download-btn" onclick="downloadFile()">⬇ 완성된 발주서 엑셀 다운로드</button>
+            <button class="download-btn" onclick="downloadAndSave()" id="save-btn">
+              ⬇ 발주서 저장 (내 컴퓨터 + 구글 드라이브)
+            </button>
+            <div id="drive-status" style="display:none; font-size:12px; margin-top:8px; padding:8px 12px; border-radius:6px;"></div>
           </div>
           <span class="reset-link" onclick="resetAll()">↺ 처음으로 돌아가기</span>
         </div>
@@ -1147,6 +1150,63 @@ function onCopied() {
   const btn = document.getElementById('copy-btn');
   btn.innerHTML = '<span>✓</span> 복사됨!'; btn.classList.add('copied');
   setTimeout(() => { btn.innerHTML = '<span>📋</span> 복사하기'; btn.classList.remove('copied'); }, 2000);
+}
+
+const GAS_DRIVE_URL = 'https://script.google.com/macros/s/AKfycbzeFmThwsfOdX_u_YTD7Sc8Z3RshUhw_UTN_SjB55Ka9y3moImQ8dyBeI7Ogwqg_1ZH/exec';
+
+function downloadAndSave() {
+  if (!outputWb) return;
+  const btn = document.getElementById('save-btn');
+  const status = document.getElementById('drive-status');
+  const base = stockFileName.replace(/\.[^.]+$/, '');
+  const today = new Date();
+  const ds = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+  const fileName = `${base}_발주서_${ds}.xlsx`;
+
+  // 1) 내 컴퓨터 저장
+  XLSX.writeFile(outputWb, fileName, {bookType:'xlsx', type:'binary', cellStyles:true});
+
+  // 2) 구글 드라이브 저장
+  btn.disabled = true;
+  btn.innerHTML = '⏳ 드라이브 저장 중...';
+  status.style.display = 'none';
+
+  const wbout = XLSX.write(outputWb, {bookType:'xlsx', type:'base64', cellStyles:true});
+
+  fetch(GAS_DRIVE_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({
+      fileName: fileName,
+      fileData: wbout,
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+  })
+  .then(() => {
+    btn.disabled = false;
+    btn.innerHTML = '✓ 저장 완료!';
+    btn.style.background = '#2E7D32';
+    status.style.display = 'block';
+    status.style.background = '#F0FFF2';
+    status.style.color = '#2E7D32';
+    status.style.border = '0.5px solid #B2E5B9';
+    status.textContent = '✓ 내 컴퓨터 + 구글 드라이브 저장 완료!';
+    setTimeout(() => {
+      btn.innerHTML = '⬇ 발주서 저장 (내 컴퓨터 + 구글 드라이브)';
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 4000);
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = '⬇ 발주서 저장 (내 컴퓨터 + 구글 드라이브)';
+    status.style.display = 'block';
+    status.style.background = '#FFF2F2';
+    status.style.color = '#E85D5D';
+    status.style.border = '0.5px solid #FFBBBB';
+    status.textContent = '드라이브 저장 실패 (내 컴퓨터엔 저장됨): ' + err.message;
+  });
 }
 
 function downloadFile() {
