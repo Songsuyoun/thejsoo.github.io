@@ -144,7 +144,11 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 
 <header>
   <div class="logo">더제이수 <span>샘플입고</span></div>
-  <button onclick="resetAll()" style="background:rgba(255,255,255,0.12); border:none; color:rgba(255,255,255,0.8); font-size:12px; font-weight:600; font-family:var(--font); padding:6px 14px; border-radius:20px; cursor:pointer;">🔄 초기화</button>
+  <div style="display:flex; gap:4px; align-items:center;">
+    <button onclick="resetAll()" style="background:rgba(255,255,255,0.12); border:none; color:rgba(255,255,255,0.8); font-size:12px; font-weight:600; font-family:var(--font); padding:6px 14px; border-radius:20px; cursor:pointer;">🔄 초기화</button>
+    <a href="https://docs.google.com/spreadsheets/d/1cSF19qDVRfIAdFMGOFMbD73yajki4zUdPoEFE0vemEY" target="_blank"
+      style="font-size:12px; font-weight:600; font-family:var(--font); padding:6px 14px; border-radius:20px; cursor:pointer; background:#F0EDE8; color:var(--black); text-decoration:none;">📋 샘플 관리 시트</a>
+  </div>
 </header>
 
 <div class="main">
@@ -174,7 +178,7 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
         <input type="file" id="fileInput" accept="image/*" multiple>
         <div class="upload-icon" id="uploadIcon">📄</div>
         <h3 id="uploadTitle">거래명세서 사진 업로드</h3>
-        <p id="uploadSub">⚠️ 한 거래처 영수증만 올려주세요 · 긴 영수증은 여러 장으로 나눠 동시 업로드 OK</p>
+        <p id="uploadSub">⚠️ 한 거래처만 · 긴 영수증은 위/아래 나눠서 찍어도 돼요 (겹쳐도 OK) · 최대 3장</p>
       </div>
       <img id="previewImg" class="preview-img" alt="">
       <button class="btn-primary" id="btnAnalyze" onclick="analyzeImage()" style="display:none;">
@@ -263,10 +267,21 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
     <button class="btn-save" id="btnSave" onclick="saveAll()">
       📊 입고 처리 완료 (<span id="saveCount">0</span>개)
     </button>
+
   </div>
 </div>
 
 <!-- 입고 완료 팝업 -->
+<!-- 저장 완료 팝업 -->
+<div id="saveCompleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center;">
+  <div style="background:white; border-radius:20px; padding:28px 24px; width:85%; max-width:340px; text-align:center;">
+    <div style="font-size:40px; margin-bottom:12px;">✅</div>
+    <div style="font-size:17px; font-weight:700; color:var(--black); margin-bottom:8px;"><span id="saveCompleteCount">0</span>개 입고 처리 완료!</div>
+    <div style="font-size:13px; color:var(--gray-600); margin-bottom:20px;">구글 시트에 저장됐어요.</div>
+    <button onclick="closeSaveComplete()" style="width:100%; padding:13px; border:none; border-radius:12px; background:var(--black); color:white; font-size:15px; font-weight:700; font-family:var(--font); cursor:pointer;">확인</button>
+  </div>
+</div>
+
 <div id="resultModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center; padding:20px;">
   <div style="background:white; border-radius:16px; padding:24px 20px; width:100%; max-width:480px; max-height:80vh; overflow-y:auto; animation:popIn 0.25s ease;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
@@ -683,6 +698,7 @@ function readFileAsBase64(file) {
 // ── AI 분석 ──
 async function analyzeImage() {
   if (!_pendingFiles.length) { showToast('❌ 사진을 올려주세요'); return; }
+  if (_pendingFiles.length > 3) { showToast('❌ 최대 3장까지만 올려주세요!'); return; }
 
   document.getElementById('btnAnalyze').disabled = true;
   document.getElementById('loading').classList.add('show');
@@ -838,6 +854,11 @@ async function aiMatch(items) {
     return (s || '').toLowerCase().replace(/[\s()\[\]{}]/g, '');
   }
 
+  // 영수증 상품명 축약어 제거 (ops→원피스 대신 제거 후 한글만으로 매칭)
+  function stripSuffix(s) {
+    return s.replace(/(?:ops|bl|sk|pt|jk|ts|sl|cd|nt|set|free|ss|fw)$/i, '').trim();
+  }
+
   // 거래처 정규화 (findVendorInfo와 동일 방식)
   function normalizeVendor(s) {
     return (s || '').toLowerCase().replace(/[\s()\[\]{}.\-]/g, '');
@@ -884,11 +905,19 @@ async function aiMatch(items) {
       }
     }
 
+    // 축약어 제거 버전도 준비
+    var invoiceStripped = normalize(stripSuffix(invoiceName));
+
     // 거래처 필터된 결과에서 상품명 매칭
     for (var i = 0; i < vendorFiltered.length; i++) {
       var sheetNorm = normalize(vendorFiltered[i]['상품명']);
-      // 영수증 상품명이 시트 상품명에 포함
+      // 1) 영수증 그대로 포함
       if (invoiceNorm.length >= 2 && sheetNorm.indexOf(invoiceNorm) >= 0) {
+        matchedIdx = sheetRows.indexOf(vendorFiltered[i]);
+        break;
+      }
+      // 2) 축약어 제거 후 포함
+      if (invoiceStripped.length >= 2 && sheetNorm.indexOf(invoiceStripped) >= 0) {
         matchedIdx = sheetRows.indexOf(vendorFiltered[i]);
         break;
       }
@@ -899,6 +928,10 @@ async function aiMatch(items) {
       for (var i = 0; i < sheetRows.length; i++) {
         var sheetNorm = normalize(sheetRows[i]['상품명']);
         if (invoiceNorm.length >= 2 && sheetNorm.indexOf(invoiceNorm) >= 0) {
+          matchedIdx = i;
+          break;
+        }
+        if (invoiceStripped.length >= 2 && sheetNorm.indexOf(invoiceStripped) >= 0) {
           matchedIdx = i;
           break;
         }
@@ -1117,8 +1150,12 @@ async function saveAll() {
 
   btn.disabled = false;
   btn.innerHTML = '📊 입고 처리 완료 (<span id="saveCount">' + pendingRows.length + '</span>개)';
-  showToast('✅ ' + success + '개 입고 처리 완료!');
-  if (newRows.length > 0) showResultModal(newRows);
+  // 완료 팝업 (확인 눌러야 닫힘)
+  if (newRows.length > 0) {
+    showResultModal(newRows, success);
+  } else {
+    showSaveComplete(success);
+  }
 }
 
 // ── 직접 입력 저장 ──
@@ -1175,7 +1212,17 @@ async function saveManual() {
 
 
 // 입고 완료 팝업
-function showResultModal(newRows) {
+// 저장 완료 팝업 (새 행 없을 때)
+function showSaveComplete(count) {
+  var modal = document.getElementById('saveCompleteModal');
+  document.getElementById('saveCompleteCount').textContent = count;
+  modal.style.display = 'flex';
+}
+function closeSaveComplete() {
+  document.getElementById('saveCompleteModal').style.display = 'none';
+}
+
+function showResultModal(newRows, successCount) {
   if (!newRows || !newRows.length) return;
 
   // 거래처별 그룹핑
@@ -1196,7 +1243,8 @@ function showResultModal(newRows) {
     html += '</div>';
   });
 
-  document.getElementById('resultModalBody').innerHTML = html;
+  var successTxt = successCount ? '<div style="font-size:14px; font-weight:700; color:var(--green); margin-bottom:12px;">✅ ' + successCount + '개 입고 처리 완료!</div>' : '';
+  document.getElementById('resultModalBody').innerHTML = successTxt + html;
   document.getElementById('resultModal').style.display = 'flex';
 }
 function closeResultModal() {
@@ -1215,7 +1263,7 @@ function resetAll() {
   area.classList.remove('has-image');
   document.getElementById('uploadIcon').textContent = '📄';
   document.getElementById('uploadTitle').textContent = '거래명세서 사진 업로드 (여러 장 가능)';
-  document.getElementById('uploadSub').textContent = '여러 장 선택하면 순서대로 자동 처리해요';
+  document.getElementById('uploadSub').textContent = '한 거래처만 · 긴 영수증은 위/아래 나눠서 찍어도 돼요 (겹쳐도 OK) · 최대 3장';
 
   // 결과 초기화
   pendingRows = [];
@@ -1422,9 +1470,12 @@ function tryRematch(name, vendor) {
   });
   if (!filtered.length) filtered = sheetRows;
 
+  var nameStripped = normalize(stripSuffix(name.split('/')[0].trim()));
+
   for (var i = 0; i < filtered.length; i++) {
     var sheetNorm = normalize(filtered[i]['상품명']);
-    if (nameNorm.length >= 2 && sheetNorm.indexOf(nameNorm) >= 0) {
+    if ((nameNorm.length >= 2 && sheetNorm.indexOf(nameNorm) >= 0) ||
+        (nameStripped.length >= 2 && sheetNorm.indexOf(nameStripped) >= 0)) {
       var result = filtered[i];
       result._rowIdx = sheetRows.indexOf(filtered[i]);
       return result;
