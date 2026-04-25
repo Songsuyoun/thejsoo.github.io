@@ -472,10 +472,9 @@ async function runProcess(){
       visible++;
       const daily=[];for(let c=iOs;c<=iOe;c++)daily.push(Number(r[c])||0);
       if(daily.reduce((a,b)=>a+b,0)===0){r[16]=null;rc.empty++;return;}
-      const nD=iOe-iOs+1,avg=daily.reduce((a,b)=>a+b,0)/nD;
-      const half=Math.floor(nD/2);
-      const rcnt=daily.slice(0,half).reduce((a,b)=>a+b,0)/half;
-      const rold=daily.slice(half).reduce((a,b)=>a+b,0)/half;
+      const avg=daily.reduce((a,b)=>a+b,0)/14;
+      const rcnt=daily.slice(0,7).reduce((a,b)=>a+b,0)/7;
+      const rold=daily.slice(7,14).reduce((a,b)=>a+b,0)/7;
       const dec=rold>0&&rcnt<rold*0.6;
       const fname=String(r[5]||''),opt=String(r[6]||'');
       const minQ=fname.includes('니트')?30:opt.includes(',')?10:15;
@@ -500,17 +499,20 @@ async function runProcess(){
     const ws2=wb2.addWorksheet('Sheet1');
 
     // 열 너비 + 숨기기 정의
-    const wMap={'등록일자':9.5,'공급처명':13.25,'사입상품명':31.625,'상품명':37.5,'옵션내용':12.375,
-      '선주문 수량':13.0,'추가발주요청\nｏｒ\n품절\n체크':6.875,'발주추천':7.375,
-      '옵션비고':6.5,'품절여부':8.5,'지연일':4.125,'미발송수량':3.5,
-      '상품메모2':7.875,'상품메모3':6.0,'상품메모4':5.375,'현재재고':5.75};
+    const wMap={
+      '등록일자':9.5,'공급처명':13.25,'사입상품명':29.5,'상품명':37.5,'옵션내용':11.41,
+      '최근1주차주문량':4.08,'교환':4.16,'선주문 수량':4.41,
+      '교환＋잔여수＋현재재고－미발수':4.75,
+      '추가발주요청\nｏｒ\n품절\n체크':4.41,'발주추천':7.16,
+      '옵션비고':4.83,'품절여부':5.5,'지연일':3.41,'미발송수량':3.5,
+      '상품메모2':7.08,'상품메모3':3.17,'상품메모4':3.17,'현재재고':3.17};
     const hideSet=new Set(['공급처연락처','공급처위치','원가','부족수량','비고','바코드번호',
       '상품메모1','옵션비고']);
     const isOrdCol=h=>h&&(h==='오늘주문수량'||String(h).startsWith('주문수량_'));
 
     ws2.columns=header.map(h=>({
       key:h||'_',
-      width: isOrdCol(h)?1.92:(wMap[h]||8),
+      width: isOrdCol(h)?2.58203125:(wMap[h]||8),
       hidden: hideSet.has(h)||false
     }));
 
@@ -523,6 +525,7 @@ async function runProcess(){
       cell.font=mkFont(true,null,9);
       cell.fill=mkFill('FFFF99');
       cell.alignment=mkAlign('center','middle',true);
+      cell.border=mkBorder();
       // M~P (col 13~16): 연빨강 + 테두리
       if(colNum>=13&&colNum<=16){
         cell.fill=mkFill('FFCCCC');
@@ -548,11 +551,11 @@ async function runProcess(){
       eRow.eachCell({includeEmpty:true},(cell,colNum)=>{
         const h=header[colNum-1];
         cell.font=mkFont(false,null,9);
+        cell.border=mkBorder();
 
         // M~P (13~16): 중앙정렬 + 테두리
         if(colNum>=13&&colNum<=16){
           cell.alignment=mkAlign('center','middle');
-          cell.border=mkBorder();
         }
         // N열(14): 데이터 있으면 연노랑 + 볼드
         if(colNum===14&&r[13]!=null){
