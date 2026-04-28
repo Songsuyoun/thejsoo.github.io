@@ -977,7 +977,14 @@ async function saveMod(){
   if(!S.editing)return;
   const q=parseInt(document.getElementById('modQty').value)||0;
   const memo=document.getElementById('modMemo').value.trim();
-  let status;if(q===0)status='X';else if(q===Number(S.editing.입고수량))status='O';else status='수정';
+  // ★ v2.6: 메모가 있으면 무조건 '수정' 상태 (수량이 같아도)
+  //   - 수량 = 0: 미입고(X)
+  //   - 수량 다름 또는 메모 있음: 수정
+  //   - 그 외: 정상(O)
+  let status;
+  if(q===0) status='X';
+  else if(q !== Number(S.editing.입고수량) || memo) status='수정';
+  else status='O';
   const rowNum=Number(S.editing.행번호);
   S.editing.검수상태=status;S.editing.실제수량=q;S.editing.검수메모=memo;
   closeMod();render();
