@@ -210,9 +210,14 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
       <div class="input-group">
         <label class="input-label">① 거래처 선택</label>
         <div style="display:flex; gap:8px;">
-          <select class="input-field" id="manualVendor" onchange="onVendorChange()" style="cursor:pointer; flex:1;">
-            <option value="">-- 거래처 선택 --</option>
-          </select>
+          <div style="position:relative; flex:1;">
+            <input type="text" class="input-field" id="manualVendorInput" placeholder="거래처 검색 (예: 라이크워터, ㄹㅇ)"
+              oninput="onManualVendorSearch(this.value)"
+              style="width:100%; cursor:text;"
+              autocomplete="off">
+            <input type="hidden" id="manualVendor" value="">
+            <div id="manualVendorDropdown" style="display:none; position:absolute; top:calc(100% + 2px); left:0; right:0; background:white; border:1.5px solid var(--gray-200); border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:300; max-height:200px; overflow-y:auto;"></div>
+          </div>
           <button type="button" onclick="toggleDirectVendor()" id="btnDirectVendor"
             style="padding:9px 12px; border-radius:8px; border:1.5px solid var(--gray-200); background:var(--gray-100); font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:var(--gray-600);">
             직접 입력
@@ -222,12 +227,11 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
           style="display:none; margin-top:8px;" oninput="onDirectVendorInput(this.value)">
       </div>
 
-      <!-- STEP 2: 요청중 상품 선택 -->
+      <!-- STEP 2: 사입명 입력 -->
       <div class="input-group" id="matchGroup" style="display:none;">
-        <label class="input-label">② 요청중 상품 선택</label>
-        <select class="input-field" id="manualMatch" onchange="onMatchChange()" style="cursor:pointer;">
-          <option value="">-- 직접 입력 (새 행 추가) --</option>
-        </select>
+        <label class="input-label">② 사입명 입력</label>
+        <input type="text" class="input-field" id="manualMatch" placeholder="사입명 입력 (예: 빈츠BL)"
+          oninput="onMatchChange()" autocomplete="off">
       </div>
 
       <!-- STEP 3: 상품명 (매칭 안될 때만) -->
@@ -533,21 +537,29 @@ function onVendorChange() {
 }
 
 function onMatchChange() {
-  var idx = document.getElementById('manualMatch').value;
+  var val = document.getElementById('manualMatch').value.trim();
   var preview = document.getElementById('matchedPreview');
   var productGroup = document.getElementById('productGroup');
 
-  if (idx === '') {
-    // 새 행 추가 선택
+  if (!val) {
     productGroup.style.display = 'block';
     preview.style.display = 'none';
-  } else {
-    // 매칭된 상품 미리보기
-    var r = sheetRows[parseInt(idx)];
+    return;
+  }
+
+  // 입력한 사입명으로 시트에서 매칭 시도
+  var vendor = document.getElementById('manualVendor').value;
+  var rematch = tryRematch(val, vendor);
+
+  if (rematch) {
     productGroup.style.display = 'none';
     preview.style.display = 'block';
-    preview.innerHTML = '✅ 매칭: <strong>' + esc(r['상품명']) + '</strong><br>' +
-      '요청일: ' + r['요청일'] + ' &nbsp;→&nbsp; 상태: 요청중 → <strong>보유중</strong>';
+    preview.innerHTML = '✅ 매칭: <strong>' + esc(rematch['상품명']) + '</strong><br>' +
+      '거래처: ' + esc(rematch['거래처']) + ' &nbsp;→&nbsp; 상태: 요청중 → <strong>보유중</strong>';
+  } else {
+    productGroup.style.display = 'block';
+    preview.style.display = 'block';
+    preview.innerHTML = '➕ 새 행으로 추가됩니다';
   }
 }
 
@@ -985,25 +997,17 @@ function renderAIResults(items) {
       ? '<div class="result-info">→ ' + p.matched['상품명'] + ' / ' + p.matched['거래처'] + '</div>'
       : '';
 
-    var actionHtml = '';
-    if (!p.matched) {
-      // 매칭 안 됨 → 선택지 보여주기
-      var options = sheetRows.map(function(r, ri) {
-        return '<option value="' + ri + '">' + r['상품명'] + ' / ' + r['거래처'] + '</option>';
-      }).join('');
-      // 거래처 DB 검색용 옵션
-      var vendorOptions = vendorDB.map(function(v, vi) {
-        return '<option value="' + vi + '">' + v['업체명'] + '</option>';
-      }).join('');
+    // 거래처 정보 이미 있으면 별칭 UI 불필요
+    var showAliasUI = !(p.연락처 || p.주소);
 
-      // 거래처 정보 이미 있으면 별칭 UI 불필요
-      var showAliasUI = !(p.연락처 || p.주소);
-
-      actionHtml =
-        '<select class="match-select" id="matchSel-' + i + '">' +
-          '<option value="">↓ 요청했던 상품 중 선택</option>' +
-          options +
-        '</select>' +
+    // 사입명 입력 + 매칭 버튼 (항상 표시)
+    var actionHtml =
+        '<div style="margin-bottom:8px;">' +
+          '<div style="font-size:11px; color:var(--gray-600); margin-bottom:4px; font-weight:500;">② 사입명 입력</div>' +
+          '<input type="text" id="matchSel-' + i + '" placeholder="사입명 직접 입력 (예: 빈츠BL)"' +
+            ' style="width:100%; border:1.5px solid var(--gray-200); border-radius:8px; padding:9px 12px; font-size:13px; font-family:var(--font); background:white; outline:none; box-sizing:border-box;"' +
+            ' oninput="pendingRows[' + i + '].상품명=this.value">' +
+        '</div>' +
         '<div class="match-actions">' +
           '<button class="btn-match-select" onclick="setAction(' + i + ',\'select\')">✓ 선택한 항목에 매칭</button>' +
         '</div>' +
@@ -1024,7 +1028,6 @@ function renderAIResults(items) {
             '</div>' +
           '</div>'
         : '');
-    }
 
     var isHandwritten = document.getElementById('chkHandwritten') && document.getElementById('chkHandwritten').checked;
 
@@ -1075,13 +1078,23 @@ function renderAIResults(items) {
 // ── 미매칭 액션 설정 ──
 function setAction(i, action) {
   var sel = document.getElementById('matchSel-' + i);
-  if (sel.value === '') { showToast('요청중 상품을 선택해주세요'); return; }
+  var inputName = sel ? sel.value.trim() : '';
+  if (!inputName) { showToast('사입명을 입력해주세요'); return; }
 
-  var ri = parseInt(sel.value);
+  // 입력한 사입명으로 시트에서 매칭 시도
+  var rematch = tryRematch(inputName, pendingRows[i].거래처);
   pendingRows[i].action = 'select';
-  pendingRows[i].matched = sheetRows[ri];
-  pendingRows[i].rowNum = sheetRows[ri]['_row'];
-  pendingRows[i].matchedIdx = ri;
+  pendingRows[i].상품명 = inputName;
+
+  if (rematch) {
+    pendingRows[i].matched = rematch;
+    pendingRows[i].rowNum = rematch['_row'];
+    pendingRows[i].matchedIdx = rematch._rowIdx;
+  } else {
+    // 매칭 없으면 새 행으로 추가
+    pendingRows[i].matched = null;
+    pendingRows[i].rowNum = null;
+  }
 
   var card = document.getElementById('rcard-' + i);
   card.className = 'result-card matched';
@@ -1164,11 +1177,15 @@ async function saveManual() {
   var product = document.getElementById('manualProduct').value.trim();
   var inbound = document.getElementById('manualInbound').value;
   var deadline= document.getElementById('manualDeadline').value;
-  var matchIdx= document.getElementById('manualMatch').value;
+  var matchName = document.getElementById('manualMatch').value.trim();
+  var rematch = matchName ? tryRematch(matchName, vendor) : null;
 
-  // 매칭된 경우엔 product 없어도 OK
+  // 검증
   if (!vendor) { showToast('거래처를 선택해주세요'); return; }
-  if (matchIdx === '' && !product) { showToast('상품명을 입력해주세요'); return; }
+  if (!matchName && !product) { showToast('사입명 또는 상품명을 입력해주세요'); return; }
+
+  // 사입명 입력 시 상품명으로 사용
+  if (matchName && !product) product = matchName;
 
   try {
     var memo = document.getElementById('manualMemo') ? document.getElementById('manualMemo').value.trim() : '';
@@ -1483,6 +1500,86 @@ function tryRematch(name, vendor) {
   }
   return null;
 }
+
+// ── 직접 입력 거래처 검색 ──
+var CHOSONG_MAP = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function getChosong(str) {
+  var r = '';
+  for (var i = 0; i < str.length; i++) {
+    var code = str.charCodeAt(i) - 0xAC00;
+    r += (code >= 0 && code <= 11171) ? CHOSONG_MAP[Math.floor(code/588)] : str[i];
+  }
+  return r;
+}
+
+function onManualVendorSearch(val) {
+  var dd = document.getElementById('manualVendorDropdown');
+  document.getElementById('manualVendor').value = '';
+
+  if (!val.trim()) {
+    dd.style.display = 'none';
+    // 빈칸이면 전체 목록 표시
+    renderManualVendorList('');
+    return;
+  }
+  renderManualVendorList(val.trim());
+}
+
+function renderManualVendorList(keyword) {
+  var dd = document.getElementById('manualVendorDropdown');
+  var kw = keyword.toLowerCase().replace(/\s/g, '');
+  var isChosong = kw.length > 0 && kw.split('').every(function(c) { return CHOSONG_MAP.indexOf(c) >= 0; });
+
+  var matched = vendorDB.filter(function(v) {
+    if (!kw) return true;
+    var name = (v['업체명'] || '').toLowerCase();
+    if (name.replace(/\s/g,'').indexOf(kw) >= 0) return true;
+    if (isChosong && getChosong(v['업체명']).indexOf(kw) >= 0) return true;
+    return false;
+  });
+
+  if (!matched.length) { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = '';
+  matched.forEach(function(v) {
+    var div = document.createElement('div');
+    div.style.cssText = 'padding:10px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid #F0EDE8; display:flex; justify-content:space-between; align-items:center;';
+    div.innerHTML = '<span style="font-weight:500;">' + v['업체명'] + '</span>' +
+      '<span style="font-size:11px; color:#aaa;">' + (v['위치'] || '') + '</span>';
+    div.addEventListener('mouseover', function() { this.style.background = '#FAFAF8'; });
+    div.addEventListener('mouseout', function() { this.style.background = ''; });
+    div.addEventListener('click', function() {
+      document.getElementById('manualVendorInput').value = v['업체명'];
+      document.getElementById('manualVendor').value = v['업체명'];
+      // 연락처·주소 자동 채우기
+      if (document.getElementById('manualPhone')) document.getElementById('manualPhone').value = v['전화번호'] || '';
+      if (document.getElementById('manualAddr')) document.getElementById('manualAddr').value = v['위치'] || '';
+      dd.style.display = 'none';
+      onVendorChange();
+    });
+    dd.appendChild(div);
+  });
+  dd.style.display = 'block';
+}
+
+// 클릭 외부 → 드롭다운 닫기
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('manualVendorDropdown');
+  var inp = document.getElementById('manualVendorInput');
+  if (dd && inp && !dd.contains(e.target) && e.target !== inp) {
+    dd.style.display = 'none';
+  }
+});
+
+// input 포커스 시 전체 목록 표시
+document.addEventListener('DOMContentLoaded', function() {
+  var inp = document.getElementById('manualVendorInput');
+  if (inp) {
+    inp.addEventListener('focus', function() {
+      if (!this.value) renderManualVendorList('');
+    });
+  }
+});
 
 function openReceiptGuide() {
   document.getElementById('receiptGuideModal').style.display = 'flex';
