@@ -165,6 +165,22 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .emp-row:hover td{background:#F3E8FF!important;}
 @media(max-width:480px){.stat-grid{grid-template-columns:1fr 1fr;}.worker-grid{grid-template-columns:1fr;}.main{padding:20px 14px 0;}}
 
+/* ★ v4.1: 알바 없는 날 모드 체크박스 */
+.solo-mode-toggle{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface);margin-bottom:14px;transition:all .2s;user-select:none;}
+.solo-mode-toggle:hover{background:#FFFBEB;border-color:#FDE68A;}
+.solo-mode-toggle input[type="checkbox"]{margin-top:3px;width:17px;height:17px;cursor:pointer;flex-shrink:0;accent-color:var(--amber);}
+.solo-mode-toggle:has(input:checked){background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:var(--amber);box-shadow:0 1px 4px rgba(217,119,6,.15);}
+.solo-mode-text{flex:1;}
+.solo-mode-title{font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;line-height:1.3;}
+.solo-mode-icon{font-size:16px;}
+.solo-mode-sub{font-size:12px;color:var(--muted);font-weight:500;}
+.solo-mode-toggle:has(input:checked) .solo-mode-title{color:#92400E;}
+.solo-mode-toggle:has(input:checked) .solo-mode-sub{color:#B45309;}
+.solo-mode-desc{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5;}
+.solo-mode-toggle:has(input:checked) .solo-mode-desc{color:#78350F;}
+.solo-mode-desc strong{color:var(--amber);}
+.solo-mode-toggle:has(input:checked) .solo-mode-desc strong{color:#92400E;text-decoration:underline;}
+
 /* ── ✨ 자동 안내 박스 (오늘 파일 자동 로드) ── */
 .auto-info-box{background:linear-gradient(135deg,#EFF6FF,#F5F3FF);border:1px solid #C7D2FE;border-radius:10px;padding:16px 18px;margin-bottom:12px;}
 .auto-info-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
@@ -181,17 +197,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .manual-upload-wrap[open] summary{border-bottom:1px solid var(--border);background:#F0F2F5;}
 .manual-upload-body{padding:14px 16px;background:var(--surface);}
 .manual-upload-hint{font-size:11.5px;color:var(--muted2);margin-bottom:10px;line-height:1.5;}
-
-/* ── 작업자 이름 설정 힌트 ── */
-.worker-info-hint{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#92400E;line-height:1.55;}
-.worker-info-hint strong{color:#78350F;}
-
-/* ── 드라이브 상태 (공통) ── */
-.drive-status-msg{margin-top:10px;font-size:12px;font-family:'DM Mono',monospace;display:none;padding:9px 14px;border-radius:6px;}
-.drive-status-msg.show{display:block;}
-.drive-status-msg.loading{background:#FEF3C7;color:#92400E;}
-.drive-status-msg.success{background:#DCFCE7;color:#166534;}
-.drive-status-msg.error{background:#FEE2E2;color:#991B1B;}
 
 /* ── 📭 드라이브 파일 없음 모달 ── */
 .drive-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease;}
@@ -217,15 +222,30 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .dm-btn-retry{background:linear-gradient(135deg,var(--accent),#4F46E5);color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.25);}
 .dm-btn-retry:hover{transform:translateY(-1px);}
 
-/* ── 📋 처리 로그 접힘 영역 ── */
-.log-details{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface2);margin-top:18px;}
-.log-details summary{cursor:pointer;padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);list-style:none;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background .15s;}
-.log-details summary:hover{background:#F0F2F5;color:var(--text2);}
-.log-details summary::-webkit-details-marker{display:none;}
-.log-details summary::after{content:'▼';font-size:9px;color:var(--muted2);transition:transform .2s;text-transform:none;letter-spacing:0;}
-.log-details[open] summary::after{transform:rotate(180deg);}
-.log-details[open] summary{border-bottom:1px solid var(--border);background:#F0F2F5;}
-.log-details .log-wrap{border:none;border-radius:0;margin:0;max-height:220px;}
+/* drive-status 텍스트 (모달 안내 + 인라인) */
+.drive-status-msg{margin-top:10px;font-size:12px;font-family:'DM Mono',monospace;display:none;padding:9px 14px;border-radius:6px;}
+.drive-status-msg.show{display:block;}
+.drive-status-msg.loading{background:#FEF3C7;color:#92400E;}
+.drive-status-msg.success{background:#DCFCE7;color:#166534;}
+.drive-status-msg.error{background:#FEE2E2;color:#991B1B;}
+
+/* ★ v4.5: 공유 상품 알림 박스 */
+.shared-alert-box{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #F59E0B;border-radius:10px;padding:14px 16px;margin-bottom:14px;animation:fadeUp .4s ease both;}
+.shared-alert-header{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px;}
+.shared-alert-icon{font-size:22px;line-height:1;margin-top:1px;}
+.shared-alert-title{font-size:14px;font-weight:700;color:#92400E;margin-bottom:2px;}
+.shared-alert-sub{font-size:11.5px;color:#B45309;line-height:1.5;}
+.shared-items-list{display:flex;flex-direction:column;gap:8px;}
+.shared-item{background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:10px 12px;}
+.shared-product-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.shared-steam-tag{display:inline-block;font-size:10px;font-weight:700;background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;padding:1px 7px;border-radius:10px;}
+.shared-supplier{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.shared-options{display:flex;flex-direction:column;gap:3px;}
+.shared-option-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 8px;background:var(--surface2);border-radius:5px;}
+.shared-who{font-weight:700;font-size:11px;padding:2px 8px;border-radius:10px;min-width:54px;text-align:center;}
+.shared-who.w1{background:#DBEAFE;color:#1D4ED8;}
+.shared-who.w2{background:#FCE7F3;color:#BE185D;}
+.shared-opt-text{flex:1;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--text2);}
 </style>
 </head>
 <body>
@@ -265,17 +285,28 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
   </div>
   <div class="card">
     <div class="sec-title"><span class="sec-num">2</span>작업자 이름 설정</div>
-    <div class="worker-info-hint">
-      💡 <strong>작업자가 바뀌었을 경우</strong> 아래 이름을 새로 입력하면 됩니다.<br>
-      직원 폰 검수 화면에도 자동으로 반영돼요.
-    </div>
+
+    <!-- ★ v4.1: 알바 없는 날 모드 토글 -->
+    <label class="solo-mode-toggle">
+      <input type="checkbox" id="soloMode" onchange="onSoloModeChange()">
+      <div class="solo-mode-text">
+        <div class="solo-mode-title">
+          <span class="solo-mode-icon">🤝</span>
+          알바 없는 날 모드 <span class="solo-mode-sub">(둘이서 모두 처리)</span>
+        </div>
+        <div class="solo-mode-desc">
+          체크하면 비스팀과 스팀 각각 50:50으로 나누고, <strong>스팀은 1.3배 가중치</strong>로 체감 작업량을 보정합니다.
+        </div>
+      </div>
+    </label>
+
     <div class="worker-grid">
       <div class="w-box">
-        <label><span class="w-dot d1"></span>작업자 1 · 먼저 처리 + 스팀 포함</label>
+        <label><span class="w-dot d1"></span><span id="w1Label">작업자 1 · 먼저 처리 + 스팀 포함</span></label>
         <input type="text" id="w1" value="이혜정" placeholder="이혜정">
       </div>
       <div class="w-box">
-        <label><span class="w-dot d2"></span>작업자 2 · 나머지</label>
+        <label><span class="w-dot d2"></span><span id="w2Label">작업자 2 · 나머지</span></label>
         <input type="text" id="w2" value="윤혜정" placeholder="윤혜정">
       </div>
     </div>
@@ -285,8 +316,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
     <div style="margin-bottom:14px;padding:12px 14px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:1px solid #C4B5FD;border-radius:10px;display:flex;align-items:center;gap:10px;">
       <span style="font-size:18px;">📱</span>
       <div style="flex:1;">
-        <div style="font-size:13px;font-weight:700;color:#6D28D9;">직원 폰 검수 링크도 함께 준비돼요</div>
-        <div style="font-size:11.5px;color:#7C3AED;margin-top:2px;">파일 생성 후 담당자별 검수 페이지 바로가기 링크가 자동으로 만들어집니다</div>
+        <div style="font-size:13px;font-weight:700;color:#6D28D9;">직원 폰 검수 세션 자동 생성</div>
+        <div style="font-size:11.5px;color:#7C3AED;margin-top:2px;">파일 생성 후 자동으로 직원별 검수 링크가 만들어집니다</div>
       </div>
     </div>
     <button class="btn btn-run" id="runBtn" onclick="run()">⚡ 파일 생성하기</button>
@@ -305,22 +336,15 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn btn-dl" id="dlBtn" style="flex:1;min-width:180px;">⬇️ &nbsp;ZIP 파일 다운로드</button>
       </div>
-      <!-- 검수 링크 (자동 표시) -->
-      <div id="inspResultSection" style="display:none;margin-top:14px;padding:16px 18px;background:linear-gradient(135deg,#FAF5FF,#F3E8FF);border:1px solid #9333EA;border-radius:10px;">
-        <div style="font-size:14px;font-weight:700;color:#7E22CE;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-          📱 직원 폰 검수 링크 준비 완료
-        </div>
-        <div id="inspResultStatus" style="font-size:12px;color:#6B21A8;margin-bottom:12px;"></div>
-        <div style="font-size:11.5px;color:#7E22CE;margin-bottom:8px;line-height:1.5;">👇 아래 <strong>바로가기</strong> 버튼을 누르면 담당자별 검수 페이지가 새 창으로 열립니다</div>
+      <!-- 검수 결과 (체크박스 ON일 때만 표시) -->
+      <div id="inspResultSection" style="display:none;margin-top:14px;padding:14px 16px;background:#F3E8FF;border:1px solid #9333EA;border-radius:10px;">
+        <div style="font-size:13px;font-weight:700;color:#9333EA;margin-bottom:8px;">📱 검수 세션 생성됨</div>
+        <div id="inspResultStatus" style="font-size:12px;color:#6B21A8;margin-bottom:10px;"></div>
         <div id="inspResultLinks"></div>
       </div>
       <div id="inspResultError" style="display:none;margin-top:14px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;font-size:13px;color:#DC2626;"></div>
-
-      <!-- 처리 로그 (접힘) -->
-      <details class="log-details">
-        <summary>처리 로그 보기</summary>
-        <div class="log-wrap" id="logWrap"></div>
-      </details>
+      <div class="log-header">처리 로그</div>
+      <div class="log-wrap" id="logWrap"></div>
 
       <!-- 미리보기 -->
       <div class="preview-section">
@@ -424,6 +448,31 @@ function onFile(inp){
   document.getElementById('drop').classList.add('ok');
   document.getElementById('dzIcon').textContent='✅';
   document.getElementById('dzFile').textContent=selFile.name;
+}
+
+// ★ v4.2: 알바 없는 날 모드 토글 시 작업자 라벨 업데이트
+function onSoloModeChange(){
+  const checked = document.getElementById('soloMode').checked;
+  if(checked){
+    document.getElementById('w1Label').innerHTML = '작업자 1 · <strong style="color:#92400E">비스팀+스팀 각 50:50 (가중치 1.3 보정)</strong>';
+    document.getElementById('w2Label').innerHTML = '작업자 2 · <strong style="color:#92400E">비스팀+스팀 각 50:50 (가중치 1.3 보정)</strong>';
+  } else {
+    document.getElementById('w1Label').textContent = '작업자 1 · 먼저 처리 + 스팀 포함';
+    document.getElementById('w2Label').textContent = '작업자 2 · 나머지';
+  }
+}
+
+/* ════════════════════════════════════
+   ★ 구글드라이브 최신 SBAODL/SBODWL 불러오기
+   - 입고검수 GAS의 getLatestSBAODL 액션 호출
+   - 받은 base64 → Uint8Array → File 객체로 복원해서
+     기존 처리 로직(selFile)에 그대로 투입
+═══════════════════════════════════════ */
+
+function setDriveStatus(msg, kind){
+  const el = document.getElementById('driveStatus');
+  el.className = 'drive-status show ' + (kind||'');
+  el.textContent = msg;
 }
 
 /* ════════════════════════════════════
@@ -726,10 +775,10 @@ function buildSheet(wb, sheetName, nsRows, stmRows, worker, hasStream, colWidths
    메인
 ══════════════════════════════════════════ */
 async function run(){
-  // selFile 없으면 드라이브에서 오늘 파일 자동 로드 시도
+  // ★ selFile 없으면 드라이브에서 오늘 파일 자동 로드 시도
   if(!selFile){
     const ok = await loadTodayFromDrive();
-    if(!ok) return;  // 모달 이미 떠있음, 중단 (재시도 시 retryDriveLoad가 run() 재호출)
+    if(!ok) return;  // 모달 떠있음, 중단 (재시도 시 retryDriveLoad가 run() 재호출)
   }
   const w1=document.getElementById('w1').value.trim()||'이혜정';
   const w2=document.getElementById('w2').value.trim()||'윤혜정';
@@ -737,6 +786,9 @@ async function run(){
   document.getElementById('runBtn').disabled=true;
   document.getElementById('errBox').style.display='none';
   document.getElementById('resultCard').style.display='none';
+  // ★ v4.5: 재실행 시 이전 공유 상품 알림 제거
+  const oldShared = document.getElementById('sharedProductsAlert');
+  if(oldShared) oldShared.remove();
   const si=document.getElementById('stepInd');
   si.innerHTML=STEPS.map(s=>`<span class="step-badge">${s}</span>`).join('');
   document.getElementById('progWrap').style.display='block';
@@ -811,20 +863,10 @@ async function run(){
       비고: hasBigoCol ? String(r['비고']||'').trim() : '',
     }));
     const before=data.length;
-    // ★ 추가입고 후보 수집: 입고수량=0 + 상품명이 '['로 시작 ([미송], [반품], [선주문] 등)
-    window._addCandidates = data
-      .filter(r => (Number(r.입고수량) || 0) <= 0 && /^\s*\[/.test(r.상품명))
-      .map(r => ({
-        공급처: r.공급처,
-        사입명: r.사입명,
-        상품명: r.상품명,  // 수식어 포함된 원본 상품명
-        옵션: r.옵션,
-        상품메모1: r.상품메모1 || ''
-      }));
     data=data.filter(r=>r.입고수량>0);
     // 영문→한글 순서 (엑셀/파이썬과 동일하게 기본 유니코드 정렬)
     data.sort((a,b)=>a.공급처<b.공급처?-1:a.공급처>b.공급처?1:0);
-    pushLog('1-2',`0/빈칸 ${before-data.length}건 제거 → ${data.length}행 / 추가입고 후보 ${window._addCandidates.length}건 수집`);
+    pushLog('1-2',`0/빈칸 ${before-data.length}건 제거 → ${data.length}행`);
     markStep(1,'done'); setProgress(25,'스팀 분리...');
 
     // 3. 스팀
@@ -867,22 +909,119 @@ async function run(){
     pushLog('15',`합산: 비스팀 ${nsRaw.length}→${ns.length}행 / 스팀 ${stmRaw.length}→${stm.length}행`);
     markStep(3,'done'); setProgress(50,'분배...');
 
+    // ★ v4.1: 알바 없는 날 모드 확인
+    const soloMode = document.getElementById('soloMode').checked;
+
     // 16~18. 이혜정/윤혜정 분배
+    //   - 평소 (divisor=3, 1/3 기준): 이혜정 비스팀 적게 받고, 스팀까지 본인 처리
+    //   - 알바 없는 날: 이혜정이 스팀 전담 + 비스팀은 총량 50:50 되도록 분배
     markStep(4,'active');
-    const totalNs=ns.reduce((a,r)=>a+r.입고수량,0);
-    const target=totalNs/3;
-    let cumsum=0;
-    const w1rows=[],w2rows=[];
-    for(const row of ns){
-      const q=row.입고수량;
-      if(cumsum>=target){w2rows.push(row);}
-      else if(cumsum+q<=target){w1rows.push(row);cumsum+=q;}
-      else{w1rows.push(row);cumsum+=q;}
+
+    /**
+     * 비스팀/스팀 분배 (target에 가까운 쪽 선택)
+     *   - 누적이 target 도달 전까지는 a에 넣되
+     *   - target을 살짝 넘는 큰 행이 나오면:
+     *     · 추가 후 차이 vs 안 추가 차이 비교
+     *     · 더 작은 쪽 선택 (균형 우선)
+     * @param rows 분배할 행 (공급처 정렬됨)
+     * @param target 첫 번째(a)에게 할당할 목표 수량
+     */
+    function distributeByTarget(rows, target){
+      let cumsum=0;
+      const a=[],b=[];
+      for(const row of rows){
+        const q=row.입고수량;
+        if(cumsum>=target){
+          b.push(row);
+        } else if(cumsum+q<=target){
+          a.push(row); cumsum+=q;
+        } else {
+          // target을 넘는 큰 행: 추가하는 게 균형에 가까운지 비교
+          const addDiff  = Math.abs((cumsum + q) - target);
+          const skipDiff = Math.abs(cumsum - target);
+          if(addDiff < skipDiff){
+            a.push(row); cumsum+=q;  // 살짝 넘겨서 추가
+          } else {
+            b.push(row);              // 추가 안 함 (target 미달)
+          }
+        }
+      }
+      return {a,b};
     }
+
+    // ── 비스팀/스팀 합계
+    const totalNs = ns.reduce((a,r)=>a+r.입고수량, 0);
+    const totalStm = stm.reduce((a,r)=>a+r.입고수량, 0);
+
+    let w1rows, w2rows, w1stm, w2stm;
+
+    if(soloMode){
+      // ═══════════════════════════════════════════════
+      // ★ v4.4: 알바 없는 날 - 스팀 50:50 분배 → 비스팀 체감 균형 그리디
+      //   1) 스팀 50:50 분배 (가까운 쪽 선택)
+      //   2) 비스팀 행을 순서대로 보면서, 
+      //      "이혜정 vs 윤혜정 중 체감 차이가 작아지는 쪽"에 추가
+      //   → 가중치 1.3 자동 적용, 큰 행도 자연스럽게 분배됨
+      // ═══════════════════════════════════════════════
+      const STEAM_WEIGHT = 1.3;
+
+      // Step 1: 스팀 50:50 분배
+      const stmDist = distributeByTarget(stm, totalStm / 2);
+      w1stm = stmDist.a;
+      w2stm = stmDist.b;
+      const w1stmQ = w1stm.reduce((a,r)=>a+r.입고수량, 0);
+      const w2stmQ = w2stm.reduce((a,r)=>a+r.입고수량, 0);
+
+      // Step 2: 비스팀을 체감 균형 그리디로 분배
+      //   현재 체감 = 스팀 체감 (시작 상태)
+      //   각 비스팀 행마다 추가 후 체감 차이가 더 작은 쪽 선택
+      let e1 = w1stmQ * STEAM_WEIGHT;
+      let e2 = w2stmQ * STEAM_WEIGHT;
+      w1rows = [];
+      w2rows = [];
+      for(const row of ns){
+        const q = row.입고수량;
+        const diffA = Math.abs((e1 + q) - e2);   // 이혜정에게 추가 시
+        const diffB = Math.abs(e1 - (e2 + q));   // 윤혜정에게 추가 시
+        if(diffA <= diffB){
+          w1rows.push(row); e1 += q;
+        } else {
+          w2rows.push(row); e2 += q;
+        }
+      }
+
+      // 공급처 순서로 재정렬 (가독성)
+      w1rows.sort((a,b)=>a.공급처<b.공급처?-1:a.공급처>b.공급처?1:0);
+      w2rows.sort((a,b)=>a.공급처<b.공급처?-1:a.공급처>b.공급처?1:0);
+
+      pushLog('보정',
+        `🤝 균형분배 | 스팀 ${w1stmQ}:${w2stmQ}, 비스팀 ${w1rows.reduce((a,r)=>a+r.입고수량,0)}:${w2rows.reduce((a,r)=>a+r.입고수량,0)} ` +
+        `→ 체감 ${e1.toFixed(1)} : ${e2.toFixed(1)} (차이 ${Math.abs(e1-e2).toFixed(1)})`
+      );
+    } else {
+      // ── 평소: 비스팀만 1/3 기준 (스팀은 알바 따로) ★ 기존 동작 그대로
+      const w1nsTarget = totalNs / 3;
+      const nsDist = distributeByTarget(ns, w1nsTarget);
+      w1rows = nsDist.a;
+      w2rows = nsDist.b;
+      w1stm = stm;       // 모든 스팀 이혜정 (단기알바가 처리)
+      w2stm = [];
+    }
+
     const w1qty=w1rows.reduce((a,r)=>a+r.입고수량,0);
     const w2qty=w2rows.reduce((a,r)=>a+r.입고수량,0);
-    const stmQty=stm.reduce((a,r)=>a+r.입고수량,0);
-    pushLog('16-18',`${w1} 비스팀 ${w1qty}개(${w1rows.length}행) / ${w2} ${w2qty}개(${w2rows.length}행) / 스팀 ${stmQty}개`);
+    const w1stmQty=w1stm.reduce((a,r)=>a+r.입고수량,0);
+    const w2stmQty=w2stm.reduce((a,r)=>a+r.입고수량,0);
+    const stmQty=w1stmQty+w2stmQty;
+    if(soloMode){
+      const w1total = w1qty + w1stmQty;
+      const w2total = w2qty + w2stmQty;
+      const w1effort = w1qty * 1.0 + w1stmQty * 1.3;
+      const w2effort = w2qty * 1.0 + w2stmQty * 1.3;
+      pushLog('16-18',`🤝 알바없음 (스팀×1.3) | ${w1} 비스팀${w1qty}+스팀${w1stmQty}=총${w1total} 체감${w1effort.toFixed(1)} / ${w2} 비스팀${w2qty}+스팀${w2stmQty}=총${w2total} 체감${w2effort.toFixed(1)}`);
+    } else {
+      pushLog('16-18',`${w1} 비스팀 ${w1qty}개(${w1rows.length}행) / ${w2} ${w2qty}개(${w2rows.length}행) / 스팀 ${stmQty}개 → ${w1}`);
+    }
     markStep(4,'done'); setProgress(62,'엑셀 생성...');
 
     // 엑셀용 row 변환
@@ -898,10 +1037,13 @@ async function run(){
 
     // 이혜정 xlsx
     markStep(5,'active');
+    // ★ v4.1: 알바 없는 날 모드면 윤혜정도 스팀 시트 포함
+    //   - soloMode false: 이혜정만 스팀 시트 (기존 동작)
+    //   - soloMode true:  두 직원 모두 스팀 시트 (각자 분배된 양)
     const wb1=new ExcelJS.Workbook();
     wb1.creator='더제이수';
     wb1.calcProperties={fullCalcOnLoad:true};
-    buildSheet(wb1,'입고내역',toSheet(w1rows),toSheet(stm),w1,true,colWidths);
+    buildSheet(wb1,'입고내역',toSheet(w1rows),toSheet(w1stm),w1,w1stm.length>0,colWidths);
     // 직원구매 시트는 wb2 생성 후 addEmpSheet로 일괄 추가
     const buf1=await wb1.xlsx.writeBuffer();
 
@@ -942,11 +1084,11 @@ async function run(){
       empWs.views=[{state:'frozen',xSplit:0,ySplit:1,activeCell:'A2'}];
     }
 
-    // 윤혜정 xlsx
+    // 윤혜정 xlsx (★ 알바 없는 날엔 w2stm도 포함)
     const wb2=new ExcelJS.Workbook();
     wb2.creator='더제이수';
     wb2.calcProperties={fullCalcOnLoad:true};
-    buildSheet(wb2,'입고내역',toSheet(w2rows),[],w2,false,colWidths);
+    buildSheet(wb2,'입고내역',toSheet(w2rows),toSheet(w2stm),w2,w2stm.length>0,colWidths);
     addEmpSheet(wb2);  // 직원구매 시트 추가
     const buf2=await wb2.xlsx.writeBuffer();
 
@@ -954,24 +1096,46 @@ async function run(){
     const wb1b=new ExcelJS.Workbook();
     wb1b.creator='더제이수';
     wb1b.calcProperties={fullCalcOnLoad:true};
-    buildSheet(wb1b,'입고내역',toSheet(w1rows),toSheet(stm),w1,true,colWidths);
+    buildSheet(wb1b,'입고내역',toSheet(w1rows),toSheet(w1stm),w1,w1stm.length>0,colWidths);
     addEmpSheet(wb1b);
     const buf1Final=await wb1b.xlsx.writeBuffer();
 
-    pushLog('5',`xlsx 2개 생성 ✓ ${w1}=${w1qty} / ${w2}=${w2qty} / 스팀=${stmQty} / 직원구매=${empQty}개(${empMerged.length}행)`);
+    pushLog('5',`xlsx 2개 생성 ✓ ${w1}=${w1qty}+스팀${w1stmQty} / ${w2}=${w2qty}+스팀${w2stmQty} / 직원구매=${empQty}개(${empMerged.length}행)`);
     markStep(5,'done'); setProgress(80,'CSV...');
 
     // CSV
     markStep(6,'active');
-    function makeCSV(nsR,stmR=[]){
+    function makeCSV(rowsList){
       const lines=['\uFEFF바코드번호,입고수량'];
-      [...nsR,...stmR].forEach(r=>lines.push(`${r.바코드번호},${r.입고수량}`));
+      // rowsList: 배열들의 배열 (예: [w1rows, stmRaw])
+      for(const rows of rowsList){
+        for(const r of rows) lines.push(`${r.바코드번호},${r.입고수량}`);
+      }
       return lines.join('\r\n');
     }
     const todayFmt=todayStr('');
-    const csv1=makeCSV(w1rows,stmRaw);
-    const csv2=makeCSV(w2rows);
-    pushLog('6',`CSV: ${w1} ${w1rows.length+stmRaw.length}행 / ${w2} ${w2rows.length}행`);
+
+    // ★ v4.1: CSV의 스팀 처리
+    //   - soloMode false: 모든 스팀이 이혜정 → csv1에 stmRaw 통째로
+    //   - soloMode true:  스팀이 분배됨 → 합산 키 기준으로 원본 stmRaw를 두 그룹으로 나눔
+    let csv1, csv2;
+    if(soloMode){
+      // 합산 키 만들기 함수
+      const makeKey = r => `${r.공급처}||${r.사입명}||${r.상품명}||${r.옵션}||${r.상품메모1}`;
+      // w1stm/w2stm에 포함된 합산 행의 키 집합
+      const w1stmKeys = new Set(w1stm.map(makeKey));
+      const w2stmKeys = new Set(w2stm.map(makeKey));
+      // stmRaw를 키 기준으로 분류
+      const w1stmRaw = stmRaw.filter(r => w1stmKeys.has(makeKey(r)));
+      const w2stmRaw = stmRaw.filter(r => w2stmKeys.has(makeKey(r)));
+      csv1 = makeCSV([w1rows, w1stmRaw]);
+      csv2 = makeCSV([w2rows, w2stmRaw]);
+      pushLog('6',`🤝 알바없음 CSV: ${w1} 비스팀${w1rows.length}+스팀${w1stmRaw.length}행 / ${w2} 비스팀${w2rows.length}+스팀${w2stmRaw.length}행`);
+    } else {
+      csv1 = makeCSV([w1rows, stmRaw]);
+      csv2 = makeCSV([w2rows]);
+      pushLog('6',`CSV: ${w1} ${w1rows.length+stmRaw.length}행 / ${w2} ${w2rows.length}행`);
+    }
     markStep(6,'done'); setProgress(92,'ZIP...');
 
     // ZIP
@@ -986,15 +1150,104 @@ async function run(){
     pushLog('완료','ZIP 완성 · 총 4개 파일');
     markStep(7,'done'); setProgress(100,'완료!');
 
+    // ════════════════════════════════════
+    // ★ v4.5: 공유 상품 감지 (같은 상품이 두 명에게 나뉜 경우)
+    //   - "공급처+상품명+사입명"이 같은데 옵션(또는 행)이 두 명에게 분리된 케이스
+    //   - 옵션별로 나뉘는 건 정상이지만, 검수 시 헷갈릴 수 있으므로 안내
+    // ════════════════════════════════════
+    function findSharedProducts(){
+      // 각 행이 누구에게 갔는지 매핑 (스팀+비스팀 모두 포함)
+      const allW1 = [...w1rows, ...w1stm];
+      const allW2 = [...w2rows, ...w2stm];
+
+      // 상품 그룹 키: 공급처 + 사입명 + 상품명 (옵션 제외)
+      const productKey = r => `${r.공급처}||${r.사입명}||${r.상품명}`;
+
+      const w1Keys = new Map();  // key → [options]
+      allW1.forEach(r => {
+        const k = productKey(r);
+        if(!w1Keys.has(k)) w1Keys.set(k, []);
+        w1Keys.get(k).push({옵션:r.옵션, 입고수량:r.입고수량, 상품메모1:r.상품메모1});
+      });
+      const w2Keys = new Map();
+      allW2.forEach(r => {
+        const k = productKey(r);
+        if(!w2Keys.has(k)) w2Keys.set(k, []);
+        w2Keys.get(k).push({옵션:r.옵션, 입고수량:r.입고수량, 상품메모1:r.상품메모1});
+      });
+
+      // 양쪽에 모두 있는 상품 = 공유 상품
+      const shared = [];
+      for(const [k, opts1] of w1Keys.entries()){
+        if(w2Keys.has(k)){
+          const [공급처, 사입명, 상품명] = k.split('||');
+          shared.push({
+            공급처, 사입명, 상품명,
+            w1Options: opts1,
+            w2Options: w2Keys.get(k),
+            isSteam: (opts1[0].상품메모1||'').includes('스팀')
+          });
+        }
+      }
+      return shared;
+    }
+
+    const sharedProducts = findSharedProducts();
+
+    // 공유 상품 알림 박스 (있을 때만)
+    let sharedAlertHtml = '';
+    if(sharedProducts.length > 0){
+      const itemsHtml = sharedProducts.map(s => {
+        const opts1Str = s.w1Options.map(o => `${o.옵션} ${o.입고수량}개`).join(', ');
+        const opts2Str = s.w2Options.map(o => `${o.옵션} ${o.입고수량}개`).join(', ');
+        const steamTag = s.isSteam ? '<span class="shared-steam-tag">🔥 스팀</span>' : '';
+        return `
+          <div class="shared-item">
+            <div class="shared-product-name">${s.상품명} ${steamTag}</div>
+            <div class="shared-supplier">📦 ${s.공급처}${s.사입명?' / '+s.사입명:''}</div>
+            <div class="shared-options">
+              <div class="shared-option-row"><span class="shared-who w1">${w1}</span><span class="shared-opt-text">${opts1Str}</span></div>
+              <div class="shared-option-row"><span class="shared-who w2">${w2}</span><span class="shared-opt-text">${opts2Str}</span></div>
+            </div>
+          </div>`;
+      }).join('');
+      sharedAlertHtml = `
+        <div class="shared-alert-box">
+          <div class="shared-alert-header">
+            <span class="shared-alert-icon">⚠️</span>
+            <div>
+              <div class="shared-alert-title">공유 상품 안내 (${sharedProducts.length}건)</div>
+              <div class="shared-alert-sub">아래 상품들은 같은 상품이지만 옵션이 두 작업자에게 나뉘었어요. 검수 시 참고하세요!</div>
+            </div>
+          </div>
+          <div class="shared-items-list">${itemsHtml}</div>
+        </div>`;
+    }
+
     // 결과 UI
     const empStatHtml = empMerged.length > 0
       ? `<div class="stat-box" style="background:#F3E8FF"><div class="s-name">👤 직원구매 (별도)</div><div class="s-val" style="color:#9333EA">${empQty}</div><div class="s-sub">${empMerged.length}행 · CSV제외</div></div>`
       : '';
+    // ★ v4.2: 알바 없는 날 - 스팀도 50:50 분배되고, 가중치 1.3으로 체감 균형
+    const stmStatHtml = soloMode
+      ? `<div class="stat-box sb-amber"><div class="s-name">🤝 스팀 (50:50 가중치)</div><div class="s-val">${stmQty}</div><div class="s-sub">${w1} ${w1stmQty}개 / ${w2} ${w2stmQty}개</div></div>`
+      : `<div class="stat-box sb-amber"><div class="s-name">스팀 (${w1})</div><div class="s-val">${stmQty}</div><div class="s-sub">${stm.length}행</div></div>`;
     document.getElementById('statGrid').innerHTML=`
-      <div class="stat-box sb-blue"><div class="s-name">${w1} (비스팀)</div><div class="s-val">${w1qty}</div><div class="s-sub">${w1rows.length}행</div></div>
-      <div class="stat-box sb-pink"><div class="s-name">${w2}</div><div class="s-val">${w2qty}</div><div class="s-sub">${w2rows.length}행</div></div>
-      <div class="stat-box sb-amber"><div class="s-name">스팀 (${w1})</div><div class="s-val">${stmQty}</div><div class="s-sub">${stm.length}행</div></div>
+      <div class="stat-box sb-blue"><div class="s-name">${w1}${soloMode?' (비스팀)':' (비스팀)'}</div><div class="s-val">${w1qty}</div><div class="s-sub">${w1rows.length}행</div></div>
+      <div class="stat-box sb-pink"><div class="s-name">${w2}${soloMode?' (비스팀)':''}</div><div class="s-val">${w2qty}</div><div class="s-sub">${w2rows.length}행</div></div>
+      ${stmStatHtml}
       ${empStatHtml}`;
+
+    // ★ 공유 상품 알림: stat-grid 뒤에 삽입
+    const existingAlert = document.getElementById('sharedAlert');
+    if(existingAlert) existingAlert.remove();
+    if(sharedAlertHtml){
+      const alertWrap = document.createElement('div');
+      alertWrap.id = 'sharedAlert';
+      alertWrap.innerHTML = sharedAlertHtml;
+      document.getElementById('statGrid').insertAdjacentElement('afterend', alertWrap);
+    }
+
     document.getElementById('fileChips').innerHTML=`
       <span class="chip chip-xl">📊 ${w1}_수량확인.xlsx</span>
       <span class="chip chip-xl">📊 ${w2}_수량확인.xlsx</span>
@@ -1003,11 +1256,13 @@ async function run(){
     document.getElementById('logWrap').innerHTML=logs.map(l=>
       `<div class="log-row"><span class="log-step">${l.step}</span><span class="log-msg">${l.msg}</span></div>`
     ).join('');
-    document.getElementById('resultSub').textContent=`xlsx 2개 + csv 2개 · ${w1} ${w1qty}개 / ${w2} ${w2qty}개`;
+    const soloTag = soloMode ? ' · 🤝 알바없음' : '';
+    document.getElementById('resultSub').textContent=`xlsx 2개 + csv 2개 · ${w1} ${w1qty+w1stmQty}개 / ${w2} ${w2qty+w2stmQty}개${soloTag}`;
     document.getElementById('resultCard').style.display='block';
 
-    // 미리보기 렌더
-    renderPreview(w1, w2, w1rows, w2rows, stm, toSheet(empMerged));
+    // 미리보기 렌더 (★ 알바 없는 날엔 두 명 모두 스팀 합쳐서 표시)
+    //   ★ v4.5: sharedProducts도 함께 전달 → lastDistribution에 저장 → GAS로 전송
+    renderPreview(w1, w2, w1rows, w2rows, stm, toSheet(empMerged), soloMode, w1stm, w2stm, sharedProducts);
     switchTab(1);
     window.addEventListener('resize', setPreviewHeight);
 
@@ -1095,23 +1350,29 @@ function buildTable(tblId, rows, footerId, footerRId, label, color, isEmp=false)
 }
 
 /* ── 미리보기 전체 렌더 ── */
-function renderPreview(w1name, w2name, w1rows, w2rows, stmRows, empRows){
+function renderPreview(w1name, w2name, w1rows, w2rows, stmRows, empRows, soloMode, w1stm, w2stm, sharedProducts){
   document.getElementById('tab1name').textContent = w1name;
   document.getElementById('tab2name').textContent = w2name;
 
-  const w1qty  = w1rows.reduce((a,r)=>a+(Number(r.입고수량)||0),0);
-  const w2qty  = w2rows.reduce((a,r)=>a+(Number(r.입고수량)||0),0);
+  // ★ v4.1: 알바 없는 날 모드: 각 작업자 탭에 비스팀+자기담당스팀 합쳐 표시
+  //   기존 동작: w1=비스팀만, w2=비스팀만 (스팀 탭은 별도, 모두 이혜정 표시)
+  //   알바 없음: w1=비스팀+w1스팀, w2=비스팀+w2스팀 (스팀 탭은 두 명 합산 표시)
+  const tab1Rows = (soloMode && w1stm) ? [...w1rows, ...w1stm] : w1rows;
+  const tab2Rows = (soloMode && w2stm) ? [...w2rows, ...w2stm] : w2rows;
+
+  const tab1qty = tab1Rows.reduce((a,r)=>a+(Number(r.입고수량)||0),0);
+  const tab2qty = tab2Rows.reduce((a,r)=>a+(Number(r.입고수량)||0),0);
   const stmQty = stmRows.reduce((a,r)=>a+(Number(r.입고수량)||0),0);
   const empQty = empRows.reduce((a,r)=>a+(Number(r.입고수량)||0),0);
 
-  document.getElementById('tab1cnt').textContent = w1qty;
+  document.getElementById('tab1cnt').textContent = tab1qty;
   document.getElementById('tabScnt').textContent = stmQty;
-  document.getElementById('tab2cnt').textContent = w2qty;
+  document.getElementById('tab2cnt').textContent = tab2qty;
   document.getElementById('tabEcnt').textContent = empQty;
 
-  buildTable('tbl1', w1rows, 'footer1', 'footer1r', w1name, 'var(--accent)');
-  buildTable('tblS', stmRows,'footerS', 'footerSr', '스팀',  'var(--amber)');
-  buildTable('tbl2', w2rows, 'footer2', 'footer2r', w2name, 'var(--pink)');
+  buildTable('tbl1', tab1Rows, 'footer1', 'footer1r', w1name + (soloMode?' (비스팀+스팀)':''), 'var(--accent)');
+  buildTable('tblS', stmRows,'footerS', 'footerSr', soloMode ? '🤝 스팀 (둘이 분담 · 가중치 1.3)' : '스팀 (' + w1name + ')',  'var(--amber)');
+  buildTable('tbl2', tab2Rows, 'footer2', 'footer2r', w2name + (soloMode?' (비스팀+스팀)':''), 'var(--pink)');
   buildTable('tblE', empRows,'footerE', 'footerEr', '직원구매', '#9333EA', true);
 
   // 직원구매 탭: 건수 있을 때만 표시
@@ -1135,8 +1396,9 @@ let lastDistribution = null;
 
 // renderPreview를 hook해서 분배 결과 캡처
 const _origRenderPreview = renderPreview;
-renderPreview = function(w1name, w2name, w1rows, w2rows, stmRows, empRows){
-  lastDistribution = { w1name, w2name, w1rows, w2rows, stmRows, empRows };
+renderPreview = function(w1name, w2name, w1rows, w2rows, stmRows, empRows, soloMode, w1stm, w2stm, sharedProducts){
+  // ★ v4.5: sharedProducts(공유 상품)도 캡처 → GAS로 전송용
+  lastDistribution = { w1name, w2name, w1rows, w2rows, stmRows, empRows, soloMode: !!soloMode, w1stm: w1stm||[], w2stm: w2stm||[], sharedProducts: sharedProducts||[] };
   return _origRenderPreview.apply(this, arguments);
 };
 
@@ -1150,60 +1412,56 @@ async function autoCreateInspection(){
   // 직원별 데이터 합치기
   const items = [];
   const d = lastDistribution;
+  // 비스팀: 항상 분배된 대로
   d.w1rows.forEach(r => items.push({ 담당자:d.w1name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
   d.w2rows.forEach(r => items.push({ 담당자:d.w2name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
-  // ★ 스팀 상품은 담당자1(이혜정)에게 추가. 상품메모1에 '스팀' 단어가 있으므로
-  //   staff 화면에서 isSteam() 판별로 자동 스팀 탭에 분리됨
-  if(d.stmRows && d.stmRows.length > 0){
+
+  // ★ v4.1: 스팀 분배 — 모드에 따라 다르게
+  //   기본: 모든 스팀이 담당자1(이혜정)에게 → 단기알바가 처리
+  //   알바 없음: w1stm은 w1에게, w2stm은 w2에게
+  if(d.soloMode){
+    // 알바 없는 날: 각자 자기 분담분 스팀
+    d.w1stm.forEach(r => items.push({ 담당자:d.w1name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
+    d.w2stm.forEach(r => items.push({ 담당자:d.w2name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
+  } else if(d.stmRows && d.stmRows.length > 0){
+    // 평소: 모두 담당자1에게
     d.stmRows.forEach(r => items.push({ 담당자:d.w1name, 공급처:r.공급처, 사입명:r.사입명, 상품명:r.상품명, 옵션:r.옵션, 입고수량:r.입고수량, 바코드:r.바코드번호||'', 상품메모1:r.상품메모1||'', 대표이미지주소:r.대표이미지주소||'', 메모:r.메모||'', 비고:r.비고||'' }));
   }
 
-  // ★★ 원본 SBODWL 파일을 base64로 같이 전송 (스마트비즈 업로드용) ★★
-  let originalFileBase64 = '';
-  let originalFileName = '';
-  try {
-    if(selFile){
-      const arrBuf = await selFile.arrayBuffer();
-      const bytes = new Uint8Array(arrBuf);
-      // 10MB 제한 체크 (GAS 전송 한계 고려)
-      if(bytes.length < 10 * 1024 * 1024){
-        let binStr = '';
-        const chunk = 8192;
-        for(let i=0; i<bytes.length; i+=chunk){
-          binStr += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i+chunk, bytes.length)));
-        }
-        originalFileBase64 = btoa(binStr);
-        originalFileName = selFile.name;
-      }
+  // ★ v4.5: 공유 상품 정보 (분배 결과에서 계산된 것을 사용)
+  //   findSharedProducts()가 run() 안에서 이미 계산했고 lastDistribution에 저장됨
+  //   GAS 형식 {담당자별: {이름: [...]}}로 변환해서 NOTICES 공지 등록
+  const sharedProductsRaw = d.sharedProducts || [];
+  const sharedProducts = sharedProductsRaw.map(s => ({
+    공급처: s.공급처,
+    상품명: s.상품명,
+    담당자별: {
+      [d.w1name]: (s.w1Options || []).map(o => ({옵션: o.옵션, 수량: o.입고수량})),
+      [d.w2name]: (s.w2Options || []).map(o => ({옵션: o.옵션, 수량: o.입고수량}))
     }
-  } catch(e){ console.warn('원본 파일 인코딩 실패 (스마트비즈 업로드 기능 제약 있을 수 있음):', e); }
+  }));
 
   try {
-    const payload = {
-      action: 'createSession',
+    const res = await fetch(gasUrl, { method:'POST', body:JSON.stringify({
+      action:'createSession',
       items,
-      originalFile: originalFileBase64,     // ★ SBODWL 원본 base64
-      originalFileName: originalFileName,   // ★ 파일명 (예: SBODWL_20260419.xlsx)
-      addCandidates: window._addCandidates || []  // ★ 추가입고 후보 ([미송],[반품],[선주문] 등)
-    };
-    const res = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'text/plain;charset=utf-8'} });
+      sharedProducts  // ★ staff 공지용으로 같이 전송
+    }), headers:{'Content-Type':'text/plain;charset=utf-8'} });
     const result = await res.json();
     if(!result.ok){
-      document.getElementById('inspResultError').textContent = '직원 폰 검수 링크 생성 실패: '+(result.error||'');
+      document.getElementById('inspResultError').textContent = '검수 세션 생성 실패: '+(result.error||'');
       document.getElementById('inspResultError').style.display = 'block';
       return;
     }
     const sid = result.sessionId;
     const base = staffUrl.replace(/\/$/,'').replace(/\?.*$/,'');
-    document.getElementById('inspResultStatus').textContent = `작업번호: ${sid} · 총 ${result.totalItems}건 / ${result.totalQty}개`;
+    document.getElementById('inspResultStatus').textContent = `세션ID: ${sid} · 총 ${result.totalItems}건 / ${result.totalQty}개`;
     document.getElementById('inspResultLinks').innerHTML = result.workers.map(w => {
       const url = `${base}?worker=${encodeURIComponent(w)}&session=${sid}`;
-      const urlEsc = url.replace(/'/g,"\\'").replace(/"/g,'&quot;');
-      return `<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #9333EA;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
-        <span style="font-weight:700;color:#9333EA;min-width:70px;font-size:14px;">👤 ${w}</span>
-        <span style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${url}">${url}</span>
-        <button onclick="openLink('${urlEsc}')" style="padding:8px 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#9333EA,#7C3AED);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;box-shadow:0 2px 6px rgba(147,51,234,.25);">🔗 바로가기</button>
-        <button onclick="copyLink('${urlEsc}',this)" title="링크 복사" style="padding:8px 10px;border:1px solid #D8B4FE;border-radius:8px;background:#fff;color:#9333EA;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">📋</button>
+      return `<div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #9333EA;border-radius:8px;padding:10px 14px;margin-bottom:6px;">
+        <span style="font-weight:700;color:#9333EA;min-width:80px;font-size:13px;">${w}</span>
+        <span style="flex:1;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${url}">${url}</span>
+        <button onclick="copyLink('${url.replace(/'/g,"\\'")}',this)" style="padding:6px 12px;border:none;border-radius:6px;background:#9333EA;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">복사</button>
       </div>`;
     }).join('');
     document.getElementById('inspResultSection').style.display = 'block';
@@ -1214,18 +1472,14 @@ async function autoCreateInspection(){
   }
 }
 
-/* 새 탭에서 링크 열기 (메인 기능) */
-function openLink(url){
-  window.open(url, '_blank', 'noopener');
-}
-
-/* 링크 복사 (보조 기능) */
 function copyLink(url,btn){
   navigator.clipboard.writeText(url).then(()=>{
-    const orig=btn.textContent;btn.textContent='✓';btn.style.background='var(--green)';btn.style.color='#fff';btn.style.borderColor='var(--green)';
-    setTimeout(()=>{btn.textContent=orig;btn.style.background='';btn.style.color='';btn.style.borderColor='';},1500);
+    const orig=btn.textContent;btn.textContent='✓ 복사됨';btn.style.background='var(--green)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1500);
   });
 }
+
+
 </script>
 </body>
 </html>
