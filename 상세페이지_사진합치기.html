@@ -328,11 +328,14 @@
     if(!images.length){ preview.innerHTML='<div class="preview-empty">사진을 올리면 여기에<br>합쳐질 모습이 보여요</div>'; return; }
     const W=Math.max(100,Math.min(2000,+$('#width').value||1000));
     const gapPx=Math.max(0,Math.min(200,+$('#gap').value||0));
+    const scale=358/W; // 미리보기 폭 기준 축소 비율
+    const padPv=140*scale; // 상하 고정 여백(140px) 축소값
     images.forEach((it,i)=>{
       const pv=document.createElement('div');
       pv.className='pv'; pv.draggable=true; pv.dataset.id=it.id;
-      // 미리보기 폭(약 358px) 기준으로 실제 여백을 비례 축소해서 표시
-      if(i>0) pv.style.marginTop=(gapPx*(358/W))+'px';
+      // 첫 사진 위 / 마지막 사진 아래: 140px 고정 여백, 사진 사이: 설정 여백
+      pv.style.marginTop = (i===0 ? padPv : gapPx*scale) + 'px';
+      if(i===images.length-1) pv.style.marginBottom = padPv + 'px';
       pv.innerHTML='<span class="pvnum">'+(i+1)+'</span>'+
         '<button class="pvcrop" title="자르기">✂ 자르기</button>'+
         '<button class="pvdel" title="삭제">×</button>'+
@@ -486,14 +489,16 @@
   function buildMergedCanvas(){
     const W=Math.max(100,Math.min(2000,+$('#width').value||1000));
     const gap=Math.max(0,Math.min(200,+$('#gap').value||0));
+    const PAD=140; // 처음/마지막 고정 여백
     const scaled=images.map(it=>{ const h=Math.round(it.img.naturalHeight*(W/it.img.naturalWidth)); return {img:it.img,h}; });
     let totalH=0; scaled.forEach(s=>totalH+=s.h);
     totalH+=gap*(images.length-1);
+    totalH+=PAD*2; // 위아래 고정 여백
     const c=document.createElement('canvas'); c.width=W; c.height=totalH;
     const ctx=c.getContext('2d');
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
     ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,totalH);
-    let y=0; scaled.forEach((s,i)=>{ ctx.drawImage(s.img,0,y,W,s.h); y+=s.h; if(i<scaled.length-1) y+=gap; });
+    let y=PAD; scaled.forEach((s,i)=>{ ctx.drawImage(s.img,0,y,W,s.h); y+=s.h; if(i<scaled.length-1) y+=gap; });
     return c;
   }
   $('#merge').addEventListener('click',()=>{
