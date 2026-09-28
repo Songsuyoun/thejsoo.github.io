@@ -23,8 +23,10 @@
   .drop p { font-size:14px; color:var(--gray); }
   .drop strong { color:var(--noir); font-weight:500; }
   .drop small { display:block; font-size:11px; color:#bbb; margin-top:8px; }
-  .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+  .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
   .bar .count { font-size:13px; color:var(--gray); margin-right:auto; }
+  .res-note { font-size:12px; color:var(--gray); margin-bottom:20px; min-height:18px; }
+  .res-note.warn { color:#b4452f; }
   button {
     font-family:inherit; font-size:13px; padding:10px 18px; cursor:pointer;
     border:1px solid var(--noir); background:#fff; color:var(--noir);
@@ -38,6 +40,10 @@
   button.ghost:hover { background:#f0f0f0; color:var(--noir); border-color:var(--line); }
   .opt { display:flex; align-items:center; gap:6px; font-size:13px; color:#555; }
   .opt input[type=number] { width:64px; padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-family:inherit; font-size:13px; }
+  .opt input[type=number]:disabled { background:#f3f3f3; color:#999; }
+  .opt input[type=checkbox] { accent-color:var(--noir); width:15px; height:15px; cursor:pointer; }
+  .opt.check { cursor:pointer; user-select:none; }
+  .opt select { padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-family:inherit; font-size:13px; background:#fff; color:var(--noir); }
   .cols { display:grid; grid-template-columns:1fr 360px; gap:32px; align-items:start; }
   @media (max-width:880px){ .cols{ grid-template-columns:1fr; } }
   .panel-label { font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--gray); margin-bottom:12px; }
@@ -142,20 +148,27 @@
 <div class="wrap">
   <header>
     <h1>상세페이지 사진 합치기</h1>
-    <p class="sub">사진을 올리고 · 순서를 바꾸고 · 필요하면 자르고 · 오른쪽 미리보기로 확인하며 세로 한 장으로 저장하세요</p>
+    <p class="sub">사진을 올리고 · 순서를 바꾸고 · 필요하면 자르고 · 세로 한 장으로 합치거나 사진마다 따로 저장하세요 (너비는 그대로, 고화질로 저장돼요)</p>
   </header>
   <div class="drop" id="drop">
     <p><strong>사진을 끌어다 놓거나 클릭</strong>해서 선택하세요</p>
     <small>여러 장 한 번에 가능 · 파일은 어디에도 업로드되지 않고 이 화면 안에서만 처리됩니다</small>
+    <small style="margin-top:12px;">이전에 저장한 작업을 이어서 하려면 <span id="loadProjectTop" style="color:var(--noir);text-decoration:underline;cursor:pointer;">작업파일(.json) 불러오기</span></small>
   </div>
   <input type="file" id="file" accept="image/*" multiple hidden>
+  <input type="file" id="projectFile" accept=".json,application/json" hidden>
   <div class="bar" id="bar" style="display:none;">
     <span class="count" id="count"></span>
     <label class="opt">너비 <input type="number" id="width" value="1000" min="100" max="2000" step="10"> px</label>
     <label class="opt">사이 여백 <input type="number" id="gap" value="40" min="0" max="200" step="2"> px</label>
+    <label class="opt check" title="보통은 꺼두는 게 가장 자연스러워요. 사진이 전체적으로 흐릿할 때만 켜세요"><input type="checkbox" id="sharpen"> 선명 보정</label>
     <button class="ghost" id="clear">전체 비우기</button>
+    <button class="ghost" id="saveProject">작업파일 저장 💾</button>
+    <button class="ghost" id="loadProject">작업파일 불러오기 📂</button>
+    <button id="saveEach" title="합치지 않고 사진마다 따로 저장해요 (1.jpg, 2.jpg … 목록 순서대로)">개별로 저장 ↓</button>
     <button class="primary" id="merge">한 장으로 저장 ↓</button>
   </div>
+  <p class="res-note" id="resNote"></p>
   <div class="cols" id="cols" style="display:none;">
     <div>
       <p class="panel-label">사진 목록 · 순서 / 자르기</p>
@@ -232,11 +245,858 @@
   </div>
 </div>
 <script>
+/* JPEG 인코더 (jpeg-js 0.4.4, BSD 라이선스 · Copyright (c) 2014 Eugene Ware / Adobe Systems / Andreas Ritter) */
+/*
+  Copyright (c) 2008, Adobe Systems Incorporated
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without 
+  modification, are permitted provided that the following conditions are
+  met:
+
+  * Redistributions of source code must retain the above copyright notice, 
+    this list of conditions and the following disclaimer.
+  
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the 
+    documentation and/or other materials provided with the distribution.
+  
+  * Neither the name of Adobe Systems Incorporated nor the names of its 
+    contributors may be used to endorse or promote products derived from 
+    this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+/*
+JPEG encoder ported to JavaScript and optimized by Andreas Ritter, www.bytestrom.eu, 11/2009
+
+Basic GUI blocking jpeg encoder
+*/
+
+var btoa = btoa || function(buf) {
+  return Buffer.from(buf).toString('base64');
+};
+
+function JPEGEncoder(quality) {
+  var self = this;
+	var fround = Math.round;
+	var ffloor = Math.floor;
+	var YTable = new Array(64);
+	var UVTable = new Array(64);
+	var fdtbl_Y = new Array(64);
+	var fdtbl_UV = new Array(64);
+	var YDC_HT;
+	var UVDC_HT;
+	var YAC_HT;
+	var UVAC_HT;
+	
+	var bitcode = new Array(65535);
+	var category = new Array(65535);
+	var outputfDCTQuant = new Array(64);
+	var DU = new Array(64);
+	var byteout = [];
+	var bytenew = 0;
+	var bytepos = 7;
+	
+	var YDU = new Array(64);
+	var UDU = new Array(64);
+	var VDU = new Array(64);
+	var clt = new Array(256);
+	var RGB_YUV_TABLE = new Array(2048);
+	var currentQuality;
+	
+	var ZigZag = [
+			 0, 1, 5, 6,14,15,27,28,
+			 2, 4, 7,13,16,26,29,42,
+			 3, 8,12,17,25,30,41,43,
+			 9,11,18,24,31,40,44,53,
+			10,19,23,32,39,45,52,54,
+			20,22,33,38,46,51,55,60,
+			21,34,37,47,50,56,59,61,
+			35,36,48,49,57,58,62,63
+		];
+	
+	var std_dc_luminance_nrcodes = [0,0,1,5,1,1,1,1,1,1,0,0,0,0,0,0,0];
+	var std_dc_luminance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+	var std_ac_luminance_nrcodes = [0,0,2,1,3,3,2,4,3,5,5,4,4,0,0,1,0x7d];
+	var std_ac_luminance_values = [
+			0x01,0x02,0x03,0x00,0x04,0x11,0x05,0x12,
+			0x21,0x31,0x41,0x06,0x13,0x51,0x61,0x07,
+			0x22,0x71,0x14,0x32,0x81,0x91,0xa1,0x08,
+			0x23,0x42,0xb1,0xc1,0x15,0x52,0xd1,0xf0,
+			0x24,0x33,0x62,0x72,0x82,0x09,0x0a,0x16,
+			0x17,0x18,0x19,0x1a,0x25,0x26,0x27,0x28,
+			0x29,0x2a,0x34,0x35,0x36,0x37,0x38,0x39,
+			0x3a,0x43,0x44,0x45,0x46,0x47,0x48,0x49,
+			0x4a,0x53,0x54,0x55,0x56,0x57,0x58,0x59,
+			0x5a,0x63,0x64,0x65,0x66,0x67,0x68,0x69,
+			0x6a,0x73,0x74,0x75,0x76,0x77,0x78,0x79,
+			0x7a,0x83,0x84,0x85,0x86,0x87,0x88,0x89,
+			0x8a,0x92,0x93,0x94,0x95,0x96,0x97,0x98,
+			0x99,0x9a,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,
+			0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,0xb5,0xb6,
+			0xb7,0xb8,0xb9,0xba,0xc2,0xc3,0xc4,0xc5,
+			0xc6,0xc7,0xc8,0xc9,0xca,0xd2,0xd3,0xd4,
+			0xd5,0xd6,0xd7,0xd8,0xd9,0xda,0xe1,0xe2,
+			0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,
+			0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+			0xf9,0xfa
+		];
+	
+	var std_dc_chrominance_nrcodes = [0,0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0];
+	var std_dc_chrominance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+	var std_ac_chrominance_nrcodes = [0,0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77];
+	var std_ac_chrominance_values = [
+			0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,
+			0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,
+			0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,
+			0xa1,0xb1,0xc1,0x09,0x23,0x33,0x52,0xf0,
+			0x15,0x62,0x72,0xd1,0x0a,0x16,0x24,0x34,
+			0xe1,0x25,0xf1,0x17,0x18,0x19,0x1a,0x26,
+			0x27,0x28,0x29,0x2a,0x35,0x36,0x37,0x38,
+			0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,
+			0x49,0x4a,0x53,0x54,0x55,0x56,0x57,0x58,
+			0x59,0x5a,0x63,0x64,0x65,0x66,0x67,0x68,
+			0x69,0x6a,0x73,0x74,0x75,0x76,0x77,0x78,
+			0x79,0x7a,0x82,0x83,0x84,0x85,0x86,0x87,
+			0x88,0x89,0x8a,0x92,0x93,0x94,0x95,0x96,
+			0x97,0x98,0x99,0x9a,0xa2,0xa3,0xa4,0xa5,
+			0xa6,0xa7,0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,
+			0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xc2,0xc3,
+			0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xd2,
+			0xd3,0xd4,0xd5,0xd6,0xd7,0xd8,0xd9,0xda,
+			0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,
+			0xea,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+			0xf9,0xfa
+		];
+	
+	function initQuantTables(sf){
+			var YQT = [
+				16, 11, 10, 16, 24, 40, 51, 61,
+				12, 12, 14, 19, 26, 58, 60, 55,
+				14, 13, 16, 24, 40, 57, 69, 56,
+				14, 17, 22, 29, 51, 87, 80, 62,
+				18, 22, 37, 56, 68,109,103, 77,
+				24, 35, 55, 64, 81,104,113, 92,
+				49, 64, 78, 87,103,121,120,101,
+				72, 92, 95, 98,112,100,103, 99
+			];
+			
+			for (var i = 0; i < 64; i++) {
+				var t = ffloor((YQT[i]*sf+50)/100);
+				if (t < 1) {
+					t = 1;
+				} else if (t > 255) {
+					t = 255;
+				}
+				YTable[ZigZag[i]] = t;
+			}
+			var UVQT = [
+				17, 18, 24, 47, 99, 99, 99, 99,
+				18, 21, 26, 66, 99, 99, 99, 99,
+				24, 26, 56, 99, 99, 99, 99, 99,
+				47, 66, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99
+			];
+			for (var j = 0; j < 64; j++) {
+				var u = ffloor((UVQT[j]*sf+50)/100);
+				if (u < 1) {
+					u = 1;
+				} else if (u > 255) {
+					u = 255;
+				}
+				UVTable[ZigZag[j]] = u;
+			}
+			var aasf = [
+				1.0, 1.387039845, 1.306562965, 1.175875602,
+				1.0, 0.785694958, 0.541196100, 0.275899379
+			];
+			var k = 0;
+			for (var row = 0; row < 8; row++)
+			{
+				for (var col = 0; col < 8; col++)
+				{
+					fdtbl_Y[k]  = (1.0 / (YTable [ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+					fdtbl_UV[k] = (1.0 / (UVTable[ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+					k++;
+				}
+			}
+		}
+		
+		function computeHuffmanTbl(nrcodes, std_table){
+			var codevalue = 0;
+			var pos_in_table = 0;
+			var HT = new Array();
+			for (var k = 1; k <= 16; k++) {
+				for (var j = 1; j <= nrcodes[k]; j++) {
+					HT[std_table[pos_in_table]] = [];
+					HT[std_table[pos_in_table]][0] = codevalue;
+					HT[std_table[pos_in_table]][1] = k;
+					pos_in_table++;
+					codevalue++;
+				}
+				codevalue*=2;
+			}
+			return HT;
+		}
+		
+		function initHuffmanTbl()
+		{
+			YDC_HT = computeHuffmanTbl(std_dc_luminance_nrcodes,std_dc_luminance_values);
+			UVDC_HT = computeHuffmanTbl(std_dc_chrominance_nrcodes,std_dc_chrominance_values);
+			YAC_HT = computeHuffmanTbl(std_ac_luminance_nrcodes,std_ac_luminance_values);
+			UVAC_HT = computeHuffmanTbl(std_ac_chrominance_nrcodes,std_ac_chrominance_values);
+		}
+	
+		function initCategoryNumber()
+		{
+			var nrlower = 1;
+			var nrupper = 2;
+			for (var cat = 1; cat <= 15; cat++) {
+				//Positive numbers
+				for (var nr = nrlower; nr<nrupper; nr++) {
+					category[32767+nr] = cat;
+					bitcode[32767+nr] = [];
+					bitcode[32767+nr][1] = cat;
+					bitcode[32767+nr][0] = nr;
+				}
+				//Negative numbers
+				for (var nrneg =-(nrupper-1); nrneg<=-nrlower; nrneg++) {
+					category[32767+nrneg] = cat;
+					bitcode[32767+nrneg] = [];
+					bitcode[32767+nrneg][1] = cat;
+					bitcode[32767+nrneg][0] = nrupper-1+nrneg;
+				}
+				nrlower <<= 1;
+				nrupper <<= 1;
+			}
+		}
+		
+		function initRGBYUVTable() {
+			for(var i = 0; i < 256;i++) {
+				RGB_YUV_TABLE[i]      		=  19595 * i;
+				RGB_YUV_TABLE[(i+ 256)>>0] 	=  38470 * i;
+				RGB_YUV_TABLE[(i+ 512)>>0] 	=   7471 * i + 0x8000;
+				RGB_YUV_TABLE[(i+ 768)>>0] 	= -11059 * i;
+				RGB_YUV_TABLE[(i+1024)>>0] 	= -21709 * i;
+				RGB_YUV_TABLE[(i+1280)>>0] 	=  32768 * i + 0x807FFF;
+				RGB_YUV_TABLE[(i+1536)>>0] 	= -27439 * i;
+				RGB_YUV_TABLE[(i+1792)>>0] 	= - 5329 * i;
+			}
+		}
+		
+		// IO functions
+		function writeBits(bs)
+		{
+			var value = bs[0];
+			var posval = bs[1]-1;
+			while ( posval >= 0 ) {
+				if (value & (1 << posval) ) {
+					bytenew |= (1 << bytepos);
+				}
+				posval--;
+				bytepos--;
+				if (bytepos < 0) {
+					if (bytenew == 0xFF) {
+						writeByte(0xFF);
+						writeByte(0);
+					}
+					else {
+						writeByte(bytenew);
+					}
+					bytepos=7;
+					bytenew=0;
+				}
+			}
+		}
+	
+		function writeByte(value)
+		{
+			//byteout.push(clt[value]); // write char directly instead of converting later
+      byteout.push(value);
+		}
+	
+		function writeWord(value)
+		{
+			writeByte((value>>8)&0xFF);
+			writeByte((value   )&0xFF);
+		}
+		
+		// DCT & quantization core
+		function fDCTQuant(data, fdtbl)
+		{
+			var d0, d1, d2, d3, d4, d5, d6, d7;
+			/* Pass 1: process rows. */
+			var dataOff=0;
+			var i;
+			var I8 = 8;
+			var I64 = 64;
+			for (i=0; i<I8; ++i)
+			{
+				d0 = data[dataOff];
+				d1 = data[dataOff+1];
+				d2 = data[dataOff+2];
+				d3 = data[dataOff+3];
+				d4 = data[dataOff+4];
+				d5 = data[dataOff+5];
+				d6 = data[dataOff+6];
+				d7 = data[dataOff+7];
+				
+				var tmp0 = d0 + d7;
+				var tmp7 = d0 - d7;
+				var tmp1 = d1 + d6;
+				var tmp6 = d1 - d6;
+				var tmp2 = d2 + d5;
+				var tmp5 = d2 - d5;
+				var tmp3 = d3 + d4;
+				var tmp4 = d3 - d4;
+	
+				/* Even part */
+				var tmp10 = tmp0 + tmp3;	/* phase 2 */
+				var tmp13 = tmp0 - tmp3;
+				var tmp11 = tmp1 + tmp2;
+				var tmp12 = tmp1 - tmp2;
+	
+				data[dataOff] = tmp10 + tmp11; /* phase 3 */
+				data[dataOff+4] = tmp10 - tmp11;
+	
+				var z1 = (tmp12 + tmp13) * 0.707106781; /* c4 */
+				data[dataOff+2] = tmp13 + z1; /* phase 5 */
+				data[dataOff+6] = tmp13 - z1;
+	
+				/* Odd part */
+				tmp10 = tmp4 + tmp5; /* phase 2 */
+				tmp11 = tmp5 + tmp6;
+				tmp12 = tmp6 + tmp7;
+	
+				/* The rotator is modified from fig 4-8 to avoid extra negations. */
+				var z5 = (tmp10 - tmp12) * 0.382683433; /* c6 */
+				var z2 = 0.541196100 * tmp10 + z5; /* c2-c6 */
+				var z4 = 1.306562965 * tmp12 + z5; /* c2+c6 */
+				var z3 = tmp11 * 0.707106781; /* c4 */
+	
+				var z11 = tmp7 + z3;	/* phase 5 */
+				var z13 = tmp7 - z3;
+	
+				data[dataOff+5] = z13 + z2;	/* phase 6 */
+				data[dataOff+3] = z13 - z2;
+				data[dataOff+1] = z11 + z4;
+				data[dataOff+7] = z11 - z4;
+	
+				dataOff += 8; /* advance pointer to next row */
+			}
+	
+			/* Pass 2: process columns. */
+			dataOff = 0;
+			for (i=0; i<I8; ++i)
+			{
+				d0 = data[dataOff];
+				d1 = data[dataOff + 8];
+				d2 = data[dataOff + 16];
+				d3 = data[dataOff + 24];
+				d4 = data[dataOff + 32];
+				d5 = data[dataOff + 40];
+				d6 = data[dataOff + 48];
+				d7 = data[dataOff + 56];
+				
+				var tmp0p2 = d0 + d7;
+				var tmp7p2 = d0 - d7;
+				var tmp1p2 = d1 + d6;
+				var tmp6p2 = d1 - d6;
+				var tmp2p2 = d2 + d5;
+				var tmp5p2 = d2 - d5;
+				var tmp3p2 = d3 + d4;
+				var tmp4p2 = d3 - d4;
+	
+				/* Even part */
+				var tmp10p2 = tmp0p2 + tmp3p2;	/* phase 2 */
+				var tmp13p2 = tmp0p2 - tmp3p2;
+				var tmp11p2 = tmp1p2 + tmp2p2;
+				var tmp12p2 = tmp1p2 - tmp2p2;
+	
+				data[dataOff] = tmp10p2 + tmp11p2; /* phase 3 */
+				data[dataOff+32] = tmp10p2 - tmp11p2;
+	
+				var z1p2 = (tmp12p2 + tmp13p2) * 0.707106781; /* c4 */
+				data[dataOff+16] = tmp13p2 + z1p2; /* phase 5 */
+				data[dataOff+48] = tmp13p2 - z1p2;
+	
+				/* Odd part */
+				tmp10p2 = tmp4p2 + tmp5p2; /* phase 2 */
+				tmp11p2 = tmp5p2 + tmp6p2;
+				tmp12p2 = tmp6p2 + tmp7p2;
+	
+				/* The rotator is modified from fig 4-8 to avoid extra negations. */
+				var z5p2 = (tmp10p2 - tmp12p2) * 0.382683433; /* c6 */
+				var z2p2 = 0.541196100 * tmp10p2 + z5p2; /* c2-c6 */
+				var z4p2 = 1.306562965 * tmp12p2 + z5p2; /* c2+c6 */
+				var z3p2 = tmp11p2 * 0.707106781; /* c4 */
+	
+				var z11p2 = tmp7p2 + z3p2;	/* phase 5 */
+				var z13p2 = tmp7p2 - z3p2;
+	
+				data[dataOff+40] = z13p2 + z2p2; /* phase 6 */
+				data[dataOff+24] = z13p2 - z2p2;
+				data[dataOff+ 8] = z11p2 + z4p2;
+				data[dataOff+56] = z11p2 - z4p2;
+	
+				dataOff++; /* advance pointer to next column */
+			}
+	
+			// Quantize/descale the coefficients
+			var fDCTQuant;
+			for (i=0; i<I64; ++i)
+			{
+				// Apply the quantization and scaling factor & Round to nearest integer
+				fDCTQuant = data[i]*fdtbl[i];
+				outputfDCTQuant[i] = (fDCTQuant > 0.0) ? ((fDCTQuant + 0.5)|0) : ((fDCTQuant - 0.5)|0);
+				//outputfDCTQuant[i] = fround(fDCTQuant);
+
+			}
+			return outputfDCTQuant;
+		}
+		
+		function writeAPP0()
+		{
+			writeWord(0xFFE0); // marker
+			writeWord(16); // length
+			writeByte(0x4A); // J
+			writeByte(0x46); // F
+			writeByte(0x49); // I
+			writeByte(0x46); // F
+			writeByte(0); // = "JFIF",'\0'
+			writeByte(1); // versionhi
+			writeByte(1); // versionlo
+			writeByte(0); // xyunits
+			writeWord(1); // xdensity
+			writeWord(1); // ydensity
+			writeByte(0); // thumbnwidth
+			writeByte(0); // thumbnheight
+		}
+
+		function writeAPP1(exifBuffer) {
+			if (!exifBuffer) return;
+
+			writeWord(0xFFE1); // APP1 marker
+
+			if (exifBuffer[0] === 0x45 &&
+					exifBuffer[1] === 0x78 &&
+					exifBuffer[2] === 0x69 &&
+					exifBuffer[3] === 0x66) {
+				// Buffer already starts with EXIF, just use it directly
+				writeWord(exifBuffer.length + 2); // length is buffer + length itself!
+			} else {
+				// Buffer doesn't start with EXIF, write it for them
+				writeWord(exifBuffer.length + 5 + 2); // length is buffer + EXIF\0 + length itself!
+				writeByte(0x45); // E
+				writeByte(0x78); // X
+				writeByte(0x69); // I
+				writeByte(0x66); // F
+				writeByte(0); // = "EXIF",'\0'
+			}
+
+			for (var i = 0; i < exifBuffer.length; i++) {
+				writeByte(exifBuffer[i]);
+			}
+		}
+
+		function writeSOF0(width, height)
+		{
+			writeWord(0xFFC0); // marker
+			writeWord(17);   // length, truecolor YUV JPG
+			writeByte(8);    // precision
+			writeWord(height);
+			writeWord(width);
+			writeByte(3);    // nrofcomponents
+			writeByte(1);    // IdY
+			writeByte(0x11); // HVY
+			writeByte(0);    // QTY
+			writeByte(2);    // IdU
+			writeByte(0x11); // HVU
+			writeByte(1);    // QTU
+			writeByte(3);    // IdV
+			writeByte(0x11); // HVV
+			writeByte(1);    // QTV
+		}
+	
+		function writeDQT()
+		{
+			writeWord(0xFFDB); // marker
+			writeWord(132);	   // length
+			writeByte(0);
+			for (var i=0; i<64; i++) {
+				writeByte(YTable[i]);
+			}
+			writeByte(1);
+			for (var j=0; j<64; j++) {
+				writeByte(UVTable[j]);
+			}
+		}
+	
+		function writeDHT()
+		{
+			writeWord(0xFFC4); // marker
+			writeWord(0x01A2); // length
+	
+			writeByte(0); // HTYDCinfo
+			for (var i=0; i<16; i++) {
+				writeByte(std_dc_luminance_nrcodes[i+1]);
+			}
+			for (var j=0; j<=11; j++) {
+				writeByte(std_dc_luminance_values[j]);
+			}
+	
+			writeByte(0x10); // HTYACinfo
+			for (var k=0; k<16; k++) {
+				writeByte(std_ac_luminance_nrcodes[k+1]);
+			}
+			for (var l=0; l<=161; l++) {
+				writeByte(std_ac_luminance_values[l]);
+			}
+	
+			writeByte(1); // HTUDCinfo
+			for (var m=0; m<16; m++) {
+				writeByte(std_dc_chrominance_nrcodes[m+1]);
+			}
+			for (var n=0; n<=11; n++) {
+				writeByte(std_dc_chrominance_values[n]);
+			}
+	
+			writeByte(0x11); // HTUACinfo
+			for (var o=0; o<16; o++) {
+				writeByte(std_ac_chrominance_nrcodes[o+1]);
+			}
+			for (var p=0; p<=161; p++) {
+				writeByte(std_ac_chrominance_values[p]);
+			}
+		}
+		
+		function writeCOM(comments)
+		{
+			if (typeof comments === "undefined" || comments.constructor !== Array) return;
+			comments.forEach(e => {
+				if (typeof e !== "string") return;
+				writeWord(0xFFFE); // marker
+				var l = e.length;
+				writeWord(l + 2); // length itself as well
+				var i;
+				for (i = 0; i < l; i++)
+					writeByte(e.charCodeAt(i));
+			});
+		}
+	
+		function writeSOS()
+		{
+			writeWord(0xFFDA); // marker
+			writeWord(12); // length
+			writeByte(3); // nrofcomponents
+			writeByte(1); // IdY
+			writeByte(0); // HTY
+			writeByte(2); // IdU
+			writeByte(0x11); // HTU
+			writeByte(3); // IdV
+			writeByte(0x11); // HTV
+			writeByte(0); // Ss
+			writeByte(0x3f); // Se
+			writeByte(0); // Bf
+		}
+		
+		function processDU(CDU, fdtbl, DC, HTDC, HTAC){
+			var EOB = HTAC[0x00];
+			var M16zeroes = HTAC[0xF0];
+			var pos;
+			var I16 = 16;
+			var I63 = 63;
+			var I64 = 64;
+			var DU_DCT = fDCTQuant(CDU, fdtbl);
+			//ZigZag reorder
+			for (var j=0;j<I64;++j) {
+				DU[ZigZag[j]]=DU_DCT[j];
+			}
+			var Diff = DU[0] - DC; DC = DU[0];
+			//Encode DC
+			if (Diff==0) {
+				writeBits(HTDC[0]); // Diff might be 0
+			} else {
+				pos = 32767+Diff;
+				writeBits(HTDC[category[pos]]);
+				writeBits(bitcode[pos]);
+			}
+			//Encode ACs
+			var end0pos = 63; // was const... which is crazy
+			for (; (end0pos>0)&&(DU[end0pos]==0); end0pos--) {};
+			//end0pos = first element in reverse order !=0
+			if ( end0pos == 0) {
+				writeBits(EOB);
+				return DC;
+			}
+			var i = 1;
+			var lng;
+			while ( i <= end0pos ) {
+				var startpos = i;
+				for (; (DU[i]==0) && (i<=end0pos); ++i) {}
+				var nrzeroes = i-startpos;
+				if ( nrzeroes >= I16 ) {
+					lng = nrzeroes>>4;
+					for (var nrmarker=1; nrmarker <= lng; ++nrmarker)
+						writeBits(M16zeroes);
+					nrzeroes = nrzeroes&0xF;
+				}
+				pos = 32767+DU[i];
+				writeBits(HTAC[(nrzeroes<<4)+category[pos]]);
+				writeBits(bitcode[pos]);
+				i++;
+			}
+			if ( end0pos != I63 ) {
+				writeBits(EOB);
+			}
+			return DC;
+		}
+
+		function initCharLookupTable(){
+			var sfcc = String.fromCharCode;
+			for(var i=0; i < 256; i++){ ///// ACHTUNG // 255
+				clt[i] = sfcc(i);
+			}
+		}
+		
+		this.encode = function(image,quality) // image data object
+		{
+			var time_start = new Date().getTime();
+			
+			if(quality) setQuality(quality);
+			
+			// Initialize bit writer
+			byteout = new Array();
+			bytenew=0;
+			bytepos=7;
+	
+			// Add JPEG headers
+			writeWord(0xFFD8); // SOI
+			writeAPP0();
+			writeCOM(image.comments);
+			writeAPP1(image.exifBuffer);
+			writeDQT();
+			writeSOF0(image.width,image.height);
+			writeDHT();
+			writeSOS();
+
+	
+			// Encode 8x8 macroblocks
+			var DCY=0;
+			var DCU=0;
+			var DCV=0;
+			
+			bytenew=0;
+			bytepos=7;
+			
+			
+			this.encode.displayName = "_encode_";
+
+			var imageData = image.data;
+			var width = image.width;
+			var height = image.height;
+
+			var quadWidth = width*4;
+			var tripleWidth = width*3;
+			
+			var x, y = 0;
+			var r, g, b;
+			var start,p, col,row,pos;
+			while(y < height){
+				x = 0;
+				while(x < quadWidth){
+				start = quadWidth * y + x;
+				p = start;
+				col = -1;
+				row = 0;
+				
+				for(pos=0; pos < 64; pos++){
+					row = pos >> 3;// /8
+					col = ( pos & 7 ) * 4; // %8
+					p = start + ( row * quadWidth ) + col;		
+					
+					if(y+row >= height){ // padding bottom
+						p-= (quadWidth*(y+1+row-height));
+					}
+
+					if(x+col >= quadWidth){ // padding right	
+						p-= ((x+col) - quadWidth +4)
+					}
+					
+					r = imageData[ p++ ];
+					g = imageData[ p++ ];
+					b = imageData[ p++ ];
+					
+					
+					/* // calculate YUV values dynamically
+					YDU[pos]=((( 0.29900)*r+( 0.58700)*g+( 0.11400)*b))-128; //-0x80
+					UDU[pos]=(((-0.16874)*r+(-0.33126)*g+( 0.50000)*b));
+					VDU[pos]=((( 0.50000)*r+(-0.41869)*g+(-0.08131)*b));
+					*/
+					
+					// use lookup table (slightly faster)
+					YDU[pos] = ((RGB_YUV_TABLE[r]             + RGB_YUV_TABLE[(g +  256)>>0] + RGB_YUV_TABLE[(b +  512)>>0]) >> 16)-128;
+					UDU[pos] = ((RGB_YUV_TABLE[(r +  768)>>0] + RGB_YUV_TABLE[(g + 1024)>>0] + RGB_YUV_TABLE[(b + 1280)>>0]) >> 16)-128;
+					VDU[pos] = ((RGB_YUV_TABLE[(r + 1280)>>0] + RGB_YUV_TABLE[(g + 1536)>>0] + RGB_YUV_TABLE[(b + 1792)>>0]) >> 16)-128;
+
+				}
+				
+				DCY = processDU(YDU, fdtbl_Y, DCY, YDC_HT, YAC_HT);
+				DCU = processDU(UDU, fdtbl_UV, DCU, UVDC_HT, UVAC_HT);
+				DCV = processDU(VDU, fdtbl_UV, DCV, UVDC_HT, UVAC_HT);
+				x+=32;
+				}
+				y+=8;
+			}
+			
+			
+			////////////////////////////////////////////////////////////////
+	
+			// Do the bit alignment of the EOI marker
+			if ( bytepos >= 0 ) {
+				var fillbits = [];
+				fillbits[1] = bytepos+1;
+				fillbits[0] = (1<<(bytepos+1))-1;
+				writeBits(fillbits);
+			}
+	
+			writeWord(0xFFD9); //EOI
+
+			if (typeof module === 'undefined') return new Uint8Array(byteout);
+      return Buffer.from(byteout);
+
+			var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
+			
+			byteout = [];
+			
+			// benchmarking
+			var duration = new Date().getTime() - time_start;
+    		//console.log('Encoding time: '+ duration + 'ms');
+    		//
+			
+			return jpegDataUri			
+	}
+	
+	function setQuality(quality){
+		if (quality <= 0) {
+			quality = 1;
+		}
+		if (quality > 100) {
+			quality = 100;
+		}
+		
+		if(currentQuality == quality) return // don't recalc if unchanged
+		
+		var sf = 0;
+		if (quality < 50) {
+			sf = Math.floor(5000 / quality);
+		} else {
+			sf = Math.floor(200 - quality*2);
+		}
+		
+		initQuantTables(sf);
+		currentQuality = quality;
+		//console.log('Quality set to: '+quality +'%');
+	}
+	
+	function init(){
+		var time_start = new Date().getTime();
+		if(!quality) quality = 50;
+		// Create tables
+		initCharLookupTable()
+		initHuffmanTbl();
+		initCategoryNumber();
+		initRGBYUVTable();
+		
+		setQuality(quality);
+		var duration = new Date().getTime() - time_start;
+    	//console.log('Initialization '+ duration + 'ms');
+	}
+	
+	init();
+	
+};
+
+if (typeof module !== 'undefined') {
+	module.exports = encode;
+} else if (typeof window !== 'undefined') {
+	window['jpeg-js'] = window['jpeg-js'] || {};
+	window['jpeg-js'].encode = encode;
+}
+
+function encode(imgData, qu) {
+  if (typeof qu === 'undefined') qu = 50;
+  var encoder = new JPEGEncoder(qu);
+	var data = encoder.encode(imgData, qu);
+  return {
+    data: data,
+    width: imgData.width,
+    height: imgData.height,
+  };
+}
+
+// helper function to get the imageData of an existing image on the current page.
+function getImageDataFromImage(idOrElement){
+	var theImg = (typeof(idOrElement)=='string')? document.getElementById(idOrElement):idOrElement;
+	var cvs = document.createElement('canvas');
+	cvs.width = theImg.width;
+	cvs.height = theImg.height;
+	var ctx = cvs.getContext("2d");
+	ctx.drawImage(theImg,0,0);
+	
+	return (ctx.getImageData(0, 0, cvs.width, cvs.height));
+}
+
+</script>
+<script>
 (function(){
   const $ = s => document.querySelector(s);
   let images = []; let uid = 0;
   const drop=$('#drop'), fileInput=$('#file'), list=$('#list'), preview=$('#preview'),
         bar=$('#bar'), cols=$('#cols'), count=$('#count');
+
+  // ===== 출력 설정 =====
+  const PAD=140;          // 처음/마지막 고정 여백(px)
+  const MAX_SIDE=32767;   // 브라우저 캔버스 한 변 최대 크기
+  const DPI=72;           // 저장 파일에 기록할 해상도(웹용 72ppi — 용량과는 무관)
+  const widthIn=$('#width'), gapIn=$('#gap'), resNote=$('#resNote'), sharpenIn=$('#sharpen'), qualityIn={value:'85'}; // 화질 고정: 표준(85, 4:4:4) — 기존과 비슷한 용량에 더 선명
+  const qLabel=()=>'표준';
+
+  function getGap(){ return Math.max(0,Math.min(200,+gapIn.value||0)); }
+  function getOutWidth(){ return Math.max(100,Math.min(2000,+widthIn.value||1000)); }
+  function calcHeight(W){
+    let h=0; images.forEach(it=>h+=Math.round(it.img.naturalHeight*(W/it.img.naturalWidth)));
+    return h+getGap()*(images.length-1)+PAD*2;
+  }
+  function updateResUI(){
+    if(!images.length){ resNote.textContent=''; resNote.classList.remove('warn'); return; }
+    const W=getOutWidth(), H=calcHeight(W);
+    const maxSrc=Math.max(...images.map(it=>it.img.naturalWidth));
+    let msg='저장될 크기: '+W.toLocaleString()+' × '+H.toLocaleString()+' px · '+DPI+'dpi';
+    if(maxSrc>W) msg+=' · 원본('+maxSrc+'px)에서 란초스 고화질 축소'+(sharpenIn.checked?' + 선명 보정':'')+' · 화질 '+qLabel();
+    const small=images.map((it,i)=>it.img.naturalWidth<W?(i+1):0).filter(Boolean);
+    let warn=false;
+    if(small.length){ msg+=' · ⚠ '+small.join(', ')+'번 사진은 원본이 '+W+'px보다 작아서 늘어나며 흐려질 수 있어요'; warn=true; }
+    if(H>MAX_SIDE){ msg+=' · ⚠ 세로가 너무 길어요(최대 '+MAX_SIDE.toLocaleString()+'px). 사진을 나눠서 저장해 주세요'; warn=true; }
+    resNote.classList.toggle('warn',warn);
+    resNote.textContent=msg;
+  }
+  sharpenIn.addEventListener('change',updateResUI);
+
   drop.addEventListener('click',()=>fileInput.click());
   // 페이지 전체에서 브라우저 기본 동작(파일 열림/화면 전환) 차단
   ['dragover','dragenter','drop'].forEach(e=>window.addEventListener(e,ev=>ev.preventDefault(),false));
@@ -248,18 +1108,24 @@
     ev.preventDefault();
     drop.classList.remove('over');
     if(ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files.length){
-      handleFiles(ev.dataTransfer.files);
+      const fs=[...ev.dataTransfer.files];
+      const json=fs.find(f=>/\.json$/i.test(f.name)||f.type==='application/json');
+      if(json){ processProjectFile(json); return; }   // 작업 파일을 끌어다 놓으면 불러오기
+      handleFiles(fs);
     }
   },false);
-  fileInput.addEventListener('change',ev=>handleFiles(ev.target.files));
+  fileInput.addEventListener('change',ev=>{ handleFiles(ev.target.files); fileInput.value=''; });
   function handleFiles(files){
     const arr=[...files].filter(f=>f.type.startsWith('image/'));
     let pending=arr.length; if(!pending) return;
-    arr.forEach(f=>{
+    const slots=new Array(arr.length); // 선택한 순서 그대로 유지 (읽기 끝나는 순서와 무관)
+    const finish=()=>{ if(--pending===0){ slots.forEach(x=>{ if(x) images.push(x); }); render(); } };
+    arr.forEach((f,idx)=>{
       const reader=new FileReader();
       reader.onload=e=>{
         const img=new Image();
-        img.onload=()=>{ images.push({id:++uid,name:f.name,dataUrl:e.target.result,img}); if(--pending===0) render(); };
+        img.onerror=finish;
+        img.onload=()=>{ slots[idx]={id:++uid,name:f.name,origUrl:e.target.result,origImg:img,crop:null,dataUrl:e.target.result,img}; finish(); };
         img.src=e.target.result;
       };
       reader.readAsDataURL(f);
@@ -271,6 +1137,7 @@
     bar.style.display=on?'flex':'none';
     cols.style.display=on?'grid':'none';
     count.textContent='사진 '+images.length+'장';
+    updateResUI();
   }
   function renderList(){
     list.innerHTML='';
@@ -290,12 +1157,14 @@
     row.querySelector('.thumb').addEventListener('click',()=>openSingleViewer(it));
     const numInput=row.querySelector('.num-input');
     function moveTo(){
+      const cur=images.findIndex(x=>x.id===it.id); // 현재 실제 위치
+      if(cur===-1) return;
       let target=parseInt(numInput.value,10);
-      if(isNaN(target)){ numInput.value=i+1; return; }
+      if(isNaN(target)){ numInput.value=cur+1; return; }
       target=Math.max(1,Math.min(images.length,target))-1; // 0-base로
-      if(target===i) return;
-      const moved=images.splice(i,1)[0];   // 현재 위치에서 빼고
-      images.splice(target,0,moved);        // 목표 위치에 끼워넣기
+      if(target===cur) return;
+      const moved=images.splice(cur,1)[0];   // 현재 위치에서 빼고
+      images.splice(target,0,moved);          // 목표 위치에 끼워넣기
       render();
     }
     numInput.addEventListener('change',moveTo);
@@ -304,11 +1173,18 @@
     row.querySelectorAll('.acts button').forEach(b=>{
       b.addEventListener('click',()=>{
         const a=b.dataset.act;
-        if(a==='del') images=images.filter(x=>x.id!==it.id);
-        else if(a==='up'&&i>0)[images[i-1],images[i]]=[images[i],images[i-1]];
-        else if(a==='down'&&i<images.length-1)[images[i+1],images[i]]=[images[i],images[i+1]];
-        else if(a==='crop') openCrop(it);
-        if(a!=='crop') render();
+        const cur=images.findIndex(x=>x.id===it.id); // 클릭 시점의 실제 현재 위치
+        if(cur===-1) return;
+        if(a==='del'){ images=images.filter(x=>x.id!==it.id); render(); return; }
+        else if(a==='up'&&cur>0)[images[cur-1],images[cur]]=[images[cur],images[cur-1]];
+        else if(a==='down'&&cur<images.length-1)[images[cur+1],images[cur]]=[images[cur],images[cur+1]];
+        else if(a==='crop'){ openCrop(it); return; }
+        render();
+        // 이동한 그 사진의 같은 버튼을 다시 찾아 포커스 → 연속 클릭 시 자리 어긋남 방지
+        if(a==='up'||a==='down'){
+          const newRow=list.querySelector('.item[data-id="'+it.id+'"]');
+          if(newRow){ const sameBtn=newRow.querySelector('.acts button[data-act="'+a+'"]'); if(sameBtn) sameBtn.focus(); }
+        }
       });
     });
     row.addEventListener('dragstart',()=>row.classList.add('dragging'));
@@ -326,15 +1202,14 @@
   function renderPreview(){
     preview.innerHTML='';
     if(!images.length){ preview.innerHTML='<div class="preview-empty">사진을 올리면 여기에<br>합쳐질 모습이 보여요</div>'; return; }
-    const W=Math.max(100,Math.min(2000,+$('#width').value||1000));
-    const gapPx=Math.max(0,Math.min(200,+$('#gap').value||0));
-    const scale=358/W; // 미리보기 폭 기준 축소 비율
-    const padPv=140*scale; // 상하 고정 여백(140px) 축소값
+    const pvScale=358/getOutWidth(); // 미리보기 폭 기준 축소 비율
+    const padPv=PAD*pvScale;
+    const gapPv=getGap()*pvScale;
     images.forEach((it,i)=>{
       const pv=document.createElement('div');
       pv.className='pv'; pv.draggable=true; pv.dataset.id=it.id;
-      // 첫 사진 위 / 마지막 사진 아래: 140px 고정 여백, 사진 사이: 설정 여백
-      pv.style.marginTop = (i===0 ? padPv : gapPx*scale) + 'px';
+      // 첫 사진 위 / 마지막 사진 아래: 고정 여백, 사진 사이: 설정 여백
+      pv.style.marginTop = (i===0 ? padPv : gapPv) + 'px';
       if(i===images.length-1) pv.style.marginBottom = padPv + 'px';
       pv.innerHTML='<span class="pvnum">'+(i+1)+'</span>'+
         '<button class="pvcrop" title="자르기">✂ 자르기</button>'+
@@ -365,14 +1240,26 @@
     render();
   }
   $('#clear').addEventListener('click',()=>{ if(confirm('전체 사진을 비울까요?')){images=[];render();} });
-  $('#width').addEventListener('input',()=>{ if(images.length) renderPreview(); });
-  $('#gap').addEventListener('input',()=>{ if(images.length) renderPreview(); });
+  widthIn.addEventListener('input',()=>{ if(images.length){ renderPreview(); updateResUI(); } });
+  gapIn.addEventListener('input',()=>{ if(images.length){ renderPreview(); updateResUI(); } });
+
   let cropTarget=null, sel=null, mode=null, start=null, cropRatio=0.8; // cropRatio = 너비/높이, 0이면 자유 (기본 4:5)
   const modal=$('#modal'), stage=$('#stage'), cropImg=$('#cropImg'), overlay=$('#overlay'), rect=$('#rect');
-  function openCrop(it){ cropTarget=it; sel=null; rect.style.display='none'; cropImg.src=it.dataUrl;
+  function openCrop(it){ cropTarget=it; sel=null; rect.style.display='none';
+    cropImg.src=it.origUrl; // 항상 원본을 띄워서 자름 (반복 크롭해도 화질 유지)
     modal.classList.add('show');
-    // 비율이 선택돼 있으면 이미지 로드 후 기본 박스를 그 비율로 미리 띄움
-    if(cropRatio>0){ cropImg.onload=()=>{ applyRatioToCurrent(); }; if(cropImg.complete) applyRatioToCurrent(); }
+    cropImg.onload=()=>{ restoreOrInitBox(it); };
+    if(cropImg.complete) restoreOrInitBox(it);
+  }
+  // 기존에 자른 영역이 있으면 그 박스를 화면에 복원, 없으면 비율 기본 박스
+  function restoreOrInitBox(it){
+    if(it.crop){
+      const s=cropImg.clientWidth/cropImg.naturalWidth; // 원본→화면 축소율
+      sel={ x:it.crop.sx*s, y:it.crop.sy*s, w:it.crop.sw*s, h:it.crop.sh*s };
+      drawRect();
+    } else if(cropRatio>0){
+      applyRatioToCurrent();
+    }
   }
   $('#cropCancel').addEventListener('click',()=>modal.classList.remove('show'));
   $('#cropReset').addEventListener('click',()=>{sel=null;rect.style.display='none';});
@@ -475,41 +1362,252 @@
   window.addEventListener('touchend',endMove);
   function applyCrop(){
     if(!sel||sel.w<5||sel.h<5){modal.classList.remove('show');return;}
-    const scale=cropTarget.img.naturalWidth/cropImg.clientWidth;
-    const sx=sel.x*scale, sy=sel.y*scale, sw=sel.w*scale, sh=sel.h*scale;
-    const c=document.createElement('canvas'); c.width=sw; c.height=sh;
-    c.getContext('2d').drawImage(cropTarget.img,sx,sy,sw,sh,0,0,sw,sh);
-    const url=c.toDataURL('image/jpeg',0.95);
+    // 화면에 띄운 건 원본(origImg)이므로, 화면 좌표를 원본 해상도 기준으로 환산
+    const scale=cropImg.naturalWidth/cropImg.clientWidth;
+    let sx=Math.round(Math.max(0,sel.x*scale)), sy=Math.round(Math.max(0,sel.y*scale));
+    let sw=Math.min(Math.round(sel.w*scale),cropTarget.origImg.naturalWidth-sx);
+    let sh=Math.min(Math.round(sel.h*scale),cropTarget.origImg.naturalHeight-sy);
+    cropTarget.crop={sx,sy,sw,sh}; // 원본 기준 자르기 영역 기록 (다음 크롭도 원본에서)
+    applyCropToView(cropTarget, ()=>{ modal.classList.remove('show'); render(); });
+  }
+  // 원본 + crop으로 화면 표시용 이미지(dataUrl/img) 생성 — 무손실(PNG)로 보관, 저장할 때 한 번만 압축
+  function applyCropToView(it, done){
+    if(!it.crop){ it.dataUrl=it.origUrl; it.img=it.origImg; if(done)done(); return; }
+    const {sx,sy,sw,sh}=it.crop;
+    const c=document.createElement('canvas'); c.width=Math.round(sw); c.height=Math.round(sh);
+    c.getContext('2d').drawImage(it.origImg,sx,sy,sw,sh,0,0,c.width,c.height);
+    const url=c.toDataURL('image/png');
     const img=new Image();
-    img.onload=()=>{ cropTarget.dataUrl=url; cropTarget.img=img; modal.classList.remove('show'); render(); };
+    img.onload=()=>{ it.dataUrl=url; it.img=img; if(done)done(); };
+    img.onerror=()=>{ if(done)done(); };
     img.src=url;
   }
   $('#cropApply').addEventListener('click',applyCrop);
+
+  // 란초스(Lanczos3) 리샘플링: 포토샵 '쌍입방 선명하게'급 고화질 크기 변환 (브라우저 기본보다 선명·정확)
+  function lanczosResize(img,tw,th){
+    const sw=img.naturalWidth||img.width, sh=img.naturalHeight||img.height, A=3;
+    const sc=document.createElement('canvas'); sc.width=sw; sc.height=sh;
+    const sx=sc.getContext('2d'); sx.fillStyle='#fff'; sx.fillRect(0,0,sw,sh); sx.drawImage(img,0,0);
+    const src=sx.getImageData(0,0,sw,sh).data;
+    const lz=x=>{ x=Math.abs(x); if(x<1e-8) return 1; if(x>=A) return 0; const px=Math.PI*x; return A*Math.sin(px)*Math.sin(px/A)/(px*px); };
+    function weights(sLen,dLen){
+      const scale=sLen/dLen, fs=Math.max(1,scale), support=A*fs, res=new Array(dLen);
+      for(let i=0;i<dLen;i++){
+        const center=(i+0.5)*scale-0.5;
+        const start=Math.max(0,Math.ceil(center-support)), end=Math.min(sLen-1,Math.floor(center+support));
+        const w=new Float32Array(end-start+1); let sum=0;
+        for(let j=start;j<=end;j++){ const v=lz((j-center)/fs); w[j-start]=v; sum+=v; }
+        for(let k=0;k<w.length;k++) w[k]/=sum;
+        res[i]={start,w};
+      }
+      return res;
+    }
+    // 가로 방향
+    const wx=weights(sw,tw), tmp=new Float32Array(tw*sh*3);
+    for(let y=0;y<sh;y++){ const ro=y*sw*4, to=y*tw*3;
+      for(let x=0;x<tw;x++){ const {start,w}=wx[x]; let r=0,g=0,b=0,p=ro+start*4;
+        for(let k=0;k<w.length;k++,p+=4){ const ww=w[k]; r+=src[p]*ww; g+=src[p+1]*ww; b+=src[p+2]*ww; }
+        const o=to+x*3; tmp[o]=r; tmp[o+1]=g; tmp[o+2]=b; } }
+    // 세로 방향
+    const wy=weights(sh,th), out=new ImageData(tw,th), od=out.data, step=tw*3;
+    for(let y=0;y<th;y++){ const {start,w}=wy[y];
+      for(let x=0;x<tw;x++){ let r=0,g=0,b=0,p=start*step+x*3;
+        for(let k=0;k<w.length;k++,p+=step){ const ww=w[k]; r+=tmp[p]*ww; g+=tmp[p+1]*ww; b+=tmp[p+2]*ww; }
+        const o=(y*tw+x)*4; od[o]=r; od[o+1]=g; od[o+2]=b; od[o+3]=255; } }
+    const c=document.createElement('canvas'); c.width=tw; c.height=th; c.getContext('2d').putImageData(out,0,0);
+    return c;
+  }
+  // 축소된 영역에만 약한 선명 보정 (언샤프 마스크)
+  function sharpenRegion(ctx,W,y0,h,amount){
+    if(h<3) return;
+    const id=ctx.getImageData(0,y0,W,h), d=id.data, s=new Uint8ClampedArray(d), row=W*4;
+    for(let y=1;y<h-1;y++){ for(let x=1;x<W-1;x++){ const i=y*row+x*4;
+      for(let c=0;c<3;c++){ const k=i+c;
+        const blur=(s[k-row-4]+s[k-row]+s[k-row+4]+s[k-4]+s[k]+s[k+4]+s[k+row-4]+s[k+row]+s[k+row+4])/9;
+        d[k]=s[k]+amount*(s[k]-blur);
+      } } }
+    ctx.putImageData(id,0,y0);
+  }
   // 합쳐진 캔버스 생성 (저장 / 크게보기 공용)
-  function buildMergedCanvas(){
-    const W=Math.max(100,Math.min(2000,+$('#width').value||1000));
-    const gap=Math.max(0,Math.min(200,+$('#gap').value||0));
-    const PAD=140; // 처음/마지막 고정 여백
-    const scaled=images.map(it=>{ const h=Math.round(it.img.naturalHeight*(W/it.img.naturalWidth)); return {img:it.img,h}; });
-    let totalH=0; scaled.forEach(s=>totalH+=s.h);
-    totalH+=gap*(images.length-1);
-    totalH+=PAD*2; // 위아래 고정 여백
+  function buildMergedCanvas(W,fast){ // fast=true: 크게보기용 빠른 처리
+    const gap=getGap();
+    const totalH=calcHeight(W);
     const c=document.createElement('canvas'); c.width=W; c.height=totalH;
     const ctx=c.getContext('2d');
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
     ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,totalH);
-    let y=PAD; scaled.forEach((s,i)=>{ ctx.drawImage(s.img,0,y,W,s.h); y+=s.h; if(i<scaled.length-1) y+=gap; });
+    let y=PAD;
+    images.forEach((it,i)=>{
+      const h=Math.round(it.img.naturalHeight*(W/it.img.naturalWidth));
+      const resized=it.img.naturalWidth!==W;
+      if(!resized || fast) ctx.drawImage(it.img,0,y,W,h);   // 크기 같으면 원본 픽셀 그대로
+      else ctx.drawImage(lanczosResize(it.img,W,h),0,y);   // 크기 다르면 란초스로 변환
+      if(resized && !fast && sharpenIn.checked) sharpenRegion(ctx,W,y,h,0.2);
+      y+=h; if(i<images.length-1) y+=gap;
+    });
     return c;
   }
+  // JPG 파일에 dpi 정보 기록 (포토샵 등에서 300dpi로 표시됨)
+  async function withDpi(blob,dpi){
+    const buf=new Uint8Array(await blob.arrayBuffer());
+    if(buf[6]===0x4A&&buf[7]===0x46&&buf[8]===0x49&&buf[9]===0x46&&buf[10]===0){
+      buf[13]=1; buf[14]=dpi>>8; buf[15]=dpi&255; buf[16]=dpi>>8; buf[17]=dpi&255;
+    }
+    return new Blob([buf],{type:'image/jpeg'});
+  }
+  // 캔버스 → JPG(표준 화질, 색 정보 유지 4:4:4) + 72dpi 기록
+  async function encodeCanvas(c){
+    const q=+qualityIn.value;
+    let blob;
+    if(q>=100) blob=await new Promise(r=>c.toBlob(r,'image/jpeg',1.0));
+    else {
+      const id=c.getContext('2d').getImageData(0,0,c.width,c.height);
+      blob=new Blob([window['jpeg-js'].encode(id,q).data],{type:'image/jpeg'});
+    }
+    if(!blob) throw new Error('empty');
+    return withDpi(blob,DPI);
+  }
+  function download(blob,name){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  }
+  const fmtSize=n=>{ const mb=n/1048576; return mb>=1?mb.toFixed(1)+'MB':Math.round(n/1024)+'KB'; };
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  function lockButtons(on){ ['#merge','#saveEach','#clear','#saveProject','#loadProject'].forEach(s=>$(s).disabled=on); }
+
+  // 한 장으로 합쳐 저장
   $('#merge').addEventListener('click',()=>{
     if(!images.length)return;
-    const c=buildMergedCanvas();
-    c.toBlob(blob=>{
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(blob); a.download='1.jpg'; a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    },'image/jpeg',0.95);
+    const W=getOutWidth();
+    if(calcHeight(W)>MAX_SIDE){ alert('세로가 너무 길어서 한 장으로 만들 수 없어요. 사진을 두 묶음으로 나눠서 저장하거나, [개별로 저장]을 이용해 주세요.'); return; }
+    const btn=$('#merge'); const label=btn.textContent;
+    lockButtons(true); btn.textContent='저장 중…';
+    setTimeout(async()=>{ // 버튼 문구가 먼저 바뀌도록 한 박자 쉬고 처리
+      try{
+        const c=buildMergedCanvas(W);
+        const blob=await encodeCanvas(c);
+        download(blob,'1.jpg');
+        resNote.textContent='✓ 저장 완료 · '+W.toLocaleString()+' × '+c.height.toLocaleString()+' px · '+qLabel()+' · 파일 용량 '+fmtSize(blob.size);
+        resNote.classList.remove('warn');
+      }catch(err){
+        alert('이미지가 너무 커서 저장하지 못했어요. 사진을 나눠서 저장해 주세요.');
+      }finally{
+        lockButtons(false); btn.textContent=label;
+      }
+    },30);
   });
+
+  // 사진 한 장을 설정 너비로 만든 캔버스 (여백 없음, 자르기 반영)
+  function buildSingleCanvas(it,W){
+    const h=Math.round(it.img.naturalHeight*(W/it.img.naturalWidth));
+    const c=document.createElement('canvas'); c.width=W; c.height=h;
+    const ctx=c.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,h);
+    const resized=it.img.naturalWidth!==W;
+    if(!resized) ctx.drawImage(it.img,0,0);
+    else ctx.drawImage(lanczosResize(it.img,W,h),0,0);
+    if(resized && sharpenIn.checked) sharpenRegion(ctx,W,0,h,0.2);
+    return c;
+  }
+  // 사진마다 따로 저장 (1.jpg, 2.jpg … 목록 순서대로)
+  $('#saveEach').addEventListener('click',()=>{
+    if(!images.length)return;
+    const W=getOutWidth();
+    const btn=$('#saveEach'); const label=btn.textContent;
+    lockButtons(true);
+    setTimeout(async()=>{
+      let total=0, done=0;
+      try{
+        for(let i=0;i<images.length;i++){
+          btn.textContent='저장 중… '+(i+1)+'/'+images.length;
+          await wait(20); // 진행 표시가 화면에 먼저 보이도록
+          const blob=await encodeCanvas(buildSingleCanvas(images[i],W));
+          download(blob,(i+1)+'.jpg');
+          total+=blob.size; done++;
+          await wait(350); // 연속 다운로드가 막히지 않도록 간격
+        }
+        resNote.textContent='✓ 개별 저장 완료 · '+done+'장 (1.jpg ~ '+done+'.jpg) · 너비 '+W.toLocaleString()+'px · '+qLabel()+' · 총 용량 '+fmtSize(total);
+        resNote.classList.remove('warn');
+      }catch(err){
+        alert((done+1)+'번 사진을 저장하지 못했어요. ('+done+'장까지 저장됨)');
+      }finally{
+        lockButtons(false); btn.textContent=label;
+      }
+    },30);
+  });
+
+  // ===== 작업파일 저장 / 불러오기 (.json) =====
+  // 형식: 직원분들이 쓰던 버전(type:'jsoo-detail-merge')과 동일 → 예전에 저장한 작업파일도 그대로 열려요
+  // 원본 사진 + 원본 기준 자르기 영역을 저장 (자른 결과 대신 원본을 담아 화질 손실 없음)
+  $('#saveProject').addEventListener('click',()=>{
+    if(!images.length){ alert('저장할 사진이 없어요.'); return; }
+    let name=prompt('작업파일 이름을 정해주세요.\n(예: A_원피스, B_자켓 — 나중에 불러올 때 구분돼요)','상세작업');
+    if(name===null) return; // 취소
+    name=(name.trim()||'상세작업').replace(/[\\/:*?"<>|]/g,'_'); // 파일명 금지문자 정리
+    const project={
+      type:'jsoo-detail-merge', version:2, savedAt:new Date().toISOString(),
+      width:getOutWidth(), gap:getGap(), sharpen:sharpenIn.checked,
+      images:images.map(it=>({ name:it.name, origUrl:it.origUrl, crop:it.crop||null }))
+    };
+    const blob=new Blob([JSON.stringify(project)],{type:'application/json'});
+    download(blob,name+'.json');
+    resNote.textContent='✓ 작업파일 저장 완료 · '+name+'.json · 사진 '+images.length+'장 · '+fmtSize(blob.size);
+    resNote.classList.remove('warn');
+  });
+
+  let loadOpening=false;
+  function triggerLoad(){
+    if(loadOpening) return;      // 짧은 시간 내 중복 호출 차단
+    loadOpening=true;
+    $('#projectFile').click();
+    setTimeout(()=>{ loadOpening=false; },500);
+  }
+  $('#loadProject').addEventListener('click',triggerLoad);
+  $('#loadProjectTop').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); triggerLoad(); });
+  $('#projectFile').addEventListener('change',ev=>{
+    const f=ev.target.files[0];
+    ev.target.value=''; // 먼저 비워둠 (다음 선택 가능)
+    if(!f) return;
+    // 파일 선택 이벤트가 완전히 끝난 뒤 처리 — confirm/alert가 선택창 흐름에 끼어드는 것 방지
+    setTimeout(()=>{ processProjectFile(f); },0);
+  });
+
+  const loadImg=src=>new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; });
+  async function processProjectFile(f){
+    let project;
+    try{ project=JSON.parse(await f.text()); }
+    catch(err){ alert('작업파일을 읽을 수 없어요. 올바른 .json 파일인지 확인해주세요.'); return; }
+    // 받는 형식: ① 직원 버전/현재 버전(type:'jsoo-detail-merge')  ② 이전 테스트 버전(settings/src)
+    const isMain = project && project.type==='jsoo-detail-merge' && Array.isArray(project.images);
+    const isTest = project && Array.isArray(project.images) && project.settings;
+    if(!isMain && !isTest){ alert('이 도구의 작업파일이 아니에요. 저장 때 받은 .json 파일을 올려주세요.'); return; }
+    if(images.length && !confirm('지금 작업 중인 내용을 지우고 불러올까요?')) return;
+    const st=isMain ? project : (project.settings||{});
+    if(st.width) widthIn.value=st.width;
+    if(typeof st.gap==='number') gapIn.value=st.gap;
+    if(typeof st.sharpen==='boolean') sharpenIn.checked=st.sharpen;
+    const loaded=[]; let failed=0;
+    for(const rec of project.images){
+      try{
+        // 원본 주소: origUrl(현재) / dataUrl(아주 옛 버전: 잘린 이미지를 원본으로 취급) / src(테스트 버전)
+        const srcUrl=rec.origUrl || rec.src || rec.dataUrl;
+        let crop=null;
+        if(rec.crop && rec.crop.sw>0) crop=rec.crop;                                       // {sx,sy,sw,sh}
+        else if(rec.crop && rec.crop.w>0) crop={sx:rec.crop.x,sy:rec.crop.y,sw:rec.crop.w,sh:rec.crop.h}; // 테스트 버전 형식
+        if(!rec.origUrl && !rec.src) crop=null;
+        const origImg=await loadImg(srcUrl);
+        const it={id:++uid,name:rec.name||'사진',origUrl:srcUrl,origImg,crop,dataUrl:srcUrl,img:origImg};
+        if(crop) await new Promise(r=>applyCropToView(it,r));
+        loaded.push(it);
+      }catch(e){ failed++; }
+    }
+    images=loaded; render();
+    resNote.textContent='✓ 작업파일 불러오기 완료 · '+f.name+' · 사진 '+loaded.length+'장 · '+resNote.textContent;
+    resNote.classList.remove('warn');
+    if(failed) alert('일부 사진('+failed+'장)을 복원하지 못했어요. 작업파일이 손상됐을 수 있어요.');
+  }
 
   // ===== 확대 뷰어 (단일 / 크게보기 공용 줌 엔진) =====
   function setupViewer(viewerEl, stageEl, imgEl, zoomLabelEl){
@@ -535,7 +1633,7 @@
       b.addEventListener('click',()=>{
         const z=b.dataset.z;
         if(z==='in') zoom=Math.min(zoom*1.25,8);
-        else if(z==='out') zoom=Math.max(zoom/1.25,0.1);
+        else if(z==='out') zoom=Math.max(zoom/1.25,0.05);
         else if(z==='fit'){ fit(); return; }
         apply();
       });
@@ -543,7 +1641,7 @@
     // 마우스 휠 줌 (Ctrl 없이도 동작)
     stageEl.addEventListener('wheel',e=>{
       e.preventDefault();
-      zoom = e.deltaY<0 ? Math.min(zoom*1.12,8) : Math.max(zoom/1.12,0.1);
+      zoom = e.deltaY<0 ? Math.min(zoom*1.12,8) : Math.max(zoom/1.12,0.05);
       apply();
     },{passive:false});
     // 더블클릭으로 확대/맞춤 토글
@@ -562,7 +1660,7 @@
   function openSingleViewer(it){ $('#singleTitle').textContent=it.name; singleV.open(it.dataUrl); }
   $('#bigView').addEventListener('click',()=>{
     if(!images.length)return;
-    const c=buildMergedCanvas();
+    const c=buildMergedCanvas(getOutWidth(),true);
     bigV.open(c.toDataURL('image/jpeg',0.92));
   });
   // ESC로 뷰어/모달 닫기, 자르기 창에서 Enter로 적용
