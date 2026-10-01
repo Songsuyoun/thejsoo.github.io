@@ -7,7 +7,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
 :root{--bg:#F5F4F1;--surface:#fff;--border:#E0DDD8;--text:#1A1A1A;--muted:#888;--accent:#1A1A1A;--green:#2D6A4F;--blue:#1A3A5C;--bl:#EEF4FC;--purple:#4A2C6A;--pl:#F2EEF9;--red:#C0392B;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);}
+body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);padding-bottom:60px;}
 header{background:var(--accent);color:#fff;padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:200;}
 .ht{font-size:18px;font-weight:700;}
 .ha{display:flex;gap:8px;align-items:center;}
@@ -18,14 +18,14 @@ header{background:var(--accent);color:#fff;padding:0 24px;height:50px;display:fl
 .bp{background:var(--green);color:#fff;}
 .addbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:center;position:fixed;top:50px;left:0;right:0;z-index:150;}
 .ba{font-family:"Noto Sans KR",sans-serif;font-size:14px;font-weight:700;padding:8px 28px;border-radius:6px;cursor:pointer;background:transparent;border:2px dashed #ccc;color:#888;}
-.twrap{overflow-x:auto;padding:16px 20px 90px;margin-top:98px;}
+.twrap{overflow-x:auto;overflow-y:visible;padding:16px 20px 90px;margin-top:98px;}
 table{border-collapse:collapse;font-size:12px;}
 thead th{background:var(--accent);color:#fff;padding:9px 8px;white-space:nowrap;font-weight:600;font-size:11px;border-right:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:10;text-align:center;}
 thead th.ca{background:var(--blue);}
 thead th.cd{background:var(--purple);}
 thead th.cn{background:#333;width:36px;}
 thead th.cx{background:#333;width:36px;}
-.sh td{font-size:10px;color:#666;text-align:center;padding:3px 6px;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;font-style:italic;background:#F0EDE8;position:sticky;top:36px;z-index:9;}
+.sh td{font-size:10px;color:#666;text-align:center;padding:3px 6px;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;font-style:italic;background:#F0EDE8;position:sticky;top:134px;z-index:9;}
 tbody tr:nth-child(odd) td{background:#FAFAF8;}
 tbody tr:nth-child(even) td{background:#fff;}
 tbody tr:hover td{background:#EDF7F1!important;}
@@ -64,6 +64,7 @@ td input:focus,td select:focus{background:#FFFDE7;box-shadow:inset 0 0 0 2px #F5
   <div class="ht">더제이수 카페24 <span style="color:#FF4444;">상품 등록</span> 엑셀 생성기</div>
   <div class="ha">
     <button class="btn bg" onclick="openSupModal()">공급사 관리</button>
+    <button class="btn bg" onclick="clearLocal()" title="작성 내용 초기화">🗑 초기화</button>
     <span class="cp">상품 <b id="cnt">0</b>개</span>
     <span class="cp">공급사 <b id="supTotalCnt">-</b>개</span>
     <button class="btn bp" onclick="dlCSV()">CSV 다운로드</button>
@@ -691,7 +692,7 @@ function dlCSV() {
     row['추가입력옵션']='F'; row['제조사']='M0000000'; row['브랜드']='B0000000';
     row['트렌드']='T0000000'; row['자체분류 코드']='C000000A'; row['유효기간 사용여부']='F';
     row['원산지']='1800'; row['배송정보']='F'; row['배송기간']='3|7';
-    row['배송비 구분']='D'; row['배송비입력']='3000|70000'; row['스토어픽업 설정']='N';
+    row['배송비 구분']=''; row['배송비입력']='3000|70000'; row['스토어픽업 설정']='N';
     row['상품 전체중량(kg)']='1.00'; row['검색엔진최적화(SEO) 검색엔진 노출 설정']='Y';
     row['상품배송유형 코드']='C';
     csv.push(H.map(function(h){
@@ -730,7 +731,108 @@ fetch(GAS_URL + '?action=list')
   })
   .catch(function(){});
 
-addRow(); addRow(); addRow();
+// ── 자동저장 (localStorage) ──
+var SAVE_KEY = 'thejsoo_products';
+
+function collectData() {
+  var rows = [];
+  document.querySelectorAll('#tbody tr').forEach(function(tr) {
+    var id = parseInt(tr.id.replace('row',''));
+    rows.push({
+      nm:  document.getElementById('nm'+id)?.value  || '',
+      sn:  document.getElementById('sn'+id)?.value  || '',
+      cat: document.getElementById('cat'+id)?.value || '',
+      sp:  document.getElementById('sp'+id)?.value  || '',
+      mp:  document.getElementById('mp'+id)?.value  || '',
+      si:  document.getElementById('si'+id)?.value  || '',
+      sc:  document.getElementById('sc'+id)?.textContent.replace('—','') || '',
+      tc:  tags[id+'c'] || [],
+      ts:  tags[id+'s'] || [],
+      tm:  tags[id+'m'] || [],
+      desc: document.getElementById('desc'+id)?.value || '',
+      fab: document.getElementById('fab'+id)?.value  || '',
+      el:  document.getElementById('el'+id)?.value   || '',
+      tr:  document.getElementById('tr'+id)?.value   || '',
+      ln:  document.getElementById('ln'+id)?.value   || '',
+      ctr: document.getElementById('ctr'+id)?.value  || '',
+      zip: document.getElementById('zip'+id)?.value  || ''
+    });
+  });
+  return rows;
+}
+
+function saveToLocal() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(collectData()));
+  } catch(e) {}
+}
+
+function loadFromLocal() {
+  try {
+    var saved = localStorage.getItem(SAVE_KEY);
+    if (!saved) return false;
+    var rows = JSON.parse(saved);
+    if (!rows || !rows.length) return false;
+    // 기존 행 제거
+    document.getElementById('tbody').innerHTML = '';
+    rid = 0;
+    rows.forEach(function(r) {
+      addRow();
+      var id = rid;
+      if (r.nm)  document.getElementById('nm'+id).value  = r.nm;
+      if (r.sn)  document.getElementById('sn'+id).value  = r.sn;
+      if (r.cat) { document.getElementById('cat'+id).value = r.cat; upPrice(id); }
+      if (r.sp)  { document.getElementById('sp'+id).value  = r.sp;  upPrice(id); }
+      if (r.mp)  document.getElementById('mp'+id).value  = r.mp;
+      if (r.si)  document.getElementById('si'+id).value  = r.si;
+      if (r.sc)  document.getElementById('sc'+id).textContent = r.sc || '—';
+      if (r.tc && r.tc.length) { tags[id+'c'] = r.tc; renderTags(id,'c'); }
+      if (r.ts && r.ts.length) { tags[id+'s'] = r.ts; renderTags(id,'s'); }
+      if (r.tm && r.tm.length) { tags[id+'m'] = r.tm; renderTags(id,'m'); }
+      if (r.desc) {
+        document.getElementById('desc'+id).value = r.desc;
+        var prev = document.getElementById('dprev'+id);
+        prev.textContent = r.desc.length > 50 ? r.desc.slice(0,50)+'...' : r.desc;
+        prev.style.color = '#1A1A1A';
+      }
+      if (r.fab) document.getElementById('fab'+id).value  = r.fab;
+      if (r.el)  document.getElementById('el'+id).value   = r.el;
+      if (r.tr)  document.getElementById('tr'+id).value   = r.tr;
+      if (r.ln)  document.getElementById('ln'+id).value   = r.ln;
+      if (r.ctr) document.getElementById('ctr'+id).value  = r.ctr;
+      if (r.zip) document.getElementById('zip'+id).value  = r.zip;
+    });
+    updCnt();
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearLocal() {
+  if (!confirm('저장된 데이터를 초기화할까요?')) return;
+  localStorage.removeItem(SAVE_KEY);
+  document.getElementById('tbody').innerHTML = '';
+  rid = 0;
+  addRow(); addRow(); addRow();
+  updCnt();
+  toast('🗑 초기화 완료');
+}
+
+// 30초마다 자동저장
+setInterval(saveToLocal, 30000);
+// 입력 시마다 저장 (debounce 2초)
+var _saveTimer = null;
+document.addEventListener('input', function() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveToLocal, 2000);
+});
+document.addEventListener('change', function() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveToLocal, 2000);
+});
+
+
+// 저장된 데이터 불러오기, 없으면 기본 3행
+if (!loadFromLocal()) { addRow(); addRow(); addRow(); }
 </script>
 </body>
 </html>
