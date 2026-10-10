@@ -17,323 +17,239 @@
   --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.07); --font: 'Noto Sans KR', sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: var(--font); background: var(--bg); color: var(--black); min-height: 100vh; padding-bottom: 110px; }
+body { font-family: var(--font); background: var(--bg); color: var(--black); min-height: 100vh; padding-bottom: 120px; }
 
 header { background: var(--black); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .logo { color: white; font-size: 16px; font-weight: 700; }
 .logo span { color: var(--accent); }
-.step-badge { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-size: 11px; padding: 4px 12px; border-radius: 20px; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.btn-sheet-link { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 20px; text-decoration: none; border: none; cursor: pointer; font-family: var(--font); white-space: nowrap; }
+.btn-reset-top { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); font-size: 11px; padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; font-family: var(--font); }
+
 .main { max-width: 680px; margin: 0 auto; padding: 20px 16px; width: 100%; }
 
-/* 탭 */
-.tabs { display: flex; background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 4px; margin-bottom: 16px; box-shadow: var(--shadow); }
-.tab { flex: 1; padding: 10px; border-radius: 9px; border: none; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; background: transparent; color: var(--gray-600); transition: all 0.15s; }
-.tab.active { background: var(--black); color: white; }
+/* 섹션 */
+.section { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.section-title { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.step-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--black); color: white; font-size: 11px; font-weight: 700; }
 
-/* 카드 */
-.card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
-.card-label { font-size: 10px; font-weight: 700; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+/* 거래처 검색 */
+.search-wrap { position: relative; }
+.search-input { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 13px 16px; font-size: 15px; font-family: var(--font); background: var(--white); outline: none; transition: border-color 0.15s; }
+.search-input:focus { border-color: var(--black); }
+.search-dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border: 1.5px solid var(--gray-200); border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.14); z-index: 300; max-height: 220px; overflow-y: auto; }
+.search-item { padding: 11px 16px; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--gray-100); }
+.search-item:last-child { border-bottom: none; }
+.search-item:hover { background: var(--gray-100); }
+.search-item-name { font-weight: 600; }
+.search-item-meta { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
 
-/* API 입력 */
-.api-row { display: flex; gap: 8px; }
-.api-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: var(--font); outline: none; background: var(--gray-100); }
-.api-input:focus { border-color: var(--black); background: white; }
-.btn-sm { padding: 9px 16px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; background: var(--black); color: white; white-space: nowrap; }
-.api-status { font-size: 11px; margin-top: 6px; padding: 4px 10px; border-radius: 6px; display: none; }
-.api-status.ok { display: block; background: var(--green-light); color: var(--green); }
-.api-status.error { display: block; background: var(--red-light); color: var(--red); }
+/* 거래처 정보 카드 */
+.vendor-info-card { display: none; background: var(--blue-light); border: 1.5px solid #c0d8f0; border-radius: 10px; padding: 12px 14px; margin-top: 10px; }
+.vendor-info-card.show { display: block; }
+.vendor-info-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.vendor-info-row { font-size: 13px; color: #1A56A0; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.vendor-info-row:last-child { margin-bottom: 0; }
 
-/* 업로드 */
-.upload-area { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; background: var(--gray-100); position: relative; transition: all 0.15s; }
-.upload-area:hover { border-color: var(--black); background: #EEEDEA; }
-.upload-area.has-image { border-color: var(--green); border-style: solid; background: var(--green-light); }
-.upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-icon { font-size: 28px; margin-bottom: 6px; }
-.upload-area h3 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.upload-area p { font-size: 11px; color: var(--gray-600); }
-.preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; border: 1px solid var(--gray-200); margin-top: 12px; display: none; }
+/* 날짜 */
+.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.date-field { display: flex; flex-direction: column; gap: 6px; }
+.date-label { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+.date-input { border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 11px 12px; font-size: 14px; font-family: var(--font); background: var(--white); outline: none; width: 100%; }
+.date-input:focus { border-color: var(--black); }
 
-/* 버튼 */
-.btn-primary { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; background: var(--accent); color: white; margin-top: 12px; transition: all 0.15s; }
-.btn-primary:disabled { background: var(--gray-400); cursor: not-allowed; }
+/* 상품 목록 (요청중) */
+.product-list { display: flex; flex-direction: column; gap: 8px; }
+.product-item { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.15s; background: var(--white); }
+.product-item:hover { border-color: var(--gray-400); }
+.product-item.selected { border-color: var(--green); background: var(--green-light); }
+.product-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--gray-200); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; transition: all 0.15s; }
+.product-check.on { background: var(--green); border-color: var(--green); color: white; }
+.product-name { font-size: 13px; font-weight: 600; flex: 1; line-height: 1.4; }
+.product-source { font-size: 11px; color: var(--gray-400); margin-left: auto; flex-shrink: 0; }
 
-/* 인풋 */
-.input-group { margin-bottom: 12px; }
-.input-label { font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; display: block; }
-.input-field { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: var(--font); background: var(--gray-100); outline: none; }
-.input-field:focus { border-color: var(--black); background: white; }
-.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.empty-products { text-align: center; padding: 24px; color: var(--gray-400); font-size: 13px; }
 
-/* 로딩 */
-.loading { text-align: center; padding: 24px; display: none; }
-.loading.show { display: block; }
-.spinner { width: 30px; height: 30px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* 직접 추가 */
+.add-item-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+.add-item-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 11px 13px; font-size: 14px; font-family: var(--font); background: var(--white); outline: none; }
+.add-item-input:focus { border-color: var(--black); }
+.btn-add-item { padding: 11px 16px; border-radius: 8px; border: none; background: var(--black); color: white; font-size: 13px; font-weight: 700; font-family: var(--font); cursor: pointer; white-space: nowrap; }
 
-/* AI 인식 결과 카드 */
-.result-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
-.result-card.matched { border-color: var(--green); background: #FAFFFC; }
-.result-card.unmatched { border-color: var(--amber); background: var(--amber-light); }
-.result-card.new-row { border-color: var(--blue); background: var(--blue-light); }
+/* 직접 추가 목록 */
+.manual-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.manual-item { border: 1.5px dashed var(--gray-200); border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; gap: 8px; background: var(--gray-100); }
+.manual-item-name { flex: 1; font-size: 13px; }
+.btn-del-manual { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 16px; padding: 2px; line-height: 1; }
+.btn-del-manual:hover { color: var(--red); }
 
-.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.result-name { font-size: 14px; font-weight: 700; }
-.result-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
-.result-badge.ok { background: var(--green-light); color: var(--green); }
-.result-badge.warn { background: var(--amber-light); color: var(--amber); }
-.result-badge.new { background: var(--blue-light); color: var(--blue); }
-
-.result-info { font-size: 12px; color: var(--gray-600); margin-bottom: 10px; }
-
-/* 매칭 선택 UI */
-.match-select { width: 100%; border: 1.5px solid var(--amber); border-radius: 8px; padding: 9px 12px; font-size: 12px; font-family: var(--font); background: white; outline: none; margin-bottom: 8px; }
-.match-actions { display: flex; gap: 8px; }
-.btn-match-new { flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--blue); background: var(--blue-light); color: var(--blue); font-size: 12px; font-weight: 700; font-family: var(--font); cursor: pointer; }
-.btn-match-select { flex: 1; padding: 8px; border-radius: 8px; border: none; background: var(--amber); color: white; font-size: 12px; font-weight: 700; font-family: var(--font); cursor: pointer; }
-
-/* 날짜 정보 */
-.date-info { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-.date-chip { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-200); }
-.date-chip.highlight { background: var(--green-light); color: var(--green); border-color: var(--green); }
+/* 선택 요약 */
+.summary-bar { background: var(--green-light); border: 1.5px solid var(--green); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; display: none; }
+.summary-bar.show { display: block; }
+.summary-text { font-size: 13px; color: var(--green); font-weight: 600; }
 
 /* 저장 버튼 */
-.save-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px; display: none; z-index: 50; }
-.save-wrap.show { display: block; }
-.save-inner { max-width: 680px; margin: 0 auto; }
-.btn-save { width: 100%; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; }
-.btn-save:disabled { background: var(--gray-400); cursor: not-allowed; }
+.save-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px; z-index: 50; }
+.save-inner { max-width: 680px; margin: 0 auto; display: flex; gap: 8px; }
+.btn-save { flex: 1; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: background 0.15s; }
+.btn-save:disabled { background: var(--gray-400) !important; cursor: not-allowed !important; }
 
-.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 300; max-width: calc(100vw - 40px); text-align: center; }
+/* 완료 팝업 */
+.popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
+.popup-overlay.show { display: flex; }
+.popup-box { background: white; border-radius: 20px; padding: 28px 24px; width: calc(100% - 40px); max-width: 380px; text-align: center; animation: popIn 0.3s ease; }
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.popup-icon { font-size: 48px; margin-bottom: 12px; }
+.popup-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.popup-desc { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6; }
+.popup-items { background: var(--gray-100); border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; text-align: left; }
+.popup-items-title { font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 8px; }
+.popup-item { font-size: 12px; color: var(--black); padding: 3px 0; border-bottom: 1px solid var(--gray-200); }
+.popup-item:last-child { border-bottom: none; }
+.btn-popup-close { width: 100%; padding: 14px; border-radius: 10px; border: none; background: var(--green); color: white; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+
+/* 로딩 */
+.spinner { width: 28px; height: 28px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 로딩 상태 */
+.loading-products { display: flex; align-items: center; gap: 12px; padding: 20px; justify-content: center; color: var(--gray-600); font-size: 13px; }
+
+/* 힌트 텍스트 */
+.hint { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
+
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 400; max-width: calc(100vw - 40px); text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ── 모바일 최적화 ── */
+/* 전체선택 버튼 */
+.section-title-right { margin-left: auto; }
+.btn-select-all { background: none; border: 1px solid var(--gray-200); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; font-family: var(--font); cursor: pointer; color: var(--gray-600); }
+.btn-select-all:hover { background: var(--gray-100); }
+
 @media (max-width: 480px) {
   .main { padding: 14px 12px; }
-  .miss-form-row { grid-template-columns: 1fr !important; }
-  .input-row { grid-template-columns: 1fr !important; }
-  .dashboard { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .dash-num { font-size: 22px; }
-  .dash-label { font-size: 9px; }
-  .card-main { gap: 8px; padding: 10px; }
-  .card-thumb, .card-img { width: 52px; height: 52px; }
-  .tabs { gap: 4px; }
-  .tab { font-size: 11px; padding: 9px 6px; }
-  .vendor-header { flex-wrap: wrap; gap: 8px; }
-  .filter-bar { gap: 6px; }
-  .filter-btn { padding: 6px 10px; font-size: 11px; }
-  .btn-kakao { font-size: 10px; padding: 5px 10px; }
-  .save-inner { flex-direction: column; gap: 8px; }
-  .save-inner .checked-info { text-align: center; }
-  .kakao-inner { padding: 20px 16px 32px; }
-  .match-actions { flex-direction: column; }
-  .api-row { flex-direction: column; }
-  .btn-sm { width: 100%; }
-  .results-actions { gap: 4px; }
-  .card-name-input { font-size: 13px; }
+  .date-row { grid-template-columns: 1fr 1fr; }
+  .save-inner { flex-direction: column; }
+  input, select, textarea, button { touch-action: manipulation; }
+  input[type="text"], input[type="date"] { font-size: 16px !important; }
+  .search-input { font-size: 16px !important; }
+  .add-item-input { font-size: 16px !important; }
 }
-
-/* 터치 타겟 최소 44px, 폰트 줌 방지 */
-input, select, textarea, button { touch-action: manipulation; }
-input[type="text"], input[type="password"], input[type="date"], select, textarea {
-  font-size: 16px !important; /* iOS 줌 방지 */
-}
-@keyframes popIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">더제이수 <span>샘플입고</span></div>
-  <div style="display:flex; gap:4px; align-items:center;">
-    <button onclick="resetAll()" style="background:rgba(255,255,255,0.12); border:none; color:rgba(255,255,255,0.8); font-size:12px; font-weight:600; font-family:var(--font); padding:6px 14px; border-radius:20px; cursor:pointer;">🔄 초기화</button>
-    <a href="https://docs.google.com/spreadsheets/d/1cSF19qDVRfIAdFMGOFMbD73yajki4zUdPoEFE0vemEY" target="_blank"
-      style="font-size:12px; font-weight:600; font-family:var(--font); padding:6px 14px; border-radius:20px; cursor:pointer; background:#F0EDE8; color:var(--black); text-decoration:none;">📋 샘플 관리 시트</a>
+  <div class="header-right">
+    <a class="btn-sheet-link" href="https://docs.google.com/spreadsheets/d/1cSF19qDVRfIAdFMGOFMbD73yajki4zUdPoEFE0vemEY/edit#gid=0" target="_blank">📋 샘플관리 시트</a>
+    <button class="btn-reset-top" onclick="resetAll()">↺ 초기화</button>
   </div>
 </header>
 
 <div class="main">
 
-  <!-- 탭 -->
-  <div class="tabs">
-    <button class="tab active" id="tabAI" onclick="switchTab('ai')">📸 거래명세서 AI 인식</button>
-    <button class="tab" id="tabManual" onclick="switchTab('manual')">✏️ 직접 입력</button>
+  <!-- STEP 1: 거래처 검색 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="step-badge">1</span>
+      거래처 검색
+    </div>
+    <div class="search-wrap">
+      <input type="text" class="search-input" id="vendorSearchInput"
+        placeholder="🔍 거래처명 입력 (예: 이너프, ㅇㄴㅍ)"
+        oninput="onVendorInput(this.value)"
+        onkeydown="if(event.key==='Escape') closeDropdown()"
+        autocomplete="off">
+      <div class="search-dropdown" id="vendorDropdown"></div>
+    </div>
+    <div class="hint">초성 검색 지원 (예: ㄷㄹㅍ → 드라이플라워)</div>
+
+    <!-- 선택된 거래처 정보 -->
+    <div class="vendor-info-card" id="vendorInfoCard">
+      <div class="vendor-info-name" id="viName"></div>
+      <div class="vendor-info-row">📞 <span id="viPhone"></span></div>
+      <div class="vendor-info-row">📍 <span id="viAddr"></span></div>
+    </div>
   </div>
 
-  <!-- ── AI 인식 탭 ── -->
-  <div id="panelAI">
+  <!-- STEP 2: 날짜 설정 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="step-badge">2</span>
+      날짜 설정
+    </div>
+    <div class="date-row">
+      <div class="date-field">
+        <div class="date-label">📥 입고일</div>
+        <input type="date" class="date-input" id="inDate">
+      </div>
+      <div class="date-field">
+        <div class="date-label">📤 반납기한</div>
+        <input type="date" class="date-input" id="dueDate">
+      </div>
+    </div>
+  </div>
 
+  <!-- STEP 3: 요청중 상품 선택 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="step-badge">3</span>
+      요청중 상품 선택
+      <div class="section-title-right">
+        <button class="btn-select-all" onclick="selectAll()" id="btnSelectAll" style="display:none;">전체선택</button>
+      </div>
+    </div>
 
-    <!-- 이미지 업로드 -->
-    <div class="card">
-      <div class="card-label">거래명세서 사진</div>
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-        <div style="font-size:13px; font-weight:600; color:var(--gray-600);">거래명세서 사진</div>
-        <button onclick="openReceiptGuide()" style="background:var(--gray-100); border:1.5px solid var(--gray-200); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:var(--gray-600);">❓ 사용 가이드</button>
-      </div>
-      <div style="background:#FFF3CD; border:1.5px solid #FFC107; border-radius:8px; padding:8px 12px; margin-bottom:8px; font-size:12px; color:#856404; line-height:1.6;">
-        ⚠️ <strong>거래처 1곳씩</strong> 올려주세요!<br>
-        긴 영수증은 위/아래 나눠서 찍어도 돼요 (겹쳐도 OK)
-      </div>
-      <div class="upload-area" id="uploadArea">
-        <input type="file" id="fileInput" accept="image/*" multiple>
-        <div class="upload-icon" id="uploadIcon">📄</div>
-        <h3 id="uploadTitle">거래명세서 사진 업로드</h3>
-        <p id="uploadSub">⚠️ 한 거래처만 · 긴 영수증은 위/아래 나눠서 찍어도 돼요 (겹쳐도 OK) · 최대 3장</p>
-      </div>
-      <img id="previewImg" class="preview-img" alt="">
-      <button class="btn-primary" id="btnAnalyze" onclick="analyzeImage()" style="display:none;">
-        🤖 AI로 입고 상품 인식하기
-      </button>
+    <!-- 초기 안내 -->
+    <div id="productPlaceholder" style="text-align:center; padding:24px; color:var(--gray-400); font-size:13px;">
+      ① 거래처를 먼저 선택해 주세요
     </div>
 
     <!-- 로딩 -->
-    <div class="loading" id="loading">
+    <div id="productLoading" class="loading-products" style="display:none;">
       <div class="spinner"></div>
-      <p style="font-size:13px; color:var(--gray-600);" id="loadingMsg">인식 중...</p>
+      <span>요청중 상품 불러오는 중...</span>
     </div>
 
-    <!-- 인식 결과 -->
-    <div id="aiResults" style="display:none;">
-      <div style="font-size:12px; font-weight:700; color:var(--gray-600); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px;">
-        인식 결과 <span id="aiResultCount">0</span>개
+    <!-- 상품 목록 -->
+    <div id="productList" class="product-list" style="display:none;"></div>
+
+    <!-- 직접 추가 -->
+    <div id="addSection" style="display:none; margin-top:14px;">
+      <div style="font-size:12px; font-weight:700; color:var(--gray-600); margin-bottom:8px;">➕ 목록에 없는 상품 직접 추가</div>
+      <div class="add-item-row">
+        <input type="text" class="add-item-input" id="manualInput"
+          placeholder="상품명 입력"
+          onkeydown="if(event.key==='Enter') addManualItem()">
+        <button class="btn-add-item" onclick="addManualItem()">추가</button>
       </div>
-      <div id="resultCards"></div>
-    </div>
-  </div>
-
-  <!-- ── 직접 입력 탭 ── -->
-  <div id="panelManual" style="display:none;">
-    <div class="card">
-      <div class="card-label">입고 정보 입력</div>
-
-      <!-- STEP 1: 거래처 선택 -->
-      <div class="input-group">
-        <label class="input-label">① 거래처 선택</label>
-        <div style="display:flex; gap:8px;">
-          <div style="position:relative; flex:1;">
-            <input type="text" class="input-field" id="manualVendorInput" placeholder="거래처 검색 (예: 라이크워터, ㄹㅇ)"
-              oninput="onManualVendorSearch(this.value)"
-              style="width:100%; cursor:text;"
-              autocomplete="off">
-            <input type="hidden" id="manualVendor" value="">
-            <div id="manualVendorDropdown" style="display:none; position:absolute; top:calc(100% + 2px); left:0; right:0; background:white; border:1.5px solid var(--gray-200); border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:300; max-height:200px; overflow-y:auto;"></div>
-          </div>
-          <button type="button" onclick="toggleDirectVendor()" id="btnDirectVendor"
-            style="padding:9px 12px; border-radius:8px; border:1.5px solid var(--gray-200); background:var(--gray-100); font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:var(--gray-600);">
-            직접 입력
-          </button>
-        </div>
-        <input class="input-field" id="manualVendorDirect" placeholder="거래처명 직접 입력"
-          style="display:none; margin-top:8px;" oninput="onDirectVendorInput(this.value)">
-      </div>
-
-      <!-- STEP 2: 사입명 입력 -->
-      <div class="input-group" id="matchGroup" style="display:none;">
-        <label class="input-label">② 사입명 입력</label>
-        <input type="text" class="input-field" id="manualMatch" placeholder="사입명 입력 (예: 빈츠BL)"
-          oninput="onMatchChange()" autocomplete="off">
-      </div>
-
-      <!-- STEP 3: 상품명 (매칭 안될 때만) -->
-      <div class="input-group" id="productGroup" style="display:none;">
-        <label class="input-label">③ 상품명</label>
-        <input class="input-field" id="manualProduct" placeholder="상품명 직접 입력">
-      </div>
-
-      <!-- 매칭된 상품 확인 -->
-      <div id="matchedPreview" style="display:none; background:var(--green-light); border:1px solid #B8DCCA; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:12px; color:var(--green); line-height:1.8;"></div>
-
-      <div class="input-row">
-        <div class="input-group">
-          <label class="input-label">입고일</label>
-          <input class="input-field" type="date" id="manualInbound" onchange="setDeadline(this.value)">
-        </div>
-        <div class="input-group">
-          <label class="input-label">반납기한 (+14일 자동)</label>
-          <input class="input-field" type="date" id="manualDeadline">
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">📝 메모 (선택)</label>
-        <input class="input-field" id="manualMemo" placeholder="예: 블랙 컬러 입고 안됨">
-      </div>
-
-      <button class="btn-primary" onclick="saveManual()">📊 입고 처리하기</button>
+      <div class="manual-list" id="manualList"></div>
     </div>
   </div>
 
 </div>
 
-<!-- 저장 버튼 (AI 탭) -->
-<div class="save-wrap" id="saveWrap">
+<!-- 저장 버튼 -->
+<div class="save-wrap">
   <div class="save-inner">
-    <button class="btn-save" id="btnSave" onclick="saveAll()">
-      📊 입고 처리 완료 (<span id="saveCount">0</span>개)
+    <button class="btn-save" id="btnSave" onclick="saveAll()" disabled>
+      📥 입고 처리
     </button>
-
   </div>
 </div>
 
-<!-- 입고 완료 팝업 -->
-<!-- 저장 완료 팝업 -->
-<div id="saveCompleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center;">
-  <div style="background:white; border-radius:20px; padding:28px 24px; width:85%; max-width:340px; text-align:center;">
-    <div style="font-size:40px; margin-bottom:12px;">✅</div>
-    <div style="font-size:17px; font-weight:700; color:var(--black); margin-bottom:8px;"><span id="saveCompleteCount">0</span>개 입고 처리 완료!</div>
-    <div style="font-size:13px; color:var(--gray-600); margin-bottom:20px;">구글 시트에 저장됐어요.</div>
-    <button onclick="closeSaveComplete()" style="width:100%; padding:13px; border:none; border-radius:12px; background:var(--black); color:white; font-size:15px; font-weight:700; font-family:var(--font); cursor:pointer;">확인</button>
-  </div>
-</div>
-
-<div id="resultModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:white; border-radius:16px; padding:24px 20px; width:100%; max-width:480px; max-height:80vh; overflow-y:auto; animation:popIn 0.25s ease;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-      <div style="font-size:16px; font-weight:700;">✅ 입고 처리 완료</div>
-      <button onclick="closeResultModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#888;">✕</button>
+<!-- 완료 팝업 -->
+<div class="popup-overlay" id="successPopup">
+  <div class="popup-box">
+    <div class="popup-icon">🎉</div>
+    <div class="popup-title">입고 완료!</div>
+    <div class="popup-desc" id="popupDesc"></div>
+    <div class="popup-items" id="popupItems" style="display:none;">
+      <div class="popup-items-title">입고된 상품</div>
+      <div id="popupItemList"></div>
     </div>
-    <div id="resultModalBody"></div>
-    <button onclick="closeResultModal()" style="width:100%; margin-top:16px; padding:13px; border-radius:10px; border:none; background:var(--green); color:white; font-size:14px; font-weight:700; font-family:var(--font); cursor:pointer;">확인</button>
-  </div>
-</div>
-
-<!-- 사용 가이드 팝업 -->
-<div id="receiptGuideModal" onclick="closeReceiptGuide()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:flex-end; justify-content:center;">
-  <div onclick="event.stopPropagation()" style="background:white; border-radius:20px 20px 0 0; padding:24px 20px 40px; width:100%; max-width:680px; max-height:80vh; overflow-y:auto; animation:slideUpModal 0.3s ease;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h3 style="font-size:16px; font-weight:700; color:var(--black);">❓ 샘플입고 사용 가이드</h3>
-      <button onclick="closeReceiptGuide()" style="border:none; background:none; font-size:20px; cursor:pointer; color:var(--gray-600);">✕</button>
-    </div>
-    <div style="display:flex; flex-direction:column; gap:14px;">
-      <div style="padding:14px; background:#FFF8E7; border-radius:12px; border-left:4px solid var(--amber);">
-        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">⚠️ 미매칭이란?</div>
-        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">AI가 영수증 상품을 샘플 요청 목록에서 찾지 못한 경우예요. 요청 안 한 샘플이거나, AI가 상품명을 잘못 읽은 거예요. ✏️를 눌러 상품명을 수정하면 자동으로 다시 매칭 시도해요.</div>
-      </div>
-      <div style="padding:14px; background:#FFF0F0; border-radius:12px; border-left:4px solid #E53E3E;">
-        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">✕ 삭제는 언제?</div>
-        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">영수증 안내문, 혼용률 정보 등 AI가 상품으로 잘못 인식한 항목을 지울 때 눌러요. 저장 시 자동으로 제외돼요.</div>
-      </div>
-      <div style="padding:14px; background:#F0F4FF; border-radius:12px; border-left:4px solid #4A7AE0;">
-        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">↓ 요청했던 상품 중 선택</div>
-        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">AI가 상품명을 잘못 읽어서 미매칭이 됐을 때, 드롭다운에서 실제로 요청했던 상품을 직접 골라요. 그 다음 <b>선택한 항목에 매칭</b>을 눌러야 적용돼요.</div>
-      </div>
-      <div style="padding:14px; background:#F0FFF4; border-radius:12px; border-left:4px solid var(--green);">
-        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">📥 입고 처리 버튼</div>
-        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">삭제하지 않은 항목을 한 번에 저장해요. 매칭된 건 상태 업데이트, 미매칭인 건 시트에 새로 추가돼요.</div>
-      </div>
-      <div style="padding:14px; background:#F5F5F5; border-radius:12px; border-left:4px solid #999;">
-        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">✏️ 상품명 수정</div>
-        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">AI가 잘못 읽은 상품명을 수정하면 자동으로 샘플 요청 목록에서 다시 검색해요. 매칭되면 초록으로 바뀌어요!</div>
-      </div>
-      <div style="padding:14px; background:#F8F8F8; border-radius:12px; border-left:4px solid var(--gray-400);">
-        <div style="font-size:13px; font-weight:700; margin-bottom:6px;">📝 메모</div>
-        <div style="font-size:12px; color:var(--gray-600); line-height:1.6;">특이사항을 적어요. 예: "블랙 누락", "파손 있음", "사이즈 S만 입고" 등. 시트 비고 컬럼에 저장돼요.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
+    <button class="btn-popup-close" onclick="closePopup()">확인</button>
   </div>
 </div>
 
@@ -343,1257 +259,437 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 var GAS_VENDOR_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
 var GAS_SAMPLE_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
 
-var pendingRows = [];   // AI 인식 결과
-var sheetRows = [];     // 시트 요청중 목록
+// ── 거래처 DB ──
+var vendorDB = [];
+var selectedVendor = null;   // { 업체명, 전화번호, 위치 }
+var requestedItems = [];     // 해당 거래처의 요청중 상품 목록
+var manualItems = [];        // 직접 추가 상품
+var allSamplesCache = null;  // 전체 샘플 캐시 (로딩 최적화)
 
 // ── 초기화 ──
 window.addEventListener('load', function() {
-  // API 키는 Cloudflare Worker에 저장됨 (입력 불필요)
-
-  // 오늘 날짜 기본값
-  var today = new Date().toISOString().split('T')[0];
-  document.getElementById('manualInbound').value = today;
-  setDeadline(today);
-
-  // 입고일 변경 시 반납기한 자동 계산
-  document.getElementById('manualInbound').addEventListener('change', function() {
-    setDeadline(this.value);
-  });
-
-  loadSheetRows();
-  loadVendorDB();
+  setDefaultDates();
+  // 거래처 + 전체샘플 동시에 미리 로드 (각각 독립 실행, 한쪽 실패해도 다른쪽 영향 없음)
+  loadVendors();
+  preloadSamples();
 });
 
-function setDeadline(dateStr) {
-  if (!dateStr) return;
-  var d = new Date(dateStr);
-  d.setDate(d.getDate() + 14);
-  document.getElementById('manualDeadline').value = d.toISOString().split('T')[0];
+function setDefaultDates() {
+  var today = new Date();
+  var due   = new Date(today);
+  due.setDate(due.getDate() + 14);
+  document.getElementById('inDate').value  = formatDate(today);
+  document.getElementById('dueDate').value = formatDate(due);
 }
 
-// ── 거래처 DB 로드 ──
-var vendorDB = [];
-async function loadVendorDB() {
-  try {
-    var res = await fetch(GAS_SAMPLE_URL + '?action=getVendors');
-    var data = await res.json();
-    if (data.result === 'ok' && data.vendors) {
-      vendorDB = data.vendors;
-      console.log('거래처 DB 로드:', vendorDB.length + '개');
-    }
-  } catch(e) { console.error('거래처 DB 로드 실패', e); }
+function formatDate(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + dd;
 }
 
-// 특수문자/공백 제거 정규화
-function normalizeForMatch(s) {
-  return (s || '').toLowerCase().replace(/[()\[\]{}\-\.,·\s]/g, '');
-}
-
-// 거래처명으로 DB에서 검색
-function findVendorInfo(name) {
-  if (!name || !vendorDB.length) return null;
-  var targetNorm = normalizeForMatch(name);
-
-  // 1. 정확히 일치
-  for (var i = 0; i < vendorDB.length; i++) {
-    if ((vendorDB[i]['업체명']||'').toLowerCase() === name.toLowerCase()) return vendorDB[i];
-  }
-  // 2. 특수문자 제거 후 일치
-  for (var i = 0; i < vendorDB.length; i++) {
-    var vnNorm = normalizeForMatch(vendorDB[i]['업체명']);
-    if (vnNorm === targetNorm && targetNorm.length > 1) return vendorDB[i];
-  }
-  // 3. 포함 관계 + 단어 매칭
-  for (var i = 0; i < vendorDB.length; i++) {
-    var vnNorm = normalizeForMatch(vendorDB[i]['업체명']);
-    if (targetNorm.length > 2 && vnNorm.length > 2) {
-      if (targetNorm.indexOf(vnNorm) >= 0 || vnNorm.indexOf(targetNorm) >= 0) return vendorDB[i];
-      var tWords = targetNorm.split(/[^a-z0-9가-힣]+/).filter(function(w){return w.length>2;});
-      var vWords = vnNorm.split(/[^a-z0-9가-힣]+/).filter(function(w){return w.length>2;});
-      for (var j=0; j<tWords.length; j++) {
-        for (var k=0; k<vWords.length; k++) {
-          if (tWords[j]===vWords[k]) return vendorDB[i];
-        }
-      }
-    }
-  }
-
-  // 4. 별칭으로 검색 (NYMPH FNC → 님프 찾기)
-  for (var i = 0; i < vendorDB.length; i++) {
-    var aliases = (vendorDB[i]['별칭'] || '').split(',');
-    for (var j = 0; j < aliases.length; j++) {
-      var aliasNorm = normalizeForMatch(aliases[j].trim());
-      if (aliasNorm.length > 1 && (aliasNorm === targetNorm ||
-          aliasNorm.indexOf(targetNorm) >= 0 ||
-          targetNorm.indexOf(aliasNorm) >= 0)) {
-        return vendorDB[i];
-      }
-    }
-  }
-
-  return null;
-}
-
-// ── 시트에서 요청중 목록 불러오기 ──
-async function loadSheetRows() {
+// ── 전체 샘플 미리 로드 (캐시) ──
+async function preloadSamples() {
   try {
     var res = await fetch(GAS_SAMPLE_URL + '?action=getAll');
     var data = await res.json();
     if (data.result === 'ok') {
-      sheetRows = data.rows.filter(function(r) { return r['상태'] === '요청중'; });
-      populateMatchSelect();
+      allSamplesCache = data.rows || [];
     }
-  } catch(e) { console.error('시트 로드 실패', e); }
-}
-
-function populateMatchSelect() {
-  // 거래처 드롭다운 채우기
-  var vendorSel = document.getElementById('manualVendor');
-  var vendors = [];
-  sheetRows.forEach(function(r) {
-    if (vendors.indexOf(r['거래처']) < 0) vendors.push(r['거래처']);
-  });
-  vendorSel.innerHTML = '<option value="">-- 거래처 선택 --</option>';
-  vendors.forEach(function(v) {
-    var opt = document.createElement('option');
-    opt.value = v; opt.textContent = v;
-    vendorSel.appendChild(opt);
-  });
-
-  // 요청중 없으면 안내
-  if (sheetRows.length === 0) {
-    vendorSel.innerHTML = '<option value="">요청중 상품이 없어요</option>';
+  } catch(e) {
+    allSamplesCache = null; // 실패 시 null 유지 → 거래처 선택 시 재시도
   }
 }
 
-function toggleDirectVendor() {
-  var direct = document.getElementById('manualVendorDirect');
-  var select = document.getElementById('manualVendor');
-  var btn = document.getElementById('btnDirectVendor');
-  var isHidden = direct.style.display === 'none';
-
-  if (isHidden) {
-    direct.style.display = 'block';
-    select.value = '';
-    select.disabled = true;
-    btn.textContent = '목록에서 선택';
-    btn.style.background = 'var(--black)';
-    btn.style.color = 'white';
-    btn.style.borderColor = 'var(--black)';
-    document.getElementById('matchGroup').style.display = 'none';
-    document.getElementById('productGroup').style.display = 'block';
-    document.getElementById('matchedPreview').style.display = 'none';
-    direct.focus();
-  } else {
-    direct.style.display = 'none';
-    direct.value = '';
-    select.disabled = false;
-    btn.textContent = '직접 입력';
-    btn.style.background = 'var(--gray-100)';
-    btn.style.color = 'var(--gray-600)';
-    btn.style.borderColor = 'var(--gray-200)';
-    document.getElementById('productGroup').style.display = 'none';
+// ── 거래처 로드 ──
+async function loadVendors() {
+  try {
+    var res = await fetch(GAS_VENDOR_URL + '?action=getVendors');
+    var data = await res.json();
+    if (data.result === 'ok') {
+      vendorDB = data.vendors || [];
+    }
+  } catch(e) {
+    console.warn('거래처 로드 실패, 빌트인 목록 사용');
+    vendorDB = [];
   }
 }
 
-function onDirectVendorInput(val) {
-  // 직접 입력 모드에선 상품명 항상 표시
-  document.getElementById('productGroup').style.display = val ? 'block' : 'none';
-}
-
-function onVendorChange() {
-  var directVendorEl = document.getElementById('manualVendorDirect');
-  var vendor = (directVendorEl.style.display !== 'none' && directVendorEl.value.trim())
-    ? directVendorEl.value.trim()
-    : document.getElementById('manualVendor').value;
-  var matchSel = document.getElementById('manualMatch');
-  var matchGroup = document.getElementById('matchGroup');
-  var productGroup = document.getElementById('productGroup');
-  var preview = document.getElementById('matchedPreview');
-
-  preview.style.display = 'none';
-  productGroup.style.display = 'none';
-
-  if (!vendor) { matchGroup.style.display = 'none'; return; }
-
-  // 해당 거래처의 요청중 상품만 필터링
-  var filtered = sheetRows.filter(function(r) { return r['거래처'] === vendor; });
-  matchSel.innerHTML = '<option value="">-- 직접 입력 (새 행 추가) --</option>';
-  filtered.forEach(function(r) {
-    var idx = sheetRows.indexOf(r);
-    var opt = document.createElement('option');
-    opt.value = idx;
-    opt.textContent = r['상품명'];
-    matchSel.appendChild(opt);
-  });
-
-  matchGroup.style.display = 'block';
-
-  // 1개뿐이면 자동 선택
-  if (filtered.length === 1) {
-    matchSel.value = sheetRows.indexOf(filtered[0]);
-    onMatchChange();
-  }
-}
-
-function onMatchChange() {
-  var val = document.getElementById('manualMatch').value.trim();
-  var preview = document.getElementById('matchedPreview');
-  var productGroup = document.getElementById('productGroup');
+// ── 거래처 검색 입력 ──
+function onVendorInput(val) {
+  val = val.trim();
+  var dd = document.getElementById('vendorDropdown');
 
   if (!val) {
-    productGroup.style.display = 'block';
-    preview.style.display = 'none';
+    dd.style.display = 'none';
     return;
   }
 
-  // 입력한 사입명으로 시트에서 매칭 시도
-  var vendor = document.getElementById('manualVendor').value;
-  var rematch = tryRematch(val, vendor);
+  // 검색 매칭
+  var matched = vendorDB.filter(function(v) {
+    var name = v['업체명'] || '';
+    var alias = v['별칭'] || '';
+    return name.toLowerCase().indexOf(val.toLowerCase()) >= 0
+      || (alias && alias.toLowerCase().indexOf(val.toLowerCase()) >= 0)
+      || matchChosong(name, val)
+      || matchChosong(alias, val);
+  }).slice(0, 12);
 
-  if (rematch) {
-    productGroup.style.display = 'none';
-    preview.style.display = 'block';
-    preview.innerHTML = '✅ 매칭: <strong>' + esc(rematch['상품명']) + '</strong><br>' +
-      '거래처: ' + esc(rematch['거래처']) + ' &nbsp;→&nbsp; 상태: 요청중 → <strong>보유중</strong>';
-  } else {
-    productGroup.style.display = 'block';
-    preview.style.display = 'block';
-    preview.innerHTML = '➕ 새 행으로 추가됩니다';
-  }
-}
-
-// ── 탭 전환 ──
-function switchTab(tab) {
-  document.getElementById('panelAI').style.display = tab === 'ai' ? 'block' : 'none';
-  document.getElementById('panelManual').style.display = tab === 'manual' ? 'block' : 'none';
-  document.getElementById('tabAI').classList.toggle('active', tab === 'ai');
-  document.getElementById('tabManual').classList.toggle('active', tab === 'manual');
-  document.getElementById('saveWrap').classList.toggle('show', tab === 'ai' && pendingRows.length > 0);
-}
-
-
-
-// ── 이미지 업로드 ──
-var _pendingFiles = []; // 업로드된 파일 목록
-
-document.getElementById('fileInput').addEventListener('change', function(e) {
-  var files = Array.from(e.target.files);
-  if (!files.length) return;
-
-  // 최대 20장 제한
-  if (files.length > 20) {
-    showToast('❌ 최대 20장까지 가능해요 (현재 ' + files.length + '장)');
-    e.target.value = '';
+  if (!matched.length) {
+    dd.style.display = 'none';
     return;
   }
 
-  _pendingFiles = files;
-
-  var area = document.getElementById('uploadArea');
-  area.classList.add('has-image');
-  document.getElementById('uploadIcon').textContent = '✅';
-  document.getElementById('uploadTitle').textContent = files.length + '장 등록됨';
-  var timeEst = files.length <= 3 ? '약 15~30초' : files.length <= 5 ? '약 30~50초' : '약 1분+';
-  document.getElementById('uploadSub').textContent = files.length + '장 · 예상 소요시간 ' + timeEst;
-  document.getElementById('btnAnalyze').style.display = 'block';
-
-  // 미리보기는 첫 번째 이미지만
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    document.getElementById('previewImg').src = ev.target.result;
-    document.getElementById('previewImg').style.display = 'block';
-  };
-  reader.readAsDataURL(files[0]);
-});
-
-// ── 이미지를 1500px로 리사이즈 (화질 유지하면서 용량 감소) ──
-function resizeForAPI(dataUrl) {
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.onload = function() {
-      var TARGET = 1500; // 가로 최대 1500px
-      var w = img.width, h = img.height;
-
-      // 이미 충분히 작으면 그대로
-      if (w <= TARGET && h <= TARGET) {
-        resolve(dataUrl);
-        return;
-      }
-
-      // 긴 쪽 기준으로 리사이즈
-      var scale = TARGET / Math.max(w, h);
-      var canvas = document.createElement('canvas');
-      canvas.width  = Math.floor(w * scale);
-      canvas.height = Math.floor(h * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      var result = canvas.toDataURL('image/jpeg', 0.95);
-      console.log('리사이즈: ' + w + 'x' + h + ' → ' + canvas.width + 'x' + canvas.height +
-        ' (' + Math.round(result.split(',')[1].length/1024) + 'KB)');
-      resolve(result);
-    };
-    img.src = dataUrl;
+  dd.innerHTML = '';
+  matched.forEach(function(v) {
+    var div = document.createElement('div');
+    div.className = 'search-item';
+    var name = v['업체명'] || '';
+    var phone = v['전화번호'] || '';
+    var addr  = v['위치'] || '';
+    div.innerHTML =
+      '<div class="search-item-name">' + highlight(name, val) + '</div>' +
+      '<div class="search-item-meta">' + esc(phone) + (addr ? ' · ' + esc(addr) : '') + '</div>';
+    div.addEventListener('click', function() {
+      selectVendor(v);
+    });
+    dd.appendChild(div);
   });
+  dd.style.display = 'block';
 }
 
-// compressBase64는 resizeForAPI로 대체
-function compressBase64(dataUrl) {
-  return resizeForAPI(dataUrl);
+function highlight(text, keyword) {
+  if (!keyword) return esc(text);
+  var re = new RegExp('(' + escapeReg(keyword) + ')', 'gi');
+  return esc(text).replace(re, '<strong style="color:var(--accent);">$1</strong>');
 }
 
-function splitImageIfLong(dataUrl) {
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.onload = function() {
-      var w = img.width, h = img.height;
-      // 가로 이미지면 실제 긴 쪽 기준으로 비율 계산
-      // 가로 이미지면 세로 기준으로 계산
-      var isLandscape = w > h;
-      var effectiveW = isLandscape ? h : w;
-      var effectiveH = isLandscape ? w : h;
-
-      // 원본 높이 기준으로 분할 (분할 후 리사이즈하므로 원본 기준이 정확)
-      var parts = effectiveH >= 7000 ? 3 : effectiveH >= 3500 ? 2 : 1;
-      var ratio = effectiveH / effectiveW;
-      console.log('원본 높이: ' + effectiveH + 'px → ' + parts + '등분');
-      console.log('분할: ' + w + 'x' + h + ' 비율=' + ratio.toFixed(1) + ' → ' + parts + '등분');
-
-      if (parts === 1) { resolve([dataUrl]); return; }
-
-      // 항상 세로 방향으로 통일 (가로면 회전)
-      var drawCanvas = document.createElement('canvas');
-      if (isLandscape) {
-        drawCanvas.width = h; drawCanvas.height = w;
-        var dc = drawCanvas.getContext('2d');
-        dc.translate(h/2, w/2);
-        dc.rotate(Math.PI/2);
-        dc.drawImage(img, -w/2, -h/2);
-      } else {
-        drawCanvas.width = w; drawCanvas.height = h;
-        drawCanvas.getContext('2d').drawImage(img, 0, 0);
-      }
-
-      var fw = drawCanvas.width, fh = drawCanvas.height;
-      var partH = Math.floor(fh / parts);
-      var results = [];
-
-      for (var p = 0; p < parts; p++) {
-        var segH = (p === parts-1) ? fh - partH*p : partH;
-        var seg = document.createElement('canvas');
-        seg.width = fw; seg.height = segH;
-        seg.getContext('2d').drawImage(drawCanvas, 0, p*partH, fw, segH, 0, 0, fw, segH);
-        results.push(seg.toDataURL('image/jpeg', 0.9));
-      }
-      resolve(results);
-    };
-    img.src = dataUrl;
-  });
+function closeDropdown() {
+  document.getElementById('vendorDropdown').style.display = 'none';
 }
 
+// ── 거래처 선택 ──
+function selectVendor(v) {
+  selectedVendor = v;
+  document.getElementById('vendorSearchInput').value = v['업체명'] || '';
+  closeDropdown();
 
-function readFileAsBase64(file) {
-  return new Promise(function(resolve) {
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      resolve({
-        base64: ev.target.result.split(',')[1],
-        type: file.type,
-        name: file.name,
-        dataUrl: ev.target.result
+  // 거래처 정보 표시
+  document.getElementById('viName').textContent = v['업체명'] || '';
+  document.getElementById('viPhone').textContent = v['전화번호'] || '-';
+  document.getElementById('viAddr').textContent  = v['위치'] || '-';
+  document.getElementById('vendorInfoCard').classList.add('show');
+
+  // 요청중 상품 로드
+  loadRequestedItems(v['업체명']);
+}
+
+// ── 요청중 상품 로드 (캐시 우선, 없으면 fetch) ──
+async function loadRequestedItems(vendorName) {
+  document.getElementById('productPlaceholder').style.display = 'none';
+  document.getElementById('productList').style.display = 'none';
+  document.getElementById('addSection').style.display = 'none';
+  document.getElementById('btnSelectAll').style.display = 'none';
+  requestedItems = [];
+  updateSaveBtn();
+
+  // ✅ 캐시가 있으면 네트워크 없이 즉시 필터
+  if (allSamplesCache !== null) {
+    requestedItems = allSamplesCache
+      .filter(function(r) {
+        return r['거래처'] === vendorName && r['상태'] === '요청중';
+      })
+      .map(function(r) {
+        return Object.assign({}, r, { selected: false });
       });
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// ── AI 분석 ──
-async function analyzeImage() {
-  if (!_pendingFiles.length) { showToast('❌ 사진을 올려주세요'); return; }
-  if (_pendingFiles.length > 3) { showToast('❌ 최대 3장까지만 올려주세요!'); return; }
-
-  document.getElementById('btnAnalyze').disabled = true;
-  document.getElementById('loading').classList.add('show');
-  document.getElementById('aiResults').style.display = 'none';
-
-  // vendorDB 없으면 먼저 로드
-  if (vendorDB.length === 0) {
-    document.getElementById('loadingMsg').textContent = '거래처 DB 로딩 중...';
-    await loadVendorDB();
+    renderProductList();
+    document.getElementById('addSection').style.display = 'block';
+    updateSaveBtn();
+    return;
   }
 
-  var allParsed = [];
-
+  // ⏳ 캐시 없으면 로딩 표시 후 fetch (fallback)
+  document.getElementById('productLoading').style.display = 'flex';
   try {
-    for (var fi = 0; fi < _pendingFiles.length; fi++) {
-      var file = _pendingFiles[fi];
-      document.getElementById('loadingMsg').textContent =
-        '(' + (fi+1) + '/' + _pendingFiles.length + ') ' + file.name + ' 인식 중...';
-
-      // 원본 DataURL 읽기
-      var rawDataUrl = await new Promise(function(rs) {
-        var rd = new FileReader();
-        rd.onload = function(ev) { rs(ev.target.result); };
-        rd.readAsDataURL(file);
-      });
-
-      // 분할 후 각 조각 압축
-      var imgParts = await splitImageIfLong(rawDataUrl);
-      var compressedParts = [];
-      for (var ci = 0; ci < imgParts.length; ci++) {
-        var c = await compressBase64(imgParts[ci]);
-        compressedParts.push(c);
-      }
-
-      for (var pi = 0; pi < compressedParts.length; pi++) {
-        var partBase64 = compressedParts[pi].split(',')[1];
-
-        if (imgParts.length > 1) {
-          document.getElementById('loadingMsg').textContent =
-            '(' + (fi+1) + '/' + _pendingFiles.length + ') ' +
-            (pi+1) + '/' + imgParts.length + '번째 구간 인식 중...';
-        }
-
-        // AI 인식
-        var resp2 = await fetch('https://anthropic-proxy.so0474.workers.dev', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-opus-4-5', max_tokens: 4096,
-            messages: [{ role: 'user', content: [
-              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: partBase64 } },
-              { type: 'text', text: '이 영수증/거래명세서를 분석해줘.\n\n중요: 영수증의 \'거래처명\'은 우리 회사(더제이수)야. 실제 거래처는 영수증 상단의 업체명(예: 페니엘, PENIEL 등 상호명)이야.\n\n추출 규칙:\n- 거래처: 영수증 상단 업체 상호명 (거래처명 항목 말고!)\n- 상품명: 상품 목록의 각 상품명 (색상/사이즈 포함)\n- 같은 상품이 수량 2개면 → 2개의 row로 분리\n- 이미지가 영수증 일부일 수 있으니 보이는 상품 모두 추출해줘\n\nJSON 배열만 반환:\n[{"상품명":"...","거래처":"..."}]' }
-            ]}]
-          })
+    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll');
+    var data = await res.json();
+    if (data.result === 'ok') {
+      allSamplesCache = data.rows || []; // 이번 기회에 캐시 저장
+      requestedItems = allSamplesCache
+        .filter(function(r) {
+          return r['거래처'] === vendorName && r['상태'] === '요청중';
+        })
+        .map(function(r) {
+          return Object.assign({}, r, { selected: false });
         });
-        var data = await resp2.json();
-        if (data.error) throw new Error(data.error.message);
-        var text = data.content[0].text;
-        // JSON 추출 - AI가 텍스트로 답변해도 안전하게 처리
-        var cleanText = text.replace(/```json|```/g, '').trim();
-        var jsonMatch = cleanText.match(/\[\s*\{.*\}\s*\]/s);
-        if (!jsonMatch) {
-          console.warn('JSON 파싱 불가, 건너뜀:', cleanText.substring(0, 100));
-          continue;
-        }
-        var parsed = JSON.parse(jsonMatch[0]);
-
-        // 각 조각 안에서 거래처 채우기
-        var segVendor = '';
-        parsed.forEach(function(item) {
-          if (item['거래처'] && item['거래처'].length > 1) segVendor = item['거래처'];
-          else if ((!item['거래처'] || item['거래처'].length <= 1) && segVendor) item['거래처'] = segVendor;
-        });
-        // 이전 조각 거래처도 활용
-        if (!segVendor && allParsed.length > 0) {
-          var prevVendor = '';
-          for (var pi2 = allParsed.length-1; pi2 >= 0; pi2--) {
-            if (allParsed[pi2]['거래처'] && allParsed[pi2]['거래처'].length > 1) {
-              prevVendor = allParsed[pi2]['거래처']; break;
-            }
-          }
-          if (prevVendor) parsed.forEach(function(item) {
-            if (!item['거래처'] || item['거래처'].length <= 1) item['거래처'] = prevVendor;
-          });
-        }
-
-        allParsed = allParsed.concat(parsed);
-      }
     }
-
-    // 한 번에 올린 사진은 모두 같은 거래처 → 첫 번째 발견된 거래처를 전체에 적용
-    var batchVendor = '';
-    allParsed.forEach(function(item) {
-      if (!batchVendor && item['거래처'] && item['거래처'].length > 1) {
-        batchVendor = item['거래처'];
-      }
-    });
-    if (batchVendor) {
-      allParsed.forEach(function(item) {
-        item['거래처'] = batchVendor;
-      });
-    }
-
-    // 상품명 아닌 키워드 필터링
-    var excludeKeywords = ['샘플', 'sp', '더제이수', '제이수', 'sb제이수', 'sb 제이수'];
-    allParsed = allParsed.filter(function(item) {
-      var name = (item['상품명'] || '').toLowerCase().replace(/\s/g, '');
-      return !excludeKeywords.some(function(kw) {
-        return name === kw.replace(/\s/g, '');
-      });
-    });
-
-    // 옵션 제거 + 거래처별 상품명 중복 제거 + 옵션 수집
-    var deduped = [];
-    var seen = {};
-    allParsed.forEach(function(item) {
-      var parts = (item['상품명'] || '').split('/');
-      var baseName = parts[0].trim();
-      // 옵션 미사용
-      
-var vendor = item['거래처'] || '';
-      // 같은 배치 = 같은 거래처 → 상품명만으로 중복 제거
-      var uniqKey = baseName.toLowerCase().replace(/\s/g, '');
-      if (!seen[uniqKey]) {
-        seen[uniqKey] = true;
-        deduped.push({ '상품명': baseName, '거래처': vendor });
-      }
-    });
-
-    // 전체 합친 결과로 시트 매칭
-    document.getElementById('loadingMsg').textContent = '시트 상품과 매칭 중...';
-    var matched = await aiMatch(deduped);
-    renderAIResults(matched);
-
   } catch(e) {
-    showToast('❌ 인식 실패: ' + e.message);
-  } finally {
-    document.getElementById('loading').classList.remove('show');
-    document.getElementById('btnAnalyze').disabled = false;
-    document.getElementById('btnAnalyze').textContent = '🤖 AI로 입고 상품 인식하기';
+    showToast('❌ 데이터 로드 실패');
   }
+  document.getElementById('productLoading').style.display = 'none';
+  renderProductList();
+  document.getElementById('addSection').style.display = 'block';
+  updateSaveBtn();
 }
 
-// ── AI 매칭 함수 ──
-async function aiMatch(items) {
-  // 옵션 제거: "르누BL/아이/F" → "르누BL"
-  function stripOption(name) {
-    return (name || '').split('/')[0].trim();
+// ── 요청중 상품 렌더링 ──
+function renderProductList() {
+  var listEl = document.getElementById('productList');
+
+  if (!requestedItems.length) {
+    listEl.innerHTML = '<div class="empty-products">이 거래처의 요청중 상품이 없어요.<br>아래에서 직접 추가하세요.</div>';
+    listEl.style.display = 'block';
+    document.getElementById('btnSelectAll').style.display = 'none';
+    return;
   }
 
-  // 정규화: 대소문자·공백·특수문자 제거
-  function normalize(s) {
-    return (s || '').toLowerCase().replace(/[\s()\[\]{}]/g, '');
-  }
+  document.getElementById('btnSelectAll').style.display = 'inline-flex';
 
-  // 영수증 상품명 축약어 제거 (ops→원피스 대신 제거 후 한글만으로 매칭)
-  function stripSuffix(s) {
-    return s.replace(/(?:ops|bl|sk|pt|jk|ts|sl|cd|nt|set|free|ss|fw)$/i, '').trim();
-  }
-
-  // 거래처 정규화 (findVendorInfo와 동일 방식)
-  function normalizeVendor(s) {
-    return (s || '').toLowerCase().replace(/[\s()\[\]{}.\-]/g, '');
-  }
-
-  return items.map(function(item) {
-    var invoiceName   = stripOption(item['상품명']);
-    var invoiceNorm   = normalize(invoiceName);
-    var invoiceVendor = normalizeVendor(item['거래처']);
-
-    var matchedIdx = -1;
-
-    // 1단계: 거래처 필터 후 상품명 매칭 (업체명 + 별칭 모두 체크)
-    var vendorFiltered = sheetRows.filter(function(r) {
-      var sheetVendor = normalizeVendor(r['거래처'] || '');
-      // 기본 업체명 매칭
-      if (sheetVendor.length > 0 && invoiceVendor.length > 0) {
-        if (sheetVendor.indexOf(invoiceVendor) >= 0 || invoiceVendor.indexOf(sheetVendor) >= 0) return true;
-      }
-      return false;
-    });
-
-    // 거래처 필터 결과 없으면 vendorDB 별칭으로 거래처 찾기
-    if (vendorFiltered.length === 0) {
-      var matchedVendorName = '';
-      for (var vi = 0; vi < vendorDB.length; vi++) {
-        var v = vendorDB[vi];
-        var aliases = (v['별칭'] || '').split(',').map(function(a) { return normalizeVendor(a); }).filter(function(a) { return a.length > 0; });
-        // 별칭 중 하나라도 영수증 거래처와 매칭되면
-        for (var ai = 0; ai < aliases.length; ai++) {
-          if (aliases[ai].length > 0 && (aliases[ai].indexOf(invoiceVendor) >= 0 || invoiceVendor.indexOf(aliases[ai]) >= 0)) {
-            matchedVendorName = normalizeVendor(v['업체명']);
-            break;
-          }
-        }
-        if (matchedVendorName) break;
-      }
-      // 별칭으로 찾은 업체명으로 다시 필터
-      if (matchedVendorName) {
-        vendorFiltered = sheetRows.filter(function(r) {
-          var sheetVendor = normalizeVendor(r['거래처'] || '');
-          return sheetVendor.indexOf(matchedVendorName) >= 0 || matchedVendorName.indexOf(sheetVendor) >= 0;
-        });
-      }
-    }
-
-    // 축약어 제거 버전도 준비
-    var invoiceStripped = normalize(stripSuffix(invoiceName));
-
-    // 거래처 필터된 결과에서 상품명 매칭
-    for (var i = 0; i < vendorFiltered.length; i++) {
-      var sheetNorm = normalize(vendorFiltered[i]['상품명']);
-      // 1) 영수증 그대로 포함
-      if (invoiceNorm.length >= 2 && sheetNorm.indexOf(invoiceNorm) >= 0) {
-        matchedIdx = sheetRows.indexOf(vendorFiltered[i]);
-        break;
-      }
-      // 2) 축약어 제거 후 포함
-      if (invoiceStripped.length >= 2 && sheetNorm.indexOf(invoiceStripped) >= 0) {
-        matchedIdx = sheetRows.indexOf(vendorFiltered[i]);
-        break;
-      }
-    }
-
-    // 2단계: 거래처 필터 결과 없으면 전체에서 상품명만으로 매칭
-    if (matchedIdx === -1) {
-      for (var i = 0; i < sheetRows.length; i++) {
-        var sheetNorm = normalize(sheetRows[i]['상품명']);
-        if (invoiceNorm.length >= 2 && sheetNorm.indexOf(invoiceNorm) >= 0) {
-          matchedIdx = i;
-          break;
-        }
-        if (invoiceStripped.length >= 2 && sheetNorm.indexOf(invoiceStripped) >= 0) {
-          matchedIdx = i;
-          break;
-        }
-      }
-    }
-
-    return {
-      상품명: item['상품명'],
-      거래처: item['거래처'],
-      matchedSheetIdx: matchedIdx
-    };
-  });
-}
-
-// ── AI 결과 렌더링 ──
-function renderAIResults(items) {
-  var today = new Date().toISOString().split('T')[0];
-  var deadline = new Date(); deadline.setDate(deadline.getDate() + 14);
-  var deadlineStr = deadline.toISOString().split('T')[0];
-
-  // aiMatch 결과(matchedSheetIdx 포함)로 pendingRows 구성
-  pendingRows = items.map(function(item) {
-    var sheetIdx = item.matchedSheetIdx;
-    var matched = sheetIdx >= 0 ? sheetRows[sheetIdx] : null;
-    // 거래처 DB에서 연락처·주소 조회
-    var vendorInfo = findVendorInfo(item['거래처']);
-    return {
-      상품명: item['상품명'],
-      거래처: item['거래처'],
-      연락처: vendorInfo ? (vendorInfo['전화번호'] || '') : '',
-      주소:   vendorInfo ? (vendorInfo['위치'] || '') : '',
-      입고일: today,
-      반납기한: deadlineStr,
-      matched: matched,
-      matchedIdx: sheetIdx,
-      action: matched ? 'match' : 'ask',
-      rowNum: matched ? matched['_row'] : null
-    };
-  });
-
-  var container = document.getElementById('resultCards');
-  container.innerHTML = '';
-  document.getElementById('aiResultCount').textContent = pendingRows.length;
-
-  pendingRows.forEach(function(p, i) {
-    var card = document.createElement('div');
-    card.className = 'result-card ' + (p.matched ? 'matched' : 'unmatched');
-    card.id = 'rcard-' + i;
-
-    var matchedInfo = p.matched
-      ? '<div class="result-info">→ ' + p.matched['상품명'] + ' / ' + p.matched['거래처'] + '</div>'
-      : '';
-
-    // 거래처 정보 이미 있으면 별칭 UI 불필요
-    var showAliasUI = !(p.연락처 || p.주소);
-
-    // 사입명 입력 + 매칭 버튼 (항상 표시)
-    var actionHtml =
-        '<div style="margin-bottom:8px;">' +
-          '<div style="font-size:11px; color:var(--gray-600); margin-bottom:4px; font-weight:500;">② 사입명 입력</div>' +
-          '<input type="text" id="matchSel-' + i + '" placeholder="사입명 직접 입력 (예: 빈츠BL)"' +
-            ' style="width:100%; border:1.5px solid var(--gray-200); border-radius:8px; padding:9px 12px; font-size:13px; font-family:var(--font); background:white; outline:none; box-sizing:border-box;"' +
-            ' oninput="pendingRows[' + i + '].상품명=this.value">' +
-        '</div>' +
-        '<div class="match-actions">' +
-          '<button class="btn-match-select" onclick="setAction(' + i + ',\'select\')">✓ 선택한 항목에 매칭</button>' +
-        '</div>' +
-        // 거래처 별칭 연결 UI (거래처 DB 미등록일 때만 표시)
-        (!p.연락처 && !p.주소 ?
-          '<div style="margin-top:10px; padding:10px; background:#FFF8E7; border:1.5px solid var(--amber); border-radius:8px;">' +
-            '<div style="font-size:11px; font-weight:700; color:var(--amber); margin-bottom:6px;">🔗 기존 거래처와 연결 (별칭 자동 등록)</div>' +
-            '<div style="position:relative;">' +
-              '<input type="text" id="aliasSearch-' + i + '" placeholder="거래처 검색 (예: osro, ㄹㄴ → 라이크워터)" ' +
-                'oninput="onAliasSearch(' + i + ', this.value)" ' +
-                'style="width:100%; border:1.5px solid var(--gray-200); border-radius:8px; padding:8px 12px; font-size:12px; font-family:var(--font); background:white; outline:none; box-sizing:border-box;">' +
-              '<div id="aliasDropdown-' + i + '" style="display:none; position:absolute; top:calc(100% + 2px); left:0; right:0; background:white; border:1.5px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); z-index:300; max-height:160px; overflow-y:auto;"></div>' +
-            '</div>' +
-            '<input type="hidden" id="aliasSelIdx-' + i + '" value="">' +
-            '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">' +
-              '<div style="font-size:10px; color:#888;">' + esc(p.거래처) + ' → 선택한 거래처의 별칭으로 등록</div>' +
-              '<button onclick="linkAlias(' + i + ')" style="padding:6px 12px; border-radius:8px; border:none; background:var(--amber); color:white; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; white-space:nowrap;">별칭 등록</button>' +
-            '</div>' +
-          '</div>'
-        : '');
-
-    var isHandwritten = document.getElementById('chkHandwritten') && document.getElementById('chkHandwritten').checked;
-
-    var optionTags = '';
-
-        card.innerHTML =
-      '<div class="result-header">' +
-        '<div style="flex:1; min-width:0;">' +
-          '<div style="display:flex; align-items:center; gap:2px;">' +
-            '<span class="result-name" id="nameDisplay-' + i + '" onclick="editName(' + i + ')" style="cursor:pointer;">' + esc(p.상품명) + '</span>' +
-            '<span onclick="editName(' + i + ')" style="font-size:11px; color:#bbb; cursor:pointer; margin-left:2px;">✏️</span>' +
-          '</div>' +
-          '<input id="nameEdit-' + i + '" value="' + esc(p.상품명) + '" ' +
-            'style="display:none; width:100%; border:none; border-bottom:2px solid #4A7AE0; background:transparent; font-size:14px; font-weight:700; font-family:var(--font); outline:none; color:var(--black); padding:2px 0; box-sizing:border-box;" ' +
-            'oninput="pendingRows[' + i + '].상품명=this.value" onblur="saveName(' + i + ')" onkeydown="if(event.key===\'Enter\'){saveName(' + i + ')}">' +
-          optionTags +
-        '</div>' +
-        '<div style="display:flex; align-items:center; gap:6px;">' +
-          '<span class="result-badge ' + (p.matched ? 'ok' : 'warn') + '">' + (p.matched ? '✓ 자동매칭' : '⚠ 미매칭') + '</span>' +
-          '<button onclick="deleteCard(' + i + ')" style="border:none; background:#FFE8E8; color:#E53E3E; border-radius:6px; padding:3px 8px; font-size:11px; font-family:var(--font); cursor:pointer;">✕ 삭제</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="result-info">' + esc(p.거래처) +
-        (p.연락처 || p.주소
-          ? ' <span style="color:var(--green);font-size:11px;">· ' + esc(p.연락처) + (p.주소 ? ' / ' + esc(p.주소) : '') + '</span>'
-          : ' <span style="color:var(--amber);font-size:11px;">· 거래처 DB 미등록</span>') +
-      '</div>' +
-      matchedInfo +
-      '<div class="date-info">' +
-        '<span class="date-chip highlight">입고일 ' + p.입고일 + '</span>' +
-        '<span class="date-chip">반납기한 ' + p.반납기한 + '</span>' +
-      '</div>' +
-      (actionHtml ? '<div style="margin-top:10px;">' + actionHtml + '</div>' : '') +
-      '<div style="margin-top:8px;">' +
-        '<input class="memo-input" id="memo-' + i + '" placeholder="📝 메모 (예: 블랙 컬러 입고 안됨)" ' +
-        'style="width:100%; border:1.5px solid var(--gray-200); border-radius:8px; padding:8px 12px; font-size:12px; font-family:var(--font); background:var(--gray-100); outline:none; color:var(--black);" ' +
-        'onclick="event.stopPropagation()">' +
-      '</div>';
-
-    container.appendChild(card);
-  });
-
-  document.getElementById('aiResults').style.display = 'block';
-  document.getElementById('saveCount').textContent = pendingRows.length;
-  document.getElementById('saveWrap').classList.add('show');
-}
-
-// ── 미매칭 액션 설정 ──
-function setAction(i, action) {
-  var sel = document.getElementById('matchSel-' + i);
-  var inputName = sel ? sel.value.trim() : '';
-  if (!inputName) { showToast('사입명을 입력해주세요'); return; }
-
-  // 입력한 사입명으로 시트에서 매칭 시도
-  var rematch = tryRematch(inputName, pendingRows[i].거래처);
-  pendingRows[i].action = 'select';
-  pendingRows[i].상품명 = inputName;
-
-  if (rematch) {
-    pendingRows[i].matched = rematch;
-    pendingRows[i].rowNum = rematch['_row'];
-    pendingRows[i].matchedIdx = rematch._rowIdx;
-  } else {
-    // 매칭 없으면 새 행으로 추가
-    pendingRows[i].matched = null;
-    pendingRows[i].rowNum = null;
-  }
-
-  var card = document.getElementById('rcard-' + i);
-  card.className = 'result-card matched';
-
-  var badge = card.querySelector('.result-badge');
-  badge.textContent = '✓ 매칭됨';
-  badge.className = 'result-badge ok';
-
-  var actionWrap = card.querySelector('div[style*="margin-top:10px"]');
-  if (actionWrap) actionWrap.remove();
-
-  showToast('✓ 매칭 완료!');
-}
-
-// ── AI 탭 저장 ──
-async function saveAll() {
-  var btn = document.getElementById('btnSave');
-  btn.disabled = true; btn.textContent = '저장 중...';
-  var success = 0;
-  var newRows = [];
-
-  for (var i = 0; i < pendingRows.length; i++) {
-    var p = pendingRows[i];
-    // 삭제된 항목 제외
-    if (p.deleted) continue;
-    // 미매칭은 무조건 새 행으로 추가
-    if (p.action === 'ask') p.action = 'new';
-
-    try {
-      // 수기 영수증이면 수정된 상품명 반영 (표시 중인 경우만)
-      var nameEditEl = document.getElementById('nameEdit-' + i);
-      if (nameEditEl && nameEditEl.style.display !== 'none' && nameEditEl.value.trim()) {
-        p.상품명 = nameEditEl.value.trim();
-      }
-
-      var memo = document.getElementById('memo-' + i) ? document.getElementById('memo-' + i).value.trim() : '';
-      if (p.action === 'match' || p.action === 'select') {
-        // 기존 행 업데이트 (영수증 상품명으로 덮어쓰기 + 연락처·주소)
-        var updateData = {
-          '_row': p.rowNum,
-          '상품명': p.상품명,
-          '상태': '보유중',
-          '입고일': p.입고일,
-          '반납기한': p.반납기한,
-          '연락처': p.연락처 || '',
-          '주소': p.주소 || '',
-          '비고': memo
-        };
-        var payload = encodeURIComponent(JSON.stringify(updateData));
-        await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
-        console.log('updateStatus 호출:', updateData);
-      } else {
-        // 새 행 추가
-        var payload2 = encodeURIComponent(JSON.stringify({
-          '상품명': p.상품명, '거래처': p.거래처,
-          '연락처': p.연락처 || '', '주소': p.주소 || '',
-          '이미지URL': '', '요청일': '', '입고일': p.입고일,
-          '반납기한': p.반납기한, '상태': '보유중', '반납일': '', '출처': '직접입고', '비고': memo
-        }));
-        await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload2, { mode: 'no-cors' });
-        newRows.push({ 상품명: p.상품명, 거래처: p.거래처 });
-      }
-      success++;
-    } catch(e) { console.error(e); }
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '📊 입고 처리 완료 (<span id="saveCount">' + pendingRows.length + '</span>개)';
-  // 완료 팝업 (확인 눌러야 닫힘)
-  if (newRows.length > 0) {
-    showResultModal(newRows, success);
-  } else {
-    showSaveComplete(success);
-  }
-}
-
-// ── 직접 입력 저장 ──
-async function saveManual() {
-  var vendor  = document.getElementById('manualVendor').value.trim();
-  var product = document.getElementById('manualProduct').value.trim();
-  var inbound = document.getElementById('manualInbound').value;
-  var deadline= document.getElementById('manualDeadline').value;
-  var matchName = document.getElementById('manualMatch').value.trim();
-  var rematch = matchName ? tryRematch(matchName, vendor) : null;
-
-  // 검증
-  if (!vendor) { showToast('거래처를 선택해주세요'); return; }
-  if (!matchName && !product) { showToast('사입명 또는 상품명을 입력해주세요'); return; }
-
-  // 사입명 입력 시 상품명으로 사용
-  if (matchName && !product) product = matchName;
-
-  try {
-    var memo = document.getElementById('manualMemo') ? document.getElementById('manualMemo').value.trim() : '';
-    if (matchIdx !== '') {
-      // 기존 행 업데이트 (매칭된 요청중 상품)
-      var row = sheetRows[parseInt(matchIdx)];
-      var payload = encodeURIComponent(JSON.stringify({
-        '_row': row['_row'], '상태': '보유중', '입고일': inbound, '반납기한': deadline, '비고': memo
-      }));
-      await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload, { mode: 'no-cors' });
-      showToast('✅ ' + row['상품명'] + ' 입고 처리 완료!');
-    } else {
-      // 새 행 추가
-      var payload2 = encodeURIComponent(JSON.stringify({
-        '상품명': product, '거래처': vendor, '연락처': '', '주소': '',
-        '이미지URL': '', '요청일': '', '입고일': inbound,
-        '반납기한': deadline, '상태': '보유중', '반납일': '', '출처': '직접입고', '비고': memo
-      }));
-      await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload2, { mode: 'no-cors' });
-      showToast('✅ ' + product + ' 입고 처리 완료!');
-    }
-    // 폼 초기화
-    document.getElementById('manualVendor').value = '';
-    document.getElementById('manualVendor').disabled = false;
-    document.getElementById('manualVendorDirect').value = '';
-    document.getElementById('manualVendorDirect').style.display = 'none';
-    document.getElementById('btnDirectVendor').textContent = '직접 입력';
-    document.getElementById('btnDirectVendor').style.background = 'var(--gray-100)';
-    document.getElementById('btnDirectVendor').style.color = 'var(--gray-600)';
-    document.getElementById('btnDirectVendor').style.borderColor = 'var(--gray-200)';
-    document.getElementById('manualMatch').value = '';
-    document.getElementById('manualProduct').value = '';
-    document.getElementById('matchGroup').style.display = 'none';
-    document.getElementById('productGroup').style.display = 'none';
-    document.getElementById('matchedPreview').style.display = 'none';
-    if (document.getElementById('manualMemo')) document.getElementById('manualMemo').value = '';
-    loadSheetRows();
-  } catch(e) { showToast('❌ 저장 실패'); }
-}
-
-
-
-// 입고 완료 팝업
-// 저장 완료 팝업 (새 행 없을 때)
-function showSaveComplete(count) {
-  var modal = document.getElementById('saveCompleteModal');
-  document.getElementById('saveCompleteCount').textContent = count;
-  modal.style.display = 'flex';
-}
-function closeSaveComplete() {
-  document.getElementById('saveCompleteModal').style.display = 'none';
-}
-
-function showResultModal(newRows, successCount) {
-  if (!newRows || !newRows.length) return;
-
-  // 거래처별 그룹핑
-  var groups = {};
-  newRows.forEach(function(r) {
-    var v = r.거래처 || '기타';
-    if (!groups[v]) groups[v] = [];
-    groups[v].push(r.상품명);
-  });
-
-  var html = '<div style="font-size:12px; color:var(--gray-600); margin-bottom:14px;">아래 상품은 요청 목록에 없어 <strong>새 행으로 추가</strong>됐어요</div>';
-  Object.keys(groups).forEach(function(vendor) {
-    html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:12px; font-weight:700; color:var(--black); margin-bottom:6px; padding:6px 10px; background:var(--gray-100); border-radius:6px;">🏪 ' + esc(vendor) + '</div>';
-    groups[vendor].forEach(function(name) {
-      html += '<div style="font-size:13px; padding:5px 10px; border-left:3px solid var(--blue); margin-bottom:4px; color:var(--blue-dark, #1A56A0);">· ' + esc(name) + '</div>';
-    });
+  var html = '';
+  requestedItems.forEach(function(item, idx) {
+    var isSelected = item.selected;
+    html += '<div class="product-item' + (isSelected ? ' selected' : '') + '" onclick="toggleProduct(' + idx + ')" id="pitem-' + idx + '">';
+    html += '<div class="product-check' + (isSelected ? ' on' : '') + '" id="pcheck-' + idx + '">' + (isSelected ? '✓' : '') + '</div>';
+    html += '<div class="product-name">' + esc(item['상품명'] || '') + '</div>';
+    if (item['출처']) html += '<div class="product-source">' + esc(item['출처']) + '</div>';
     html += '</div>';
   });
 
-  var successTxt = successCount ? '<div style="font-size:14px; font-weight:700; color:var(--green); margin-bottom:12px;">✅ ' + successCount + '개 입고 처리 완료!</div>' : '';
-  document.getElementById('resultModalBody').innerHTML = successTxt + html;
-  document.getElementById('resultModal').style.display = 'flex';
-}
-function closeResultModal() {
-  document.getElementById('resultModal').style.display = 'none';
+  listEl.innerHTML = html;
+  listEl.style.display = 'block';
 }
 
-function resetAll() {
-  // 파일 초기화
-  _pendingFiles = [];
-  document.getElementById('fileInput').value = '';
-  document.getElementById('previewImg').style.display = 'none';
-  document.getElementById('btnAnalyze').style.display = 'none';
-
-  // 업로드 영역 원래대로
-  var area = document.getElementById('uploadArea');
-  area.classList.remove('has-image');
-  document.getElementById('uploadIcon').textContent = '📄';
-  document.getElementById('uploadTitle').textContent = '거래명세서 사진 업로드 (여러 장 가능)';
-  document.getElementById('uploadSub').textContent = '한 거래처만 · 긴 영수증은 위/아래 나눠서 찍어도 돼요 (겹쳐도 OK) · 최대 3장';
-
-  // 결과 초기화
-  pendingRows = [];
-  document.getElementById('aiResults').style.display = 'none';
-  document.getElementById('resultCards').innerHTML = '';
-  document.getElementById('saveWrap').classList.remove('show');
-  document.getElementById('loading').classList.remove('show');
-
-  showToast('🔄 초기화 완료!');
-}
-
-// ── 거래처 검색 (별칭 연결용) ──
-var CHOSONG2 = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
-function getChosong2(str) {
-  var r = '';
-  for (var i = 0; i < str.length; i++) {
-    var code = str.charCodeAt(i) - 0xAC00;
-    r += (code >= 0 && code <= 11171) ? CHOSONG2[Math.floor(code/588)] : str[i];
+// ── 상품 체크 토글 ──
+function toggleProduct(idx) {
+  requestedItems[idx].selected = !requestedItems[idx].selected;
+  var el = document.getElementById('pitem-' + idx);
+  var chk = document.getElementById('pcheck-' + idx);
+  if (requestedItems[idx].selected) {
+    el.classList.add('selected');
+    chk.classList.add('on'); chk.textContent = '✓';
+  } else {
+    el.classList.remove('selected');
+    chk.classList.remove('on'); chk.textContent = '';
   }
-  return r;
+  updateSaveBtn();
 }
 
-function onAliasSearch(i, val) {
-  var dd = document.getElementById('aliasDropdown-' + i);
-  document.getElementById('aliasSelIdx-' + i).value = '';
-
-  if (!val.trim()) { dd.style.display = 'none'; return; }
-
-  var keyword = val.toLowerCase().trim();
-  var isChosong = keyword.split('').every(function(c) { return CHOSONG2.indexOf(c) >= 0; });
-
-  var matched = vendorDB.filter(function(v) {
-    var name = (v['업체명'] || '').toLowerCase();
-    if (name.indexOf(keyword) >= 0) return true;
-    if (isChosong && getChosong2(v['업체명']).indexOf(keyword) >= 0) return true;
-    return false;
+// ── 전체 선택 ──
+function selectAll() {
+  var anyUnselected = requestedItems.some(function(r) { return !r.selected; });
+  requestedItems.forEach(function(r, idx) {
+    r.selected = anyUnselected;
   });
+  renderProductList();
+  updateSaveBtn();
+}
 
-  if (!matched.length) { dd.style.display = 'none'; return; }
+// ── 직접 추가 ──
+function addManualItem() {
+  var inp = document.getElementById('manualInput');
+  var val = inp.value.trim();
+  if (!val) return;
+  manualItems.push(val);
+  inp.value = '';
+  renderManualList();
+  updateSaveBtn();
+}
 
-  dd.innerHTML = '';
-  matched.forEach(function(v) {
-    var vi = vendorDB.indexOf(v);
-    var div = document.createElement('div');
-    div.style.cssText = 'padding:9px 12px; cursor:pointer; font-size:12px; border-bottom:1px solid #F0EDE8;';
-    div.textContent = v['업체명'];
-    div.addEventListener('mouseover', function() { this.style.background = '#FFF8E7'; });
-    div.addEventListener('mouseout', function() { this.style.background = ''; });
-    div.addEventListener('click', function() {
-      document.getElementById('aliasSearch-' + i).value = v['업체명'];
-      document.getElementById('aliasSelIdx-' + i).value = vi;
-      dd.style.display = 'none';
-    });
-    dd.appendChild(div);
+function removeManualItem(idx) {
+  manualItems.splice(idx, 1);
+  renderManualList();
+  updateSaveBtn();
+}
+
+function renderManualList() {
+  var html = '';
+  manualItems.forEach(function(name, idx) {
+    html += '<div class="manual-item">';
+    html += '<div class="manual-item-name">✏️ ' + esc(name) + '</div>';
+    html += '<button class="btn-del-manual" onclick="removeManualItem(' + idx + ')">✕</button>';
+    html += '</div>';
   });
-  dd.style.display = 'block';
+  document.getElementById('manualList').innerHTML = html;
 }
 
-// ── 별칭 등록 함수 ──
-async function linkAlias(i) {
-  var vendorIdx = parseInt(document.getElementById('aliasSelIdx-' + i).value);
-  if (isNaN(vendorIdx) || vendorIdx < 0 || vendorIdx === -1) { showToast('거래처를 검색해서 선택해주세요'); return; }
-
-  var selectedVendor = vendorDB[vendorIdx];
-  var invoiceVendorName = pendingRows[i] ? pendingRows[i].거래처 : '';
-  if (!invoiceVendorName) { showToast('영수증 거래처명이 없어요'); return; }
-
-  // 이미 별칭에 있으면 스킵
-  var existingAlias = selectedVendor['별칭'] || '';
-  var aliasList = existingAlias.split(',').map(function(a) { return a.trim(); }).filter(Boolean);
-  if (aliasList.indexOf(invoiceVendorName) >= 0) {
-    showToast('이미 등록된 별칭이에요!');
-    return;
-  }
-
-  // 별칭 추가 후 저장
-  aliasList.push(invoiceVendorName);
-  var newAlias = aliasList.join(',');
-
-  // GAS에 별칭 업데이트 요청
-  var payload = encodeURIComponent(JSON.stringify({
-    name: selectedVendor['업체명'],
-    alias: newAlias
-  }));
-  await fetch(GAS_SAMPLE_URL + '?action=updateAlias&data=' + payload, { mode: 'no-cors' });
-
-  // 로컬 vendorDB도 업데이트
-  vendorDB[vendorIdx]['별칭'] = newAlias;
-
-  showToast('✅ "' + invoiceVendorName + '" → ' + selectedVendor['업체명'] + ' 별칭 등록 완료!');
-
-  // 카드에 완료 표시
-  var aliasDiv = document.getElementById('aliasSel-' + i);
-  if (aliasDiv) {
-    aliasDiv.parentElement.parentElement.innerHTML =
-      '<div style="font-size:11px; color:var(--green); padding:4px 0;">✅ ' + selectedVendor['업체명'] + ' 별칭으로 등록됐어요</div>';
+// ── 저장 버튼 상태 ──
+function updateSaveBtn() {
+  var hasVendor = !!selectedVendor;
+  var selectedCount = requestedItems.filter(function(r) { return r.selected; }).length + manualItems.length;
+  var btn = document.getElementById('btnSave');
+  btn.disabled = !hasVendor || selectedCount === 0;
+  if (hasVendor && selectedCount > 0) {
+    btn.textContent = '📥 입고 처리 (' + selectedCount + '개)';
+    btn.style.background = 'var(--green)';
+  } else if (!hasVendor) {
+    btn.textContent = '① 거래처를 먼저 선택하세요';
+    btn.style.background = 'var(--gray-400)';
+  } else {
+    btn.textContent = '③ 상품을 선택하거나 추가하세요';
+    btn.style.background = 'var(--gray-400)';
   }
 }
 
-// 상품명 수정
-// 옵션 수정
-function editOption(i) {
-  var display = document.getElementById('optDisplay-' + i);
-  var input = document.getElementById('optEdit-' + i);
-  if (display) display.style.display = 'none';
-  if (input) { input.style.display = 'inline-block'; input.focus(); input.select(); }
-}
-function saveOption(i) {
-  var display = document.getElementById('optDisplay-' + i);
-  var input = document.getElementById('optEdit-' + i);
-  if (!input) return;
+// ── 입고 저장 ──
+async function saveAll() {
+  if (!selectedVendor) { showToast('거래처를 선택해주세요'); return; }
 
-  var newOpts = input.value.split(',').map(function(o) { return o.trim(); }).filter(Boolean);
-  pendingRows[i].옵션목록 = newOpts;
+  var selectedRequested = requestedItems.filter(function(r) { return r.selected; });
+  var totalCount = selectedRequested.length + manualItems.length;
+  if (totalCount === 0) { showToast('상품을 선택하거나 추가해주세요'); return; }
 
-  // 태그 UI 업데이트
-  if (display) {
-    display.innerHTML = newOpts.length > 0
-      ? newOpts.map(function(opt) {
-          return '<span style="font-size:10px; background:#F0EDE8; color:#6B6760; border-radius:10px; padding:2px 8px;">' + esc(opt) + '</span>';
-        }).join('')
-      : '<span style="font-size:10px; color:#bbb;">옵션 없음</span>';
-    display.style.display = 'flex';
+  var inDate  = document.getElementById('inDate').value;
+  var dueDate = document.getElementById('dueDate').value;
+  if (!inDate || !dueDate) { showToast('날짜를 입력해주세요'); return; }
+
+  var btn = document.getElementById('btnSave');
+  btn.disabled = true; btn.textContent = '처리 중...';
+
+  var success = 0;
+  var savedNames = [];
+
+  // 1. 요청중 상품: 상태 업데이트 (보유중으로)
+  for (var i = 0; i < selectedRequested.length; i++) {
+    var item = selectedRequested[i];
+    try {
+      var payload = encodeURIComponent(JSON.stringify({
+        '_row': item['_row'],
+        '상태': '보유중',
+        '입고일': inDate,
+        '반납기한': dueDate
+      }));
+      var r1 = await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload);
+      var j1 = await r1.json();
+      if (j1.result === 'ok') { success++; savedNames.push(item['상품명'] || ''); }
+      else { console.error('updateStatus 실패:', j1); }
+    } catch(e) { console.error('updateStatus 오류:', e); }
   }
-  input.style.display = 'none';
-}
 
-// 카드 삭제
-function deleteCard(i) {
-  var card = document.getElementById('rcard-' + i);
-  if (card) {
-    card.style.opacity = '0.4';
-    card.style.pointerEvents = 'none';
-    card.style.textDecoration = 'line-through';
+  // 2. 직접 추가 상품: 새 행으로 저장 (action=add)
+  for (var j = 0; j < manualItems.length; j++) {
+    var mName = manualItems[j];
+    try {
+      var newRow = {
+        '상품명': mName,
+        '거래처': selectedVendor['업체명'],
+        '연락처': selectedVendor['전화번호'],
+        '주소': selectedVendor['위치'],
+        '입고일': inDate,
+        '반납기한': dueDate,
+        '상태': '보유중',
+        '요청일': inDate,
+        '출처': '수기입고',
+        '비고': ''
+      };
+      var payload2 = encodeURIComponent(JSON.stringify(newRow));
+      var r2 = await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload2);
+      var j2 = await r2.json();
+      if (j2.result === 'ok') { success++; savedNames.push(mName); }
+      else { console.error('add 실패:', j2); }
+    } catch(e) { console.error('add 오류:', e); }
   }
-  pendingRows[i].deleted = true;
-  // 저장 카운트 업데이트
-  var activeCount = pendingRows.filter(function(r) { return !r.deleted; }).length;
-  document.getElementById('saveCount').textContent = activeCount;
-  showToast('삭제됐어요. 저장 시 제외돼요!');
-}
 
-function editName(i) {
-  var display = document.getElementById('nameDisplay-' + i);
-  var input = document.getElementById('nameEdit-' + i);
-  if (display) display.style.display = 'none';
-  if (input) { input.style.display = 'block'; input.focus(); input.select(); }
-}
-function saveName(i) {
-  var display = document.getElementById('nameDisplay-' + i);
-  var input = document.getElementById('nameEdit-' + i);
-  if (!input) return;
-
-  var newName = input.value.trim() || pendingRows[i].상품명;
-  pendingRows[i].상품명 = newName;
-  if (display) { display.textContent = newName; display.style.display = 'block'; }
-  input.style.display = 'none';
-
-  // 미매칭 상태면 수정된 상품명으로 재매칭 시도
-  if (!pendingRows[i].matched) {
-    var rematch = tryRematch(newName, pendingRows[i].거래처);
-    if (rematch) {
-      pendingRows[i].matched = rematch;
-      pendingRows[i].matchedIdx = rematch._rowIdx;
-      pendingRows[i].rowNum = rematch['_row'];
-      pendingRows[i].action = 'match';
-
-      // 카드 UI 업데이트
-      var card = document.getElementById('rcard-' + i);
-      if (card) {
-        card.className = 'result-card matched';
-        var badge = card.querySelector('.result-badge');
-        if (badge) { badge.textContent = '✓ 자동매칭'; badge.className = 'result-badge ok'; }
-        var actionDiv = card.querySelector('div[style*="margin-top:10px"]');
-        if (actionDiv) actionDiv.remove();
-        // 매칭된 상품명 표시
-        var existingInfo = card.querySelector('.rematch-info');
-        if (!existingInfo) {
-          var infoDiv = document.createElement('div');
-          infoDiv.className = 'rematch-info result-info';
-          infoDiv.style.color = 'var(--green)';
-          infoDiv.textContent = '→ ' + rematch['상품명'] + ' / ' + rematch['거래처'];
-          card.querySelector('.result-info').after(infoDiv);
+  // 결과 처리
+  var failCount = (selectedRequested.length + manualItems.length) - success;
+  if (failCount > 0) {
+    showToast('⚠️ ' + failCount + '개 저장 실패 — 콘솔(F12) 확인');
+  }
+  if (success > 0) {
+    // ✅ 캐시 업데이트: 입고 처리된 상품은 캐시에서도 '보유중'으로 변경
+    // (다른 거래처 선택 시 목록에 안 뜨도록)
+    if (allSamplesCache) {
+      selectedRequested.forEach(function(item) {
+        var cached = allSamplesCache.find(function(r) { return r['_row'] === item['_row']; });
+        if (cached) {
+          cached['상태'] = '보유중';
+          cached['입고일'] = inDate;
+          cached['반납기한'] = dueDate;
         }
-      }
-      showToast('✅ "' + newName + '" 재매칭 성공!');
+      });
     }
+    showSuccessPopup(selectedVendor['업체명'], savedNames, inDate, dueDate);
   }
+  btn.disabled = false;
 }
 
-// 상품명으로 시트에서 재매칭 시도
-function tryRematch(name, vendor) {
-  function normalize(s) { return (s || '').toLowerCase().replace(/[\s()\[\]{}]/g, ''); }
-  function normalizeVendor(s) { return (s || '').toLowerCase().replace(/[\s()\[\]{}.\-]/g, ''); }
+// ── 완료 팝업 ──
+function showSuccessPopup(vendorName, names, inDate, dueDate) {
+  document.getElementById('popupDesc').innerHTML =
+    '<strong>' + esc(vendorName) + '</strong> · ' + names.length + '개 상품<br>' +
+    '입고일 ' + inDate + ' · 반납기한 ' + dueDate;
 
-  var nameNorm = normalize(name.split('/')[0].trim());
-  var vendorNorm = normalizeVendor(vendor);
-
-  // 거래처 필터 후 상품명 매칭
-  var filtered = sheetRows.filter(function(r) {
-    var sv = normalizeVendor(r['거래처'] || '');
-    return sv.length > 0 && vendorNorm.length > 0 &&
-      (sv.indexOf(vendorNorm) >= 0 || vendorNorm.indexOf(sv) >= 0);
+  var itemHtml = '';
+  names.forEach(function(n) {
+    itemHtml += '<div class="popup-item">· ' + esc(n) + '</div>';
   });
-  if (!filtered.length) filtered = sheetRows;
-
-  var nameStripped = normalize(stripSuffix(name.split('/')[0].trim()));
-
-  for (var i = 0; i < filtered.length; i++) {
-    var sheetNorm = normalize(filtered[i]['상품명']);
-    if ((nameNorm.length >= 2 && sheetNorm.indexOf(nameNorm) >= 0) ||
-        (nameStripped.length >= 2 && sheetNorm.indexOf(nameStripped) >= 0)) {
-      var result = filtered[i];
-      result._rowIdx = sheetRows.indexOf(filtered[i]);
-      return result;
-    }
-  }
-  return null;
+  document.getElementById('popupItemList').innerHTML = itemHtml;
+  document.getElementById('popupItems').style.display = 'block';
+  document.getElementById('successPopup').classList.add('show');
 }
 
-// ── 직접 입력 거래처 검색 ──
-var CHOSONG_MAP = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
-function getChosong(str) {
-  var r = '';
-  for (var i = 0; i < str.length; i++) {
-    var code = str.charCodeAt(i) - 0xAC00;
-    r += (code >= 0 && code <= 11171) ? CHOSONG_MAP[Math.floor(code/588)] : str[i];
-  }
-  return r;
+function closePopup() {
+  document.getElementById('successPopup').classList.remove('show');
+  resetAll();
 }
 
-function onManualVendorSearch(val) {
-  var dd = document.getElementById('manualVendorDropdown');
-  document.getElementById('manualVendor').value = '';
-
-  if (!val.trim()) {
-    dd.style.display = 'none';
-    // 빈칸이면 전체 목록 표시
-    renderManualVendorList('');
-    return;
-  }
-  renderManualVendorList(val.trim());
+// ── 전체 초기화 ──
+function resetAll() {
+  selectedVendor = null;
+  requestedItems = [];
+  manualItems = [];
+  document.getElementById('vendorSearchInput').value = '';
+  document.getElementById('vendorInfoCard').classList.remove('show');
+  document.getElementById('productPlaceholder').style.display = 'block';
+  document.getElementById('productList').style.display = 'none';
+  document.getElementById('productList').innerHTML = '';
+  document.getElementById('addSection').style.display = 'none';
+  document.getElementById('manualList').innerHTML = '';
+  document.getElementById('btnSelectAll').style.display = 'none';
+  setDefaultDates();
+  updateSaveBtn();
 }
 
-function renderManualVendorList(keyword) {
-  var dd = document.getElementById('manualVendorDropdown');
-  var kw = keyword.toLowerCase().replace(/\s/g, '');
-  var isChosong = kw.length > 0 && kw.split('').every(function(c) { return CHOSONG_MAP.indexOf(c) >= 0; });
+// ── 유틸 ──
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  var matched = vendorDB.filter(function(v) {
-    if (!kw) return true;
-    var name = (v['업체명'] || '').toLowerCase();
-    if (name.replace(/\s/g,'').indexOf(kw) >= 0) return true;
-    if (isChosong && getChosong(v['업체명']).indexOf(kw) >= 0) return true;
-    return false;
-  });
-
-  if (!matched.length) { dd.style.display = 'none'; return; }
-
-  dd.innerHTML = '';
-  matched.forEach(function(v) {
-    var div = document.createElement('div');
-    div.style.cssText = 'padding:10px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid #F0EDE8; display:flex; justify-content:space-between; align-items:center;';
-    div.innerHTML = '<span style="font-weight:500;">' + v['업체명'] + '</span>' +
-      '<span style="font-size:11px; color:#aaa;">' + (v['위치'] || '') + '</span>';
-    div.addEventListener('mouseover', function() { this.style.background = '#FAFAF8'; });
-    div.addEventListener('mouseout', function() { this.style.background = ''; });
-    div.addEventListener('click', function() {
-      document.getElementById('manualVendorInput').value = v['업체명'];
-      document.getElementById('manualVendor').value = v['업체명'];
-      // 연락처·주소 자동 채우기
-      if (document.getElementById('manualPhone')) document.getElementById('manualPhone').value = v['전화번호'] || '';
-      if (document.getElementById('manualAddr')) document.getElementById('manualAddr').value = v['위치'] || '';
-      dd.style.display = 'none';
-      onVendorChange();
-    });
-    dd.appendChild(div);
-  });
-  dd.style.display = 'block';
-}
-
-// 클릭 외부 → 드롭다운 닫기
-document.addEventListener('click', function(e) {
-  var dd = document.getElementById('manualVendorDropdown');
-  var inp = document.getElementById('manualVendorInput');
-  if (dd && inp && !dd.contains(e.target) && e.target !== inp) {
-    dd.style.display = 'none';
-  }
-});
-
-// input 포커스 시 전체 목록 표시
-document.addEventListener('DOMContentLoaded', function() {
-  var inp = document.getElementById('manualVendorInput');
-  if (inp) {
-    inp.addEventListener('focus', function() {
-      if (!this.value) renderManualVendorList('');
-    });
-  }
-});
-
-function openReceiptGuide() {
-  document.getElementById('receiptGuideModal').style.display = 'flex';
-}
-function closeReceiptGuide() {
-  document.getElementById('receiptGuideModal').style.display = 'none';
-}
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function showToast(msg) {
   var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(function() { t.classList.remove('show'); }, 3000);
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
+
+// 초성 검색
+var CHOSONG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function getChosong(str) {
+  var result = '';
+  for (var i = 0; i < str.length; i++) {
+    var code = str.charCodeAt(i) - 0xAC00;
+    if (code >= 0 && code <= 11171) {
+      result += CHOSONG[Math.floor(code / 588)];
+    } else {
+      result += str[i];
+    }
+  }
+  return result;
+}
+function matchChosong(target, keyword) {
+  if (!keyword || !target) return false;
+  var isChosong = keyword.split('').every(function(c) { return CHOSONG.indexOf(c) >= 0; });
+  if (isChosong) return getChosong(target).indexOf(keyword) >= 0;
+  return false;
+}
+function escapeReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// 바깥 클릭 시 드롭다운 닫기
+document.addEventListener('click', function(e) {
+  var inp = document.getElementById('vendorSearchInput');
+  var dd  = document.getElementById('vendorDropdown');
+  if (inp && !inp.contains(e.target) && dd && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
