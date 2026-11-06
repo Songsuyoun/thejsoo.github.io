@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>2026 블프 CS 답변 템플릿 · the J.Soo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --ink:#18181a; --muted:#6b6b6f; --line:#e3e3df; --soft:#f0f0ec;
+  --accent:#4f6f67; --accent-bg:#e6eeeb; --warn:#9a3b30; --warn-bg:#f8e9e6;
+  --f-display:"Bodoni Moda","Didot",serif;
+  --f-body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#131314; --surface:#1b1b1d; --ink:#ecebe7; --muted:#9c9ca0; --line:#2d2d30; --soft:#232326;
+  --accent:#9fc0b6; --accent-bg:#1f2c29; --warn:#f0a198; --warn-bg:#3a2320; color-scheme:dark}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;
+  padding:40px max(16px,env(safe-area-inset-left)) 72px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+header{display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line);padding-bottom:26px}
+.brand{font-family:var(--f-display);font-size:18px}
+h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-.01em}
+.period{font-size:15px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.how{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;font-weight:500;padding:1px 8px;border-radius:4px;background:var(--accent-bg);color:var(--accent);white-space:nowrap;vertical-align:middle}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0;margin:-12px 0;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.search{width:100%;font:inherit;font-size:15px;padding:11px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.search:focus{outline:2px solid var(--accent);outline-offset:1px}
+.nav{display:flex;flex-wrap:wrap;gap:8px}
+.nav a{font-size:13.5px;font-weight:500;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 14px}
+.nav a:hover{border-color:var(--accent);color:var(--accent)}
+section{display:flex;flex-direction:column;gap:14px}
+h2{margin:0;font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--muted)}
+h2 b{color:var(--ink);letter-spacing:0;font-size:19px;margin-left:8px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.box.warnbox{border-color:var(--warn)}
+.box ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.box li{font-size:14.5px}
+.sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.sum{grid-template-columns:minmax(0,1fr)}}
+.sum div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.sum small{font-size:12.5px;color:var(--muted)}
+.sum span{font-size:14.5px;font-weight:500}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.card.warn{border-left:3px solid var(--warn);border-radius:0 10px 10px 0}
+.q{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 20px 0}
+.q h3{margin:0;font-size:16.5px;font-weight:700;line-height:1.45}
+.q h3 .no{color:var(--muted);font-weight:500;margin-right:6px;font-variant-numeric:tabular-nums}
+.body{padding:12px 20px 18px;display:flex;flex-direction:column;gap:12px}
+.check{font-size:13.5px;color:var(--muted);margin:0}
+.check b{color:var(--ink)}
+.ans{background:var(--soft);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.ans .lbl{font-size:12.5px;font-weight:700;color:var(--accent)}
+.ans.alt .lbl{color:var(--warn)}
+.ans p{margin:0;font-size:15px;white-space:pre-line}
+.ans .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.copy{all:unset;cursor:pointer;font-size:12.5px;font-weight:500;border:1px solid var(--line);border-radius:6px;padding:4px 12px;background:var(--surface);color:var(--ink);white-space:nowrap}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.copy.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.note{font-size:13.5px;color:var(--muted);margin:0;padding-left:12px;border-left:2px solid var(--line)}
+.empty{display:none;text-align:center;color:var(--muted);padding:24px 0}
+.foot{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand">the J.Soo</div>
+  <h1>2026 블프 CS 답변 템플릿</h1>
+  <div class="period">11.16 (월) 오전 11:00 – 11.26 (목) 오전 11:00 <span class="tag">자사몰</span></div>
+  <p class="how">고객 문의를 찾아서 <b>복사</b> 버튼을 누르면 답변이 그대로 복사돼요. 여기에 없는 문의나 애매한 건은 바로 처리하지 말고 CS방에 올려주세요.</p>
+</header>
+
+<div class="bar">
+  <input class="search" id="search" type="search" placeholder="검색: 쿠폰, 니트, 반품, 적립금…" aria-label="답변 검색">
+  <nav class="nav">
+    <a href="#sum">혜택 요약</a><a href="#coupon">쿠폰</a><a href="#point">적립금</a><a href="#gift">사은품</a><a href="#return">반품·교환</a>
+  </nav>
+</div>
+
+<section id="sum">
+  <h2>00<b>혜택 요약</b></h2>
+  <div class="sum">
+    <div><small>쿠폰팩</small><span>15만↑ 7,000원 · 30만↑ 18,000원 · 50만↑ 45,000원</span></div>
+    <div><small>쿠폰 사용</small><span>회원 전용 · 종류별 1인 1회 · 주문당 1장</span></div>
+    <div><small>쿠폰 적용 범위</small><span>전 상품 (특가 40~70% 포함)</span></div>
+    <div><small>적립금</small><span>기간 중 사용 불가 · 11.26 11시 이후 해제</span></div>
+    <div><small>30만 원 이상</small><span>집게핀 전원 증정</span></div>
+    <div><small>50만 원 이상</small><span>집게핀 + 라쿤 니트 (선착순 30명 · 프리 · 컬러 랜덤)</span></div>
+    <div><small>사은품 기준</small><span>쿠폰 사용 전 주문서 결제금액</span></div>
+    <div><small>반품으로 기준 미달 시</small><span>해당 사은품 반납 (미반납 시 정가 지불·차감)</span></div>
+    <div><small>쿠폰 복원</small><span>주문 취소 시 복원 · 반품 시 복원 안 됨</span></div>
+  </div>
+</section>
+
+<section id="coupon">
+  <h2>01<b>쿠폰</b></h2>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">1-1</span>쿠폰이 안 떠요 / 적용이 안 돼요</h3></div>
+    <div class="body">
+      <p class="check"><b>확인 순서</b> ① 로그인(회원) 상태 ② 쿠폰 다운로드 여부 ③ 최소 주문금액 이상인지 ④ 다른 쿠폰을 이미 적용했는지</p>
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>안녕하세요 고객님, 더제이수입니다. 블프 쿠폰팩은 회원 전용 쿠폰이라 로그인 후 쿠폰팩 페이지에서 먼저 다운로드해 주셔야 결제 화면에 나타나요. 쿠폰별로 15만 원 / 30만 원 / 50만 원 이상 주문 시 사용 가능하고, 주문 1건에 1장만 적용됩니다. 다운로드 후에도 적용이 안 되시면 주문하실 상품과 금액을 알려주세요. 바로 확인해 드릴게요.</p></div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">1-2</span>쿠폰 2장 같이 쓸 수 있어요? / 주문을 나누면요?</h3></div>
+    <div class="body">
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>블프 쿠폰은 주문 1건에 1장만 사용 가능해서 2장을 한 주문에 함께 적용하실 수는 없어요. 쿠폰은 종류별로 1인 1회씩 다운로드되기 때문에, 같은 쿠폰을 여러 주문에 나눠 쓰실 수는 없습니다. 한 번에 주문하시면 더 높은 단계 쿠폰을 받으실 수 있어 혜택이 더 커요.</p></div>
+      <p class="note">내부 참고: 세팅상 7,000원 쿠폰과 18,000원 쿠폰을 서로 다른 주문에 각각 쓰는 건 가능해요. 고객이 직접 물어보면 "서로 다른 쿠폰은 각각 다른 주문에 사용 가능"이라고 안내하세요.</p>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">1-3</span>주문 취소하면 쿠폰 돌려받나요?</h3></div>
+    <div class="body">
+      <p class="note">기준: 주문 취소 시 복원, 반품 시 복원 안 됨</p>
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>주문을 취소하시면 사용하신 쿠폰은 다시 복원돼요. 블프 기간(11.26 오전 11시까지) 안에 다시 주문하실 때 사용하실 수 있습니다. 다만 상품을 받으신 뒤 반품하시는 경우에는 쿠폰이 복원되지 않아요.</p></div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">1-4</span>쿠폰 다운로드는 어디서 해요?</h3></div>
+    <div class="body">
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>메인 화면 블프 배너나 상품 상세페이지 구매하기 버튼 상단의 띠배너를 누르시면 쿠폰팩 다운로드 페이지로 바로 이동해요. (다운로드 기간: 11.16 오전 11시 ~ 11.26 오전 11시)</p></div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">1-5</span>특가(라스트피스·세일) 상품에도 쿠폰 돼요?</h3></div>
+    <div class="body">
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>네, 이번 블프 쿠폰은 특가 상품을 포함한 전 상품에 사용 가능해요.</p></div>
+    </div>
+  </article>
+</section>
+
+<section id="point">
+  <h2>02<b>적립금</b></h2>
+  <article class="card">
+    <div class="q"><h3><span class="no">2-1</span>적립금 왜 못 써요?</h3></div>
+    <div class="body">
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>블프 기간(11.16 오전 11시 ~ 11.26 오전 11시)에는 할인과 쿠폰팩 혜택을 크게 드리는 대신 적립금 사용이 잠시 제한돼요. 보유하신 적립금은 그대로 남아 있고, 11.26 오전 11시 이후부터 다시 사용하실 수 있어요.</p></div>
+    </div>
+  </article>
+</section>
+
+<section id="gift">
+  <h2>03<b>사은품</b></h2>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">3-1</span>사은품 기준 금액이 쿠폰 쓰기 전이에요, 후예요?</h3></div>
+    <div class="body">
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>사은품은 쿠폰 사용 전 주문서에 뜨는 결제금액 기준이에요. 30만 원 이상 주문 시 집게핀, 50만 원 이상 주문 시 집게핀과 라쿤 니트(선착순 30명)를 함께 보내드려요. 쿠폰을 사용하셔도 사은품은 그대로 받으실 수 있어요.</p></div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">3-2</span>니트 선착순 마감됐어요? 저도 받을 수 있어요?</h3></div>
+    <div class="body">
+      <p class="check"><b>확인</b> 니트 지급 현황(결제 완료 순서)을 보고 남은 수량을 안내하세요.</p>
+      <div class="ans"><div class="row"><span class="lbl">남아 있을 때</span><button class="copy" type="button">복사</button></div>
+        <p>현재 라쿤 니트는 ○개 남아 있어요. 결제 완료 순서대로 증정되니 참고 부탁드려요.</p></div>
+      <div class="ans"><div class="row"><span class="lbl">마감됐을 때</span><button class="copy" type="button">복사</button></div>
+        <p>아쉽게도 라쿤 니트 선착순 30명은 마감되었어요. 50만 원 이상 주문 시 집게핀은 계속 함께 보내드려요.</p></div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">3-3</span>니트 컬러 고를 수 있어요?</h3></div>
+    <div class="body">
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>라쿤 니트는 사은품이라 컬러는 랜덤으로 발송되고 선택이 어려워요. 사이즈는 프리사이즈예요. 양해 부탁드려요.</p></div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">3-4</span>반품하면 사은품도 보내야 해요?</h3></div>
+    <div class="body">
+      <p class="note">기준: 반품 후 남은 금액이 사은품 기준 아래로 내려가면 해당 사은품을 함께 반납 (집게핀 30만 원 · 니트 50만 원)</p>
+      <div class="ans"><div class="row"><span class="lbl">집게핀 · 반품 후 30만 원 이상 유지</span><button class="copy" type="button">복사</button></div>
+        <p>반품 후에도 남은 주문금액이 30만 원 이상이시면 집게핀은 따로 보내주지 않으셔도 괜찮아요.</p></div>
+      <div class="ans alt"><div class="row"><span class="lbl">집게핀 · 반품 후 30만 원 미만</span><button class="copy" type="button">복사</button></div>
+        <p>반품 후 남은 주문금액이 30만 원 미만이 되면 사은품 집게핀도 반품 상품과 함께 보내주셔야 해요. 집게핀을 보내주지 않으시는 경우에는 집게핀 정가 금액을 결제하시거나 환불 금액에서 차감됩니다.</p></div>
+      <p class="note">라쿤 니트는 아래 4-2 기준에 맞춰 안내하세요.</p>
+    </div>
+  </article>
+</section>
+
+<section id="return">
+  <h2>04<b>반품·교환</b></h2>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">4-1</span>반품하고 다시 주문하는데 쿠폰 또 쓸 수 있어요?</h3></div>
+    <div class="body">
+      <div class="ans"><div class="row"><span class="lbl">답변</span><button class="copy" type="button">복사</button></div>
+        <p>상품을 받으신 뒤 반품하시는 경우, 사용하신 쿠폰은 복원되지 않아 다시 사용하실 수 없어요(쿠폰은 종류별 1인 1회). 다른 단계의 쿠폰을 아직 사용하지 않으셨다면 그 쿠폰은 새 주문에 사용 가능해요.</p></div>
+      <div class="ans"><div class="row"><span class="lbl">함께 안내 (부분 반품)</span><button class="copy" type="button">복사</button></div>
+        <p>부분 반품 후 남은 주문금액이 쿠폰 최소 주문금액보다 적어지면, 쿠폰 할인액을 차감하고 환불돼요.</p></div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="q"><h3><span class="no">4-2</span>반품해서 50만 원 미만이 되면 니트는요?</h3></div>
+    <div class="body">
+      <p class="note">기준: 부분 반품으로 50만 원 미만이 되거나 전체 반품하면 니트 반납</p>
+      <div class="ans"><div class="row"><span class="lbl">부분 반품 · 50만 원 미만</span><button class="copy" type="button">복사</button></div>
+        <p>일부 상품 반품 후 남은 주문금액이 50만 원 미만이 되면 사은품 라쿤 니트도 착용하지 않은 상태로 반품 상품과 함께 보내주셔야 해요.</p></div>
+      <div class="ans"><div class="row"><span class="lbl">전체 반품</span><button class="copy" type="button">복사</button></div>
+        <p>주문 상품을 전부 반품하시는 경우에는 사은품(집게핀, 라쿤 니트)도 착용하지 않은 상태로 함께 보내주셔야 해요.</p></div>
+    </div>
+  </article>
+</section>
+
+<p class="empty" id="empty">찾는 답변이 없어요. CS방에 문의해 주세요.</p>
+<div class="foot">더제이수 CS팀 내부용 · 2026.11.06 작성</div>
+</div>
+
+<script>
+document.querySelectorAll('.copy').forEach(btn=>{
+  btn.addEventListener('click',async()=>{
+    const text=btn.closest('.ans').querySelector('p').innerText.trim();
+    let ok=false;
+    try{await navigator.clipboard.writeText(text);ok=true}catch(e){
+      const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();
+      try{ok=document.execCommand('copy')}catch(_){}
+      t.remove();
+    }
+    btn.textContent=ok?'복사됨':'복사 실패';btn.classList.toggle('done',ok);
+    setTimeout(()=>{btn.textContent='복사';btn.classList.remove('done')},1500);
+  });
+});
+const cards=[...document.querySelectorAll('article.card')];
+const secs=[...document.querySelectorAll('section[id]')].filter(s=>s.id!=='sum');
+document.getElementById('search').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  let n=0;
+  cards.forEach(c=>{const hit=!q||c.innerText.toLowerCase().includes(q);c.style.display=hit?'':'none';if(hit)n++});
+  secs.forEach(s=>{s.style.display=s.querySelector('article.card:not([style*="none"])')?'':'none'});
+  document.getElementById('sum').style.display=q?'none':'';
+  document.getElementById('empty').style.display=n?'none':'block';
+});
+</script>
+</body>
+</html>
