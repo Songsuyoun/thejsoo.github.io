@@ -3,571 +3,364 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>디홀릭 재고 업데이트</title>
+<title>디홀릭 재고 업데이트 도구</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
-  :root{
-    --ink:#1a1a1a; --paper:#fafafa; --line:#e5e5e5; --mut:#999;
-    --accent:#c0392b; --ok:#2e7d32; --warn:#b8860b; --soft:#f4f4f2;
+  :root {
+    --bg: #faf9f7; --card: #ffffff; --border: #e8e4de;
+    --primary: #5c4a3a; --accent: #8b6f5e; --light: #f4f0eb;
+    --text: #2d2520; --sub: #7a6960; --red: #c0392b; --green: #27ae60;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'Helvetica Neue','Malgun Gothic',sans-serif;
-    background:var(--paper); color:var(--ink);
-    line-height:1.6; letter-spacing:-0.2px; padding:32px 20px 80px;
-  }
-  .wrap{max-width:860px;margin:0 auto}
-  header{margin-bottom:40px;border-bottom:0.5px solid var(--ink);padding-bottom:18px}
-  header h1{font-size:25px;font-weight:400;letter-spacing:-0.3px}
-  header p{font-size:13px;color:var(--mut);margin-top:6px}
-  .step{
-    background:#fff;border:0.5px solid var(--line);
-    border-radius:4px;padding:24px;margin-bottom:18px;
-  }
-  .step-no{
-    display:inline-block;font-size:11px;letter-spacing:1px;color:var(--mut);
-    text-transform:uppercase;margin-bottom:14px;
-  }
-  .drop{
-    border:1.5px dashed var(--line);border-radius:6px;padding:26px;
-    text-align:center;cursor:pointer;transition:.15s;background:var(--soft);
-  }
-  .drop:hover{border-color:var(--ink);background:#fff}
-  .drop.has{border-color:var(--ok);border-style:solid;background:#fff}
-  .drop .ico{font-size:22px;margin-bottom:8px;opacity:.5}
-  .drop .label{font-size:14px;font-weight:500}
-  .drop .sub{font-size:12px;color:var(--mut);margin-top:4px}
-  .drop .fname{font-size:12px;color:var(--ok);margin-top:8px;word-break:break-all}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:620px){.grid{grid-template-columns:1fr}}
-  input[type=file]{display:none}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    background:var(--ink);color:#fff;border:none;border-radius:4px;
-    padding:13px 22px;font-size:14px;font-weight:500;cursor:pointer;
-    width:100%;transition:.15s;font-family:inherit;letter-spacing:-0.2px;
-  }
-  .btn:hover{background:#000}
-  .btn:disabled{background:#ccc;cursor:not-allowed}
-  .btn.ghost{background:#fff;color:var(--ink);border:0.5px solid var(--ink)}
-  .btn.ghost:hover{background:var(--soft)}
-  .btn.sm{width:auto;padding:8px 14px;font-size:12px}
-  .hide{display:none!important}
-  .log{
-    font-size:13px;background:var(--soft);border-radius:4px;padding:14px 16px;
-    margin-top:14px;border-left:2px solid var(--ink);
-  }
-  .log.ok{border-left-color:var(--ok)}
-  .log.warn{border-left-color:var(--warn)}
-  .log b{font-weight:600}
-  .stat{display:flex;gap:24px;flex-wrap:wrap;margin-top:12px}
-  .stat div{font-size:13px}
-  .stat .n{font-size:22px;font-weight:600;display:block}
-  .stat .ng{color:var(--accent)}
-  /* 세트 연결 */
-  .setcard{
-    border:0.5px solid var(--line);border-radius:4px;padding:16px;margin-bottom:12px;
-  }
-  .setcard .title{font-size:14px;font-weight:600;margin-bottom:4px}
-  .setcard .meta{font-size:12px;color:var(--mut);margin-bottom:12px}
-  .setrow{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-  .setrow label{font-size:12px;color:var(--mut);min-width:60px}
-  select{
-    flex:1;min-width:200px;padding:9px 10px;border:0.5px solid var(--line);
-    border-radius:4px;font-size:13px;font-family:inherit;background:#fff;
-  }
-  .saved-list{margin-top:8px}
-  .saved-item{
-    display:flex;align-items:center;justify-content:space-between;gap:10px;
-    font-size:12px;padding:8px 12px;background:var(--soft);border-radius:4px;margin-bottom:6px;
-  }
-  .saved-item .x{color:var(--accent);cursor:pointer;font-weight:600;padding:2px 6px}
-  .mini{font-size:12px;color:var(--mut);margin-top:6px}
-  details{margin-top:10px}
-  summary{font-size:12px;color:var(--mut);cursor:pointer;user-select:none}
-  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
-  th,td{text-align:left;padding:6px 8px;border-bottom:0.5px solid var(--line)}
-  th{color:var(--mut);font-weight:500}
-  td.zero{color:var(--accent)}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { background: var(--primary); color: white; padding: 24px 32px; }
+  .header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .header p { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+  .container { max-width: 900px; margin: 0 auto; padding: 28px 20px; }
+
+  /* 업로드 카드 */
+  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .upload-card { background: var(--card); border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .upload-card:hover { border-color: var(--accent); background: var(--light); }
+  .upload-card.has-file { border-style: solid; border-color: var(--green); background: #f0faf4; }
+  .upload-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-card .label { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+  .upload-card .sub { font-size: 11px; color: var(--sub); }
+  .upload-card .filename { font-size: 12px; color: var(--green); font-weight: 600; margin-top: 6px; word-break: break-all; }
+  input[type=file] { display: none; }
+
+  /* 버튼 */
+  .btn-run { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-bottom: 20px; }
+  .btn-run:hover { background: var(--accent); }
+  .btn-run:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-dl { background: var(--green); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-dl:hover { background: #219a52; }
+
+  /* 규칙 카드 */
+  .rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .rule { background: var(--card); border-radius: 10px; padding: 14px; border: 1px solid var(--border); }
+  .rule .num { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .rule .title { font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 3px; }
+  .rule .desc { font-size: 11px; color: var(--sub); line-height: 1.5; }
+
+  /* 결과 */
+  .result-box { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .result-header { background: var(--light); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .result-header h3 { font-size: 14px; font-weight: 600; }
+  .stats { display: flex; gap: 20px; }
+  .stat { text-align: center; }
+  .stat .val { font-size: 20px; font-weight: 700; color: var(--primary); }
+  .stat .lbl { font-size: 11px; color: var(--sub); }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .tab { padding: 10px 18px; font-size: 13px; cursor: pointer; color: var(--sub); border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { color: var(--primary); font-weight: 600; border-bottom-color: var(--primary); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .table-wrap { overflow-x: auto; max-height: 400px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: var(--light); padding: 8px 10px; text-align: left; font-weight: 600; color: var(--primary); position: sticky; top: 0; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0ede8; }
+  tr:last-child td { border-bottom: none; }
+  .qty-updated { color: var(--red); font-weight: 700; }
+  .qty-zero { color: #e67e22; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .badge-green { background: #e8f8ef; color: var(--green); }
+  .badge-orange { background: #fef3e2; color: #e67e22; }
+  .badge-red { background: #fdeaea; color: var(--red); }
+
+  /* 로딩 */
+  .loading { text-align: center; padding: 40px; color: var(--sub); font-size: 14px; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .notice { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #795548; margin-bottom: 16px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>디홀릭 재고 업데이트</h1>
-    <p>셀메이트 재고 파일과 디홀릭 상품리스트를 올리면 판매가능수량을 자동으로 맞춰줍니다.</p>
-  </header>
 
-  <!-- STEP 1: 파일 업로드 -->
-  <div class="step">
-    <span class="step-no">1 — 파일 올리기</span>
-    <div class="grid">
-      <label class="drop" id="dropStk">
-        <div class="ico">⬆</div>
-        <div class="label">셀메이트 재고 파일</div>
-        <div class="sub">stk_stockList_날짜.csv</div>
-        <div class="fname" id="nameStk"></div>
-        <input type="file" id="fileStk" accept=".csv">
-      </label>
-      <label class="drop" id="dropDh">
-        <div class="ico">⬆</div>
-        <div class="label">디홀릭 상품리스트</div>
-        <div class="sub">디홀릭상품리스트.xlsx</div>
-        <div class="fname" id="nameDh"></div>
-        <input type="file" id="fileDh" accept=".xlsx,.xls">
-      </label>
+<div class="header">
+  <h1>🏷 디홀릭 재고 업데이트 도구</h1>
+  <p>셀메이트 재고(STK) + 디홀릭 상품리스트 → K열(판매가능수량) 자동 업데이트</p>
+</div>
+
+<div class="container">
+
+  <div class="notice">
+    💡 <strong>사용법:</strong> 셀메이트 STK 파일과 디홀릭 상품리스트 파일을 각각 업로드하고 [업데이트 실행] 버튼을 누르세요.
+  </div>
+
+  <!-- 처리 규칙 -->
+  <div class="rules">
+    <div class="rule">
+      <div class="num">규칙 1</div>
+      <div class="title">실재고 계산</div>
+      <div class="desc">현재재고 − 미발송주문수<br>음수는 0 처리, <strong>0 포함 전체 반영</strong></div>
     </div>
-    <button class="btn" id="runBtn" style="margin-top:18px" disabled>재고 매칭 시작</button>
-    <div id="log1"></div>
-  </div>
-
-  <!-- STEP 2: 세트 연결 (필요할 때만) -->
-  <div class="step hide" id="step2">
-    <span class="step-no">2 — 세트 상품 연결</span>
-    <div class="log warn">
-      셀메이트에서 자동으로 못 찾은 <b>세트 상품</b>이 있어요. 각 세트가 어떤 상품들로 구성되는지 골라주세요.
-      한 번 연결하면 <b>다음부터는 자동으로 기억</b>합니다.
+    <div class="rule">
+      <div class="num">규칙 2</div>
+      <div class="title">옵션삭제 제외</div>
+      <div class="desc">옵션상태가 '옵션삭제'인 행은 제외<br>옵션중지는 포함</div>
     </div>
-    <div id="setList" style="margin-top:16px"></div>
-    <button class="btn" id="applySetBtn" style="margin-top:8px">연결 적용하고 계속</button>
+    <div class="rule">
+      <div class="num">규칙 3</div>
+      <div class="title">상품명 정규화</div>
+      <div class="desc">디홀릭 상품별칭의 (2color), (3color) 등 자동 제거 후 매칭</div>
+    </div>
+    <div class="rule">
+      <div class="num">규칙 4</div>
+      <div class="title">색상 변환</div>
+      <div class="desc">영문→한글 자동 변환<br>Black→블랙, Cream→크림 등</div>
+    </div>
+    <div class="rule">
+      <div class="num">규칙 5</div>
+      <div class="title">사이즈 정규화</div>
+      <div class="desc">FREE→공백, M/PANTS(SET)→M<br>슬래시 앞 값만 사용</div>
+    </div>
+    <div class="rule">
+      <div class="num">규칙 6</div>
+      <div class="title">K열 표시</div>
+      <div class="desc">업데이트된 셀은 빨간색 Bold로 표시</div>
+    </div>
   </div>
 
-  <!-- STEP 3: 결과 + 다운로드 -->
-  <div class="step hide" id="step3">
-    <span class="step-no">3 — 결과 내려받기</span>
-    <div class="stat" id="resultStat"></div>
-    <div id="log3"></div>
-    <button class="btn" id="dlBtn" style="margin-top:18px">엑셀 파일 내려받기</button>
-    <details>
-      <summary id="zeroSummary">품절(0) 처리된 항목 보기</summary>
-      <div id="zeroTable"></div>
-    </details>
+  <!-- 파일 업로드 -->
+  <div class="upload-grid">
+    <label class="upload-card" id="card-stk" for="file-stk">
+      <div class="icon">📊</div>
+      <div class="label">셀메이트 재고 파일 (STK)</div>
+      <div class="sub">stk_stockList_날짜.csv 또는 .xlsx</div>
+      <div class="filename" id="name-stk">파일을 클릭하여 선택</div>
+    </label>
+    <input type="file" id="file-stk" accept=".csv,.xlsx,.xls">
+
+    <label class="upload-card" id="card-diholic" for="file-diholic">
+      <div class="icon">📋</div>
+      <div class="label">디홀릭 상품리스트</div>
+      <div class="sub">디홀릭상품리스트.xlsx 등</div>
+      <div class="filename" id="name-diholic">파일을 클릭하여 선택</div>
+    </label>
+    <input type="file" id="file-diholic" accept=".xlsx,.xls">
   </div>
 
-  <!-- 저장된 세트 매핑 관리 -->
-  <div class="step" id="manageStep">
-    <span class="step-no">저장된 세트 연결 관리</span>
-    <p class="mini">한 번 연결한 세트는 여기에 저장되어 매번 자동 적용됩니다. 잘못 연결했으면 삭제하고 다시 연결하세요.</p>
-    <div class="saved-list" id="savedList"></div>
+  <button class="btn-run" id="btn-run" disabled onclick="runUpdate()">⚡ 업데이트 실행</button>
+
+  <!-- 결과 -->
+  <div id="result-area" style="display:none;">
+    <div class="result-box">
+      <div class="result-header">
+        <h3>✅ 업데이트 완료</h3>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="stats">
+            <div class="stat"><div class="val" id="stat-total">0</div><div class="lbl">STK 항목</div></div>
+            <div class="stat"><div class="val" id="stat-updated">0</div><div class="lbl">업데이트</div></div>
+            <div class="stat"><div class="val" id="stat-unmatched">0</div><div class="lbl">미매칭</div></div>
+          </div>
+          <button class="btn-dl" onclick="downloadXlsx()">⬇ 엑셀 다운로드</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('updated')">업데이트된 항목 <span id="cnt-updated"></span></div>
+        <div class="tab" onclick="switchTab('zero')">재고 0 항목 <span id="cnt-zero"></span></div>
+        <div class="tab" onclick="switchTab('unmatched')">미매칭 <span id="cnt-unmatched"></span></div>
+      </div>
+      <div id="tab-updated" class="tab-content active">
+        <div class="table-wrap"><table id="tbl-updated"><thead><tr><th>상품별칭</th><th>색상</th><th>사이즈</th><th>업데이트 수량</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-zero" class="tab-content">
+        <div class="table-wrap"><table id="tbl-zero"><thead><tr><th>상품별칭</th><th>색상</th><th>사이즈</th><th>수량</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-unmatched" class="tab-content">
+        <div class="table-wrap"><table id="tbl-unmatched"><thead><tr><th>상품별칭</th><th>색상</th><th>사이즈</th><th>현재K열값</th><th>비고</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
   </div>
+
 </div>
 
 <script>
-"use strict";
-/* ============================================================
-   디홀릭 재고 업데이트 — 검증된 파이썬 로직 1:1 포팅
-   - 실재고 = 현재재고 - 미발송주문수 (음수 0)
-   - 옵션삭제 행 제외 (옵션중지는 포함)
-   - 매칭: 디홀릭 상품별칭 ↔ STK 상품명 / 색상+사이즈
-   - 색상 영문→한글, 사이즈 FREE→공백, PANTS(SET)→M/S
-   - 세트: 구성품 중 최소 재고
-   - STK에 없으면 0 처리
-   ============================================================ */
+let stkData = null, diholicWb = null, diholicSheetName = null;
+let resultRows = [], zeroRows = [], unmatchedRows = [];
 
-const LS_KEY = 'dholic_set_mappings_v1';
-
-/* ---- 색상 변환표 (파이썬 COLOR_MAP 동일) ---- */
 const COLOR_MAP = {
- 'black':'블랙','cream':'크림','ivory':'아이보리','gray':'그레이','grey':'그레이',
- 'navy':'네이비','beige':'베이지','brown':'브라운','pink':'핑크','yellow':'옐로우','white':'화이트',
- 'mocha':'모카','lemon':'레몬','lemon yellow':'레몬옐로우','cream beige':'크림베이지',
- 'light beige':'연베이지','pink beige':'핑크베이지','grey sky blue':'회소라','sky blue':'소라',
- 'deep beige':'딥베이지','oatmeal':'오트밀','butter':'버터','camel':'카멜','charcoal':'차콜',
- 'mint':'민트','purple':'퍼플','peach beige':'피치베이지','indi pink':'인디핑크','etoffe':'에토프',
- 'apricot':'살구'
+  'black':'블랙','cream':'크림','white':'화이트','gray':'그레이','grey':'그레이',
+  'navy':'네이비','beige':'베이지','brown':'브라운','ivory':'아이보리','pink':'핑크',
+  'red':'레드','blue':'블루','green':'그린','yellow':'옐로우','purple':'퍼플',
+  'orange':'오렌지','mint':'민트','khaki':'카키','wine':'와인','gold':'골드',
+  'silver':'실버','camel':'카멜','mocha':'모카','coral':'코랄','lavender':'라벤더',
+  'lilac':'라일락','light beige':'연베이지','pink beige':'핑크베이지',
 };
 
-function colorKeys(c){
-  if(c==null) return new Set();
-  c = String(c).trim(); const low = c.toLowerCase();
-  const cands = [c, (COLOR_MAP[low]||c)];
-  if(/[a-zA-Z]/.test(c)){
-    cands.push(low.split(/\s+/).map(p=>COLOR_MAP[p]||p).join(''));
-  }
-  const keys = new Set();
-  for(let v of cands){
-    v = String(v);
-    keys.add(v.toLowerCase());
-    keys.add(v.replace(/st/ig,'').trim().toLowerCase());
-    keys.add(v.replace(/\s+/g,'').toLowerCase());
-    keys.add(v.replace(/st|\s+|\//ig,'').trim().toLowerCase());
-  }
-  keys.delete('');
-  return keys;
+function normColor(c) {
+  if (!c) return '';
+  c = String(c).trim();
+  if (COLOR_MAP[c.toLowerCase()]) return COLOR_MAP[c.toLowerCase()];
+  c = c.replace(/ST$/, 'st').replace(/^ST/, 'st');
+  return c;
 }
-function normSize(s){
-  if(s==null) return '';
+
+function normSize(s) {
+  if (!s) return '';
   s = String(s).trim().toUpperCase();
-  if(s==='FREE'||s==='F') return '';
-  if(s.indexOf('PANTS')>=0 || s.indexOf('_SET')>=0) return s.split('/')[0].split('_')[0].trim();
+  if (s === 'FREE') return '';
+  if (s.includes('/')) s = s.split('/')[0].trim();
   return s;
 }
-const sizeKey = s => normSize(s).trim().toUpperCase();
-function stripColorSuffix(n){ return n.indexOf('_')>=0 ? n.replace(/_[^_]+$/,'') : n; }
-function normName(n){
-  if(n==null) return '';
-  n = String(n);
-  n = n.replace(/\[[^\]]*\]/g,'');
-  n = n.replace(/[☆■◆●▶▼★]+/g,'');
-  n = n.replace(/지윤수정|업체수정|디텔컷수정|일시품절|일시 품절|품절/g,'');
-  n = n.replace(/[()]/g,'');
-  n = n.replace(/\s+/g,'');
-  return n.trim().toLowerCase();
+
+function parseOpt(opt) {
+  if (!opt) return ['', ''];
+  const parts = String(opt).trim().split(',');
+  return parts.length >= 2 ? [parts[0].trim(), parts[1].trim()] : [parts[0].trim(), ''];
 }
 
-/* ---- 상태 ---- */
-let stkRows = null;     // [{name, opt, jaego}]
-let dhWB = null, dhRows = null, dhHeader = null, dhColIdx = null, dhSheetName=null;
-let stkIndex = null, stkNoSize = null, stkProductNames = null;
-let pendingSets = [];   // 미해결 세트 [{alias, akey, rowsRef:[...]}]
-let setMappings = loadMappings();
-
-function loadMappings(){
-  try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ return {}; }
-}
-function saveMappings(){
-  localStorage.setItem(LS_KEY, JSON.stringify(setMappings));
-  renderSaved();
+// ★ 핵심: 상품별칭에서 (Ncolor) 제거
+function normName(name) {
+  if (!name) return '';
+  return String(name).trim().replace(/\s*\(\d+\s*color\)/gi, '').trim();
 }
 
-/* ---- 파일 입력 ---- */
-const $ = id => document.getElementById(id);
-function wireDrop(dropId, inputId, nameId, cb){
-  const drop=$(dropId), input=$(inputId), nm=$(nameId);
-  input.addEventListener('change', e=>{
-    const f=e.target.files[0]; if(!f) return;
-    nm.textContent='✓ '+f.name; drop.classList.add('has'); cb(f);
-  });
-  drop.addEventListener('dragover', e=>{e.preventDefault();drop.style.borderColor='#1a1a1a';});
-  drop.addEventListener('dragleave', e=>{drop.style.borderColor='';});
-  drop.addEventListener('drop', e=>{
-    e.preventDefault(); drop.style.borderColor='';
-    const f=e.dataTransfer.files[0]; if(!f) return;
-    input.files=e.dataTransfer.files;
-    nm.textContent='✓ '+f.name; drop.classList.add('has'); cb(f);
-  });
-}
-let stkFile=null, dhFile=null, stkFileName='', dhBuffer=null;
-wireDrop('dropStk','fileStk','nameStk', f=>{stkFile=f; stkFileName=f.name; checkReady();});
-wireDrop('dropDh','fileDh','nameDh', f=>{
-  dhFile=f; checkReady();
-  const rr=new FileReader(); rr.onload=()=>{dhBuffer=rr.result;}; rr.readAsArrayBuffer(f);
-});
-function checkReady(){ $('runBtn').disabled = !(stkFile && dhFile); }
-
-/* ---- CSV 읽기 (cp949) ---- */
-function readStk(file){
-  return new Promise((res,rej)=>{
-    const r=new FileReader();
-    r.onload=()=>{
-      let text;
-      try{ text=new TextDecoder('euc-kr').decode(r.result); }
-      catch(e){ text=new TextDecoder('utf-8').decode(r.result); }
-      const wb=XLSX.read(text,{type:'string'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1});
-      res(rows);
-    };
-    r.onerror=rej; r.readAsArrayBuffer(file);
-  });
-}
-function readDh(file){
-  return new Promise((res,rej)=>{
-    const r=new FileReader();
-    r.onload=()=>{
-      const wb=XLSX.read(new Uint8Array(r.result),{type:'array'});
-      res(wb);
-    };
-    r.onerror=rej; r.readAsArrayBuffer(file);
-  });
+function checkReady() {
+  document.getElementById('btn-run').disabled = !(stkData && diholicWb);
 }
 
-/* ---- STK 인덱스 구축 ---- */
-function buildStkIndex(rows){
-  const header=rows[0].map(x=>String(x).trim());
-  const ci={}; header.forEach((h,i)=>ci[h]=i);
-  const cName=ci['상품명'], cOpt=ci['옵션명'], cCur=ci['현재재고'], cUn=ci['미발송주문수'];
-  stkIndex=new Map(); stkNoSize=new Map();
-  const prodNames=new Set();
-  for(let i=1;i<rows.length;i++){
-    const row=rows[i]; if(!row||row[cName]==null) continue;
-    const raw=String(row[cName]);
-    const cur=parseFloat(row[cCur])||0, un=parseFloat(row[cUn])||0;
-    const jaego=Math.max(0, Math.round(cur-un));
-    const name=normName(stripColorSuffix(raw));
-    prodNames.add(raw.trim());
-    let opt=String(row[cOpt]==null?'':row[cOpt]).trim();
-    let c,s;
-    const idx=opt.lastIndexOf(',');
-    if(idx>=0){ c=opt.slice(0,idx).trim(); s=opt.slice(idx+1).trim(); }
-    else { c=opt; s=''; }
-    let ckset=colorKeys(c);
-    if(raw.indexOf('_')>=0){
-      const suf=raw.slice(raw.lastIndexOf('_')+1);
-      colorKeys(suf).forEach(k=>ckset.add(k));
-    }
-    const sk=sizeKey(s);
-    for(const ck of ckset){
-      stkIndex.set(name+'\u0001'+ck+'\u0001'+sk, jaego);
-      if(s===''||sk===''){ stkNoSize.set(name+'\u0001'+ck, jaego); }
-    }
-  }
-  stkProductNames=Array.from(prodNames).sort();
-}
-function lookup(nameNorm, color, size){
-  const sk=sizeKey(size);
-  for(const ck of colorKeys(color)){
-    const k=nameNorm+'\u0001'+ck+'\u0001'+sk;
-    if(stkIndex.has(k)) return stkIndex.get(k);
-  }
-  for(const ck of colorKeys(color)){
-    const k=nameNorm+'\u0001'+ck;
-    if(stkNoSize.has(k)) return stkNoSize.get(k);
-  }
-  return null;
-}
+// STK 파일 로드
+document.getElementById('file-stk').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById('name-stk').textContent = file.name;
+  document.getElementById('card-stk').classList.add('has-file');
 
-/* ---- 메인 매칭 ---- */
-function runMatch(){
-  $('log1').innerHTML='<div class="log">처리 중…</div>';
-  Promise.all([readStk(stkFile), readDh(dhFile)]).then(([stk, wb])=>{
-    buildStkIndex(stk);
-    dhWB=wb; dhSheetName=wb.SheetNames[0];
-    const ws=wb.Sheets[dhSheetName];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-    dhRows=rows;
-    const header=rows[0].map(x=>String(x).trim());
-    dhHeader=header;
-    dhColIdx={};
-    header.forEach((h,i)=>dhColIdx[h]=i);
-    detectAndProcess();
-  }).catch(err=>{
-    $('log1').innerHTML='<div class="log warn">파일을 읽지 못했어요: '+err.message+'<br>파일 형식을 확인해 주세요.</div>';
-  });
-}
-
-/* 매칭 실행 + 미해결 세트 탐지 */
-function processAll(){
-  const E=dhColIdx['상품별칭'], I=dhColIdx['색상'], J=dhColIdx['사이즈'],
-        K=dhColIdx['판매가능수량'], O=dhColIdx['옵션상태'];
-  let updated=0, skipDel=0, setCnt=0, zeroFill=0;
-  const zeros=[];
-  const updatedK={};
-  const origK={};
-  pendingSets=[];
-  const unresolvedMap={}; // akey -> {alias, rows:[]}
-
-  for(let r=1;r<dhRows.length;r++){
-    const row=dhRows[r];
-    if(row[O]==='옵션삭제'){ skipDel++; continue; }
-    const alias=String(row[E]), color=row[I], size=row[J];
-    const origVal=row[K];   // 갱신 전 원본 판매가능수량
-    const aNoclr=alias.replace(/_ ?[A-Za-z][A-Za-z /]*$/,'');
-    const akey=normName(aNoclr);
-    let found=null;
-
-    // 세트 판별: '+' 포함 or 저장된 매핑 or 별칭에 SET
-    const isSetByPlus = aNoclr.indexOf('+')>=0;
-    const isSetBySaved = !!setMappings[akey];
-    const isSetByWord = /set/i.test(aNoclr) && !isSetByPlus;
-
-    if(isSetByPlus || isSetBySaved){
-      let parts;
-      if(isSetBySaved) parts=setMappings[akey];
-      else { const body=aNoclr.replace(/\[[^\]]*\]/g,''); parts=body.split('+').map(p=>p.trim()); }
-      const vals=[];
-      for(const p of parts){ const v=lookup(normName(p), color, size); if(v!=null) vals.push(v); }
-      if(vals.length && vals.length===parts.length){ found=Math.min(...vals); setCnt++; }
-    } else {
-      found=lookup(akey, color, size);
-    }
-
-    if(found==null && isSetByWord && !isSetBySaved){
-      // 미해결 세트로 등록 (구성품 직접 연결 필요)
-      if(!unresolvedMap[akey]) unresolvedMap[akey]={alias:aNoclr, akey:akey, rows:[]};
-      unresolvedMap[akey].rows.push(r);
-      continue; // 일단 보류 (세트 연결 후 재처리)
-    }
-
-    if(found==null){ found=0; zeroFill++; zeros.push({alias:alias, color:color, size:size}); }
-    row[K]=found;
-    updatedK[r]=found;          // 행번호(0-base 배열) → 갱신값
-    origK[r]=origVal;           // 원본 K값 (변경 여부 판정용)
-    updated++;
-  }
-  pendingSets=Object.values(unresolvedMap);
-  window._updatedK=updatedK;
-  window._origK=origK;
-  return {updated, skipDel, setCnt, zeroFill, zeros};
-}
-
-function detectAndProcess(){
-  const res=processAll();
-  if(pendingSets.length>0){
-    $('log1').innerHTML='<div class="log ok">자동 매칭 완료. 연결이 필요한 세트 <b>'+pendingSets.length+'개</b>가 있어요. ↓</div>';
-    showSetLinker();
-  } else {
-    finalize(res);
-  }
-}
-
-/* ---- 세트 연결 UI (검색 + 자동추천) ---- */
-function recommendParts(setAlias){
-  // 세트 별칭의 핵심 키워드로 STK 후보를 점수화해 상위 추천
-  const base=normName(setAlias).replace(/set/gi,'');
-  const kw=base.slice(0, Math.min(6, base.length));
-  const scored=stkProductNames.map(o=>{
-    const on=normName(o);
-    let score=0;
-    // 앞 4~6글자 일치도
-    for(let L=6;L>=3;L--){ if(kw.length>=L && on.indexOf(kw.slice(0,L))>=0){ score=L; break; } }
-    return {o, score};
-  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
-  return scored.map(x=>x.o);
-}
-function optionListHTML(selectedFirst){
-  // 추천 후보를 맨 위, 나머지는 가나다순
-  const rec=selectedFirst||[];
-  const recSet=new Set(rec);
-  const rest=stkProductNames.filter(o=>!recSet.has(o));
-  let html='<option value="">— 구성품 선택 —</option>';
-  if(rec.length){
-    html+='<optgroup label="추천">'+rec.map(o=>'<option value="'+encodeURIComponent(o)+'">'+o+'</option>').join('')+'</optgroup>';
-  }
-  html+='<optgroup label="전체">'+rest.map(o=>'<option value="'+encodeURIComponent(o)+'">'+o+'</option>').join('')+'</optgroup>';
-  return html;
-}
-function showSetLinker(){
-  $('step2').classList.remove('hide');
-  const box=$('setList'); box.innerHTML='';
-  pendingSets.forEach((s,i)=>{
-    const card=document.createElement('div'); card.className='setcard';
-    const rec=recommendParts(s.alias);
-    // 추천 상위 2개를 각 드롭다운 기본 선택값으로 미리 채움 (직원은 확인만)
-    const pre0 = rec[0] ? encodeURIComponent(rec[0]) : '';
-    const pre1 = rec[1] ? encodeURIComponent(rec[1]) : '';
-    const optHTML=optionListHTML(rec);
-    card.innerHTML=
-      '<div class="title">'+s.alias+'</div>'+
-      '<div class="meta">이 세트를 이루는 셀메이트 상품 2개를 확인해 주세요. (추천을 미리 골라뒀어요)</div>'+
-      '<div class="setrow"><label>구성품 1</label><select data-set="'+i+'" data-part="0">'+optHTML+'</select></div>'+
-      '<div class="setrow"><label>구성품 2</label><select data-set="'+i+'" data-part="1">'+optHTML+'</select></div>'+
-      '<div class="mini">추천이 틀렸으면 목록에서 직접 골라주세요. 한 번 연결하면 다음부터 자동 적용됩니다.</div>';
-    box.appendChild(card);
-    // 추천값 미리 선택
-    const sels=card.querySelectorAll('select');
-    if(pre0) sels[0].value=pre0;
-    if(pre1) sels[1].value=pre1;
-  });
-}
-
-$('applySetBtn').addEventListener('click', ()=>{
-  // 선택값 수집
-  let ok=true;
-  pendingSets.forEach((s,i)=>{
-    const sels=document.querySelectorAll('select[data-set="'+i+'"]');
-    const parts=[];
-    sels.forEach(sel=>{ if(sel.value) parts.push(decodeURIComponent(sel.value)); });
-    if(parts.length<2){ ok=false; return; }
-    setMappings[s.akey]=parts;
-  });
-  if(!ok){ alert('각 세트마다 구성품을 2개 이상 골라주세요.'); return; }
-  saveMappings();
-  // 재처리
-  $('step2').classList.add('hide');
-  const res=processAll();
-  if(pendingSets.length>0){ showSetLinker(); return; }
-  finalize(res);
-});
-
-/* ---- 결과 확정 ---- */
-function finalize(res){
-  $('step3').classList.remove('hide');
-  // 실제 변경(원본과 다른) 건수 계산
-  const uK=window._updatedK||{}, oK=window._origK||{};
-  let changedCnt=0;
-  for(const r in uK){ const o=Number(oK[r]); if(!Number.isFinite(o)||o!==Number(uK[r])) changedCnt++; }
-  window._changedCnt=changedCnt;
-  $('resultStat').innerHTML=
-    '<div><span class="n">'+res.updated+'</span>확인한 행</div>'+
-    '<div><span class="n">'+changedCnt+'</span>변경(빨강)</div>'+
-    '<div><span class="n">'+res.setCnt+'</span>세트 처리</div>'+
-    '<div><span class="n">'+res.skipDel+'</span>옵션삭제 제외</div>'+
-    '<div><span class="n '+(res.zeroFill>0?'ng':'')+'">'+res.zeroFill+'</span>품절(0) 처리</div>';
-  let extra='';
-  if(res.zeroFill>0){
-    extra=' 품절(0)로 처리된 '+res.zeroFill+'건은 셀메이트에 재고가 없거나 새로 생긴 옵션일 수 있으니, 아래 목록을 한 번 확인해 주세요.';
-  }
-  $('log3').innerHTML='<div class="log ok"><b>완료!</b> 판매가능수량(K열)을 갱신했어요. 그중 <b>어제와 값이 바뀐 '+(window._changedCnt||0)+'개 셀만</b> 빨간 굵은 글씨로 표시했습니다.'+extra+' 아래에서 파일을 받아 디홀릭에 올리세요.</div>';
-  // 품절 테이블
-  $('zeroSummary').textContent='품절(0) 처리된 항목 '+res.zeros.length+'개 보기';
-  if(res.zeros.length){
-    let t='<table><tr><th>상품</th><th>색상</th><th>사이즈</th></tr>';
-    res.zeros.forEach(z=>{ t+='<tr><td>'+z.alias.slice(0,40)+'</td><td>'+z.color+'</td><td class="zero">'+z.size+'</td></tr>'; });
-    t+='</table>'; $('zeroTable').innerHTML=t;
-  } else { $('zeroTable').innerHTML='<p class="mini">없음</p>'; }
-  window._finalRes=res;
-}
-
-/* ---- 다운로드 (xlsx-js-style: 원본 보존 + 변경 셀만 빨강 Bold) ---- */
-$('dlBtn').addEventListener('click', ()=>{
-  const K=dhColIdx['판매가능수량'];          // 0-base 열 인덱스
-  const updatedK=window._updatedK||{};
-  const origK=window._origK||{};
-  $('dlBtn').disabled=true; $('dlBtn').textContent='파일 만드는 중…';
-  try{
-    // 스타일 지원 라이브러리 (xlsx-js-style는 window.XLSX를 덮어씀 → 여기선 그대로 사용)
-    const XS = window.XLSX;
-    const wb = XS.read(new Uint8Array(dhBuffer), {type:'array', cellStyles:true});
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    for(const rStr in updatedK){
-      const r=parseInt(rStr,10);                     // 0-base 배열 인덱스 (r=0 헤더)
-      const addr=XS.utils.encode_cell({r:r, c:K});   // 같은 0-base → 엑셀 주소
-      const newVal=Number(updatedK[r]);
-      if(!ws[addr]) ws[addr]={t:'n'};
-      ws[addr].v=newVal; ws[addr].t='n';
-      // 원본 K값과 다를 때만 빨강 Bold, 같으면 원래 서식 유지
-      const oldNum=Number(origK[r]);
-      const changed = !(Number.isFinite(oldNum)) || oldNum!==newVal;
-      if(changed){
-        const prev = ws[addr].s || {};
-        ws[addr].s = Object.assign({}, prev, {font: Object.assign({}, prev.font||{}, {bold:true, color:{rgb:'FFFF0000'}})});
-      }
-    }
-    const out = XS.write(wb, {type:'array', bookType:'xlsx', cellStyles:true});
-    let date=''; const m=stkFileName.match(/(\d{8})/); if(m) date=m[1];
-    const fname='디홀릭 재고 업데이트_'+(date||'결과')+'.xlsx';
-    const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname;
-    document.body.appendChild(a); a.click(); a.remove();
-  }catch(err){
-    alert('파일 생성 중 오류: '+err.message);
-  }
-  $('dlBtn').disabled=false; $('dlBtn').textContent='엑셀 파일 내려받기';
-});
-
-/* ---- 저장된 매핑 관리 ---- */
-function renderSaved(){
-  const box=$('savedList');
-  const keys=Object.keys(setMappings);
-  if(!keys.length){ box.innerHTML='<p class="mini">아직 저장된 세트 연결이 없습니다.</p>'; return; }
-  box.innerHTML='';
-  keys.forEach(k=>{
-    const item=document.createElement('div'); item.className='saved-item';
-    item.innerHTML='<span><b>'+k+'</b> → '+setMappings[k].join(' + ')+'</span>'+
-                   '<span class="x" data-k="'+k+'">삭제</span>';
-    box.appendChild(item);
-  });
-  box.querySelectorAll('.x').forEach(x=>{
-    x.addEventListener('click', ()=>{
-      if(confirm('이 세트 연결을 삭제할까요?')){ delete setMappings[x.dataset.k]; saveMappings(); }
+  const buf = await file.arrayBuffer();
+  if (file.name.endsWith('.csv')) {
+    // CSV → encoding 처리
+    const decoder = new TextDecoder('euc-kr');
+    const text = decoder.decode(new Uint8Array(buf));
+    const lines = text.split(/\r?\n/);
+    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+    stkData = lines.slice(1).filter(l=>l.trim()).map(l => {
+      const vals = l.split(',').map(v => v.replace(/"/g,'').trim());
+      const obj = {};
+      headers.forEach((h,i) => obj[h] = vals[i] || '');
+      return obj;
     });
-  });
+  } else {
+    const wb = XLSX.read(buf, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    stkData = XLSX.utils.sheet_to_json(ws, {defval:''});
+  }
+  checkReady();
+});
+
+// 디홀릭 파일 로드
+document.getElementById('file-diholic').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById('name-diholic').textContent = file.name;
+  document.getElementById('card-diholic').classList.add('has-file');
+  const buf = await file.arrayBuffer();
+  diholicWb = XLSX.read(buf, {type:'array', cellStyles:true});
+  diholicSheetName = diholicWb.SheetNames[0];
+  checkReady();
+});
+
+function runUpdate() {
+  if (!stkData || !diholicWb) return;
+
+  document.getElementById('btn-run').innerHTML = '<span class="spinner"></span>처리 중...';
+  document.getElementById('btn-run').disabled = true;
+
+  setTimeout(() => {
+    try {
+      // STK 맵 생성
+      const stk_map = {};
+      for (const r of stkData) {
+        const cur = parseInt(r['현재재고']) || 0;
+        const unship = parseInt(r['미발송주문수']) || 0;
+        const stock = Math.max(0, cur - unship);
+        const [color, size] = parseOpt(r['옵션명']);
+        const key = normName(r['상품명']) + '|' + normColor(color) + '|' + normSize(size);
+        stk_map[key] = stock;
+      }
+
+      // 디홀릭 시트 파싱
+      const ws = diholicWb.Sheets[diholicSheetName];
+      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      const headers = raw[0].map(h => String(h).trim());
+      const rows = raw.slice(1);
+
+      const kIdx = headers.indexOf('판매가능수량');
+      const nameIdx = headers.indexOf('상품별칭');
+      const colorIdx = headers.indexOf('색상');
+      const sizeIdx = headers.indexOf('사이즈');
+      const statusIdx = headers.indexOf('옵션상태');
+
+      resultRows = []; zeroRows = []; unmatchedRows = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (String(row[statusIdx]).trim() === '옵션삭제') continue;
+
+        const name = normName(row[nameIdx]);
+        const color = normColor(row[colorIdx]);
+        const size = normSize(row[sizeIdx]);
+        const key = name + '|' + color + '|' + size;
+
+        if (key in stk_map) {
+          const qty = stk_map[key];
+          // 워크북 셀 업데이트
+          const cellAddr = XLSX.utils.encode_cell({r: i+1, c: kIdx});
+          ws[cellAddr] = { v: qty, t: 'n' };
+          if (!ws[cellAddr].s) ws[cellAddr].s = {};
+          ws[cellAddr].s = { font: { color: { rgb: 'FF0000' }, bold: true, name: '맑은 고딕', sz: 10 } };
+
+          const item = { name: row[nameIdx], color: row[colorIdx], size: row[sizeIdx], qty };
+          resultRows.push(item);
+          if (qty === 0) zeroRows.push(item);
+        } else {
+          unmatchedRows.push({ name: row[nameIdx], color: row[colorIdx], size: row[sizeIdx], kval: row[kIdx], reason: 'STK 미존재' });
+        }
+      }
+
+      // 통계
+      document.getElementById('stat-total').textContent = Object.keys(stk_map).length;
+      document.getElementById('stat-updated').textContent = resultRows.length;
+      document.getElementById('stat-unmatched').textContent = unmatchedRows.length;
+      document.getElementById('cnt-updated').textContent = `(${resultRows.length})`;
+      document.getElementById('cnt-zero').textContent = `(${zeroRows.length})`;
+      document.getElementById('cnt-unmatched').textContent = `(${unmatchedRows.length})`;
+
+      // 테이블 렌더
+      renderTable('tbl-updated', resultRows.map(r => [r.name, r.color, r.size, `<span class="${r.qty===0?'qty-zero':'qty-updated'}">${r.qty}</span>`]));
+      renderTable('tbl-zero', zeroRows.map(r => [r.name, r.color, r.size, `<span class="qty-zero">0</span>`]));
+      renderTable('tbl-unmatched', unmatchedRows.map(r => [r.name, r.color, r.size, r.kval, `<span class="badge badge-red">${r.reason}</span>`]));
+
+      document.getElementById('result-area').style.display = 'block';
+      document.getElementById('result-area').scrollIntoView({behavior:'smooth'});
+    } catch(err) {
+      alert('오류: ' + err.message);
+    }
+    document.getElementById('btn-run').innerHTML = '⚡ 업데이트 실행';
+    document.getElementById('btn-run').disabled = false;
+  }, 50);
 }
 
-$('runBtn').addEventListener('click', runMatch);
-renderSaved();
+function renderTable(id, rows) {
+  const tbody = document.querySelector(`#${id} tbody`);
+  tbody.innerHTML = rows.length ? rows.map(r => `<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('') : '<tr><td colspan="10" style="text-align:center;color:#999;padding:20px;">없음</td></tr>';
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+}
+
+function downloadXlsx() {
+  if (!diholicWb) return;
+  // 날짜 추출
+  const stkName = document.getElementById('name-stk').textContent;
+  const dateMatch = stkName.match(/(\d{8})/);
+  const date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0,10).replace(/-/g,'');
+  XLSX.writeFile(diholicWb, `디홀릭 재고 업데이트_${date}.xlsx`);
+}
 </script>
 </body>
 </html>
