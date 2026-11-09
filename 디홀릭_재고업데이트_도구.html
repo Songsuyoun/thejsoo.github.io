@@ -136,7 +136,7 @@
     <label class="upload-card" id="card-diholic" for="file-diholic">
       <div class="icon">📋</div>
       <div class="label">디홀릭 상품리스트</div>
-      <div class="sub">디홀릭상품리스트.xlsx 등</div>
+      <div class="sub">Item_Info_Data_thejsoo_날짜.xls 또는 .xlsx</div>
       <div class="filename" id="name-diholic">파일을 클릭하여 선택</div>
     </label>
     <input type="file" id="file-diholic" accept=".xlsx,.xls">
@@ -179,6 +179,8 @@
 
 <script>
 let stkData = null, diholicWb = null, diholicSheetName = null;
+let diholicIsHtmlXls = false;  // xls(HTML 테이블) 여부
+let diholicHtmlData = null;    // xls 파싱 결과: {headers, rows}
 let resultRows = [], zeroRows = [], unmatchedRows = [];
 
 const COLOR_MAP = {
@@ -219,7 +221,29 @@ function normName(name) {
 }
 
 function checkReady() {
-  document.getElementById('btn-run').disabled = !(stkData && diholicWb);
+  const diholicReady = diholicWb || diholicIsHtmlXls;
+  document.getElementById('btn-run').disabled = !(stkData && diholicReady);
+}
+
+// XLS(HTML 테이블) 파싱
+function parseHtmlXls(text) {
+  const parser = new DOMParser();
+  // EUC-KR 깨짐 방지: meta charset 무시하고 파싱
+  const doc = parser.parseFromString(text, 'text/html');
+  const table = doc.querySelector('table');
+  if (!table) return null;
+  const trs = Array.from(table.querySelectorAll('tr'));
+  if (trs.length < 2) return null;
+
+  // 헤더 행 (첫 번째 tr)
+  const headers = Array.from(trs[0].querySelectorAll('th,td')).map(td => td.textContent.trim());
+
+  // 데이터 행
+  const rows = trs.slice(1).map(tr =>
+    Array.from(tr.querySelectorAll('th,td')).map(td => td.textContent.trim())
+  ).filter(r => r.some(c => c !== ''));
+
+  return { headers, rows };
 }
 
 // STK 파일 로드
@@ -249,19 +273,88 @@ document.getElementById('file-stk').addEventListener('change', async e => {
   checkReady();
 });
 
-// 디홀릭 파일 로드
+// 디홀릭 파일 로드 (xlsx는 XLSX.js, xls는 HTML 테이블 파싱)
 document.getElementById('file-diholic').addEventListener('change', async e => {
   const file = e.target.files[0]; if (!file) return;
   document.getElementById('name-diholic').textContent = file.name;
   document.getElementById('card-diholic').classList.add('has-file');
-  const buf = await file.arrayBuffer();
-  diholicWb = XLSX.read(buf, {type:'array', cellStyles:true});
-  diholicSheetName = diholicWb.SheetNames[0];
+
+  // 초기화
+  diholicWb = null; diholicSheetName = null;
+  diholicIsHtmlXls = false; diholicHtmlData = null;
+
+  const isXls = file.name.toLowerCase().endsWith('.xls');
+
+  if (isXls) {
+    // XLS = 실제로 HTML 테이블 형식 → FileReader로 텍스트 읽기
+    const readAsText = (f, encoding) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsText(f, encoding);
+    });
+
+    // 파일 내 charset 메타태그 확인 → UTF-8 우선 시도 (디홀릭 xls는 UTF-8)
+    // ArrayBuffer로 먼저 읽어서 charset 확인
+    const rawBuf = await file.arrayBuffer();
+    const rawBytes = new Uint8Array(rawBuf);
+    const sniff = new TextDecoder('utf-8', {fatal:false}).decode(rawBytes.slice(0, 300));
+    const isUtf8 = sniff.includes('utf-8') || sniff.includes('UTF-8');
+    const encoding = isUtf8 ? 'UTF-8' : 'EUC-KR';
+
+    let text = await readAsText(file, encoding);
+
+    // HTML 테이블 여부 확인
+    const isHtml = text.trim().startsWith('<') || text.includes('<table');
+    if (isHtml) {
+      const parsed = parseHtmlXls(text);
+      if (parsed && parsed.headers.length > 0) {
+        diholicIsHtmlXls = true;
+        diholicHtmlData = parsed;
+        checkReady();
+        return;
+      }
+    }
+
+    // 반대 인코딩으로 재시도
+    const encoding2 = isUtf8 ? 'EUC-KR' : 'UTF-8';
+    text = await readAsText(file, encoding2);
+    if (text.includes('<table')) {
+      const parsed = parseHtmlXls(text);
+      if (parsed && parsed.headers.length > 0) {
+        diholicIsHtmlXls = true;
+        diholicHtmlData = parsed;
+        checkReady();
+        return;
+      }
+    }
+
+    // HTML 테이블도 아니면 XLSX.js로 시도 (실제 xls 바이너리)
+    try {
+      const buf = await file.arrayBuffer();
+      diholicWb = XLSX.read(buf, {type:'array', cellStyles:true});
+      diholicSheetName = diholicWb.SheetNames[0];
+    } catch(err) {
+      alert('파일을 읽을 수 없습니다: ' + err.message);
+      return;
+    }
+  } else {
+    // xlsx → XLSX.js로 처리
+    const buf = await file.arrayBuffer();
+    try {
+      diholicWb = XLSX.read(buf, {type:'array', cellStyles:true});
+      diholicSheetName = diholicWb.SheetNames[0];
+    } catch(err) {
+      alert('파일을 읽을 수 없습니다: ' + err.message);
+      return;
+    }
+  }
   checkReady();
 });
 
 function runUpdate() {
-  if (!stkData || !diholicWb) return;
+  const diholicReady = diholicWb || diholicIsHtmlXls;
+  if (!stkData || !diholicReady) return;
 
   document.getElementById('btn-run').innerHTML = '<span class="spinner"></span>처리 중...';
   document.getElementById('btn-run').disabled = true;
@@ -279,11 +372,17 @@ function runUpdate() {
         stk_map[key] = stock;
       }
 
-      // 디홀릭 시트 파싱
-      const ws = diholicWb.Sheets[diholicSheetName];
-      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-      const headers = raw[0].map(h => String(h).trim());
-      const rows = raw.slice(1);
+      // 디홀릭 헤더/행 추출 (xls HTML 모드 vs xlsx 모드)
+      let headers, rows;
+      if (diholicIsHtmlXls) {
+        headers = diholicHtmlData.headers;
+        rows = diholicHtmlData.rows;
+      } else {
+        const ws = diholicWb.Sheets[diholicSheetName];
+        const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        headers = raw[0].map(h => String(h).trim());
+        rows = raw.slice(1);
+      }
 
       const kIdx = headers.indexOf('판매가능수량');
       const nameIdx = headers.indexOf('상품별칭');
@@ -291,30 +390,48 @@ function runUpdate() {
       const sizeIdx = headers.indexOf('사이즈');
       const statusIdx = headers.indexOf('옵션상태');
 
+      if (kIdx === -1 || nameIdx === -1) {
+        alert('디홀릭 파일에서 필요한 열을 찾을 수 없습니다.\n헤더: ' + headers.slice(0,15).join(', '));
+        document.getElementById('btn-run').innerHTML = '⚡ 업데이트 실행';
+        document.getElementById('btn-run').disabled = false;
+        return;
+      }
+
       resultRows = []; zeroRows = []; unmatchedRows = [];
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        if (String(row[statusIdx]).trim() === '옵션삭제') continue;
+        if (String(row[statusIdx] || '').trim() === '옵션삭제') continue;
 
-        const name = normName(row[nameIdx]);
-        const color = normColor(row[colorIdx]);
-        const size = normSize(row[sizeIdx]);
+        const rawName = row[nameIdx] || '';
+        const rawColor = row[colorIdx] || '';
+        const rawSize = row[sizeIdx] || '';
+        const rawKval = row[kIdx] || '';
+
+        const name = normName(rawName);
+        const color = normColor(rawColor);
+        const size = normSize(rawSize);
         const key = name + '|' + color + '|' + size;
 
         if (key in stk_map) {
           const qty = stk_map[key];
-          // 워크북 셀 업데이트
-          const cellAddr = XLSX.utils.encode_cell({r: i+1, c: kIdx});
-          ws[cellAddr] = { v: qty, t: 'n' };
-          if (!ws[cellAddr].s) ws[cellAddr].s = {};
-          ws[cellAddr].s = { font: { color: { rgb: 'FF0000' }, bold: true, name: '맑은 고딕', sz: 10 } };
 
-          const item = { name: row[nameIdx], color: row[colorIdx], size: row[sizeIdx], qty };
+          if (!diholicIsHtmlXls) {
+            // xlsx 모드: 워크북 셀 직접 업데이트
+            const ws = diholicWb.Sheets[diholicSheetName];
+            const cellAddr = XLSX.utils.encode_cell({r: i+1, c: kIdx});
+            ws[cellAddr] = { v: qty, t: 'n' };
+            ws[cellAddr].s = { font: { color: { rgb: 'FF0000' }, bold: true, name: '맑은 고딕', sz: 10 } };
+          } else {
+            // xls HTML 모드: 데이터 행 직접 업데이트
+            diholicHtmlData.rows[i][kIdx] = String(qty);
+          }
+
+          const item = { name: rawName, color: rawColor, size: rawSize, qty };
           resultRows.push(item);
           if (qty === 0) zeroRows.push(item);
         } else {
-          unmatchedRows.push({ name: row[nameIdx], color: row[colorIdx], size: row[sizeIdx], kval: row[kIdx], reason: 'STK 미존재' });
+          unmatchedRows.push({ name: rawName, color: rawColor, size: rawSize, kval: rawKval, reason: 'STK 미존재' });
         }
       }
 
@@ -334,7 +451,7 @@ function runUpdate() {
       document.getElementById('result-area').style.display = 'block';
       document.getElementById('result-area').scrollIntoView({behavior:'smooth'});
     } catch(err) {
-      alert('오류: ' + err.message);
+      alert('오류: ' + err.message + '\n' + err.stack);
     }
     document.getElementById('btn-run').innerHTML = '⚡ 업데이트 실행';
     document.getElementById('btn-run').disabled = false;
@@ -354,12 +471,55 @@ function switchTab(name) {
 }
 
 function downloadXlsx() {
-  if (!diholicWb) return;
-  // 날짜 추출
   const stkName = document.getElementById('name-stk').textContent;
-  const dateMatch = stkName.match(/(\d{8})/);
+  const diholicName = document.getElementById('name-diholic').textContent;
+  // 날짜: STK 파일명 → 디홀릭 파일명 → 오늘 순으로 추출
+  const dateMatch = stkName.match(/(\d{8})/) || diholicName.match(/(\d{8})/);
   const date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0,10).replace(/-/g,'');
-  XLSX.writeFile(diholicWb, `디홀릭 재고 업데이트_${date}.xlsx`);
+  const fileName = `디홀릭 재고 업데이트_${date}.xlsx`;
+
+  if (diholicIsHtmlXls && diholicHtmlData) {
+    // xls HTML 모드: 파싱된 데이터로 새 워크북 생성
+    const wb = XLSX.utils.book_new();
+    const wsData = [diholicHtmlData.headers, ...diholicHtmlData.rows];
+
+    // 헤더에서 K열(판매가능수량) 인덱스 찾기
+    const kIdx = diholicHtmlData.headers.indexOf('판매가능수량');
+
+    // 업데이트된 행 추적 (rowIndex → qty)
+    const updatedMap = {};
+    for (const item of resultRows) {
+      // rows 중에서 해당 name/color/size 찾기
+      for (let i = 0; i < diholicHtmlData.rows.length; i++) {
+        const row = diholicHtmlData.rows[i];
+        const nameIdx2 = diholicHtmlData.headers.indexOf('상품별칭');
+        const colorIdx2 = diholicHtmlData.headers.indexOf('색상');
+        const sizeIdx2 = diholicHtmlData.headers.indexOf('사이즈');
+        if ((row[nameIdx2]||'') === item.name && (row[colorIdx2]||'') === item.color && (row[sizeIdx2]||'') === item.size) {
+          updatedMap[i+1] = true; // +1 (헤더 행 offset)
+        }
+      }
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // 업데이트된 K열 셀에 빨간색 bold 스타일 적용
+    if (kIdx >= 0) {
+      for (const rowIdx in updatedMap) {
+        const cellAddr = XLSX.utils.encode_cell({r: parseInt(rowIdx), c: kIdx});
+        if (ws[cellAddr]) {
+          // 숫자로 변환
+          const v = parseInt(ws[cellAddr].v) || 0;
+          ws[cellAddr] = { v, t: 'n', s: { font: { color: { rgb: 'FF0000' }, bold: true } } };
+        }
+      }
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, '상품목록');
+    XLSX.writeFile(wb, fileName);
+  } else if (diholicWb) {
+    XLSX.writeFile(diholicWb, fileName);
+  }
 }
 </script>
 </body>
