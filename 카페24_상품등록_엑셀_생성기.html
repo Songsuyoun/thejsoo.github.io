@@ -7,7 +7,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
 :root{--bg:#F5F4F1;--surface:#fff;--border:#E0DDD8;--text:#1A1A1A;--muted:#888;--accent:#1A1A1A;--green:#2D6A4F;--blue:#1A3A5C;--bl:#EEF4FC;--purple:#4A2C6A;--pl:#F2EEF9;--red:#C0392B;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);padding-bottom:60px;}
+body{font-family:"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;}
 header{background:var(--accent);color:#fff;padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:200;}
 .ht{font-size:18px;font-weight:700;}
 .ha{display:flex;gap:8px;align-items:center;}
@@ -18,8 +18,13 @@ header{background:var(--accent);color:#fff;padding:0 24px;height:50px;display:fl
 .bp{background:var(--green);color:#fff;}
 .addbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:center;position:fixed;top:50px;left:0;right:0;z-index:150;}
 .ba{font-family:"Noto Sans KR",sans-serif;font-size:14px;font-weight:700;padding:8px 28px;border-radius:6px;cursor:pointer;background:transparent;border:2px dashed #ccc;color:#888;}
-.twrap{overflow-x:auto;overflow-y:visible;padding:16px 20px 90px;margin-top:98px;}
-table{border-collapse:collapse;font-size:12px;}
+.twrap{overflow-x:scroll;overflow-y:scroll;padding:16px 20px 16px;margin-top:98px;height:calc(100vh - 98px - 60px);box-sizing:border-box;position:relative;}
+.twrap::-webkit-scrollbar{height:10px;width:10px;}
+.twrap::-webkit-scrollbar-track{background:#e8e5e0;}
+.twrap::-webkit-scrollbar-thumb{background:#999;border-radius:5px;}
+.twrap::-webkit-scrollbar-thumb:hover{background:#555;}
+.twrap::-webkit-scrollbar-corner{background:#e8e5e0;}
+table{border-collapse:collapse;font-size:12px;min-width:max-content;}
 thead th{background:var(--accent);color:#fff;padding:9px 8px;white-space:nowrap;font-weight:600;font-size:11px;border-right:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:10;text-align:center;}
 thead th.ca{background:var(--blue);}
 thead th.cd{background:var(--purple);}
@@ -64,9 +69,13 @@ td input:focus,td select:focus{background:#FFFDE7;box-shadow:inset 0 0 0 2px #F5
   <div class="ht">더제이수 카페24 <span style="color:#FF4444;">상품 등록</span> 엑셀 생성기</div>
   <div class="ha">
     <button class="btn bg" onclick="openSupModal()">공급사 관리</button>
+    <button class="btn bg" onclick="openImportModal()" title="구글 시트 CSV 가져오기">📂 시트 가져오기</button>
     <button class="btn bg" onclick="clearLocal()" title="작성 내용 초기화">🗑 초기화</button>
     <span class="cp">상품 <b id="cnt">0</b>개</span>
     <span class="cp">공급사 <b id="supTotalCnt">-</b>개</span>
+    <button class="btn bg" onclick="bulkDownload('about')" title="전체 상품 ABOUT ITEM 이미지 일괄 저장">🖼 ABOUT 전체</button>
+    <button class="btn bg" onclick="bulkDownload('detail')" title="전체 상품 상세정보 이미지 일괄 저장">📋 상세정보 전체</button>
+    <button class="btn bg" onclick="bulkDownload('both')" title="전체 상품 이미지 모두 일괄 저장">⬇ 이미지 전체</button>
     <button class="btn bp" onclick="dlCSV()">CSV 다운로드</button>
   </div>
 </header>
@@ -212,6 +221,82 @@ td input:focus,td select:focus{background:#FFFDE7;box-shadow:inset 0 0 0 2px #F5
   </div>
 </div>
 
+<!-- 구글 시트 가져오기 모달 -->
+<div class="modal-bg" id="importModal">
+  <div class="modal-box" style="width:620px;max-width:94vw;display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:15px;font-weight:700;">📂 구글 시트 가져오기</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">구글 시트 → 파일 → CSV 다운로드 후 여기에 업로드</div>
+      </div>
+      <button onclick="closeImportModal()" style="background:transparent;border:none;font-size:24px;cursor:pointer;color:#aaa;">×</button>
+    </div>
+
+    <!-- 사용 방법 -->
+    <div style="background:#F7F5F2;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.9;color:#555;">
+      <b style="color:#1A1A1A;">사용 방법</b><br>
+      ① 구글 시트 열기 → <b>파일 &gt; 다운로드 &gt; CSV</b> 클릭<br>
+      ② 아래 버튼으로 CSV 파일 선택 (또는 탭 복사 붙여넣기)<br>
+      ③ 미리보기 확인 후 <b>가져오기</b> 클릭<br>
+      <span style="color:#888;">※ 기존에 입력된 행 아래에 추가됩니다</span>
+    </div>
+
+    <!-- 탭 전환: CSV 업로드 / 텍스트 붙여넣기 -->
+    <div style="display:flex;gap:0;border-bottom:2px solid #eee;">
+      <button id="itab1" onclick="switchImportTab(1)"
+        style="font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;padding:7px 18px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid #1A1A1A;margin-bottom:-2px;color:#1A1A1A;">
+        📄 CSV 파일 업로드
+      </button>
+      <button id="itab2" onclick="switchImportTab(2)"
+        style="font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;padding:7px 18px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:#aaa;">
+        📋 셀 복사 붙여넣기
+      </button>
+    </div>
+
+    <!-- CSV 업로드 탭 -->
+    <div id="itabContent1">
+      <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #ccc;border-radius:8px;padding:28px;cursor:pointer;gap:8px;background:#FAFAF8;" id="csvDropArea">
+        <span style="font-size:28px;">📄</span>
+        <span style="font-size:13px;font-weight:600;color:#555;">CSV 파일을 선택하거나 여기에 드래그하세요</span>
+        <span style="font-size:11px;color:#aaa;">구글 시트 다운로드 CSV, 엑셀 CSV 모두 지원</span>
+        <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none;" onchange="handleCsvFile(this.files[0])">
+      </label>
+    </div>
+
+    <!-- 텍스트 붙여넣기 탭 -->
+    <div id="itabContent2" style="display:none;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">
+        구글 시트에서 데이터 행 전체 선택(헤더 포함) → Ctrl+C → 아래에 붙여넣기 (Ctrl+V)
+      </div>
+      <textarea id="pasteArea" rows="8"
+        style="width:100%;font-family:'DM Mono',monospace;font-size:11px;line-height:1.6;padding:10px 12px;border:1px solid #E0DDD8;border-radius:8px;resize:vertical;outline:none;color:#333;"
+        placeholder="여기에 붙여넣기 (Ctrl+V)&#10;구글 시트 셀을 복사하면 탭으로 구분된 텍스트가 붙여넣기 됩니다."
+        oninput="handlePasteText(this.value)"></textarea>
+    </div>
+
+    <!-- 미리보기 -->
+    <div id="importPreview" style="display:none;">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:#1A1A1A;">
+        미리보기 <span id="importPreviewCnt" style="color:#2D6A4F;"></span>
+      </div>
+      <div style="border:1px solid #eee;border-radius:6px;overflow:auto;max-height:160px;">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;" id="importPreviewTable">
+        </table>
+      </div>
+      <div id="importWarn" style="display:none;margin-top:6px;padding:7px 10px;background:#FFF3CD;border-radius:5px;font-size:11px;color:#856404;"></div>
+    </div>
+
+    <!-- 버튼 -->
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeImportModal()" style="font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:9px 20px;border-radius:6px;cursor:pointer;background:transparent;border:1px solid #ddd;color:#888;">취소</button>
+      <button id="importBtn" onclick="doImport()" disabled
+        style="font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;padding:9px 24px;border-radius:6px;cursor:pointer;background:#ccc;color:#fff;border:none;">
+        가져오기
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyGukuJglyqT09xTcebnwhykjpN6hOWt1XYI9azmje09jnSo6VO132scBFp3RSSA0Ff/exec';
@@ -286,7 +371,14 @@ function addRow() {
 
 function focusEl(eid) { var el = document.getElementById(eid); if (el) el.focus(); }
 function delRow(id) { var tr = document.getElementById('row'+id); if(tr) tr.remove(); delete tags[id+'c']; delete tags[id+'s']; delete tags[id+'m']; updCnt(); }
-function updCnt() { document.getElementById('cnt').textContent = document.querySelectorAll('#tbody tr').length; }
+function updCnt() {
+  var rows = document.querySelectorAll('#tbody tr');
+  document.getElementById('cnt').textContent = rows.length;
+  rows.forEach(function(tr, i) {
+    var cn = tr.querySelector('td.cn');
+    if (cn) cn.textContent = i + 1;
+  });
+}
 
 // ── 판매가 ──
 function upPrice(id) {
@@ -402,7 +494,7 @@ function closeImgModal() { document.getElementById('imgModal').style.display = '
 
 function saveImg() {
   var nm = _descId ? (document.getElementById('nm'+_descId).value || '상품') : '상품';
-  var suffix = _imgType === 'detail' ? '_상품상세정보' : '_about_item';
+  var suffix = _imgType === 'detail' ? '_color' : '_about';
   var elId = _imgType === 'detail' ? 'fabric-render-box' : 'about-render-box';
   var el = document.getElementById(elId);
   document.fonts.ready.then(function() {
@@ -489,6 +581,127 @@ function previewAboutImg() {
 }
 
 // drawAboutImg: html2canvas 방식으로 대체됨
+
+// ── 일괄 이미지 다운로드 ──
+function bulkDownload(type) {
+  var rows = document.querySelectorAll('#tbody tr[id^="row"]');
+  if (!rows.length) { alert('상품이 없습니다.'); return; }
+  var ids = [];
+  rows.forEach(function(tr) {
+    var id = tr.id.replace('row','');
+    var nmEl = document.getElementById('nm'+id);
+    if (nmEl && nmEl.value.trim()) ids.push(id);
+  });
+  if (!ids.length) { alert('상품이 없습니다.'); return; }
+  var total = type === 'both' ? ids.length * 2 : ids.length;
+  if (!confirm(ids.length + '개 상품의 이미지를 ' + total + '장 다운로드합니다.\n브라우저에서 다중 다운로드 허용이 필요할 수 있어요.')) return;
+
+  var colorMap = {'블랙':'BLACK','아이보리':'IVORY','화이트':'WHITE','연베이지':'LIGHT BEIGE','베이지':'BEIGE','크림':'CREAM','네이비':'NAVY','회소라':'GREY SKY BLUE','소라':'SKY BLUE','그레이':'GRAY','회색':'GRAY','카키':'KHAKI','브라운':'BROWN','핑크':'PINK','블루':'BLUE','레드':'RED','옐로우':'YELLOW','레몬':'LEMON','그린':'GREEN','퍼플':'PURPLE','차콜':'CHARCOAL','오트밀':'OATMEAL','민트':'MINT','라벤더':'LAVENDER','와인':'WINE','오렌지':'ORANGE','코랄':'CORAL','머스타드':'MUSTARD','스카이블루':'SKY BLUE','연그레이':'LIGHT GRAY'};
+  var fabricMap = {'비스코스레이온':'VISCOSE RAYON','비스코스':'VISCOSE','레이온':'RAYON','폴리에스터':'POLYESTER','폴리에스테르':'POLYESTER','폴리우레탄':'POLYURETHANE','폴리':'POLY','울':'WOOL','면':'COTTON','코튼':'COTTON','모달':'MODAL','텐셀':'TENCEL','리오셀':'LYOCELL','린넨':'LINEN','리넨':'LINEN','실크':'SILK','나일론':'NYLON','스판덱스':'SPANDEX','스판':'SPAN','아크릴':'ACRYLIC','카치온':'CATION','카시온':'CATION','큐프로':'CUPRO','아세테이트':'ACETATE','캐시미어':'CASHMERE','앙고라':'ANGORA','모헤어':'MOHAIR'};
+  var fabricKeys = Object.keys(fabricMap).sort(function(a,b){ return b.length - a.length; });
+
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // 임시 div를 body 밖에 렌더링해서 캡처
+  function makeTempAbout(id) {
+    var ta = document.getElementById('desc'+id);
+    if (!ta || !ta.value.trim()) return null;
+    var raw = ta.value.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+    var lines = raw.split('\n'), introLine = '', bullets = [], notes = [];
+    lines.forEach(function(line) {
+      var l = line.trim(); if (!l) return;
+      if (!introLine && l.charAt(0)!=='-' && l.charAt(0)!=='※' && l.charAt(0)!=='*') introLine = l;
+      else if (l.charAt(0)==='-') bullets.push(l);
+      else if (l.charAt(0)==='※' || l.charAt(0)==='*') notes.push(l);
+    });
+    var tmpC = document.createElement('canvas'), tmpCtx = tmpC.getContext('2d');
+    tmpCtx.font = '400 25px "Pretendard","Noto Sans KR",sans-serif';
+    var maxW = 0;
+    [introLine].concat(bullets).concat(notes).forEach(function(l){ var w=tmpCtx.measureText(l).width; if(w>maxW) maxW=w; });
+    var PAD_X = Math.max(20, Math.min(80, Math.floor((1000-maxW)/2)-10));
+
+    var div = document.createElement('div');
+    div.style.cssText = 'position:fixed;left:-1200px;top:0;width:1000px;background:#fff;padding:77px '+PAD_X+'px 5px;box-sizing:border-box;';
+    div.innerHTML =
+      '<div style="font-family:\'EB Garamond\',Georgia,serif;font-weight:700;font-size:32pt;letter-spacing:0.030em;color:#262626;text-align:center;margin-bottom:43px;">ABOUT ITEM</div>' +
+      '<span style="font-family:\'Pretendard\',\'Noto Sans KR\',sans-serif;font-weight:400;font-size:19pt;letter-spacing:-0.02em;color:#262626;text-align:center;transform:scaleY(1.08);display:block;margin-bottom:46px;line-height:1.4;">'+esc(introLine)+'</span>' +
+      '<ul style="font-family:\'Pretendard\',\'Noto Sans KR\',sans-serif;font-weight:400;font-size:19pt;letter-spacing:-0.02em;color:#262626;text-align:center;transform:scaleY(1.08);line-height:39px;margin-bottom:64px;list-style:none;padding:0;">'+
+        bullets.map(function(b){ return '<li>'+esc(b)+'</li>'; }).join('') +
+      '</ul>' +
+      '<div style="font-family:\'Pretendard\',\'Noto Sans KR\',sans-serif;font-weight:400;font-size:19pt;letter-spacing:-0.02em;color:#262626;text-align:center;transform:scaleY(1.08);">'+
+        notes.map(function(n){ return esc(n); }).join('<br>') +
+      '</div>';
+    document.body.appendChild(div);
+    return div;
+  }
+
+  function makeTempDetail(id) {
+    var colorTags = tags[id+'c'] || [];
+    var colorStr = colorTags.map(function(t){ var tr=t.trim(); return colorMap[tr]?colorMap[tr]:tr.toUpperCase(); }).join(', ');
+    var fabEl = document.getElementById('fab'+id), fabricRaw = fabEl ? (fabEl.value||'') : '';
+    fabricKeys.forEach(function(k){ fabricRaw = fabricRaw.replace(new RegExp(k,'gi'), fabricMap[k]); });
+    var fabricStr = fabricRaw.toUpperCase();
+    var fh = fabricStr.split('/').map(function(p){ return p.trim(); }).filter(Boolean).join('<br>');
+    fh = fh.split('\n').map(function(l){ return l.trim(); }).filter(Boolean).join('<br>');
+
+    var rowStyle = 'display:flex;align-items:flex-start;margin-bottom:83px;';
+    var labelStyle = 'font-family:\'EB Garamond\',Georgia,serif;font-weight:600;font-size:30pt;letter-spacing:0.020em;color:#262626;width:299px;flex-shrink:0;line-height:1.0;';
+    var contentStyle = 'font-family:\'Pretendard\',\'Noto Sans KR\',sans-serif;font-weight:300;font-size:18pt;letter-spacing:-0.02em;color:#262626;line-height:34px;padding-top:6px;';
+
+    var div = document.createElement('div');
+    div.style.cssText = 'position:fixed;left:-1200px;top:0;width:1000px;background:#fff;padding:187px 81px 5px;box-sizing:border-box;';
+    div.innerHTML =
+      '<div style="'+rowStyle+'"><div style="'+labelStyle+'">COLOR</div><div style="'+contentStyle+'">'+(colorStr||'—')+'</div></div>' +
+      '<div style="'+rowStyle+'"><div style="'+labelStyle+'">FABRIC</div><div style="'+contentStyle+'">'+(fh||'—')+'</div></div>' +
+      '<div style="'+rowStyle+'"><div style="'+labelStyle+'">CARE</div><div style="'+contentStyle+'">세탁 시 드라이클리닝을 권장합니다.<br>어두운 컬러의 경우 이염 위험이 있으니<br>화이트 계열 혹은 밝은 계열과 마찰에 주의 바랍니다.</div></div>' +
+      '<div style="display:flex;align-items:flex-start;margin-bottom:5px;"><div style="'+labelStyle+'">MODEL SIZE</div><div style="'+contentStyle+'">HEIGHT 168cm, TOP 44반 size, BOTTOM 26 inch</div></div>';
+    document.body.appendChild(div);
+    return div;
+  }
+
+  function captureAndRemove(div, filename) {
+    return new Promise(function(resolve) {
+      document.fonts.ready.then(function() {
+        setTimeout(function() {
+          html2canvas(div, {scale:1, useCORS:true, backgroundColor:'#ffffff', width:1000, windowWidth:1200})
+            .then(function(canvas) {
+              var a = document.createElement('a');
+              a.download = filename;
+              a.href = canvas.toDataURL('image/jpeg', 0.95);
+              a.click();
+              document.body.removeChild(div);
+              setTimeout(resolve, 400);
+            }).catch(function(){ document.body.removeChild(div); resolve(); });
+        }, 350);
+      });
+    });
+  }
+
+  var queue = [];
+  ids.forEach(function(id) {
+    var nm = (document.getElementById('nm'+id).value || '상품').trim();
+    if (type === 'about' || type === 'both') queue.push({id:id, imgType:'about', nm:nm});
+    if (type === 'detail' || type === 'both') queue.push({id:id, imgType:'detail', nm:nm});
+  });
+
+  function next(i) {
+    if (i >= queue.length) {
+      toast('✅ 이미지 ' + queue.length + '장 다운로드 완료!');
+      return;
+    }
+    var item = queue[i];
+    toast('(' + (i+1) + '/' + queue.length + ') ' + item.nm + ' ' + (item.imgType==='about'?'ABOUT ITEM':'상세정보') + ' 저장 중...');
+    if (item.imgType === 'about') {
+      var div = makeTempAbout(item.id);
+      if (!div) { next(i+1); return; }
+      captureAndRemove(div, item.nm + '_about.jpg').then(function(){ next(i+1); });
+    } else {
+      var div = makeTempDetail(item.id);
+      captureAndRemove(div, item.nm + '_color.jpg').then(function(){ next(i+1); });
+    }
+  }
+  next(0);
+}
 
 // ── 상세정보 이미지 (COLOR/FABRIC/MODEL SIZE) ──
 function previewDetailImg() {
@@ -593,7 +806,10 @@ function loadSup() {
     .then(function(r){ return r.json(); })
     .then(function(data) {
       if (data.result !== 'ok') { showSupMsg('❌ 오류: ' + data.message, false); return; }
-      _supAll = data.list || [];
+      // 공급사명 정규화: "이프유(SW컴퍼니)" → "이프유" (괄호 및 괄호 안 내용 제거)
+      _supAll = (data.list || []).map(function(s) {
+        return { name: s.name.replace(/\s*[\(\（][^\)\）]*[\)\）]/g, '').trim(), code: s.code };
+      });
       SUPPLIERS = _supAll.slice();
       document.getElementById('supCnt').textContent = _supAll.length;
       document.getElementById('supTotalCnt').textContent = _supAll.length;
@@ -717,7 +933,7 @@ function toast(msg) {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeDesc(); closeImgModal(); closeSupModal(); }
+  if (e.key === 'Escape') { closeDesc(); closeImgModal(); closeSupModal(); closeImportModal(); }
 });
 
 // 페이지 로드시 공급사 자동 로드
@@ -725,7 +941,10 @@ fetch(GAS_URL + '?action=list')
   .then(function(r){ return r.json(); })
   .then(function(data) {
     if (data.result === 'ok') {
-      SUPPLIERS = data.list || [];
+      // 공급사명 정규화: "이프유(SW컴퍼니)" → "이프유"
+      SUPPLIERS = (data.list || []).map(function(s) {
+        return { name: s.name.replace(/\s*[\(\（][^\)\）]*[\)\）]/g, '').trim(), code: s.code };
+      });
       document.getElementById('supTotalCnt').textContent = SUPPLIERS.length;
     }
   })
@@ -815,6 +1034,319 @@ function clearLocal() {
   addRow(); addRow(); addRow();
   updCnt();
   toast('🗑 초기화 완료');
+}
+
+// ── 구글 시트 가져오기 ──
+var _importRows = []; // 파싱된 미리보기 데이터
+
+function openImportModal() {
+  _importRows = [];
+  document.getElementById('csvFileInput').value = '';
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importBtn').disabled = true;
+  document.getElementById('importBtn').style.background = '#ccc';
+  document.getElementById('importModal').style.display = 'flex';
+  switchImportTab(1);
+  // 드래그앤드롭 설정
+  var area = document.getElementById('csvDropArea');
+  area.onclick = function(){ document.getElementById('csvFileInput').click(); };
+  area.ondragover = function(e){ e.preventDefault(); area.style.borderColor='#1A1A1A'; };
+  area.ondragleave = function(){ area.style.borderColor='#ccc'; };
+  area.ondrop = function(e){ e.preventDefault(); area.style.borderColor='#ccc'; var f=e.dataTransfer.files[0]; if(f) handleCsvFile(f); };
+}
+function closeImportModal() { document.getElementById('importModal').style.display = 'none'; }
+
+function switchImportTab(n) {
+  document.getElementById('itabContent1').style.display = n===1 ? 'block' : 'none';
+  document.getElementById('itabContent2').style.display = n===2 ? 'block' : 'none';
+  var t1 = document.getElementById('itab1'), t2 = document.getElementById('itab2');
+  t1.style.borderBottomColor = n===1 ? '#1A1A1A' : 'transparent';
+  t1.style.color = n===1 ? '#1A1A1A' : '#aaa';
+  t2.style.borderBottomColor = n===2 ? '#1A1A1A' : 'transparent';
+  t2.style.color = n===2 ? '#1A1A1A' : '#aaa';
+}
+
+function handleCsvFile(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    // BOM 제거
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    parseSheetData(text, ',');
+  };
+  // 인코딩 감지 시도 (UTF-8 우선, 실패시 EUC-KR)
+  try {
+    reader.readAsText(file, 'UTF-8');
+  } catch(e) {
+    reader.readAsText(file, 'EUC-KR');
+  }
+}
+
+function handlePasteText(text) {
+  if (!text.trim()) {
+    _importRows = [];
+    document.getElementById('importPreview').style.display = 'none';
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('importBtn').style.background = '#ccc';
+    return;
+  }
+  parseSheetData(text, '\t');
+}
+
+// RFC4180 전체 텍스트 파서: 멀티라인 셀(설명글 등) 완벽 지원
+function parseCsvFull(text, sep) {
+  var rows = [], cur = '', inQ = false, row = [];
+  var t = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  for (var i = 0; i < t.length; i++) {
+    var ch = t[i];
+    if (inQ) {
+      if (ch === '"' && t[i+1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') { inQ = false; }
+      else { cur += ch; }
+    } else {
+      if (ch === '"') { inQ = true; }
+      else if (ch === sep) { row.push(cur); cur = ''; }
+      else if (ch === '\n') { row.push(cur); cur = ''; rows.push(row); row = []; }
+      else { cur += ch; }
+    }
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+// 구글 시트 컬럼 매핑 (헤더명 기반)
+function parseSheetData(text, sep) {
+  var rows = parseCsvFull(text, sep);
+  if (rows.length < 2) { showImportPreview([]); return; }
+
+  // 헤더 행 찾기: "상품명" 또는 "공급처"가 포함된 행 (최대 10행 탐색)
+  var headerIdx = -1;
+  var headerCols = null;
+  for (var i = 0; i < Math.min(10, rows.length); i++) {
+    var joined = rows[i].join('');
+    if (joined.indexOf('상품명') >= 0 || joined.indexOf('공급처') >= 0) {
+      headerIdx = i;
+      headerCols = rows[i].map(function(c){ return c.trim(); });
+      break;
+    }
+  }
+  if (headerIdx < 0) {
+    headerIdx = 0;
+    headerCols = null;
+  }
+
+  // 컬럼 인덱스 결정 (헤더명 기반)
+  function findCol(names) {
+    if (!headerCols) return -1;
+    for (var ni = 0; ni < names.length; ni++) {
+      for (var ci = 0; ci < headerCols.length; ci++) {
+        if (headerCols[ci].indexOf(names[ni]) >= 0) return ci;
+      }
+    }
+    return -1;
+  }
+
+  var colSup    = findCol(['공급처','공급사']);
+  var colNm     = findCol(['상품명']);
+  var colColor  = findCol(['색상']);
+  var colSize   = findCol(['사이즈','size','SIZE']);
+  var colCostP  = findCol(['단가','공급가','원가']);
+  var colSaleP  = findCol(['판매가']);
+  var colFab    = findCol(['혼용율','소재','fabric','Fabric','혼용']);
+  var colCtr    = findCol(['제조국','원산지']);
+  var colDesc   = findCol(['설명글','설명','desc','특징']);
+
+  // 헤더 없을 경우 위치 기반 fallback
+  if (!headerCols) {
+    colSup=15; colNm=3; colColor=4; colSize=5; colCostP=7; colSaleP=8; colFab=13; colCtr=14; colDesc=18;
+  }
+
+  function normCtr(ctr) {
+    if (!ctr) return '';
+    var low = ctr.toLowerCase().replace(/\s/g,'');
+    if (low.indexOf('한국') >= 0 || low.indexOf('korea') >= 0) return '한국 제조';
+    if (low.indexOf('중국') >= 0 || low.indexOf('china') >= 0) return '중국 제조';
+    return '';
+  }
+
+  function splitTags(val) {
+    return val ? val.split(/[,\/]/).map(function(v){ return v.trim(); }).filter(Boolean) : [];
+  }
+
+  var parsed = [];
+  var warns = [];
+  var lastProduct = null;
+
+  for (var ri = headerIdx + 1; ri < rows.length; ri++) {
+    var c = rows[ri];
+    var nm = colNm >= 0 ? (c[colNm]||'').trim() : '';
+    var color = colColor >= 0 ? (c[colColor]||'').trim() : '';
+    var desc  = colDesc  >= 0 ? (c[colDesc] ||'').trim() : '';
+
+    // 종료 마커
+    if (nm.indexOf('---') >= 0 || nm.indexOf('여기까지') >= 0) break;
+
+    if (nm) {
+      // 상품명 있는 행 → 새 상품
+      var sup   = colSup   >= 0 ? (c[colSup]  ||'').trim() : '';
+      var size  = colSize  >= 0 ? (c[colSize] ||'').trim() : '';
+      var costP = colCostP >= 0 ? (c[colCostP]||'').trim().replace(/[^0-9]/g,'') : '';
+      var saleP = colSaleP >= 0 ? (c[colSaleP]||'').trim().replace(/[^0-9]/g,'') : '';
+      var fab   = colFab   >= 0 ? (c[colFab]  ||'').trim() : '';
+      var ctr   = colCtr   >= 0 ? (c[colCtr]  ||'').trim() : '';
+
+      var colorTags = splitTags(color);
+      var sizeTags  = splitTags(size).map(function(v){ return v.toUpperCase()==='FREE' ? 'FREE' : v; });
+
+      var product = { nm:nm, sup:sup, color:colorTags, size:sizeTags, costP:costP, saleP:saleP, fab:fab, ctr:normCtr(ctr), desc:desc };
+      parsed.push(product);
+      lastProduct = product;
+    } else if (color && lastProduct) {
+      // 상품명 없고 색상만 있는 행 → 직전 상품에 색상 추가
+      var addColors = splitTags(color);
+      addColors.forEach(function(col) {
+        if (lastProduct.color.indexOf(col) < 0) lastProduct.color.push(col);
+      });
+      if (desc && !lastProduct.desc) lastProduct.desc = desc;
+    }
+  }
+
+  // 경고: 공급사 미매핑
+  if (parsed.length) {
+    var unmapped = parsed.filter(function(r){ return r.sup && !SUPPLIERS.find(function(s){ return s.name === r.sup; }); });
+    var uniqueUnmapped = [];
+    unmapped.forEach(function(r){ if(uniqueUnmapped.indexOf(r.sup)<0) uniqueUnmapped.push(r.sup); });
+    if (uniqueUnmapped.length) warns.push('⚠️ 공급사 목록에 없는 공급처: ' + uniqueUnmapped.join(', ') + ' → 가져온 후 공급사 직접 선택 필요 (공급사코드 자동입력 안 됨)');
+  }
+
+  _importRows = parsed;
+  showImportPreview(parsed, warns);
+}
+
+function showImportPreview(rows, warns) {
+  var previewEl = document.getElementById('importPreview');
+  var warnEl = document.getElementById('importWarn');
+  if (!rows.length) {
+    previewEl.style.display = 'none';
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('importBtn').style.background = '#ccc';
+    return;
+  }
+  document.getElementById('importPreviewCnt').textContent = rows.length + '개 상품 감지됨';
+  var th = '<tr style="background:#1A1A1A;color:#fff;">' +
+    ['상품명','공급처','색상','사이즈','공급가','판매가','소재','제조국','설명글'].map(function(h){
+      return '<th style="padding:5px 8px;font-size:10px;white-space:nowrap;font-weight:600;">'+h+'</th>';
+    }).join('') + '</tr>';
+  var trs = rows.slice(0, 10).map(function(r, i) {
+    var bg = i%2===0 ? '#FAFAF8' : '#fff';
+    function td(v){ return '<td style="padding:4px 8px;border-bottom:1px solid #f0f0f0;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;">'+esc(v)+'</td>'; }
+    return '<tr style="background:'+bg+';">'+
+      td(r.nm)+td(r.sup)+td(r.color.join(','))+td(r.size.join(','))+td(r.costP)+td(r.saleP)+td(r.fab)+td(r.ctr)+td(r.desc.slice(0,20)+(r.desc.length>20?'…':''))+'</tr>';
+  }).join('');
+  if (rows.length > 10) trs += '<tr><td colspan="8" style="text-align:center;padding:5px;font-size:10px;color:#aaa;">...외 '+(rows.length-10)+'개</td></tr>';
+  document.getElementById('importPreviewTable').innerHTML = '<thead>'+th+'</thead><tbody>'+trs+'</tbody>';
+  previewEl.style.display = 'block';
+  if (warns && warns.length) {
+    warnEl.textContent = warns.join('\n');
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+  document.getElementById('importBtn').disabled = false;
+  document.getElementById('importBtn').style.background = '#2D6A4F';
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function doImport() {
+  if (!_importRows.length) return;
+  // 상품명이 비어있는 행 모두 제거 (기본 빈 행 3개 포함)
+  var tb = document.getElementById('tbody');
+  var toRemove = [];
+  tb.querySelectorAll('tr[id^="row"]').forEach(function(tr) {
+    var rowId = tr.id.replace('row','');
+    var nmEl = document.getElementById('nm'+rowId);
+    if (nmEl && nmEl.value.trim() === '') toRemove.push(tr);
+  });
+  toRemove.forEach(function(tr){ tb.removeChild(tr); });
+
+  var added = 0;
+  _importRows.forEach(function(r) {
+    addRow();
+    var id = rid;
+
+    // 상품명
+    document.getElementById('nm'+id).value = r.nm;
+
+    // 공급사 매핑
+    if (r.sup) {
+      // 정규화: "이프유(SW컴퍼니)" → "이프유" (괄호 및 괄호 안 내용 제거 후 trim)
+      var normSup = r.sup.replace(/\s*[\(\（][^\)\）]*[\)\）]/g, '').trim();
+      var found = SUPPLIERS.find(function(s){
+        return s.name === r.sup || s.name === normSup;
+      });
+      if (found) {
+        document.getElementById('si'+id).value = found.name;
+        document.getElementById('sc'+id).textContent = found.code;
+      } else {
+        // 미등록 공급사: 정규화된 이름으로 넣기
+        document.getElementById('si'+id).value = normSup || r.sup;
+        document.getElementById('sc'+id).textContent = '—';
+      }
+    }
+
+    // 공급가
+    if (r.costP) document.getElementById('sp'+id).value = r.costP;
+
+    // 판매가: 있으면 의류(프리미엄 브랜드)로 카테고리 세팅 후 직접입력란에 넣기
+    // → 직원이 카테고리를 바꾸면 자동계산으로 전환됨
+    if (r.saleP) {
+      document.getElementById('cat'+id).value = '의류(프리미엄 브랜드)';
+      document.getElementById('mp'+id).value = r.saleP;
+      upPrice(id); // 직접입력 모드 활성화
+    }
+
+    // 소재
+    if (r.fab) document.getElementById('fab'+id).value = r.fab;
+
+    // 제조국
+    if (r.ctr) document.getElementById('ctr'+id).value = r.ctr;
+
+    // 설명글
+    if (r.desc) {
+      document.getElementById('desc'+id).value = r.desc;
+      var prev = document.getElementById('dprev'+id);
+      prev.textContent = r.desc.length > 50 ? r.desc.slice(0,50)+'...' : r.desc;
+      prev.style.color = '#1A1A1A';
+    }
+
+    // 색상 태그
+    if (r.color && r.color.length) {
+      tags[id+'c'] = r.color.slice();
+      renderTags(id, 'c');
+    }
+
+    // 사이즈 태그
+    if (r.size && r.size.length) {
+      tags[id+'s'] = r.size.slice();
+      renderTags(id, 's');
+    }
+
+    // 모델착용컬러 = 색상 옵션과 동일하게
+    if (r.color && r.color.length) {
+      tags[id+'m'] = r.color.slice();
+      renderTags(id, 'm');
+    }
+
+    upPrice(id);
+    added++;
+  });
+  updCnt();
+  saveToLocal();
+  closeImportModal();
+  toast('✅ ' + added + '개 상품 가져오기 완료! 카테고리를 선택해주세요.');
 }
 
 // 30초마다 자동저장
