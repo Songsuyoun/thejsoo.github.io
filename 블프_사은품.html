@@ -7,7 +7,7 @@
 <script>
 /* ===== 관리자 설정 =====
    구글 시트 Apps Script를 웹앱으로 배포한 뒤 받은 주소(…/exec)를 아래 따옴표 안에 붙여넣으세요. */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbw4-80kDOYRj_puB2uIxIhCasCfxXC14UKwB8TnQ6Y5uT5kS0vfrEBbwko5EU4DZ-_U4w/exec';
+const GAS_URL = '';
 </script>
 <style>
 :root{
@@ -204,8 +204,8 @@ tbody tr:last-child td{border-bottom:0}
           <li>'현재 구매금액' = 처음 구매금액 − 취소·반품된 상품의 블프 할인 후 가격 (결제 수단과 상관없이 계산). 일부 취소·반품된 주문은 이 금액으로 사은품 대상인지 다시 판단합니다.</li>
           <li>쉘 집게핀: 30만 원 이상 모든 주문 (수량 제한 없음). 취소·반품으로 30만 원 아래가 되면 집게핀도 반납 → 집게핀 버튼의 '회수 확인'에 뜹니다.</li>
           <li><b>반품 시 반납 정리</b> — 50만 원 이상 주문(집게핀+니트)이 30~50만 원이 되면 <b>니트만</b> 반납, 30만 원 아래가 되면 <b>집게핀+니트 둘 다</b> 반납. 둘 다인 주문은 집게핀·라쿤 니트 버튼 양쪽의 '회수 확인'에 각각 뜹니다.</li>
-          <li>라쿤 니트: 50만 원 이상 선착순. 50만 원 이상 주문에는 집게핀과 니트를 둘 다 넣습니다. 반품으로 50만 원 아래가 되어도 아멜리 패딩을 그대로 갖고 있으면 니트는 반납하지 않습니다(패딩 사은품으로 인정).</li>
-          <li>패딩 니트: [the J.Soo Premium] 아멜리 벨트 덕다운 패딩 (Black · Ivory 둘 다) 을 산 주문 (금액 무관). 상품명에 위 단어가 들어간 상품으로 찾습니다. 1주문당 니트 1장이라, 이미 50만 원 니트를 받는 주문은 빠집니다. 패딩을 반품하면 '회수 확인'에 뜹니다.</li>
+          <li>라쿤 니트: 50만 원 이상 선착순 30개. 50만 원 이상 주문에는 집게핀과 니트를 둘 다 넣습니다. 반품으로 50만 원 아래가 되면 이 니트는 반납합니다.</li>
+          <li>패딩 니트: [the J.Soo Premium] 아멜리 벨트 덕다운 패딩 (Black · Ivory 둘 다) 을 산 주문 (금액 무관). 상품명에 위 단어가 들어간 상품으로 찾습니다. <b>50만 원 이상이면서 아멜리 패딩도 산 주문은 니트가 2장</b>(라쿤 니트 1 + 패딩 니트 1) 나가요 — 라쿤 니트·패딩 니트 버튼 양쪽에 각각 뜹니다. 두 니트는 수량(30개 / 66개)과 회수를 따로 셉니다. 패딩을 반품하면 패딩 니트 '회수 확인'에 뜹니다.</li>
           <li><b>11/16 오전 11:00 이후 주문만</b> 대상입니다(행사 시작·종료 칸 기준). 주문일시와 결제일시 중 빠른 시각으로 판단해서, 11시 전에 주문하고 11시 넘어 입금한 무통장 주문은 빠집니다.</li>
           <li>결제일시 순서로 선착순. 미입금·전체 취소 주문은 빠집니다. 처리 완료한 주문은 사은품 1개를 쓴 것으로 셉니다. 사은품마다 수량과 처리 기록을 따로 셉니다.</li>
           <li>사은품을 넣기 전에 일부 취소된 주문은 취소 후 금액으로 다시 판단합니다. 처리 완료한 주문이 나중에 취소·반품으로 기준 금액 아래가 되면 '회수 확인'에 나옵니다.</li>
@@ -420,7 +420,7 @@ async function unmark(no){ await post({action:'unmark',gift,order:no}); render()
 // ---- 계산 ----
 let rowsCache=exampleRows(), view='new', current=null, lastAll=null;
 let snap=null;   // 복사한 순간의 목록 {gift, nos:Set} → 처리 완료 시 이 주문만 저장
-function cfgFor(k){ const f=$('from').value,t=$('to').value,G=GIFTS[k]; return {min:G.min,max:G.max,qty:G.qty,kind:G.kind,kw:G.kw,noRecall:G.noRecall,keepKw:k==='knit'?GIFTS.padding.kw:'',from:f?new Date(f):null,to:t?new Date(t):null}; }
+function cfgFor(k){ const f=$('from').value,t=$('to').value,G=GIFTS[k]; return {min:G.min,max:G.max,qty:G.qty,kind:G.kind,kw:G.kw,noRecall:G.noRecall,keepKw:'',from:f?new Date(f):null,to:t?new Date(t):null}; }
 function syncFields(){ const G=GIFTS[gift]; $('min').value=G.min; $('max').value=G.max||''; $('qty').value=G.qty; $('kw').value=G.kw||''; $('gLabel').textContent=G.short; const item=G.kind==='item'; $('min').disabled=item; $('max').disabled=item; $('kw').disabled=!item; }
 function readFields(){ const G=GIFTS[gift]; G.min=num($('min').value); G.max=num($('max').value); G.qty=Math.max(0,Math.floor(num($('qty').value))); if(G.kind==='item') G.kw=$('kw').value; }
 const itemText=o=>o.itemsText!=null?o.itemsText:o.items.filter(x=>!x.cancel).map(x=>x.nm+(x.q>1?` ×${x.q}`:'')).join(' / ');
@@ -429,8 +429,7 @@ function computeFromCSV(){
   const orders=groupOrders(rowsCache); ordersCache=orders; payInfoText(orders);
   const P=mode==='example'?EXAMPLE_PROCESSED:processed; const all={};
   all.pin=classify(orders,cfgFor('pin'),P.pin); all.knit=classify(orders,cfgFor('knit'),P.knit);
-  const knitSet=new Set([...all.knit.new,...all.knit.done,...all.knit.check].map(o=>o.no));
-  all.padding=classify(orders,cfgFor('padding'),P.padding,knitSet);
+  all.padding=classify(orders,cfgFor('padding'),P.padding);   // 50만 원 니트와 따로 셈 → 패딩 + 50만 원 이상이면 니트 2장
   return all;
 }
 // 직원 화면: 공유된 작업 목록 − 이미 처리 완료된 주문 (주문번호로 거름)
