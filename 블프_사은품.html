@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>블프 사은품 대상 조회</title>
+<script>
+/* ===== 관리자 설정 =====
+   구글 시트 Apps Script를 웹앱으로 배포한 뒤 받은 주소(…/exec)를 아래 따옴표 안에 붙여넣으세요. */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw4-80kDOYRj_puB2uIxIhCasCfxXC14UKwB8TnQ6Y5uT5kS0vfrEBbwko5EU4DZ-_U4w/exec';
+</script>
+<style>
+:root{
+  --bg:#f6f6f4; --surface:#ffffff; --ink:#1a1a1a; --muted:#6f6f6f; --line:#e2e2de; --soft:#f0f0ec;
+  --accent:#1a1a1a; --ok:#2f6b4f; --ok-bg:#e5f1ea; --done:#3f5d7a; --done-bg:#e6edf4; --warn:#8a5a10; --warn-bg:#f8eedb; --no:#9a3b30; --no-bg:#f8e7e4;
+  --f:"Helvetica Neue",Helvetica,Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#141414; --surface:#1c1c1d; --ink:#ececea; --muted:#9d9d9f; --line:#2e2e30; --soft:#232325; --accent:#ececea;
+  --ok:#86c9a4; --ok-bg:#1d3127; --done:#9cbbdb; --done-bg:#1f2a36; --warn:#e3b45e; --warn-bg:#3a2e17; --no:#f0a198; --no-bg:#3a2320; color-scheme:dark }}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.55;padding:32px 16px 56px}
+.wrap{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.brand{font-size:12px;letter-spacing:.2em;color:var(--muted)}
+h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.3px}
+.sub{margin:0;color:var(--muted);max-width:78ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{margin:0;font-size:13px;font-weight:700}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;color:var(--muted)}
+.field input{border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;padding:8px 10px;min-width:0;width:100%;font-variant-numeric:tabular-nums}
+.field input:focus{outline:2px solid var(--accent);outline-offset:1px}
+details summary{cursor:pointer;font-size:13px;font-weight:700}
+details[open] summary{margin-bottom:12px}
+.drop{border:1.5px dashed var(--line);border-radius:8px;padding:24px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--soft)}
+.drop.over{border-color:var(--accent)}
+.btn{font:inherit;font-size:13px;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:6px;padding:8px 14px;cursor:pointer;min-height:36px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.tab:focus-visible,.mini:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.msg{font-size:13px}
+.msg.err{color:var(--no)}
+.msg.ok{color:var(--ok)}
+.notice{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:500}
+.notice.bad{background:var(--no-bg);color:var(--no)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:26px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.stat.key{border-color:var(--ok)} .stat.key b{color:var(--ok)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer;min-height:34px}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.tab .n{font-variant-numeric:tabular-nums;margin-left:4px;opacity:.75}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;font-weight:500;color:var(--muted);background:var(--soft);white-space:nowrap}
+td{white-space:nowrap}
+td.wrap-cell{white-space:normal;min-width:220px;max-width:320px}
+td.num{text-align:right}
+td .items{display:flex;flex-direction:column;gap:2px}
+td .small,.small{font-size:12px;color:var(--muted)}
+tbody tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.done{background:var(--done-bg);color:var(--done)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.no{background:var(--no-bg);color:var(--no)}
+.gifts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.gifts{grid-template-columns:minmax(0,1fr)}}
+.gift{font:inherit;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0}
+.gift span{font-size:12px;color:var(--muted)}.gift i{font-style:normal}
+.gift em{font-style:normal;font-size:12px;color:var(--muted)}
+.gift[aria-selected="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.gift:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mini{font:inherit;font-size:12px;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:5px;padding:3px 8px;cursor:pointer;margin-top:4px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.qgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.qgrid{grid-template-columns:minmax(0,1fr)}}
+.qbox{display:flex;flex-direction:column;gap:6px;min-width:0}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.qbox textarea{border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px;padding:8px 10px;width:100%;resize:vertical;font-variant-numeric:tabular-nums}
+.rules{margin:0;padding-left:18px;color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;gap:2px}
+.me{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.me .field{width:220px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">the J.Soo · BLACK FRIDAY</div>
+    <h1>블프 사은품 대상 조회</h1>
+    <p class="sub">카페24 주문 CSV를 올리면 <b>30만 원 이상 집게핀(전원) · 50만 원 이상 라쿤 니트(선착순) · 아멜리 패딩 구매 시 라쿤 니트</b> 중 이번에 새로 사은품을 넣어야 하는 주문만 보여줍니다. 처리 완료 기록은 구글 시트에 저장돼서 모든 직원이 같은 기록을 봐요.</p>
+  </header>
+
+  <div class="notice bad" id="setupNote" hidden>공유 시트 주소가 아직 설정되지 않았어요. 관리자는 이 파일 맨 위의 <b>GAS_URL</b>에 웹앱 주소를 넣어 주세요. 그 전까지는 처리 완료 표시를 할 수 없습니다.</div>
+
+  <section class="panel">
+    <h2>사용 순서</h2>
+    <ol class="steps">
+      <li>아래에 <b>내 이름</b>을 한 번 적어 둡니다. (처리 완료 기록에 누가 처리했는지 남아요 · 이 컴퓨터에 기억됨)</li>
+      <li>카페24에서 <b>11/16부터 지금까지</b> 주문을 CSV로 받아 아래에 올립니다. (매번 같은 시작일)</li>
+      <li><b>집게핀 / 라쿤 니트 / 패딩 니트</b> 버튼을 차례로 골라, '새로 처리할 주문'의 <b>이름·연락처를 복사</b>해 셀메이트에서 찾아 사은품을 추가합니다. (세 버튼 모두 해주세요 · 50만 원 이상 주문은 집게핀과 니트 둘 다 들어갑니다)</li>
+      <li><b>'처리 완료로 표시'</b>를 누릅니다. 다른 직원 화면에서도 이 주문들이 빠지고, 남은 사은품 수가 줄어듭니다.</li>
+      <li>취소·반품이 들어오면 세 버튼 모두에서 <b>'회수 확인'</b> 탭을 봐주세요. 거기 뜬 주문은 해당 사은품을 반납받아야 합니다.</li>
+    </ol>
+    <div class="me">
+      <div class="field"><label for="me">내 이름 (처리자)</label><input id="me" type="text" placeholder="예: 혜련" maxlength="20"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>주문 파일 올리기</h2>
+    <div class="drop" id="drop">
+      <span>카페24 주문 CSV 파일을 여기에 끌어다 놓거나</span>
+      <label class="btn" for="file">파일 선택</label>
+      <input id="file" type="file" accept=".csv,text/csv" hidden>
+    </div>
+    <div class="msg" id="msg" role="status"></div>
+    <div class="bar"><div class="msg" id="store" role="status"></div><button class="btn ghost" type="button" id="syncBtn">기록 새로고침</button></div>
+    <div class="msg" id="payInfo" role="status"></div>
+  </section>
+
+  <div class="notice" id="exampleNote">지금 보이는 표는 예시 데이터입니다(가상의 고객). 파일을 올리면 실제 주문으로 바뀌며, 예시에서는 '처리 완료' 표시가 저장되지 않습니다.</div>
+
+  <div class="gifts" role="tablist" id="giftTabs">
+    <button class="gift" role="tab" data-g="pin" aria-selected="true"><b>쉘 집게핀</b><span>30만 원 이상 · 전원 증정</span><em id="gnPin"></em></button>
+    <button class="gift" role="tab" data-g="knit" aria-selected="false"><b>라쿤 니트</b><span>50만 원 이상 · 선착순 <i id="gqKnit">30</i>개</span><em id="gnKnit"></em></button>
+    <button class="gift" role="tab" data-g="padding" aria-selected="false"><b>패딩 니트</b><span>아멜리 패딩 구매 시 · 니트 <i id="gqPad">66</i>개</span><em id="gnPad"></em></button>
+  </div>
+
+  <div class="stats">
+    <div class="stat key"><b id="sNew">0</b><span>새로 처리할 주문</span></div>
+    <div class="stat"><b id="sDone">0</b><span>처리 완료 (누적)</span></div>
+    <div class="stat"><b id="sLeft">0</b><span>남은 사은품</span></div>
+    <div class="stat"><b id="sCheck">0</b><span>회수 확인 필요</span></div>
+  </div>
+
+  <section class="panel" id="quick">
+    <div class="bar"><h2>셀메이트 검색용 복사</h2><p class="hint" id="qSub"></p></div>
+    <div class="qgrid">
+      <div class="qbox"><div class="qhead"><b>이름</b><button class="btn" type="button" id="qNameBtn">이름 복사</button></div><textarea id="qName" readonly rows="3" aria-label="이름 목록"></textarea></div>
+      <div class="qbox"><div class="qhead"><b>연락처</b><button class="btn" type="button" id="qPhoneBtn">연락처 복사</button></div><textarea id="qPhone" readonly rows="3" aria-label="연락처 목록"></textarea></div>
+    </div>
+    <p class="hint">아래 표에서 고른 사은품 버튼과 탭(새로 처리할 주문 · 회수 확인 등)에 맞춰 바뀝니다. 이름과 연락처는 같은 순서예요.</p>
+  </section>
+
+  <section class="panel">
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-v="new" aria-selected="true">새로 처리할 주문<span class="n" id="nNew"></span></button>
+      <button class="tab" role="tab" data-v="done" aria-selected="false">처리 완료<span class="n" id="nDone"></span></button>
+      <button class="tab" role="tab" data-v="check" aria-selected="false">회수 확인<span class="n" id="nCheck"></span></button>
+      <button class="tab" role="tab" data-v="over" aria-selected="false">선착순 마감<span class="n" id="nOver"></span></button>
+    </div>
+    <div class="bar">
+      <p class="hint" id="tabHint"></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" type="button" id="copyBtn">목록 복사 (엑셀용)</button>
+        <button class="btn" type="button" id="markBtn">처리 완료로 표시</button>
+      </div>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>순번</th><th>사은품</th><th>주문번호</th><th>결제일시</th><th>수령인</th><th>연락처</th><th>주소</th><th>구매 상품</th><th style="text-align:right">구매금액<br>(쿠폰 전)</th><th style="text-align:right">현재<br>구매금액</th><th>주문 상태</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel">
+    <details>
+      <summary>조건 · 계산 기준</summary>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="fields">
+          <div class="field"><label for="min"><span id="gLabel">집게핀</span> 기준 금액 (이상, 원)</label><input id="min" type="number" step="10000" value="300000"></div>
+          <div class="field"><label for="max">상한 금액 (미만, 원 · 비우면 없음)</label><input id="max" type="number" step="10000" value=""></div>
+          <div class="field"><label for="qty">선착순 수량 (0 = 제한 없음)</label><input id="qty" type="number" step="1" value="0"></div>
+          <div class="field"><label for="kw">패딩 상품명에 들어간 단어</label><input id="kw" type="text" value="아멜리 벨트 덕다운 패딩"></div>
+          <div class="field"><label for="from">행사 시작</label><input id="from" type="datetime-local" value="2026-11-16T11:00"></div>
+          <div class="field"><label for="to">행사 종료</label><input id="to" type="datetime-local" value="2026-11-26T11:00"></div>
+        </div>
+        <ul class="rules">
+          <li>구매금액 = 블프 할인 적용 후, 쿠폰 사용 전 금액 (배송비 제외). 카페24 '총 실결제금액(최초정보)' + '네이버 포인트' + '네이버 캐시' + '예치금(최초)' + '쿠폰 할인금액(최초)' + '사용한 적립금액(최초)' − 배송비</li>
+          <li>네이버페이 포인트로 전액 결제해 실결제금액이 0원인 주문도 포인트 사용액만큼 구매금액으로 셉니다.</li>
+          <li>네이버페이 <b>주문형</b>(쿠폰을 쓸 수 없음)·<b>결제형</b>(쿠폰 사용 가능) 모두 같은 기준입니다. 금액이 '쿠폰 사용 전'이라 <b>쿠폰을 안 쓴 주문도 조건이 맞으면 똑같이 사은품을 받습니다.</b> 주문번호 아래 'N페이 주문형/결제형', 금액 아래 '쿠폰 사용액'이 표시됩니다.</li>
+          <li>'현재 구매금액' = 처음 구매금액 − 취소·반품된 상품의 블프 할인 후 가격 (결제 수단과 상관없이 계산). 일부 취소·반품된 주문은 이 금액으로 사은품 대상인지 다시 판단합니다.</li>
+          <li>쉘 집게핀: 30만 원 이상 모든 주문 (수량 제한 없음). 취소·반품으로 30만 원 아래가 되면 집게핀도 반납 → 집게핀 버튼의 '회수 확인'에 뜹니다.</li>
+          <li><b>반품 시 반납 정리</b> — 50만 원 이상 주문(집게핀+니트)이 30~50만 원이 되면 <b>니트만</b> 반납, 30만 원 아래가 되면 <b>집게핀+니트 둘 다</b> 반납. 둘 다인 주문은 집게핀·라쿤 니트 버튼 양쪽의 '회수 확인'에 각각 뜹니다.</li>
+          <li>라쿤 니트: 50만 원 이상 선착순. 50만 원 이상 주문에는 집게핀과 니트를 둘 다 넣습니다. 반품으로 50만 원 아래가 되어도 아멜리 패딩을 그대로 갖고 있으면 니트는 반납하지 않습니다(패딩 사은품으로 인정).</li>
+          <li>패딩 니트: [the J.Soo Premium] 아멜리 벨트 덕다운 패딩 (Black · Ivory 둘 다) 을 산 주문 (금액 무관). 상품명에 위 단어가 들어간 상품으로 찾습니다. 1주문당 니트 1장이라, 이미 50만 원 니트를 받는 주문은 빠집니다. 패딩을 반품하면 '회수 확인'에 뜹니다.</li>
+          <li>결제일시 순서로 선착순. 미입금·전체 취소 주문은 빠집니다. 처리 완료한 주문은 사은품 1개를 쓴 것으로 셉니다. 사은품마다 수량과 처리 기록을 따로 셉니다.</li>
+          <li>사은품을 넣기 전에 일부 취소된 주문은 취소 후 금액으로 다시 판단합니다. 처리 완료한 주문이 나중에 취소·반품으로 기준 금액 아래가 되면 '회수 확인'에 나옵니다.</li>
+          <li>파일 속 고객 정보는 이 브라우저 안에서만 읽습니다. 구글 시트에 저장되는 건 사은품 종류 · 주문번호 · 처리 시각 · 처리자 이름뿐입니다. 30초마다 자동으로 다른 직원의 기록을 불러옵니다.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
+const num=v=>{const x=parseFloat(String(v||'').replace(/[,\s원]/g,''));return isNaN(x)?0:x};
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>`${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+function parseCSV(text){
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++} else q=false } else f+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(f);f=''}
+    else if(c==='\n'){row.push(f);rows.push(row);row=[];f=''}
+    else if(c!=='\r') f+=c;
+  }
+  if(f!==''||row.length){row.push(f);rows.push(row)}
+  return rows;
+}
+function toDate(s){ if(!s) return null; const m=s.trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})/); return m?new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]):null; }
+
+// 주문 단위로 묶기 (품목 여러 줄 → 주문 1건)
+function groupOrders(rows){
+  const h=rows[0].map(x=>x.replace(/^﻿/,'').trim()); const idx=n=>h.indexOf(n);
+  const need=['주문번호','결제일시(입금확인일)','총 실결제금액(최초정보)','주문 상태'];
+  const miss=need.filter(n=>idx(n)<0); if(miss.length) throw new Error('파일에 필요한 칸이 없습니다: '+miss.join(', ')+'. 카페24 주문 엑셀 양식을 확인해 주세요.');
+  const I={no:idx('주문번호'),paid:idx('결제일시(입금확인일)'),first:idx('총 실결제금액(최초정보)'),now:idx('총 결제금액'),
+    ship:idx('총 배송비 (첫 품목에만 표시)'),ship2:idx('총 배송비 (전체 품목에 표시)'),st:idx('주문 상태'),
+    cp:idx('쿠폰 할인금액(최초)'),pt:idx('사용한 적립금액(최초)'),np:idx('네이버 포인트'),nc:idx('네이버 캐시'),dep:idx('예치금(최초)'),
+    name:idx('수령인'),orderer:idx('주문자명'),hp:idx('수령인 휴대전화'),tel:idx('수령인 전화번호'),ohp:idx('주문자 휴대전화'),
+    addr:idx('수령인 주소(전체)'),pay:h.findIndex(x=>/결제수단/.test(x)),path:h.findIndex(x=>/주문경로/.test(x)&&!/주문번호/.test(x)),ext:h.findIndex(x=>/주문경로\s*주문번호/.test(x)),item:idx('주문상품명(옵션포함)'),item2:idx('주문상품명'),qty:idx('수량'),
+    prod:idx('상품구매금액'),price:idx('판매가'),disc:idx('품목별 추가할인금액(최초)')};
+  const g=(r,i)=>i>=0?(r[i]||'').trim():'';
+  const NPR=/네이버\s*페이|naver\s*pay|npay/i;
+  const orders=new Map();
+  for(const r of rows.slice(1)){
+    const no=g(r,I.no); if(!no) continue;
+    const o=orders.get(no)||{no,paid:g(r,I.paid),first:0,now:null,ship:0,cp:0,pt:0,np:0,gone:0,st:[],items:[],
+      npay:'',name:g(r,I.name)||g(r,I.orderer),phone:g(r,I.hp)||g(r,I.tel)||g(r,I.ohp),addr:g(r,I.addr)};
+    o.first=Math.max(o.first,num(g(r,I.first)));
+    if(I.now>=0) o.now=Math.max(o.now??0,num(g(r,I.now)));
+    o.ship=Math.max(o.ship,num(g(r,I.ship)),num(g(r,I.ship2)));
+    o.cp=Math.max(o.cp,num(g(r,I.cp))); o.pt=Math.max(o.pt,num(g(r,I.pt)));
+    o.np=Math.max(o.np,num(g(r,I.np))+num(g(r,I.nc))+num(g(r,I.dep)));  // 네이버 포인트·캐시·예치금으로 낸 금액
+    if(!o.paid&&g(r,I.paid)) o.paid=g(r,I.paid);
+    // 네이버페이 구분: 주문경로가 네이버페이이거나 '주문경로 주문번호'가 있으면 주문형(쿠폰 불가), 결제수단만 네이버페이면 결제형
+    const isPay=NPR.test(g(r,I.pay));
+    if(NPR.test(g(r,I.path))||(isPay&&g(r,I.ext))) o.npay='주문형'; else if(!o.npay&&isPay) o.npay='결제형';
+    const st=g(r,I.st); o.st.push(st);
+    const nm=g(r,I.item)||g(r,I.item2); const q=num(g(r,I.qty))||1;
+    if(nm) o.items.push({nm,q,cancel:/취소/.test(st),back:/취소|반품/.test(st)});
+    // 품목 금액 = 상품구매금액 + 품목별 추가할인(음수) → 블프 할인 후 가격. 취소·반품된 품목 금액을 모아 처음 금액에서 뺀다
+    const iv=(I.prod>=0?num(g(r,I.prod)):num(g(r,I.price))*q)+(I.disc>=0?num(g(r,I.disc)):0);
+    if(/취소|반품/.test(st)) o.gone+=iv;
+    orders.set(no,o);
+  }
+  for(const o of orders.values()){
+    o.d=toDate(o.paid);
+    o.amt=o.first+o.np+o.cp+o.pt-o.ship;
+    o.nowAmt=(I.prod>=0||I.price>=0)?Math.max(0,o.amt-o.gone):(o.now==null?null:Math.max(0,o.now+o.np+o.cp+o.pt-o.ship));
+    o.allCancel=o.st.length>0&&o.st.every(s=>/취소/.test(s));
+    o.allBack=o.st.length>0&&o.st.every(s=>/취소|반품/.test(s));
+    o.partial=o.st.some(s=>/취소|반품/.test(s));
+    o.status=[...new Set(o.st)].join(' / ');
+  }
+  orders.payCols=I.pay>=0||I.path>=0||I.ext>=0;
+  return orders;
+}
+
+// processed: Set(주문번호) — 이미 사은품을 넣은 주문
+function classify(orders,cfg,processed,exclude){
+  const inRange=o=>o.d&&(!cfg.from||o.d>=cfg.from)&&(!cfg.to||o.d<cfg.to);
+  const tier=v=>v>=cfg.min&&(!cfg.max||v<cfg.max);
+  // 아직 사은품을 안 넣은 주문은 취소·반품 반영 후 금액으로, 이미 넣은 주문은 처음 금액으로 판단
+  const eff=o=>(o.partial&&o.nowAmt!=null)?o.nowAmt:o.amt;
+  const kw=(cfg.kw||'').trim();
+  const nsp=s=>String(s||'').replace(/\s+/g,'');  // 띄어쓰기가 달라도 같은 상품으로 인식
+  const hasItem=(o,incl)=>!!kw&&o.items.some(x=>nsp(x.nm).includes(nsp(kw))&&(incl||!x.back));
+  // 니트: 50만 원 아래로 내려가도 아멜리 패딩을 그대로 갖고 있으면 니트는 유지(1주문 1장)
+  const keepByItem=o=>!!cfg.keepKw&&o.items.some(x=>!x.back&&nsp(x.nm).includes(nsp(cfg.keepKw)));
+  const fits=cfg.kind==='item'?((o,first)=>hasItem(o,first)):((o,first)=>tier(first?o.amt:eff(o)));
+  const eligible=[...orders.values()].filter(o=>inRange(o)&&!o.allCancel&&(processed.has(o.no)?fits(o,true):(!o.allBack&&fits(o,false)&&!(exclude&&exclude.has(o.no))))).sort((a,b)=>a.d-b.d||a.no.localeCompare(b.no));
+  const unlimited=!(cfg.qty>0);
+  let used=processed.size;  // 처리 완료 = 사은품 이미 나감
+  const out={new:[],done:[],check:[],over:[]};
+  eligible.forEach((o,i)=>{ o.rank=i+1; });
+  for(const o of eligible){
+    if(processed.has(o.no)){
+      const below=!cfg.noRecall&&(cfg.kind==='item'?!hasItem(o,false):(o.allBack||(o.partial&&(o.nowAmt==null||o.nowAmt<cfg.min))));
+      (below&&!keepByItem(o)?out.check:out.done).push(o);
+    }
+  }
+  for(const o of eligible){
+    if(processed.has(o.no)) continue;
+    if(unlimited||used<cfg.qty){ out.new.push(o); used++; } else out.over.push(o);
+  }
+  // 처리 완료했는데 전체 취소되어 대상에서 빠진 주문
+  if(!cfg.noRecall) for(const no of processed){
+    const o=orders.get(no);
+    if(o&&o.allCancel&&inRange(o)){ o.rank='-'; out.check.push(o); }
+  }
+  return {...out,left:unlimited?null:Math.max(0,cfg.qty-processed.size-out.new.length),unlimited,doneTotal:processed.size};
+}
+
+// 예시 데이터 (가상의 고객)
+function exampleRows(){
+  const H=['주문번호','결제일시(입금확인일)','총 실결제금액(최초정보)','총 결제금액','총 배송비 (첫 품목에만 표시)','주문 상태','쿠폰 할인금액(최초)','사용한 적립금액(최초)','수령인','수령인 휴대전화','수령인 주소(전체)','주문상품명(옵션포함)','수량','네이버 포인트','결제수단','주문경로'];
+  const O=[
+    {no:'20261116-0000012',paid:'2026-11-16 11:02',coupon:45000,name:'김지은(예시)',hp:'010-0000-0001',addr:'서울특별시 강남구 예시로 12, 101동 1001호',
+      items:[['[the J.Soo Premium] 아뜰리에 캐시미어 핸드메이드 코트(색상=블랙, 사이즈=Free)',291900,1,'배송 준비중'],['[the J.Soo Premium] 하트 모헤어 니트(색상=아이보리, 사이즈=Free)',50750,1,'배송 준비중'],['[the J.Soo] 울 블렌드 롱 스커트(색상=차콜, 사이즈=M)',172900,1,'배송 준비중']]},
+    {no:'20261116-0000031',paid:'2026-11-16 11:15',coupon:45000,name:'박서연(예시)',hp:'010-0000-0002',addr:'부산광역시 해운대구 샘플로 45, 2층',
+      items:[['[the J.Soo Premium] 퍼 자켓(색상=브라운, 사이즈=Free)',289000,1,'결제완료'],['[the J.Soo] 시티 스무스 텐션 셔츠(색상=아이보리, 사이즈=Free)',49050,2,'결제완료'],['[the J.Soo] 슬림 스트레이트 슬랙스(색상=블랙, 사이즈=S)',224900,1,'결제완료']]},
+    {no:'20261116-0000058',paid:'2026-11-16 13:40',coupon:18000,name:'이하나(예시)',hp:'010-0000-0003',addr:'경기도 성남시 분당구 예시길 7',
+      items:[['[the J.Soo] 트위드 원피스(색상=블랙, 사이즈=M)',480000,1,'배송 준비중']]},
+    {no:'20261117-0000007',paid:'2026-11-17 09:10',coupon:45000,name:'최민지(예시)',hp:'010-0000-0004',addr:'대구광역시 수성구 샘플대로 210, 503호',
+      items:[['[the J.Soo Premium] 아뜰리에 캐시미어 핸드메이드 코트(색상=크림, 사이즈=Free)',291900,1,'취소 완료'],['[the J.Soo] 브랜디 슬리브리스 울 원피스(색상=블랙, 사이즈=S)',211600,1,'배송 준비중']],cancelAmt:291900},
+    {no:'20261118-0000044',paid:'2026-11-18 21:05',coupon:45000,name:'정유진(예시)',hp:'010-0000-0005',addr:'경상남도 김해시 예시로 88',
+      items:[['[the J.Soo Premium] 하객 롱 원피스(색상=네이비, 사이즈=M)',356300,1,'결제완료'],['[the J.Soo] 레그 라운드 홀 가디건(색상=베이지, 사이즈=Free)',81747,1,'결제완료'],['라스트피스 · 체크 울 재킷(색상=그레이, 사이즈=Free)',89000,1,'결제완료']]},
+    {no:'20261119-0000016',paid:'2026-11-19 10:31',coupon:18000,name:'윤다은(예시)',hp:'010-0000-0006',addr:'인천광역시 연수구 예시로 30',
+      items:[['[the J.Soo] 울 블렌드 하프 코트(색상=베이지, 사이즈=M)',259000,1,'결제완료'],['[the J.Soo] 시티 스무스 텐션 셔츠(색상=블랙, 사이즈=Free)',49050,1,'결제완료']]},
+    {no:'20261120-0000088',paid:'2026-11-20 20:14',coupon:18000,naver:true,name:'서지민(예시 · N페이 결제형 · 포인트 전액)',hp:'010-0000-0007',addr:'광주광역시 서구 예시로 5',
+      items:[['[the J.Soo Premium] 하객 롱 원피스(색상=블랙, 사이즈=S)',356300,1,'결제완료']]},
+    {no:'20261121-0000031',paid:'2026-11-21 13:02',coupon:7000,name:'오하린(예시)',hp:'010-0000-0008',addr:'대전광역시 유성구 예시로 9',
+      items:[['[the J.Soo Premium] 아멜리 벨트 덕다운 패딩_Black(사이즈=Free)',189000,1,'결제완료']]},
+    {no:'20261122-0000019',paid:'2026-11-22 15:47',coupon:0,pay:'네이버페이',path:'네이버페이',name:'한유나(예시 · N페이 주문형 · 쿠폰 없음)',hp:'010-0000-0009',addr:'울산광역시 남구 예시로 21',
+      items:[['[the J.Soo] 하객 트위드 셋업 자켓(색상=아이보리, 사이즈=M)',318000,1,'결제완료']]}
+  ];
+  const rows=[H];
+  for(const o of O){
+    const sum=o.items.reduce((s,[,p,q])=>s+p*q,0);
+    const paid=sum-o.coupon; const now=o.cancelAmt?paid-o.cancelAmt:paid;
+    const np=o.naver?paid:0;
+    o.items.forEach(([nm,p,q,st],i)=>rows.push([o.no,o.paid,String(paid-np),String(now-np),i===0?'0':'',st,String(o.coupon),'0',o.name,o.hp,o.addr,nm,String(q),String(np),o.pay||(o.naver?'네이버페이':'신용카드'),o.path||'모바일웹']));
+  }
+  return rows;
+}
+const EXAMPLE_PROCESSED={knit:new Set(['20261116-0000012','20261117-0000007']),pin:new Set(['20261116-0000012','20261117-0000007']),padding:new Set()};
+
+// ---- 사은품 3종 ----
+const GIFTS={
+  pin:{label:'쉘 집게핀',short:'집게핀',min:300000,max:0,qty:0},
+  knit:{label:'라쿤 니트',short:'니트',min:500000,max:0,qty:30},
+  padding:{label:'패딩 라쿤 니트',short:'패딩 니트',kind:'item',kw:'아멜리 벨트 덕다운 패딩',min:0,max:0,qty:66}
+};
+let gift='pin';
+
+// ---- 처리 완료 저장소: 구글 시트 (Apps Script 웹앱) ----
+let processed={pin:new Set(),knit:new Set(),padding:new Set()};
+let info={pin:{},knit:{},padding:{}};   // 주문번호 → {at:처리시각, by:처리자}
+let storeMode='loading', lastSync=null, saving=false, syncing=false;
+function setStore(t,cls){ const el=$('store'); el.textContent=t; el.className='msg'+(cls?' '+cls:''); }
+function storeText(){ return `구글 시트와 공유 중 · 집게핀 ${processed.pin.size}건 · 니트 ${processed.knit.size}건 · 패딩 니트 ${processed.padding.size}건 · 마지막 확인 ${lastSync?pad(lastSync.getHours())+':'+pad(lastSync.getMinutes()):'-'} (30초마다 자동 새로고침)`; }
+function applyData(d){
+  for(const k of Object.keys(GIFTS)){ info[k]=(d&&d[k])||{}; processed[k]=new Set(Object.keys(info[k])); }
+  lastSync=new Date(); storeMode='shared'; setStore(storeText(),'ok');
+}
+async function sync(){
+  if(!GAS_URL){ storeMode='off'; $('setupNote').hidden=false; setStore('공유 시트가 설정되지 않아 처리 완료를 저장할 수 없어요.','err'); render(); return; }
+  if(syncing||saving) return;
+  syncing=true;
+  try{
+    const r=await fetch(GAS_URL+(GAS_URL.includes('?')?'&':'?')+'t='+Date.now());
+    const j=await r.json(); if(!j.ok) throw new Error(j.error||'fail');
+    applyData(j.data);
+  }catch(e){
+    storeMode='off';
+    setStore('공유 시트에 연결하지 못했어요. 인터넷을 확인하고 「기록 새로고침」을 눌러 주세요. 연결될 때까지 처리 완료 표시는 막아둘게요. (사은품이 두 번 나가지 않도록)','err');
+  }finally{ syncing=false; }
+  render();
+}
+async function post(body){
+  const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(body)});  // text/plain으로 보내 별도 허용 절차 없이 전송
+  const j=await r.json(); if(!j.ok) throw new Error(j.error||'fail');
+  applyData(j.data);
+}
+async function markDone(list,onProgress){
+  const k=gift, by=$('me').value.trim();
+  for(let i=0;i<list.length;i+=100){   // 100건씩 나눠 저장
+    await post({action:'mark',gift:k,orders:list.slice(i,i+100).map(o=>o.no),by});
+    if(onProgress) onProgress(Math.min(i+100,list.length),list.length);
+  }
+}
+async function unmark(no){ await post({action:'unmark',gift,order:no}); render(); }
+
+// ---- 화면 ----
+let rowsCache=exampleRows(), isExample=true, view='new', current=null;
+function cfgFor(k){ const f=$('from').value,t=$('to').value,G=GIFTS[k]; return {min:G.min,max:G.max,qty:G.qty,kind:G.kind,kw:G.kw,noRecall:G.noRecall,keepKw:k==='knit'?GIFTS.padding.kw:'',from:f?new Date(f):null,to:t?new Date(t):null}; }
+function syncFields(){ const G=GIFTS[gift]; $('min').value=G.min; $('max').value=G.max||''; $('qty').value=G.qty; $('kw').value=G.kw||''; $('gLabel').textContent=G.short; const item=G.kind==='item'; $('min').disabled=item; $('max').disabled=item; $('kw').disabled=!item; }
+function readFields(){ const G=GIFTS[gift]; G.min=num($('min').value); G.max=num($('max').value); G.qty=Math.max(0,Math.floor(num($('qty').value))); if(G.kind==='item') G.kw=$('kw').value; }
+const itemText=o=>o.items.filter(x=>!x.cancel).map(x=>x.nm+(x.q>1?` ×${x.q}`:'')).join(' / ');
+const HINT={new:'셀메이트에 사은품을 넣은 뒤 \'처리 완료로 표시\'를 눌러 주세요.',done:'이미 사은품을 넣은 주문입니다. 잘못 표시했으면 \'되돌리기\'를 누르세요.',check:'사은품을 넣었는데 취소·반품으로 기준 금액 아래가 된 주문입니다. 출고 전이면 사은품을 빼고, 출고 후면 반품 시 함께 회수하세요.',over:'기준 금액은 넘었지만 선착순 수량이 다 찬 주문입니다. 사은품을 넣지 않습니다.'};
+function payInfoText(orders){
+  const el=$('payInfo'); if(isExample){ el.textContent=''; return; }
+  if(!orders.payCols){ el.textContent='파일에 결제수단·주문경로 칸이 없어 네이버페이 구분은 표시하지 않아요. (사은품 대상 판단에는 영향 없음)'; return; }
+  let a=0,b=0; for(const o of orders.values()){ if(o.npay==='주문형') a++; else if(o.npay==='결제형') b++; }
+  el.textContent=`네이버페이 주문 포함 · 주문형 ${a}건 · 결제형 ${b}건 — 쿠폰을 안 쓴 주문도 같은 기준(쿠폰 사용 전 금액)으로 판단해요.`;
+}
+function render(){
+  if(!rowsCache) return;
+  let res;
+  const all={};
+  try{ const orders=groupOrders(rowsCache); payInfoText(orders); const P=isExample?EXAMPLE_PROCESSED:processed;
+    all.pin=classify(orders,cfgFor('pin'),P.pin); all.knit=classify(orders,cfgFor('knit'),P.knit);
+    const knitSet=new Set([...all.knit.new,...all.knit.done,...all.knit.check].map(o=>o.no));
+    all.padding=classify(orders,cfgFor('padding'),P.padding,knitSet); res=all[gift]; }
+  catch(e){ $('msg').className='msg err'; $('msg').textContent=e.message; return; }
+  document.querySelectorAll('.gift').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.g===gift)));
+  $('gqKnit').textContent=GIFTS.knit.qty; $('gqPad').textContent=GIFTS.padding.qty;
+  const lefty=r=>r.unlimited?'수량 제한 없음':`남은 ${r.left}개`;
+  $('gnPin').textContent=`새로 ${all.pin.new.length}건 · ${lefty(all.pin)}`; $('gnKnit').textContent=`새로 ${all.knit.new.length}건 · ${lefty(all.knit)}`; $('gnPad').textContent=`새로 ${all.padding.new.length}건 · ${lefty(all.padding)}`;
+  current=res;
+  $('exampleNote').hidden=!isExample;
+  $('sNew').textContent=res.new.length; $('sDone').textContent=res.doneTotal; $('sLeft').textContent=res.unlimited?'전원':res.left; $('sCheck').textContent=res.check.length;
+  $('nNew').textContent=res.new.length; $('nDone').textContent=res.done.length; $('nCheck').textContent=res.check.length; $('nOver').textContent=res.over.length;
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===view)));
+  $('tabHint').textContent=HINT[view];
+  $('markBtn').hidden=view!=='new';
+  if(!saving){ $('markBtn').disabled=isExample||!res.new.length||storeMode!=='shared';
+    $('markBtn').textContent=res.new.length?`${GIFTS[gift].short} ${res.new.length}건 처리 완료로 표시`:'처리 완료로 표시'; }
+  $('copyBtn').disabled=!res[view].length;
+  const GL=GIFTS[gift].short;
+  const pills={new:`<span class="pill ok">${GL} 증정</span>`,done:'<span class="pill done">처리 완료</span>',check:'<span class="pill warn">회수 확인</span>',over:'<span class="pill no">선착순 마감</span>'};
+  const list=res[view];
+  const TABN={new:'새로 처리할 주문',done:'처리 완료',check:'회수 확인',over:'선착순 마감'};
+  // 셀메이트 검색용: 이름 뒤 괄호 설명·공백 제거 (예: '한유나(예시 · …)' → '한유나')
+  const cleanName=s=>String(s||'').replace(/\s*[\(\[（][^\)\]）]*[\)\]）]/g,'').replace(/\s+/g,'').trim();
+  $('qName').value=list.map(o=>cleanName(o.name)||'-').join(',');
+  $('qPhone').value=list.map(o=>String(o.phone||'').replace(/\s+/g,'').trim()||'-').join(',');
+  $('qSub').textContent=`${GIFTS[gift].short} · ${TABN[view]} ${list.length}명`;
+  $('qNameBtn').disabled=$('qPhoneBtn').disabled=!list.length;
+  $('tbody').innerHTML=list.length?list.map(o=>{
+    const items=o.items.map(x=>`<span${x.cancel?' class="small" style="text-decoration:line-through"':''}>${esc(x.nm)}${x.q>1?` ×${x.q}`:''}</span>`).join('');
+    const who=(view==='done'||view==='check')&&!isExample&&info[gift][o.no]?`<br><span class="small">${esc(info[gift][o.no].by||'이름 없음')} · ${esc(info[gift][o.no].at||'')}</span>`:'';
+    const undo=(view==='done'||view==='check')&&!isExample?`<br><button class="mini" type="button" data-undo="${esc(o.no)}">되돌리기</button>`:'';
+    return `<tr><td>${o.rank}</td><td>${pills[view]}${who}${undo}</td><td>${esc(o.no)}${o.npay?`<br><span class="small">N페이 ${o.npay}</span>`:''}</td><td>${o.d?fmt(o.d):'-'}</td><td>${esc(o.name)}</td><td>${esc(o.phone)}</td><td class="wrap-cell">${esc(o.addr)}</td><td class="wrap-cell"><div class="items">${items}</div></td><td class="num">${won(o.amt)}<br><span class="small">${o.cp>0?'쿠폰 '+won(o.cp):'쿠폰 안 씀'}</span></td><td class="num">${o.nowAmt==null?'-':won(o.nowAmt)}</td><td>${esc(o.status)}</td></tr>`;
+  }).join(''):`<tr><td colspan="11" class="empty">${view==='new'?'지금 새로 처리할 주문이 없습니다.':'해당 주문이 없습니다.'}</td></tr>`;
+  $('tbody').querySelectorAll('[data-undo]').forEach(b=>b.onclick=async()=>{
+    if(storeMode!=='shared'){ $('msg').className='msg err'; $('msg').textContent='공유 시트에 연결된 뒤 되돌릴 수 있어요.'; return; }
+    b.disabled=true; try{ await unmark(b.dataset.undo); }catch(e){ b.disabled=false; $('msg').className='msg err'; $('msg').textContent='되돌리지 못했습니다. 잠시 후 다시 눌러 주세요.'; }
+  });
+}
+function readFile(file){
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ rowsCache=parseCSV(r.result); isExample=false; view='new'; $('msg').className='msg'; $('msg').textContent=`${file.name} · 주문 품목 ${rowsCache.length-1}줄을 읽었습니다.`; render(); sync(); }catch(e){ $('msg').className='msg err'; $('msg').textContent='파일을 읽지 못했습니다. 카페24에서 받은 CSV 파일인지 확인해 주세요.'; } };
+  r.readAsText(file,'utf-8');
+}
+$('file').addEventListener('change',e=>{ readFile(e.target.files[0]); e.target.value=''; });
+const drop=$('drop');
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>readFile(e.dataTransfer.files[0]));
+['min','max','qty','kw'].forEach(id=>$(id).addEventListener('input',()=>{ readFields(); render(); }));
+['from','to'].forEach(id=>$(id).addEventListener('input',render));
+$('giftTabs').addEventListener('click',e=>{ const b=e.target.closest('.gift'); if(!b) return; gift=b.dataset.g; view='new'; syncFields(); render(); });
+$('tabs').addEventListener('click',e=>{ const b=e.target.closest('.tab'); if(!b) return; view=b.dataset.v; render(); });
+$('syncBtn').onclick=()=>sync();
+// 처리자 이름: 이 컴퓨터에 기억
+try{ $('me').value=localStorage.getItem('jsoo-bf-me')||''; }catch(e){}
+$('me').addEventListener('input',()=>{ try{ localStorage.setItem('jsoo-bf-me',$('me').value.trim()); }catch(e){} });
+
+$('copyBtn').onclick=async e=>{
+  const btn=e.currentTarget, list=current?current[view]:[], old=btn.textContent;
+  if(!list.length) return;
+  const head=['사은품','순번','주문번호','결제일시','수령인','연락처','주소','구매 상품','구매금액(쿠폰 전)','쿠폰 사용액','결제'];
+  const text=[head,...list.map(o=>[GIFTS[gift].label,o.rank,o.no,o.d?fmt(o.d):'',o.name,o.phone,o.addr,itemText(o),o.amt,o.cp,o.npay?'네이버페이 '+o.npay:''])].map(r=>r.map(v=>String(v).replace(/\t|\n/g,' ')).join('\t')).join('\n');
+  try{ await navigator.clipboard.writeText(text); btn.textContent=`${list.length}건 복사됨`; }
+  catch(_){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); btn.textContent=`${list.length}건 복사됨`;}catch(__){btn.textContent='복사 실패';} ta.remove(); }
+  setTimeout(()=>btn.textContent=old,1800);
+};
+async function copyField(btn,id,label){
+  const text=$(id).value; if(!text) return;
+  const n=text.split(',').length;
+  try{ await navigator.clipboard.writeText(text); btn.textContent=`${n}명 복사됨`; }
+  catch(_){ const ta=$(id); ta.select(); try{ document.execCommand('copy'); btn.textContent=`${n}명 복사됨`; }catch(__){ btn.textContent='복사 실패 · 칸을 직접 복사'; } }
+  setTimeout(()=>btn.textContent=label,1800);
+}
+$('qNameBtn').onclick=e=>copyField(e.currentTarget,'qName','이름 복사');
+$('qPhoneBtn').onclick=e=>copyField(e.currentTarget,'qPhone','연락처 복사');
+$('markBtn').onclick=async e=>{
+  const btn=e.currentTarget; if(isExample||!current||!current.new.length) return;
+  if(!$('me').value.trim()){ $('msg').className='msg err'; $('msg').textContent='위의 「내 이름」을 먼저 적어 주세요. 누가 처리했는지 기록에 남습니다.'; $('me').focus(); return; }
+  if(storeMode!=='shared'){ $('msg').className='msg err'; $('msg').textContent='공유 시트에 연결되지 않아 저장할 수 없어요. 「기록 새로고침」을 눌러 주세요.'; return; }
+  btn.disabled=true; btn.textContent='저장 중…'; saving=true;
+  const n=current.new.length;
+  try{ await markDone(current.new.slice(),(d,t)=>{ btn.textContent=`저장 중… ${d}/${t}`; }); $('msg').className='msg ok'; $('msg').textContent=`${n}건을 처리 완료로 표시했습니다.`; }
+  catch(err){ $('msg').className='msg err'; $('msg').textContent='저장하지 못했습니다. 잠시 후 다시 눌러 주세요. (이미 저장된 건은 빠지고 남은 건만 다시 뜹니다)'; }
+  saving=false; render();
+};
+
+render(); sync();
+setInterval(()=>{ if(document.visibilityState==='visible') sync(); },30000);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') sync(); });
+</script>
+</body>
+</html>
