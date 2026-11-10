@@ -256,10 +256,27 @@ document.getElementById('file-stk').addEventListener('change', async e => {
   document.getElementById('card-stk').classList.add('has-file');
 
   const buf = await file.arrayBuffer();
-  if (file.name.endsWith('.csv')) {
-    // CSV → EUC-KR 디코딩 + 따옴표 처리 파싱
-    const decoder = new TextDecoder('euc-kr');
-    const text = decoder.decode(new Uint8Array(buf));
+  if (file.name.toLowerCase().endsWith('.csv')) {
+    // EUC-KR 디코딩: TextDecoder 시도 → 깨지면 UTF-8 fallback
+    const bytes = new Uint8Array(buf);
+    let text = '';
+    let decoded = false;
+    // 1) TextDecoder('euc-kr') 시도
+    try {
+      const t = new TextDecoder('euc-kr', {fatal: true}).decode(bytes);
+      if (/[가-힣]/.test(t)) { text = t; decoded = true; }
+    } catch(e) {}
+    // 2) TextDecoder('euc-kr') non-fatal 시도 (fatal:false는 대체문자 삽입)
+    if (!decoded) {
+      try {
+        const t = new TextDecoder('euc-kr', {fatal: false}).decode(bytes);
+        if (/[가-힣]/.test(t)) { text = t; decoded = true; }
+      } catch(e) {}
+    }
+    // 3) UTF-8 fallback
+    if (!decoded) {
+      text = new TextDecoder('utf-8', {fatal: false}).decode(bytes);
+    }
 
     // RFC4180 CSV 파서: "값,안의,콤마"도 올바르게 처리
     function parseCSV(str) {
@@ -276,9 +293,7 @@ document.getElementById('file-stk').addEventListener('change', async e => {
             else inQ = !inQ;
           } else if (ch === ',' && !inQ) {
             cols.push(col.trim()); col = '';
-          } else {
-            col += ch;
-          }
+          } else { col += ch; }
         }
         cols.push(col.trim());
         result.push(cols);
