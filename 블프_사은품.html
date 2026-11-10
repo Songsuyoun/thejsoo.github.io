@@ -7,7 +7,7 @@
 <script>
 /* ===== 관리자 설정 =====
    구글 시트 Apps Script를 웹앱으로 배포한 뒤 받은 주소(…/exec)를 아래 따옴표 안에 붙여넣으세요. */
-const GAS_URL = '';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw4-80kDOYRj_puB2uIxIhCasCfxXC14UKwB8TnQ6Y5uT5kS0vfrEBbwko5EU4DZ-_U4w/exec';
 </script>
 <style>
 :root{
@@ -35,6 +35,10 @@ h2{margin:0;font-size:13px;font-weight:700}
 .field label{font-size:12px;color:var(--muted)}
 .field input{border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;padding:8px 10px;min-width:0;width:100%;font-variant-numeric:tabular-nums}
 .field input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.field select{border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;padding:8px 10px;min-width:0;width:100%}
+.cs-fields{grid-template-columns:2fr 1fr 1fr 1fr}
+@media (max-width:760px){.cs-fields{grid-template-columns:minmax(0,1fr)}}
+.verdict{display:flex;flex-direction:column;gap:3px;white-space:normal;min-width:180px}
 details summary{cursor:pointer;font-size:13px;font-weight:700}
 details[open] summary{margin-bottom:12px}
 .drop{border:1.5px dashed var(--line);border-radius:8px;padding:24px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--soft)}
@@ -183,6 +187,25 @@ tbody tr:last-child td{border-bottom:0}
       <thead><tr><th>순번</th><th>사은품</th><th>주문번호</th><th>결제일시</th><th>수령인</th><th>연락처</th><th>주소</th><th>구매 상품</th><th style="text-align:right">구매금액<br>(쿠폰 전)</th><th style="text-align:right">현재<br>구매금액</th><th>주문 상태</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table></div>
+  </section>
+
+  <section class="panel" id="csPanel">
+    <div class="bar"><h2>전체 주문 조회 (CS · 확인용)</h2><p class="hint" id="csCount"></p></div>
+    <p class="hint" id="csStaff" hidden>전체 주문 조회는 <b>CSV를 올린 컴퓨터에서만</b> 볼 수 있어요. (전체 고객 정보는 구글 시트에 올리지 않아요)</p>
+    <div id="csBody">
+      <div class="fields cs-fields">
+        <div class="field"><label for="csQ">주문번호 · 이름 · 연락처 검색</label><input id="csQ" type="search" placeholder="예: 20261116-0000123 / 김지은 / 1234"></div>
+        <div class="field"><label for="csBase">금액 기준</label><select id="csBase"><option value="before">쿠폰 사용 전 금액</option><option value="after">쿠폰 사용 후 금액</option></select></div>
+        <div class="field"><label for="csBand">금액대</label><select id="csBand">
+          <option value="">전체</option><option value="0">10만 원 미만</option><option value="1">10만 원대</option><option value="2">20만 원대</option><option value="3">30만 원대</option><option value="4">40만 원대</option><option value="5">50만 원대</option><option value="6">60만 원대</option><option value="7">70만 원대</option><option value="8">80만 원대</option><option value="9">90만 원대</option><option value="10">100만 원 이상</option><option value="edge">기준 경계 근처 (28~32만 · 48~52만)</option></select></div>
+        <div class="field"><label for="csSt">사은품 판단</label><select id="csSt"><option value="">전체</option><option value="gift">사은품 있음</option><option value="none">대상 아님 (기간 안)</option><option value="out">행사 기간 외 · 미입금</option><option value="cancel">취소 · 반품 있음</option><option value="npay">네이버페이</option></select></div>
+      </div>
+      <div class="scroll" style="margin-top:12px"><table>
+        <thead><tr><th>결제일시</th><th>주문번호</th><th>이름</th><th>연락처</th><th>구매 상품</th><th style="text-align:right">쿠폰 전<br>금액</th><th style="text-align:right">쿠폰<br>사용</th><th style="text-align:right">쿠폰 후<br>금액</th><th style="text-align:right">취소·반품<br>반영 금액</th><th>사은품 판단</th><th>주문 상태</th></tr></thead>
+        <tbody id="csTbody"></tbody>
+      </table></div>
+      <p class="hint" style="margin-top:8px">금액은 모두 <b>배송비 제외</b>예요. 쿠폰 후 금액 아래 작은 글씨는 카페24 실결제금액(배송비 포함·포인트 사용분 제외)이라 카페24 화면과 바로 맞춰볼 수 있어요.</p>
+    </div>
   </section>
 
   <section class="panel">
@@ -434,6 +457,7 @@ function computeFromCSV(){
 }
 // 직원 화면: 공유된 작업 목록 − 이미 처리 완료된 주문 (주문번호로 거름)
 function computeFromWork(){
+  ordersCache=null;
   const all={}, look={};
   for(const g of Object.keys(GIFTS)) for(const kd of ['new','check']) for(const x of ((work&&work[g]&&work[g][kd])||[])) look[x.no]=x;
   const row=(x,i)=>({no:x.no,rank:i+1,d:null,paidText:x.paid||'',name:x.name||'',phone:x.phone||'',addr:'',itemsText:x.items||'',items:null,amt:null,nowAmt:null,cp:null,npay:'',status:''});
@@ -515,6 +539,7 @@ function render(){
     if(storeMode!=='shared'){ $('msg').className='msg err'; $('msg').textContent='공유 시트에 연결된 뒤 할 수 있어요.'; return; }
     b.disabled=true; try{ await unmark(b.dataset.undo); }catch(e){ b.disabled=false; $('msg').className='msg err'; $('msg').textContent='저장하지 못했습니다. 잠시 후 다시 눌러 주세요.'; }
   });
+  renderCS();
 }
 function readFile(file){
   if(!file) return;
@@ -580,6 +605,54 @@ $('markBtn').onclick=async e=>{
   catch(err){ $('msg').className='msg err'; $('msg').textContent=err&&err.message==='KEY'?failText(err):'저장하지 못했습니다. 잠시 후 다시 눌러 주세요. (이미 저장된 건은 빠지고 남은 건만 다시 뜹니다)'; }
   saving=false; render();
 };
+
+
+// ---- 전체 주문 조회 (CS용) : CSV를 올린 브라우저에서만 ----
+function renderCS(){
+  const show=mode!=='staff'&&ordersCache&&lastAll;
+  $('csBody').hidden=!show; $('csStaff').hidden=mode!=='staff';
+  if(!show){ $('csCount').textContent=''; return; }
+  const LBL={new:'새로 처리',done:'처리 완료',check:'회수 확인',over:'선착순 마감'}, CLS={new:'ok',done:'done',check:'warn',over:'no'};
+  const st={};
+  for(const g of Object.keys(GIFTS)) for(const kd of ['new','done','check','over']) for(const o of lastAll[g][kd]) (st[o.no]=st[o.no]||{})[g]=kd;
+  const c=cfgFor('pin');
+  const q=$('csQ').value.trim().toLowerCase(), qd=q.replace(/[^0-9]/g,'');
+  const base=$('csBase').value, band=$('csBand').value, sf=$('csSt').value;
+  const after=o=>Math.max(0,o.amt-o.cp);
+  const effv=o=>(o.partial&&o.nowAmt!=null)?o.nowAmt:o.amt;
+  const outOf=o=>{ const s=o.start||o.d; return !o.d||!s||(c.from&&s<c.from)||(c.to&&s>=c.to); };
+  const inBand=v=>{ if(band==='') return true; if(band==='edge') return (v>=280000&&v<320000)||(v>=480000&&v<520000);
+    const k=+band; if(k===0) return v<100000; if(k===10) return v>=1000000; return v>=k*100000&&v<(k+1)*100000; };
+  const list=[...ordersCache.values()].filter(o=>{
+    if(q&&!(o.no.toLowerCase().includes(q)||String(o.name).toLowerCase().includes(q)||(qd.length>=3&&String(o.phone).replace(/[^0-9]/g,'').includes(qd)))) return false;
+    if(!inBand(base==='after'?after(o):o.amt)) return false;
+    const has=!!st[o.no];
+    if(sf==='gift'&&!has) return false;
+    if(sf==='none'&&(has||outOf(o)||o.allCancel)) return false;
+    if(sf==='out'&&!outOf(o)) return false;
+    if(sf==='cancel'&&!o.partial) return false;
+    if(sf==='npay'&&!o.npay) return false;
+    return true;
+  }).sort((a,b)=>(a.d||a.start||0)-(b.d||b.start||0)||a.no.localeCompare(b.no));
+  const MAX=300;
+  $('csCount').textContent=`${list.length}건${list.length>MAX?` (앞의 ${MAX}건만 표시 · 검색으로 좁혀 주세요)`:''} / 전체 ${ordersCache.size}건`;
+  $('csTbody').innerHTML=list.length?list.slice(0,MAX).map(o=>{
+    let v;
+    if(st[o.no]) v=Object.keys(GIFTS).filter(g=>st[o.no][g]).map(g=>`<span class="pill ${CLS[st[o.no][g]]}">${GIFTS[g].short} · ${LBL[st[o.no][g]]}</span>`).join('');
+    else{
+      let why;
+      if(!o.d) why='결제 전 (미입금)';
+      else if(outOf(o)) why=`행사 기간 외 (주문 ${fmt(o.start||o.d)})`;
+      else if(o.allCancel) why='전체 취소';
+      else if(o.allBack) why='전체 반품';
+      else why=`${o.partial?'취소·반품 후 ':'쿠폰 전 '}${won(effv(o))} → 30만 원 미만이라 대상 아님`;
+      v=`<span class="pill no">대상 아님</span><span class="small">${esc(why)}</span>`;
+    }
+    const items=o.items.map(x=>`<span${x.back?' class="small" style="text-decoration:line-through"':''}>${esc(x.nm)}${x.q>1?` ×${x.q}`:''}</span>`).join('');
+    return `<tr><td>${o.d?fmt(o.d):'<span class="small">미입금</span>'}</td><td>${esc(o.no)}${o.npay?`<br><span class="small">N페이 ${o.npay}</span>`:''}</td><td>${esc(o.name)}</td><td>${esc(o.phone)}</td><td class="wrap-cell"><div class="items">${items}</div></td><td class="num">${won(o.amt)}</td><td class="num">${o.cp>0?won(o.cp):'-'}</td><td class="num">${won(after(o))}<br><span class="small">실결제 ${won(o.first)}${o.ship?` · 배송비 ${won(o.ship)}`:''}${o.np?` · N포인트 ${won(o.np)}`:''}</span></td><td class="num">${o.partial&&o.nowAmt!=null?won(o.nowAmt):'-'}</td><td><div class="verdict">${v}</div></td><td>${esc(o.status)}</td></tr>`;
+  }).join(''):'<tr><td colspan="11" class="empty">조건에 맞는 주문이 없습니다.</td></tr>';
+}
+['csQ','csBase','csBand','csSt'].forEach(id=>$(id).addEventListener('input',renderCS));
 
 render(); sync();
 setInterval(()=>{ if(document.visibilityState==='visible') sync(); },30000);
