@@ -214,10 +214,13 @@ function parseOpt(opt) {
   return parts.length >= 2 ? [parts[0].trim(), parts[1].trim()] : [parts[0].trim(), ''];
 }
 
-// ★ 핵심: 상품별칭에서 (Ncolor) 제거
+// ★ 핵심: 상품별칭 정규화 — (Ncolor) 제거 + _Black/_Cream 등 _영문색상 제거
 function normName(name) {
   if (!name) return '';
-  return String(name).trim().replace(/\s*\(\d+\s*color\)/gi, '').trim();
+  let n = String(name).trim();
+  n = n.replace(/\s*\(\d+\s*color\)/gi, '');  // (2color), (3color) 등 제거
+  n = n.replace(/_[A-Za-z][A-Za-z ]*$/, '');   // _Black, _Light Beige, _Indie Pink 등 제거
+  return n.trim();
 }
 
 function checkReady() {
@@ -254,13 +257,38 @@ document.getElementById('file-stk').addEventListener('change', async e => {
 
   const buf = await file.arrayBuffer();
   if (file.name.endsWith('.csv')) {
-    // CSV → encoding 처리
+    // CSV → EUC-KR 디코딩 + 따옴표 처리 파싱
     const decoder = new TextDecoder('euc-kr');
     const text = decoder.decode(new Uint8Array(buf));
-    const lines = text.split(/\r?\n/);
-    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
-    stkData = lines.slice(1).filter(l=>l.trim()).map(l => {
-      const vals = l.split(',').map(v => v.replace(/"/g,'').trim());
+
+    // RFC4180 CSV 파서: "값,안의,콤마"도 올바르게 처리
+    function parseCSV(str) {
+      const result = [];
+      const lines = str.split(/\r?\n/);
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const cols = [];
+        let col = '', inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (inQ && line[i+1] === '"') { col += '"'; i++; }
+            else inQ = !inQ;
+          } else if (ch === ',' && !inQ) {
+            cols.push(col.trim()); col = '';
+          } else {
+            col += ch;
+          }
+        }
+        cols.push(col.trim());
+        result.push(cols);
+      }
+      return result;
+    }
+
+    const parsed = parseCSV(text);
+    const headers = parsed[0];
+    stkData = parsed.slice(1).filter(r => r.some(v=>v)).map(vals => {
       const obj = {};
       headers.forEach((h,i) => obj[h] = vals[i] || '');
       return obj;
@@ -363,6 +391,8 @@ function runUpdate() {
     try {
       // STK 맵 생성
       const stk_map = {};
+      // 사이즈 단독 패턴: S/M/L/XL/XXL/XS 등 (숫자 포함 허용)
+      const SIZE_ONLY_RE = /^(XS|S|M|L|XL|XXL|XXXL|\d+)$/i;
       for (const r of stkData) {
         const cur = parseInt(r['현재재고']) || 0;
         const unship = parseInt(r['미발송주문수']) || 0;
@@ -370,6 +400,11 @@ function runUpdate() {
         const [color, size] = parseOpt(r['옵션명']);
         const key = normName(r['상품명']) + '|' + normColor(color) + '|' + normSize(size);
         stk_map[key] = stock;
+        // 옵션명이 사이즈 단독(L/M/S 등)인 경우 → color='' 로도 키 추가 저장
+        if (!size && color && SIZE_ONLY_RE.test(color)) {
+          const keyNoColor = normName(r['상품명']) + '||' + normSize(color);
+          stk_map[keyNoColor] = stock;
+        }
       }
 
       // 디홀릭 헤더/행 추출 (xls HTML 모드 vs xlsx 모드)
@@ -413,8 +448,12 @@ function runUpdate() {
         const size = normSize(rawSize);
         const key = name + '|' + color + '|' + size;
 
-        if (key in stk_map) {
-          const qty = stk_map[key];
+        // STK 키 매칭 (1차: 상품명+색상+사이즈 / 2차 fallback: STK에 색상 없이 사이즈만 있는 경우)
+        const keyNoColor = name + '||' + size;
+        const matchedKey = (key in stk_map) ? key : ((keyNoColor in stk_map) ? keyNoColor : null);
+
+        if (matchedKey !== null) {
+          const qty = stk_map[matchedKey];
 
           if (!diholicIsHtmlXls) {
             // xlsx 모드: 워크북 셀 직접 업데이트
