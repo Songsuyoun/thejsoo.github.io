@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>더제이수 당일배송 재고 업로드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap');
 
@@ -17,7 +18,7 @@
   }
 
   .container {
-    max-width: 800px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 40px 24px;
   }
@@ -41,6 +42,17 @@
     font-weight: 300;
   }
 
+  /* 레이아웃 */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .left-col { min-width: 0; }
+  .right-col { position: sticky; top: 24px; }
+
   .card {
     background: #fff;
     border: 1px solid #e8e8e8;
@@ -59,79 +71,31 @@
     border-bottom: 1px solid #f0f0f0;
   }
 
-  /* ===== 설정 영역 ===== */
-  .config-group {
-    margin-bottom: 16px;
-  }
-
-  .config-group label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: #666;
-    margin-bottom: 6px;
-    letter-spacing: 0.5px;
-  }
-
-  .config-group input[type="text"] {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 13px;
-    font-family: 'Noto Sans KR', monospace;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .config-group input[type="text"]:focus {
-    border-color: #1a1a1a;
-  }
-
-  .config-group .hint {
+  .card h2 .badge {
     font-size: 11px;
-    color: #aaa;
-    margin-top: 4px;
+    font-weight: 400;
+    background: #f5f0eb;
+    color: #5d4e37;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    letter-spacing: 0;
   }
 
-  .save-config-btn {
-    display: inline-block;
-    padding: 8px 20px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #fff;
-    background: #1a1a1a;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    margin-top: 8px;
-  }
-
-  .save-config-btn:hover {
-    background: #333;
-  }
-
-  /* ===== 파일 업로드 ===== */
+  /* 파일 업로드 */
   .upload-area {
     border: 2px dashed #ddd;
     border-radius: 8px;
-    padding: 40px 20px;
+    padding: 32px 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
   }
 
-  .upload-area:hover {
-    border-color: #1a1a1a;
-    background: #fafafa;
-  }
-
-  .upload-area.dragover {
-    border-color: #1a1a1a;
-    background: #f5f0eb;
-  }
+  .upload-area:hover { border-color: #1a1a1a; background: #fafafa; }
+  .upload-area.dragover { border-color: #1a1a1a; background: #f5f0eb; }
+  .upload-area.uploaded { border-color: #2e7d32; border-style: solid; background: #f1f8f1; }
 
   .upload-area input[type="file"] {
     position: absolute;
@@ -140,23 +104,69 @@
     cursor: pointer;
   }
 
-  .upload-icon {
-    font-size: 32px;
-    color: #ccc;
-    margin-bottom: 12px;
+  .upload-icon { font-size: 28px; color: #ccc; margin-bottom: 8px; }
+  .upload-area.uploaded .upload-icon { color: #2e7d32; }
+
+  .upload-text { font-size: 13px; color: #888; }
+  .upload-text strong { color: #1a1a1a; font-weight: 500; }
+  .upload-area.uploaded .upload-text { color: #2e7d32; }
+
+  .file-name { font-size: 11px; color: #999; margin-top: 6px; }
+
+  /* 선주문 날짜 입력 테이블 */
+  .preorder-list {
+    margin-top: 16px;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    overflow: hidden;
   }
 
-  .upload-text {
-    font-size: 13px;
-    color: #888;
+  .preorder-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 12px;
+    font-size: 12px;
   }
 
-  .upload-text strong {
-    color: #1a1a1a;
+  .preorder-item:last-child { border-bottom: none; }
+  .preorder-item:hover { background: #fafafa; }
+
+  .preorder-name { flex: 1; min-width: 0; }
+  .preorder-name .pname { font-weight: 500; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .preorder-name .poption { color: #888; font-size: 11px; }
+  .preorder-qty { color: #5d4e37; font-weight: 500; white-space: nowrap; }
+
+  .preorder-date {
+    width: 130px;
+    flex-shrink: 0;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+  }
+
+  .preorder-date:focus { border-color: #1a1a1a; }
+
+  .preorder-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: #fafafa;
+    font-size: 11px;
     font-weight: 500;
+    color: #888;
+    gap: 12px;
+    border-bottom: 1px solid #e8e8e8;
+    letter-spacing: 0.5px;
   }
 
-  /* ===== 미리보기 테이블 ===== */
+  .preorder-header .preorder-name { color: #888; }
+
+  /* 미리보기 테이블 */
   .preview-info {
     display: flex;
     justify-content: space-between;
@@ -166,21 +176,9 @@
     gap: 8px;
   }
 
-  .preview-stats {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .stat-item {
-    font-size: 12px;
-    color: #666;
-  }
-
-  .stat-item strong {
-    font-weight: 600;
-    color: #1a1a1a;
-  }
+  .preview-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+  .stat-item { font-size: 12px; color: #666; }
+  .stat-item strong { font-weight: 600; color: #1a1a1a; }
 
   .table-wrap {
     overflow-x: auto;
@@ -188,11 +186,7 @@
     border-radius: 6px;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
 
   thead th {
     background: #fafafa;
@@ -211,13 +205,8 @@
     white-space: nowrap;
   }
 
-  tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  tbody tr:hover {
-    background: #fafafa;
-  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafafa; }
 
   .status-badge {
     display: inline-block;
@@ -227,23 +216,13 @@
     font-weight: 500;
   }
 
-  .status-available {
-    background: #e8f5e9;
-    color: #2e7d32;
-  }
+  .status-available { background: #e8f5e9; color: #2e7d32; }
+  .status-preorder { background: #fff3e0; color: #e65100; }
+  .status-soldout { background: #fce4ec; color: #c62828; }
+  .status-check { background: #fff8e1; color: #f9a825; }
 
-  .status-soldout {
-    background: #fce4ec;
-    color: #c62828;
-  }
-
-  /* ===== 버튼 ===== */
-  .btn-group {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    justify-content: center;
-  }
+  /* 버튼 */
+  .btn-group { display: flex; gap: 12px; margin-top: 24px; justify-content: center; }
 
   .btn {
     padding: 12px 32px;
@@ -256,33 +235,57 @@
     transition: all 0.2s;
   }
 
-  .btn-primary {
-    background: #1a1a1a;
-    color: #fff;
-    border: 1px solid #1a1a1a;
-  }
+  .btn-primary { background: #1a1a1a; color: #fff; border: 1px solid #1a1a1a; }
+  .btn-primary:hover { background: #333; }
+  .btn-primary:disabled { background: #ccc; border-color: #ccc; cursor: not-allowed; }
+  .btn-secondary { background: #fff; color: #1a1a1a; border: 1px solid #ddd; }
+  .btn-secondary:hover { border-color: #1a1a1a; }
 
-  .btn-primary:hover {
-    background: #333;
-  }
-
-  .btn-primary:disabled {
-    background: #ccc;
-    border-color: #ccc;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
+  /* 경고 패널 (오른쪽) */
+  .warning-panel {
     background: #fff;
-    color: #1a1a1a;
-    border: 1px solid #ddd;
+    border: 1px solid #ffcc02;
+    border-radius: 8px;
+    padding: 20px;
+    display: none;
   }
 
-  .btn-secondary:hover {
-    border-color: #1a1a1a;
+  .warning-panel.visible { display: block; }
+
+  .warning-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #f9a825;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  /* ===== 알림 ===== */
+  .warning-desc {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .warning-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .warning-item {
+    font-size: 11px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f5f5f5;
+    color: #666;
+  }
+
+  .warning-item:last-child { border-bottom: none; }
+  .warning-item .wi-name { font-weight: 500; color: #1a1a1a; }
+  .warning-item .wi-option { color: #999; }
+
+  /* 알림 */
   .alert {
     padding: 14px 18px;
     border-radius: 6px;
@@ -291,55 +294,28 @@
     display: none;
   }
 
-  .alert-success {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
-  }
+  .alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+  .alert-error { background: #fce4ec; color: #c62828; border: 1px solid #f8bbd0; }
+  .alert-info { background: #f5f0eb; color: #5d4e37; border: 1px solid #e8ddd0; }
 
-  .alert-error {
-    background: #fce4ec;
-    color: #c62828;
-    border: 1px solid #f8bbd0;
-  }
-
-  .alert-info {
-    background: #f5f0eb;
-    color: #5d4e37;
-    border: 1px solid #e8ddd0;
-  }
-
-  /* ===== 로딩 ===== */
-  .loading {
-    display: none;
-    text-align: center;
-    padding: 20px;
-  }
-
+  /* 로딩 */
+  .loading { display: none; text-align: center; padding: 20px; }
   .spinner {
-    width: 24px;
-    height: 24px;
+    width: 24px; height: 24px;
     border: 2px solid #e8e8e8;
     border-top-color: #1a1a1a;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     margin: 0 auto 12px;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: #888; }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .loading-text {
-    font-size: 13px;
-    color: #888;
-  }
-
-  /* ===== 히든 ===== */
   .hidden { display: none !important; }
 
-  /* ===== 모바일 ===== */
-  @media (max-width: 600px) {
+  @media (max-width: 900px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .right-col { position: static; }
     .container { padding: 24px 16px; }
     .card { padding: 20px 16px; }
     .btn { padding: 10px 20px; font-size: 12px; }
@@ -351,156 +327,173 @@
 <div class="container">
   <div class="header">
     <h1>THE J.SOO DELIVERY STOCK</h1>
-    <p>셀메이트 재고 → 당일배송 위젯 업로드</p>
+    <p>셀메이트 재고 + 스마트비즈 선주문 → 당일배송 위젯 업로드</p>
   </div>
 
-  <!-- 설정 카드 (URL 내장됨 - 숨김) -->
+  <div class="main-layout">
+    <div class="left-col">
 
-  <!-- 업로드 카드 -->
-  <div class="card">
-    <h2>UPLOAD</h2>
-    <div class="upload-area" id="uploadArea">
-      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFile(this.files[0])">
-      <div class="upload-icon">↑</div>
-      <div class="upload-text">
-        셀메이트 재고 CSV 파일을 여기에 드래그하거나<br>
-        <strong>클릭하여 선택</strong>하세요
+      <!-- STEP 1: 재고 CSV -->
+      <div class="card">
+        <h2>STEP 1 — 재고 CSV <span class="badge">셀메이트</span></h2>
+        <div class="upload-area" id="stockUploadArea">
+          <input type="file" id="stockFileInput" accept=".csv" onchange="handleStockFile(this.files[0])">
+          <div class="upload-icon" id="stockIcon">↑</div>
+          <div class="upload-text" id="stockText">
+            셀메이트 재고 CSV 파일을 드래그하거나 <strong>클릭하여 선택</strong>
+          </div>
+          <div class="file-name hidden" id="stockFileName"></div>
+        </div>
+        <div class="alert alert-info" style="display:block; margin-top:12px; font-size:11px;">
+          [the J.Soo] / [the J.Soo Premium] 상품만 자동 필터링
+        </div>
+      </div>
+
+      <!-- STEP 2: 선주문 -->
+      <div class="card" id="preorderCard">
+        <h2>STEP 2 — 선주문 <span class="badge">스마트비즈 · 선택사항</span></h2>
+        <div class="upload-area" id="preorderUploadArea">
+          <input type="file" id="preorderFileInput" accept=".xlsx,.xls" onchange="handlePreorderFile(this.files[0])">
+          <div class="upload-icon" id="preorderIcon">↑</div>
+          <div class="upload-text" id="preorderText">
+            스마트비즈 선주문 xlsx 파일을 드래그하거나 <strong>클릭하여 선택</strong>
+          </div>
+          <div class="file-name hidden" id="preorderFileName"></div>
+        </div>
+
+        <!-- 선주문 날짜 입력 -->
+        <div class="hidden" id="preorderDateSection">
+          <div style="margin-top:20px; margin-bottom:12px; font-size:13px; font-weight:500; color:#1a1a1a;">
+            예상 입고일 입력
+          </div>
+          <div style="font-size:11px; color:#888; margin-bottom:12px;">
+            거래처에 확인한 입고 예정일을 입력해주세요. 고객에게 "○월 ○일 이후 순차배송"으로 표시됩니다.
+          </div>
+          <div class="preorder-list" id="preorderDateList">
+            <div class="preorder-header">
+              <div class="preorder-name">상품 / 옵션</div>
+              <div class="preorder-qty">잔여수</div>
+              <div style="width:130px; flex-shrink:0;">입고 예정일</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="card hidden" id="previewCard">
+        <h2>PREVIEW</h2>
+        <div class="preview-info">
+          <div class="preview-stats">
+            <div class="stat-item">전체: <strong id="totalCount">0</strong>개</div>
+            <div class="stat-item" style="color:#2e7d32;">발송가능: <strong id="availCount">0</strong></div>
+            <div class="stat-item" style="color:#e65100;">예약배송: <strong id="preorderCount">0</strong></div>
+            <div class="stat-item" style="color:#c62828;">품절: <strong id="soldoutCount">0</strong></div>
+            <div class="stat-item">상품: <strong id="productCount">0</strong>개</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>카페24코드</th>
+                <th>상품명</th>
+                <th>색상</th>
+                <th>사이즈</th>
+                <th>가용재고</th>
+                <th>상태</th>
+                <th>입고예정</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+        <div id="moreRows" class="hidden" style="text-align:center; padding:12px; font-size:12px; color:#888;"></div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="resetAll()">초기화</button>
+          <button class="btn btn-primary" id="uploadBtn" onclick="uploadData()">업로드</button>
+        </div>
+
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <div class="loading-text">Google Sheets에 업로드 중...</div>
+        </div>
+
+        <div class="alert alert-success" id="successAlert"></div>
+        <div class="alert alert-error" id="errorAlert"></div>
       </div>
     </div>
-    <div class="alert alert-info" id="filterInfo" style="display:block; margin-top:16px;">
-      [the J.Soo] 와 [the J.Soo Premium] 상품만 자동 필터링됩니다
-    </div>
-  </div>
 
-  <!-- 미리보기 카드 -->
-  <div class="card hidden" id="previewCard">
-    <h2>PREVIEW</h2>
-    <div class="preview-info">
-      <div class="preview-stats">
-        <div class="stat-item">전체: <strong id="totalCount">0</strong>개 옵션</div>
-        <div class="stat-item">발송가능: <strong id="availCount">0</strong></div>
-        <div class="stat-item">품절: <strong id="soldoutCount">0</strong></div>
-        <div class="stat-item">상품: <strong id="productCount">0</strong>개</div>
+    <!-- 오른쪽: 경고 패널 -->
+    <div class="right-col">
+      <div class="warning-panel" id="warningPanel">
+        <div class="warning-title">⚠ 확인 필요</div>
+        <div class="warning-desc">
+          가용재고 0 &amp; 품절 미표시 &amp; 선주문 없음<br>
+          위젯에 표시되지 않습니다.<br>
+          선주문을 추가하거나 셀메이트에서 품절 처리해주세요.
+        </div>
+        <div class="warning-list" id="warningList"></div>
       </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>카페24코드</th>
-            <th>상품명</th>
-            <th>색상</th>
-            <th>사이즈</th>
-            <th>가용재고</th>
-            <th>상태</th>
-          </tr>
-        </thead>
-        <tbody id="previewBody"></tbody>
-      </table>
-    </div>
-    <div id="moreRows" class="hidden" style="text-align:center; padding:12px; font-size:12px; color:#888;"></div>
-
-    <div class="btn-group">
-      <button class="btn btn-secondary" onclick="resetUpload()">취소</button>
-      <button class="btn btn-primary" id="uploadBtn" onclick="uploadData()">업로드</button>
-    </div>
-
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <div class="loading-text">Google Sheets에 업로드 중...</div>
-    </div>
-
-    <div class="alert alert-success" id="successAlert"></div>
-    <div class="alert alert-error" id="errorAlert"></div>
   </div>
 </div>
 
 <script>
-// ===== 설정 관리 =====
+// ===== 설정 =====
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1kR_wFxI3Hd3o9KwLvvti9IQcstZjaLzNgSkIJ9l3BA4S7VFGqfaKdr1Z1natPj0wZA/exec';
-var parsedData = [];
 
-function loadConfig() {
-  try {
-    var saved = localStorage.getItem('jsoo_delivery_gas_url');
-    if (saved) {
-      GAS_URL = saved;
-      document.getElementById('gasUrl').value = saved;
-    }
-  } catch(e) {}
-}
-
-function saveConfig() {
-  var url = document.getElementById('gasUrl').value.trim();
-  if (!url) {
-    alert('GAS 웹 앱 URL을 입력하세요.');
-    return;
-  }
-  GAS_URL = url;
-  try {
-    localStorage.setItem('jsoo_delivery_gas_url', url);
-  } catch(e) {}
-  alert('저장되었습니다!');
-}
-
-loadConfig();
+var stockData = [];      // CSV에서 파싱한 재고 데이터
+var preorderData = [];   // XLSX에서 파싱한 선주문 데이터
+var mergedData = [];     // 최종 병합 데이터
 
 // ===== 드래그 & 드롭 =====
-var uploadArea = document.getElementById('uploadArea');
-
-uploadArea.addEventListener('dragover', function(e) {
-  e.preventDefault();
-  this.classList.add('dragover');
+['stockUploadArea', 'preorderUploadArea'].forEach(function(id) {
+  var area = document.getElementById(id);
+  area.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+  area.addEventListener('dragleave', function() { this.classList.remove('dragover'); });
+  area.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    var file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (id === 'stockUploadArea') handleStockFile(file);
+    else handlePreorderFile(file);
+  });
 });
 
-uploadArea.addEventListener('dragleave', function() {
-  this.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', function(e) {
-  e.preventDefault();
-  this.classList.remove('dragover');
-  var file = e.dataTransfer.files[0];
-  if (file) handleFile(file);
-});
-
-// ===== CSV 파싱 =====
-function handleFile(file) {
+// ===== STEP 1: 재고 CSV 파싱 =====
+function handleStockFile(file) {
   if (!file) return;
 
   var reader = new FileReader();
   reader.onload = function(e) {
     var buffer = e.target.result;
-
-    // euc-kr 디코딩 시도
     var text = '';
-    try {
-      text = new TextDecoder('euc-kr').decode(buffer);
-    } catch(err) {
-      try {
-        text = new TextDecoder('utf-8').decode(buffer);
-      } catch(err2) {
-        text = new TextDecoder('cp949').decode(buffer);
-      }
+    try { text = new TextDecoder('euc-kr').decode(buffer); }
+    catch(err) {
+      try { text = new TextDecoder('utf-8').decode(buffer); }
+      catch(err2) { text = new TextDecoder('cp949').decode(buffer); }
     }
+    parseStockCSV(text);
 
-    parseCSV(text);
+    // UI 업데이트
+    var area = document.getElementById('stockUploadArea');
+    area.classList.add('uploaded');
+    document.getElementById('stockIcon').textContent = '✓';
+    document.getElementById('stockText').textContent = file.name;
+    var fn = document.getElementById('stockFileName');
+    fn.textContent = stockData.length + '개 옵션 로드됨';
+    fn.classList.remove('hidden');
   };
-
   reader.readAsArrayBuffer(file);
 }
 
-function parseCSV(text) {
+function parseStockCSV(text) {
   var lines = text.split('\n');
-  if (lines.length < 2) {
-    alert('CSV 데이터가 없습니다.');
-    return;
-  }
+  if (lines.length < 2) { alert('CSV 데이터가 없습니다.'); return; }
 
-  // 헤더 파싱 (첫 줄)
   var headers = parseCSVLine(lines[0]);
-
-  // 컬럼 인덱스 찾기
   var colMap = {};
   headers.forEach(function(h, i) {
     var ht = h.trim();
@@ -511,16 +504,14 @@ function parseCSV(text) {
     if (ht === '상품코드(카페)') colMap.cafe24_code = i;
   });
 
-  // 필수 컬럼 체크
   var required = ['product_name', 'option_name', 'stock', 'cafe24_code'];
   for (var i = 0; i < required.length; i++) {
     if (colMap[required[i]] === undefined) {
-      alert('필수 컬럼이 없습니다: ' + required[i] + '\n셀메이트 재고현황 CSV인지 확인하세요.');
-      return;
+      alert('필수 컬럼 없음: ' + required[i]); return;
     }
   }
 
-  parsedData = [];
+  stockData = [];
 
   for (var i = 1; i < lines.length; i++) {
     var line = lines[i].trim();
@@ -530,16 +521,22 @@ function parseCSV(text) {
     var productName = (cols[colMap.product_name] || '').trim();
     var optionName = (cols[colMap.option_name] || '').trim();
     var stock = parseInt(cols[colMap.stock]) || 0;
-    var soldout = (cols[colMap.soldout] || '').trim();
+    var soldoutFlag = (cols[colMap.soldout] || '').trim();
     var cafe24Code = (cols[colMap.cafe24_code] || '').trim();
 
-    // [the J.Soo] 또는 [the J.Soo Premium] 상품만 필터
-    if (!productName.startsWith('[the J.Soo')) continue;
+    // 대소문자 통일: [the j.soo → [the J.Soo
+    if (productName.toLowerCase().startsWith('[the j.soo')) {
+      if (!productName.startsWith('[the J.Soo')) {
+        productName = productName.replace(/\[the j\.soo/i, function(m) {
+          if (m.toLowerCase().includes('premium')) return '[the J.Soo Premium';
+          return '[the J.Soo';
+        });
+      }
+    }
 
-    // 카페24 코드 없으면 스킵
+    if (!productName.startsWith('[the J.Soo')) continue;
     if (!cafe24Code) continue;
 
-    // 옵션명 파싱 (색상,사이즈 분리)
     var color = optionName;
     var size = '';
     if (optionName.indexOf(',') > -1) {
@@ -548,32 +545,29 @@ function parseCSV(text) {
       size = parts.slice(1).join(',').trim();
     }
 
-    // 상태 결정: 품절이거나 가용재고 0이면 soldout
-    var status = 'available';
-    if (soldout === '품절' || stock <= 0) {
-      status = 'soldout';
-    }
-
-    // 상품명에서 접두어 제거 (표시용)
     var displayName = productName
       .replace('[the J.Soo Premium] ', '')
       .replace('[the J.Soo] ', '');
 
-    parsedData.push({
+    stockData.push({
       cafe24_code: cafe24Code,
       product_name: displayName,
+      full_product_name: productName,
       color: color,
       size: size,
       stock: stock,
-      status: status
+      soldout_flag: soldoutFlag,
+      preorder_qty: 0,
+      expected_date: '',
+      status: 'available'
     });
   }
 
-  if (parsedData.length === 0) {
-    alert('[the J.Soo] / [the J.Soo Premium] 상품이 없거나\n카페24 코드가 없는 데이터입니다.');
-    return;
+  if (stockData.length === 0) {
+    alert('[the J.Soo] 상품이 없거나 카페24 코드가 없습니다.'); return;
   }
 
+  computeStatuses();
   showPreview();
 }
 
@@ -581,47 +575,276 @@ function parseCSVLine(line) {
   var result = [];
   var current = '';
   var inQuotes = false;
-
   for (var i = 0; i < line.length; i++) {
     var ch = line[i];
     if (ch === '"') {
-      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === ',' && !inQuotes) {
-      result.push(current);
-      current = '';
-    } else {
-      current += ch;
-    }
+      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) { result.push(current); current = ''; }
+    else current += ch;
   }
   result.push(current);
   return result;
 }
 
+// ===== STEP 2: 선주문 XLSX 파싱 =====
+function handlePreorderFile(file) {
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var data = new Uint8Array(e.target.result);
+    var workbook = XLSX.read(data, { type: 'array', cellDates: true });
+    var sheet = workbook.Sheets[workbook.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
+    parsePreorderXLSX(rows);
+
+    // UI 업데이트
+    var area = document.getElementById('preorderUploadArea');
+    area.classList.add('uploaded');
+    document.getElementById('preorderIcon').textContent = '✓';
+    document.getElementById('preorderText').textContent = file.name;
+    var fn = document.getElementById('preorderFileName');
+    fn.textContent = preorderData.length + '개 선주문 옵션 로드됨';
+    fn.classList.remove('hidden');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parsePreorderXLSX(rows) {
+  preorderData = [];
+  var currentProduct = null;
+  var isHeaderRow = false;
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    if (!row || !row[0]) { currentProduct = null; continue; }
+
+    var cell0 = String(row[0]).trim();
+
+    // 상품명 행 감지: [the J.Soo 포함
+    if (cell0.indexOf('[the J.Soo') > -1 || cell0.indexOf('[the j.soo') > -1) {
+      // 상품명에서 [the J.Soo...] 부분 추출
+      var match = cell0.match(/\[the [jJ]\.?[sS]oo[^\]]*\]\s*.*/);
+      if (match) {
+        currentProduct = match[0].trim();
+      } else {
+        // " - " 이후 부분 사용
+        var dashIdx = cell0.indexOf(' - ');
+        currentProduct = dashIdx > -1 ? cell0.substring(dashIdx + 3).trim() : cell0;
+      }
+      isHeaderRow = true;
+      continue;
+    }
+
+    // 헤더 행 (옵션, 원가, ...) → 스킵
+    if (cell0 === '옵션') {
+      isHeaderRow = false;
+      continue;
+    }
+
+    // 옵션 데이터 행
+    if (currentProduct && cell0 && cell0 !== '옵션') {
+      var optionName = cell0;
+      var remainQty = parseInt(row[4]) || 0; // E열: 잔여수
+
+      if (remainQty > 0) {
+        var color = optionName;
+        var size = '';
+        if (optionName.indexOf(',') > -1) {
+          var parts = optionName.split(',');
+          color = parts[0].trim();
+          size = parts.slice(1).join(',').trim();
+        }
+
+        preorderData.push({
+          product_name: currentProduct,
+          color: color,
+          size: size,
+          qty: remainQty
+        });
+      }
+    }
+  }
+
+  if (preorderData.length > 0) {
+    showPreorderDateInputs();
+    computeStatuses();
+    showPreview();
+  }
+}
+
+// ===== 선주문 날짜 입력 UI =====
+function showPreorderDateInputs() {
+  var section = document.getElementById('preorderDateSection');
+  section.classList.remove('hidden');
+
+  var list = document.getElementById('preorderDateList');
+  // 기존 아이템 제거 (헤더 유지)
+  var items = list.querySelectorAll('.preorder-item');
+  items.forEach(function(el) { el.remove(); });
+
+  // 상품별로 그룹핑 (같은 상품은 같은 날짜)
+  var productGroups = {};
+  var productOrder = [];
+  preorderData.forEach(function(po, idx) {
+    if (!productGroups[po.product_name]) {
+      productGroups[po.product_name] = [];
+      productOrder.push(po.product_name);
+    }
+    productGroups[po.product_name].push({ idx: idx, data: po });
+  });
+
+  productOrder.forEach(function(pname) {
+    var group = productGroups[pname];
+    var displayName = pname
+      .replace('[the J.Soo Premium] ', '')
+      .replace('[the J.Soo] ', '');
+
+    // 옵션들을 한 줄씩 표시
+    group.forEach(function(item, gIdx) {
+      var po = item.data;
+      var optionStr = po.color + (po.size ? ',' + po.size : '');
+      var div = document.createElement('div');
+      div.className = 'preorder-item';
+      div.innerHTML =
+        '<div class="preorder-name">' +
+          '<div class="pname">' + esc(displayName) + '</div>' +
+          '<div class="poption">' + esc(optionStr) + '</div>' +
+        '</div>' +
+        '<div class="preorder-qty">' + po.qty + '개</div>' +
+        '<input type="date" class="preorder-date" data-po-idx="' + item.idx + '" ' +
+          'onchange="onDateChange()" placeholder="입고일">';
+      list.appendChild(div);
+    });
+  });
+}
+
+function onDateChange() {
+  computeStatuses();
+  showPreview();
+}
+
+// ===== 상태 계산 =====
+function computeStatuses() {
+  if (stockData.length === 0) return;
+
+  // 선주문 날짜 수집
+  var dateInputs = document.querySelectorAll('.preorder-date');
+  var preorderDates = {};
+  dateInputs.forEach(function(input) {
+    var idx = parseInt(input.getAttribute('data-po-idx'));
+    if (input.value && preorderData[idx]) {
+      var po = preorderData[idx];
+      var key = po.product_name + '|' + po.color + '|' + po.size;
+      preorderDates[key] = {
+        qty: po.qty,
+        date: input.value
+      };
+    }
+  });
+
+  // 재고 데이터에 선주문 매칭
+  stockData.forEach(function(item) {
+    item.preorder_qty = 0;
+    item.expected_date = '';
+
+    if (item.stock >= 1) {
+      item.status = 'available';
+      return;
+    }
+
+    // stock <= 0: 선주문 매칭 시도
+    var matched = matchPreorder(item, preorderDates);
+
+    if (matched) {
+      item.status = 'preorder';
+      item.preorder_qty = matched.qty;
+      item.expected_date = matched.date;
+    } else if (item.soldout_flag === '품절') {
+      item.status = 'soldout';
+    } else {
+      item.status = 'check'; // 확인 필요
+    }
+  });
+
+  mergedData = stockData;
+}
+
+function matchPreorder(stockItem, preorderDates) {
+  // 직접 매칭: full_product_name + color + size
+  var keys = [];
+
+  // 정확한 매칭
+  keys.push(stockItem.full_product_name + '|' + stockItem.color + '|' + stockItem.size);
+
+  // 선주문 파일의 상품명으로 매칭 시도
+  for (var poKey in preorderDates) {
+    var parts = poKey.split('|');
+    var poProductName = parts[0];
+    var poColor = parts[1];
+    var poSize = parts[2];
+
+    // 색상+사이즈 일치 확인
+    if (poColor !== stockItem.color) continue;
+    if (poSize !== stockItem.size) continue;
+
+    // 상품명 매칭: 선주문 상품명이 재고 상품명을 포함하거나 시작
+    var stockFullName = stockItem.full_product_name;
+
+    // 케이스 1: 정확히 일치
+    if (poProductName === stockFullName) return preorderDates[poKey];
+
+    // 케이스 2: 선주문 이름이 재고 이름으로 시작 (색상 접미사 있는 경우)
+    if (poProductName.startsWith(stockFullName + '_') || poProductName.startsWith(stockFullName)) {
+      return preorderDates[poKey];
+    }
+
+    // 케이스 3: 재고 이름이 선주문 이름으로 시작
+    if (stockFullName.startsWith(poProductName)) return preorderDates[poKey];
+
+    // 케이스 4: 상품명 핵심 부분 비교 (접두어 제거 후)
+    var stockCore = stockFullName.replace(/\[the J\.Soo[^\]]*\]\s*/, '');
+    var poCore = poProductName.replace(/\[the J\.Soo[^\]]*\]\s*/, '').replace(/_[A-Za-z ]+$/, '');
+    if (stockCore === poCore) return preorderDates[poKey];
+  }
+
+  return null;
+}
+
 // ===== 미리보기 =====
 function showPreview() {
+  if (stockData.length === 0) return;
+
   var previewCard = document.getElementById('previewCard');
   previewCard.classList.remove('hidden');
 
-  var availCount = parsedData.filter(function(d) { return d.status === 'available'; }).length;
-  var soldoutCount = parsedData.filter(function(d) { return d.status === 'soldout'; }).length;
-  var productCodes = new Set(parsedData.map(function(d) { return d.cafe24_code; }));
+  var avail = 0, preorder = 0, soldout = 0, check = 0;
+  mergedData.forEach(function(d) {
+    if (d.status === 'available') avail++;
+    else if (d.status === 'preorder') preorder++;
+    else if (d.status === 'soldout') soldout++;
+    else if (d.status === 'check') check++;
+  });
 
-  document.getElementById('totalCount').textContent = parsedData.length;
-  document.getElementById('availCount').textContent = availCount;
-  document.getElementById('soldoutCount').textContent = soldoutCount;
+  var productCodes = new Set(mergedData.map(function(d) { return d.cafe24_code; }));
+
+  document.getElementById('totalCount').textContent = mergedData.length;
+  document.getElementById('availCount').textContent = avail;
+  document.getElementById('preorderCount').textContent = preorder;
+  document.getElementById('soldoutCount').textContent = soldout;
   document.getElementById('productCount').textContent = productCodes.size;
 
+  // 테이블
   var tbody = document.getElementById('previewBody');
   tbody.innerHTML = '';
 
-  var showCount = Math.min(parsedData.length, 50);
+  var showCount = Math.min(mergedData.length, 50);
   for (var i = 0; i < showCount; i++) {
-    var d = parsedData[i];
+    var d = mergedData[i];
+    var statusLabel = { available: '발송가능', preorder: '예약배송', soldout: '품절', check: '확인필요' };
+    var dateDisplay = d.expected_date ? formatDateDisplay(d.expected_date) : '-';
+
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td>' + esc(d.cafe24_code) + '</td>' +
@@ -629,62 +852,105 @@ function showPreview() {
       '<td>' + esc(d.color) + '</td>' +
       '<td>' + esc(d.size || '-') + '</td>' +
       '<td>' + d.stock + '</td>' +
-      '<td><span class="status-badge status-' + d.status + '">' +
-        (d.status === 'available' ? '발송가능' : '품절') + '</span></td>';
+      '<td><span class="status-badge status-' + d.status + '">' + statusLabel[d.status] + '</span></td>' +
+      '<td>' + (d.status === 'preorder' ? dateDisplay : '-') + '</td>';
     tbody.appendChild(tr);
   }
 
   var moreRows = document.getElementById('moreRows');
-  if (parsedData.length > 50) {
+  if (mergedData.length > 50) {
     moreRows.classList.remove('hidden');
-    moreRows.textContent = '외 ' + (parsedData.length - 50) + '개 옵션 (전체 업로드됩니다)';
+    moreRows.textContent = '외 ' + (mergedData.length - 50) + '개 옵션';
   } else {
     moreRows.classList.add('hidden');
   }
 
-  previewCard.scrollIntoView({ behavior: 'smooth' });
+  // 경고 패널
+  showWarnings();
 }
 
-function esc(str) {
-  var div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+function formatDateDisplay(dateStr) {
+  // "2026-11-26" → "11/26"
+  if (!dateStr) return '';
+  var parts = dateStr.split('-');
+  if (parts.length === 3) {
+    return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+  }
+  return dateStr;
+}
+
+// ===== 경고 패널 =====
+function showWarnings() {
+  var checkItems = mergedData.filter(function(d) { return d.status === 'check'; });
+  var panel = document.getElementById('warningPanel');
+  var list = document.getElementById('warningList');
+
+  if (checkItems.length === 0) {
+    panel.classList.remove('visible');
+    return;
+  }
+
+  panel.classList.add('visible');
+  list.innerHTML = '';
+
+  // 상품별 그룹핑
+  var grouped = {};
+  checkItems.forEach(function(item) {
+    var key = item.product_name;
+    if (!grouped[key]) grouped[key] = [];
+    var optStr = item.color + (item.size ? ',' + item.size : '');
+    grouped[key].push(optStr);
+  });
+
+  for (var name in grouped) {
+    var div = document.createElement('div');
+    div.className = 'warning-item';
+    div.innerHTML =
+      '<div class="wi-name">' + esc(name) + '</div>' +
+      '<div class="wi-option">' + grouped[name].map(esc).join(' / ') + '</div>';
+    list.appendChild(div);
+  }
 }
 
 // ===== 업로드 =====
 function uploadData() {
-  if (!GAS_URL) {
-    alert('먼저 Settings에서 GAS 웹 앱 URL을 설정하세요.');
-    return;
-  }
+  if (mergedData.length === 0) { alert('업로드할 데이터가 없습니다.'); return; }
 
-  if (parsedData.length === 0) {
-    alert('업로드할 데이터가 없습니다.');
-    return;
-  }
+  // check 상태인 항목은 업로드하되 widget에서 숨김
+  var uploadItems = mergedData.map(function(d) {
+    return {
+      cafe24_code: d.cafe24_code,
+      product_name: d.product_name,
+      color: d.color,
+      size: d.size,
+      stock: d.stock,
+      status: d.status,
+      preorder_qty: d.preorder_qty || 0,
+      expected_date: d.expected_date || ''
+    };
+  });
 
   var btn = document.getElementById('uploadBtn');
   btn.disabled = true;
-
-  var loading = document.getElementById('loading');
-  loading.style.display = 'block';
-
+  document.getElementById('loading').style.display = 'block';
   hideAlerts();
 
   fetch(GAS_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items: parsedData })
+    body: JSON.stringify({ items: uploadItems })
   })
   .then(function() {
-    // no-cors에서는 응답을 읽을 수 없으므로 성공으로 간주
-    loading.style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
     btn.disabled = false;
-    showAlert('success', '✓ ' + parsedData.length + '개 옵션 업로드 완료! Google Sheets를 확인하세요.');
+    var checkCount = mergedData.filter(function(d) { return d.status === 'check'; }).length;
+    var msg = '✓ ' + mergedData.length + '개 옵션 업로드 완료!';
+    if (checkCount > 0) msg += ' (확인필요 ' + checkCount + '개 → 위젯에 미표시)';
+    showAlert('success', msg);
   })
   .catch(function(err) {
-    loading.style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
     btn.disabled = false;
     showAlert('error', '업로드 실패: ' + err.message);
   });
@@ -702,11 +968,37 @@ function hideAlerts() {
   document.getElementById('errorAlert').style.display = 'none';
 }
 
-// ===== 리셋 =====
-function resetUpload() {
-  parsedData = [];
+function esc(str) {
+  if (!str) return '';
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== 초기화 =====
+function resetAll() {
+  stockData = [];
+  preorderData = [];
+  mergedData = [];
+
   document.getElementById('previewCard').classList.add('hidden');
-  document.getElementById('fileInput').value = '';
+  document.getElementById('preorderDateSection').classList.add('hidden');
+  document.getElementById('warningPanel').classList.remove('visible');
+
+  // 파일 입력 리셋
+  document.getElementById('stockFileInput').value = '';
+  document.getElementById('preorderFileInput').value = '';
+
+  // 업로드 영역 리셋
+  ['stock', 'preorder'].forEach(function(prefix) {
+    var area = document.getElementById(prefix + 'UploadArea');
+    area.classList.remove('uploaded');
+    document.getElementById(prefix + 'Icon').textContent = '↑';
+    document.getElementById(prefix + 'FileName').classList.add('hidden');
+  });
+  document.getElementById('stockText').innerHTML = '셀메이트 재고 CSV 파일을 드래그하거나 <strong>클릭하여 선택</strong>';
+  document.getElementById('preorderText').innerHTML = '스마트비즈 선주문 xlsx 파일을 드래그하거나 <strong>클릭하여 선택</strong>';
+
   hideAlerts();
 }
 </script>
