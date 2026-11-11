@@ -613,58 +613,40 @@ function handlePreorderFile(file) {
 
 function parsePreorderXLSX(rows) {
   preorderData = [];
-  var currentProduct = null;
-  var isHeaderRow = false;
+
+  // SBR210L 형식: 단순 테이블
+  // Row 0: 제목 ("선주문내역(주문전)")
+  // Row 1: 헤더 (업체명, 연락처, 위치, 사입상품명, 상품명, 옵션, 원가, 잔여, 주문, ...)
+  // Row 2+: 데이터 (한 행에 한 옵션)
+  // 컬럼(0-indexed): [4]=상품명(with [the J.Soo]), [5]=옵션(색상,사이즈), [7]=잔여(선주문수량)
 
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
-    if (!row || !row[0]) { currentProduct = null; continue; }
+    if (!row) continue;
 
-    var cell0 = String(row[0]).trim();
+    var productName = row[4] ? String(row[4]).trim() : '';
+    var optionStr = row[5] ? String(row[5]).trim() : '';
+    var remainQty = parseInt(row[7]) || 0;
 
-    // 상품명 행 감지: [the J.Soo 포함
-    if (cell0.indexOf('[the J.Soo') > -1 || cell0.indexOf('[the j.soo') > -1) {
-      // 상품명에서 [the J.Soo...] 부분 추출
-      var match = cell0.match(/\[the [jJ]\.?[sS]oo[^\]]*\]\s*.*/);
-      if (match) {
-        currentProduct = match[0].trim();
-      } else {
-        // " - " 이후 부분 사용
-        var dashIdx = cell0.indexOf(' - ');
-        currentProduct = dashIdx > -1 ? cell0.substring(dashIdx + 3).trim() : cell0;
-      }
-      isHeaderRow = true;
-      continue;
+    // [the J.Soo 가 포함된 행만 처리
+    if (!productName || (productName.indexOf('[the J.Soo') === -1 && productName.indexOf('[the j.soo') === -1)) continue;
+    if (remainQty <= 0) continue;
+
+    // 옵션에서 색상, 사이즈 분리 ("블랙,M" → 색상=블랙, 사이즈=M)
+    var color = optionStr;
+    var size = '';
+    if (optionStr.indexOf(',') > -1) {
+      var parts = optionStr.split(',');
+      color = parts[0].trim();
+      size = parts.slice(1).join(',').trim();
     }
 
-    // 헤더 행 (옵션, 원가, ...) → 스킵
-    if (cell0 === '옵션') {
-      isHeaderRow = false;
-      continue;
-    }
-
-    // 옵션 데이터 행
-    if (currentProduct && cell0 && cell0 !== '옵션') {
-      var optionName = cell0;
-      var remainQty = parseInt(row[4]) || 0; // E열: 잔여수
-
-      if (remainQty > 0) {
-        var color = optionName;
-        var size = '';
-        if (optionName.indexOf(',') > -1) {
-          var parts = optionName.split(',');
-          color = parts[0].trim();
-          size = parts.slice(1).join(',').trim();
-        }
-
-        preorderData.push({
-          product_name: currentProduct,
-          color: color,
-          size: size,
-          qty: remainQty
-        });
-      }
-    }
+    preorderData.push({
+      product_name: productName,
+      color: color,
+      size: size,
+      qty: remainQty
+    });
   }
 
   if (preorderData.length > 0) {
