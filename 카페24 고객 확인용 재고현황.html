@@ -133,13 +133,22 @@
   .preorder-item:last-child { border-bottom: none; }
   .preorder-item:hover { background: #fafafa; }
 
+  .preorder-group-header {
+    padding: 8px 14px 4px;
+    font-size: 12px;
+    background: #f8f6f3;
+    border-bottom: 1px solid #eee;
+    margin-top: 4px;
+  }
+  .preorder-group-header:first-child { margin-top: 0; }
+
   .preorder-name { flex: 1; min-width: 0; }
   .preorder-name .pname { font-weight: 500; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .preorder-name .poption { color: #888; font-size: 11px; }
   .preorder-qty { color: #5d4e37; font-weight: 500; white-space: nowrap; }
 
   .preorder-date {
-    width: 130px;
+    width: 70px;
     flex-shrink: 0;
     padding: 6px 10px;
     font-size: 12px;
@@ -378,14 +387,19 @@
           <div style="margin-bottom:12px; font-size:13px; font-weight:500; color:#1a1a1a;">
             예상 입고일 확인
           </div>
-          <div style="font-size:11px; color:#888; margin-bottom:12px;">
-            사입상품명 기준으로 묶여있습니다. 날짜를 수정하면 해당 그룹의 모든 옵션에 적용됩니다.
+          <div style="font-size:11px; color:#888; margin-bottom:8px;">
+            옵션별로 입고일을 설정합니다. 월/일만 입력하세요.
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <label style="font-size:12px; color:#555;">연도:</label>
+            <select id="preorderYear" onchange="onDateChange()" style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:13px; background:#fff;">
+            </select>
           </div>
           <div class="preorder-list" id="preorderDateList">
             <div class="preorder-header">
-              <div class="preorder-name">거래처 / 사입상품명</div>
-              <div class="preorder-qty">옵션수</div>
-              <div style="width:130px; flex-shrink:0;">입고 예정일</div>
+              <div class="preorder-name">옵션</div>
+              <div class="preorder-qty">수량</div>
+              <div style="width:90px; flex-shrink:0;">입고일 (월/일)</div>
             </div>
           </div>
         </div>
@@ -673,13 +687,37 @@ function parsePreorderXLSX(rows) {
   }
 }
 
+// ===== 연도 셀렉터 초기화 =====
+function initYearSelector() {
+  var select = document.getElementById('preorderYear');
+  var currentYear = new Date().getFullYear();
+  select.innerHTML = '';
+  for (var y = currentYear; y <= currentYear + 1; y++) {
+    var opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + '년';
+    select.appendChild(opt);
+  }
+  // localStorage에서 저장된 연도 복원
+  try {
+    var savedYear = localStorage.getItem('jsoo_preorder_year');
+    if (savedYear) select.value = savedYear;
+  } catch(e) {}
+}
+
+function getSelectedYear() {
+  return document.getElementById('preorderYear').value;
+}
+
 // ===== 선주문 날짜 입력 UI =====
 function showPreorderDateInputs() {
   var section = document.getElementById('preorderDateSection');
   section.classList.remove('hidden');
 
+  initYearSelector();
+
   var list = document.getElementById('preorderDateList');
-  var items = list.querySelectorAll('.preorder-item');
+  var items = list.querySelectorAll('.preorder-item, .preorder-group-header');
   items.forEach(function(el) { el.remove(); });
 
   // 사입상품명(group_key) 기준으로 그룹핑
@@ -698,26 +736,72 @@ function showPreorderDateInputs() {
 
   groupOrder.forEach(function(gkey) {
     var group = groups[gkey];
-    var optionCount = group.items.length;
-    var optionSummary = group.items.map(function(item) {
-      return item.data.color + (item.data.size ? ' ' + item.data.size : '');
-    }).join(', ');
 
-    var savedDate = savedDates[gkey] || '';
+    // 그룹 헤더
+    var header = document.createElement('div');
+    header.className = 'preorder-group-header';
+    header.innerHTML =
+      '<span style="color:#5d4e37;">' + esc(group.supplier) + '</span>' +
+      ' <span style="font-weight:500;">' + esc(group.internal_name) + '</span>' +
+      ' <span style="color:#999;">(' + group.items.length + '개)</span>';
+    list.appendChild(header);
 
-    var div = document.createElement('div');
-    div.className = 'preorder-item';
-    div.innerHTML =
-      '<div class="preorder-name">' +
-        '<div class="pname" style="color:#5d4e37; font-size:11px;">' + esc(group.supplier) + '</div>' +
-        '<div class="poption" style="font-weight:500; font-size:13px;">' + esc(group.internal_name) + '</div>' +
-        '<div class="poption" style="color:#999; font-size:10px;">' + esc(optionSummary) + '</div>' +
-      '</div>' +
-      '<div class="preorder-qty">' + optionCount + '개</div>' +
-      '<input type="date" class="preorder-date" data-group-key="' + esc(gkey) + '" ' +
-        'value="' + savedDate + '" onchange="onDateChange()" placeholder="입고일">';
-    list.appendChild(div);
+    // 각 옵션별 날짜 입력
+    group.items.forEach(function(item) {
+      var po = item.data;
+      var optionStr = po.color + (po.size ? ', ' + po.size : '');
+      var optionKey = po.product_name + '|' + po.color + '|' + po.size;
+      var savedMD = savedDates[optionKey] || '';
+
+      var div = document.createElement('div');
+      div.className = 'preorder-item';
+      div.style.paddingLeft = '16px';
+      div.innerHTML =
+        '<div class="preorder-name">' +
+          '<div class="poption">' + esc(optionStr) + '</div>' +
+        '</div>' +
+        '<div class="preorder-qty">' + po.qty + '개</div>' +
+        '<input type="text" class="preorder-date" data-option-key="' + esc(optionKey) + '" ' +
+          'data-group-key="' + esc(gkey) + '" data-color="' + esc(po.color) + '" ' +
+          'value="' + savedMD + '" oninput="onDateInput(this)" onblur="onDateBlur(this)" ' +
+          'placeholder="MM/DD" maxlength="5" ' +
+          'style="width:70px; text-align:center; font-size:13px;">';
+      list.appendChild(div);
+    });
   });
+}
+
+// MM/DD 자동 포맷: 숫자 2개 입력 시 / 자동 삽입
+function onDateInput(el) {
+  var v = el.value.replace(/[^0-9/]/g, '');
+  // 숫자만 2개 치면 자동으로 / 삽입
+  if (v.length === 2 && v.indexOf('/') === -1) {
+    v = v + '/';
+  }
+  el.value = v;
+}
+
+function onDateBlur(el) {
+  var v = el.value.trim();
+  if (!v) return;
+  // "1116" → "11/16", "116" → "1/16" 보정
+  if (v.indexOf('/') === -1 && v.length >= 3) {
+    if (v.length === 4) v = v.substring(0,2) + '/' + v.substring(2);
+    else if (v.length === 3) v = v.substring(0,1) + '/' + v.substring(1);
+  }
+  el.value = v;
+  onDateChange();
+}
+
+// MM/DD → YYYY-MM-DD 변환
+function mdToIso(md) {
+  if (!md || md.indexOf('/') === -1) return '';
+  var parts = md.split('/');
+  var m = parseInt(parts[0]);
+  var d = parseInt(parts[1]);
+  if (!m || !d || m < 1 || m > 12 || d < 1 || d > 31) return '';
+  var year = getSelectedYear();
+  return year + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
 }
 
 function onDateChange() {
@@ -726,10 +810,10 @@ function onDateChange() {
   showPreview();
 }
 
-// ===== localStorage 날짜 저장/불러오기 =====
+// ===== localStorage 날짜 저장/불러오기 (MM/DD만 저장) =====
 function loadSavedDates() {
   try {
-    var saved = localStorage.getItem('jsoo_preorder_dates');
+    var saved = localStorage.getItem('jsoo_preorder_dates_v2');
     return saved ? JSON.parse(saved) : {};
   } catch(e) { return {}; }
 }
@@ -739,11 +823,35 @@ function saveDates() {
     var dates = {};
     document.querySelectorAll('.preorder-date').forEach(function(input) {
       if (input.value) {
-        dates[input.getAttribute('data-group-key')] = input.value;
+        dates[input.getAttribute('data-option-key')] = input.value; // MM/DD
       }
     });
-    localStorage.setItem('jsoo_preorder_dates', JSON.stringify(dates));
+    localStorage.setItem('jsoo_preorder_dates_v2', JSON.stringify(dates));
+    localStorage.setItem('jsoo_preorder_year', getSelectedYear());
   } catch(e) {}
+}
+
+// ===== 카톡 색상 약어 → 풀네임 매핑 =====
+var COLOR_ABBR = {
+  '검': '블랙', '블': '블랙', '블랙': '블랙',
+  '회': '그레이', '그레이': '그레이',
+  '곤': '네이비', '네이비': '네이비',
+  '밤': '브라운', '브라운': '브라운',
+  '아': '아이보리', '아이보리': '아이보리',
+  '베': '베이지', '베이지': '베이지',
+  '연베': '연베이지', '연베이지': '연베이지',
+  '크림': '크림', '크': '크림',
+  '연노랑': '연노랑',
+  '차콜': '차콜', '차': '차콜'
+};
+
+function resolveColorAbbr(abbr) {
+  // "아(연노랑)" → "연노랑" 처리
+  var match = abbr.match(/\(([^)]+)\)/);
+  if (match) return COLOR_ABBR[match[1]] || match[1];
+  // 숫자/사이즈 제거: "회M15" → "회", "검50" → "검", "검S10" → "검"
+  var cleaned = abbr.replace(/[A-Za-z]?\d+/g, '').trim();
+  return COLOR_ABBR[cleaned] || cleaned;
 }
 
 // ===== 카톡 일정 파싱 & 자동 세팅 =====
@@ -752,76 +860,92 @@ function applyKakaoSchedule() {
   if (!text) { alert('카톡 일정을 붙여넣어주세요.'); return; }
 
   var lines = text.split('\n').filter(function(l) { return l.trim(); });
-  var schedule = {}; // { 사입상품명(lowercase): 날짜(YYYY-MM-DD) }
 
-  // 현재 연도 추출
-  var currentYear = new Date().getFullYear();
+  // 파싱 결과: [ { internalName, colors: ['블랙','그레이',...], date: 'MM/DD' }, ... ]
+  var entries = [];
 
   lines.forEach(function(line) {
-    // "수-더라인sl : 회M15> 11/16월밤 예정" 파싱
     var colonIdx = line.indexOf(':');
     if (colonIdx === -1) return;
 
-    var internalName = line.substring(0, colonIdx).trim();
+    var internalName = line.substring(0, colonIdx).trim().toLowerCase();
     var rest = line.substring(colonIdx + 1);
 
-    // > 이후에서 날짜 추출
     var arrowIdx = rest.indexOf('>');
     if (arrowIdx === -1) return;
 
-    var dateStr = rest.substring(arrowIdx + 1).trim();
+    var optionPart = rest.substring(0, arrowIdx).trim();
+    var datePart = rest.substring(arrowIdx + 1).trim();
 
-    // "원단" 표시 제거 (원단은 원자재 입고일이므로 실제 완제품은 더 늦음 → 일단 파싱)
-    dateStr = dateStr.replace('원단', '');
+    // "원단" 표시 제거
+    datePart = datePart.replace('원단', '');
 
-    // 날짜 추출: 11/16, 범위면 뒤쪽 날짜 사용 (11/12~11/16 → 11/16)
-    var dateMatches = dateStr.match(/(\d{1,2})\/(\d{1,2})/g);
+    // 날짜 추출 (MM/DD 형태로 저장)
+    var dateMatches = datePart.match(/(\d{1,2})\/(\d{1,2})/g);
     if (!dateMatches || dateMatches.length === 0) return;
 
-    // 범위의 경우 마지막(가장 늦은) 날짜 사용
+    // 범위면 늦은 날짜, MM/DD 그대로 사용
     var lastDate = dateMatches[dateMatches.length - 1];
-    var dateParts = lastDate.split('/');
-    var month = parseInt(dateParts[0]);
-    var day = parseInt(dateParts[1]);
-    var isoDate = currentYear + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    var dp = lastDate.split('/');
+    var mdDate = parseInt(dp[0]) + '/' + parseInt(dp[1]);
 
-    var key = internalName.toLowerCase();
+    // 옵션에서 색상 추출: "회M15", "검50 베50", "아(연노랑)50 검50"
+    var colorTokens = optionPart.split(/\s+/);
+    var colors = [];
+    colorTokens.forEach(function(token) {
+      if (!token) return;
+      var resolved = resolveColorAbbr(token);
+      if (resolved) colors.push(resolved);
+    });
 
-    // 같은 상품이 여러 줄이면 가장 늦은 날짜 사용
-    if (!schedule[key] || isoDate > schedule[key]) {
-      schedule[key] = isoDate;
-    }
+    entries.push({ internalName: internalName, colors: colors, date: mdDate });
   });
 
   // 매칭하여 날짜 세팅
   var matched = 0;
   var dateInputs = document.querySelectorAll('.preorder-date');
+
   dateInputs.forEach(function(input) {
     var groupKey = input.getAttribute('data-group-key');
+    var optColor = input.getAttribute('data-color');
     var parts = groupKey.split('|');
-    var internalName = parts[1] || '';
-    var internalLower = internalName.toLowerCase();
+    var internalName = (parts[1] || '').toLowerCase();
 
-    // 정확한 매칭
-    if (schedule[internalLower]) {
-      input.value = schedule[internalLower];
-      matched++;
-      return;
-    }
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
 
-    // 부분 매칭: 카톡 이름이 사입상품명에 포함되거나 반대
-    for (var schedKey in schedule) {
-      if (internalLower.indexOf(schedKey) > -1 || schedKey.indexOf(internalLower) > -1) {
-        input.value = schedule[schedKey];
+      // 사입상품명 매칭 (부분 포함)
+      var nameMatch = (internalName === entry.internalName) ||
+                      (internalName.indexOf(entry.internalName) > -1) ||
+                      (entry.internalName.indexOf(internalName) > -1);
+      if (!nameMatch) continue;
+
+      // 색상 매칭: 해당 줄에 이 색상이 포함되어 있으면 세팅
+      var colorMatch = entry.colors.length === 0; // 색상 정보 없으면 전체 적용
+      for (var j = 0; j < entry.colors.length; j++) {
+        if (optColor === entry.colors[j] || optColor.indexOf(entry.colors[j]) > -1 || entry.colors[j].indexOf(optColor) > -1) {
+          colorMatch = true;
+          break;
+        }
+      }
+
+      if (colorMatch) {
+        // 같은 옵션에 여러 줄이 매칭되면 가장 늦은 날짜
+        if (!input.value || entry.date > input.value) {
+          input.value = entry.date;
+        }
         matched++;
-        return;
       }
     }
   });
 
+  // 중복 카운트 제거
+  var uniqueMatched = 0;
+  dateInputs.forEach(function(input) { if (input.value) uniqueMatched++; });
+
   var resultEl = document.getElementById('kakaoResult');
-  resultEl.textContent = dateInputs.length + '개 중 ' + matched + '개 자동 세팅 완료';
-  resultEl.style.color = matched > 0 ? '#2e7d32' : '#c62828';
+  resultEl.textContent = dateInputs.length + '개 중 ' + uniqueMatched + '개 자동 세팅 완료';
+  resultEl.style.color = uniqueMatched > 0 ? '#2e7d32' : '#c62828';
 
   saveDates();
   computeStatuses();
@@ -832,27 +956,26 @@ function applyKakaoSchedule() {
 function computeStatuses() {
   if (stockData.length === 0) return;
 
-  // 선주문 날짜 수집 (그룹 기반)
-  var groupDates = {};
+  // 옵션별 날짜 수집 (date input의 data-option-key 기준, MM/DD → ISO 변환)
+  var optionDateMap = {};
   var dateInputs = document.querySelectorAll('.preorder-date');
   dateInputs.forEach(function(input) {
-    var groupKey = input.getAttribute('data-group-key');
-    if (input.value && groupKey) {
-      groupDates[groupKey] = input.value;
+    var optionKey = input.getAttribute('data-option-key');
+    var isoDate = mdToIso(input.value);
+    if (isoDate && optionKey) {
+      optionDateMap[optionKey] = isoDate;
     }
   });
 
-  // 그룹 날짜를 개별 옵션에 매핑
+  // 옵션별 날짜를 preorderDates 형태로 변환 (날짜 없어도 선주문 존재하면 포함)
   var preorderDates = {};
   preorderData.forEach(function(po) {
-    var date = groupDates[po.group_key] || '';
-    if (date) {
-      var key = po.product_name + '|' + po.color + '|' + po.size;
-      preorderDates[key] = {
-        qty: po.qty,
-        date: date
-      };
-    }
+    var optionKey = po.product_name + '|' + po.color + '|' + po.size;
+    var date = optionDateMap[optionKey] || '';
+    preorderDates[optionKey] = {
+      qty: po.qty,
+      date: date
+    };
   });
 
   // 재고 데이터에 선주문 매칭
