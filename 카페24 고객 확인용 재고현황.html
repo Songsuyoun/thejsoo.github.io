@@ -363,16 +363,28 @@
 
         <!-- 선주문 날짜 입력 -->
         <div class="hidden" id="preorderDateSection">
-          <div style="margin-top:20px; margin-bottom:12px; font-size:13px; font-weight:500; color:#1a1a1a;">
-            예상 입고일 입력
+          <!-- 카톡 일정 붙여넣기 -->
+          <div style="margin-top:20px; margin-bottom:8px; font-size:13px; font-weight:500; color:#1a1a1a;">
+            📋 카톡 입고 일정 붙여넣기 <span style="font-size:11px; color:#888; font-weight:300;">(선택)</span>
+          </div>
+          <div style="font-size:11px; color:#888; margin-bottom:8px;">
+            거래처에서 카톡으로 받은 입고 일정을 그대로 붙여넣으면 자동으로 날짜가 세팅됩니다.
+          </div>
+          <textarea id="kakaoScheduleInput" rows="4" placeholder="예) 수-더라인sl : 회M15> 11/16월밤 예정&#10;수-루미jk : 회20 검L20 > 11/12목밤 예정"
+            style="width:100%; border:1px solid #e0e0e0; border-radius:4px; padding:10px; font-size:12px; font-family:'Noto Sans KR',sans-serif; resize:vertical; margin-bottom:8px; background:#fafafa;"></textarea>
+          <button onclick="applyKakaoSchedule()" style="padding:6px 16px; font-size:12px; border:1px solid #5d4e37; background:#fff; color:#5d4e37; cursor:pointer; border-radius:3px; margin-bottom:16px;">날짜 자동 세팅</button>
+          <span id="kakaoResult" style="font-size:11px; color:#2e7d32; margin-left:8px;"></span>
+
+          <div style="margin-bottom:12px; font-size:13px; font-weight:500; color:#1a1a1a;">
+            예상 입고일 확인
           </div>
           <div style="font-size:11px; color:#888; margin-bottom:12px;">
-            거래처에 확인한 입고 예정일을 입력해주세요. 고객에게 "○월 ○일 이후 순차배송"으로 표시됩니다.
+            사입상품명 기준으로 묶여있습니다. 날짜를 수정하면 해당 그룹의 모든 옵션에 적용됩니다.
           </div>
           <div class="preorder-list" id="preorderDateList">
             <div class="preorder-header">
-              <div class="preorder-name">상품 / 옵션</div>
-              <div class="preorder-qty">잔여수</div>
+              <div class="preorder-name">거래처 / 사입상품명</div>
+              <div class="preorder-qty">옵션수</div>
               <div style="width:130px; flex-shrink:0;">입고 예정일</div>
             </div>
           </div>
@@ -624,6 +636,8 @@ function parsePreorderXLSX(rows) {
     var row = rows[i];
     if (!row) continue;
 
+    var supplier = row[0] ? String(row[0]).trim() : '';
+    var internalName = row[3] ? String(row[3]).trim() : '';
     var productName = row[4] ? String(row[4]).trim() : '';
     var optionStr = row[5] ? String(row[5]).trim() : '';
     var remainQty = parseInt(row[7]) || 0;
@@ -643,6 +657,9 @@ function parsePreorderXLSX(rows) {
 
     preorderData.push({
       product_name: productName,
+      supplier: supplier,
+      internal_name: internalName,
+      group_key: supplier + '|' + internalName,
       color: color,
       size: size,
       qty: remainQty
@@ -662,47 +679,151 @@ function showPreorderDateInputs() {
   section.classList.remove('hidden');
 
   var list = document.getElementById('preorderDateList');
-  // 기존 아이템 제거 (헤더 유지)
   var items = list.querySelectorAll('.preorder-item');
   items.forEach(function(el) { el.remove(); });
 
-  // 상품별로 그룹핑 (같은 상품은 같은 날짜)
-  var productGroups = {};
-  var productOrder = [];
+  // 사입상품명(group_key) 기준으로 그룹핑
+  var groups = {};
+  var groupOrder = [];
   preorderData.forEach(function(po, idx) {
-    if (!productGroups[po.product_name]) {
-      productGroups[po.product_name] = [];
-      productOrder.push(po.product_name);
+    if (!groups[po.group_key]) {
+      groups[po.group_key] = { supplier: po.supplier, internal_name: po.internal_name, items: [] };
+      groupOrder.push(po.group_key);
     }
-    productGroups[po.product_name].push({ idx: idx, data: po });
+    groups[po.group_key].items.push({ idx: idx, data: po });
   });
 
-  productOrder.forEach(function(pname) {
-    var group = productGroups[pname];
-    var displayName = pname
-      .replace('[the J.Soo Premium] ', '')
-      .replace('[the J.Soo] ', '');
+  // localStorage에서 이전 날짜 불러오기
+  var savedDates = loadSavedDates();
 
-    // 옵션들을 한 줄씩 표시
-    group.forEach(function(item, gIdx) {
-      var po = item.data;
-      var optionStr = po.color + (po.size ? ',' + po.size : '');
-      var div = document.createElement('div');
-      div.className = 'preorder-item';
-      div.innerHTML =
-        '<div class="preorder-name">' +
-          '<div class="pname">' + esc(displayName) + '</div>' +
-          '<div class="poption">' + esc(optionStr) + '</div>' +
-        '</div>' +
-        '<div class="preorder-qty">' + po.qty + '개</div>' +
-        '<input type="date" class="preorder-date" data-po-idx="' + item.idx + '" ' +
-          'onchange="onDateChange()" placeholder="입고일">';
-      list.appendChild(div);
-    });
+  groupOrder.forEach(function(gkey) {
+    var group = groups[gkey];
+    var optionCount = group.items.length;
+    var optionSummary = group.items.map(function(item) {
+      return item.data.color + (item.data.size ? ' ' + item.data.size : '');
+    }).join(', ');
+
+    var savedDate = savedDates[gkey] || '';
+
+    var div = document.createElement('div');
+    div.className = 'preorder-item';
+    div.innerHTML =
+      '<div class="preorder-name">' +
+        '<div class="pname" style="color:#5d4e37; font-size:11px;">' + esc(group.supplier) + '</div>' +
+        '<div class="poption" style="font-weight:500; font-size:13px;">' + esc(group.internal_name) + '</div>' +
+        '<div class="poption" style="color:#999; font-size:10px;">' + esc(optionSummary) + '</div>' +
+      '</div>' +
+      '<div class="preorder-qty">' + optionCount + '개</div>' +
+      '<input type="date" class="preorder-date" data-group-key="' + esc(gkey) + '" ' +
+        'value="' + savedDate + '" onchange="onDateChange()" placeholder="입고일">';
+    list.appendChild(div);
   });
 }
 
 function onDateChange() {
+  saveDates();
+  computeStatuses();
+  showPreview();
+}
+
+// ===== localStorage 날짜 저장/불러오기 =====
+function loadSavedDates() {
+  try {
+    var saved = localStorage.getItem('jsoo_preorder_dates');
+    return saved ? JSON.parse(saved) : {};
+  } catch(e) { return {}; }
+}
+
+function saveDates() {
+  try {
+    var dates = {};
+    document.querySelectorAll('.preorder-date').forEach(function(input) {
+      if (input.value) {
+        dates[input.getAttribute('data-group-key')] = input.value;
+      }
+    });
+    localStorage.setItem('jsoo_preorder_dates', JSON.stringify(dates));
+  } catch(e) {}
+}
+
+// ===== 카톡 일정 파싱 & 자동 세팅 =====
+function applyKakaoSchedule() {
+  var text = document.getElementById('kakaoScheduleInput').value.trim();
+  if (!text) { alert('카톡 일정을 붙여넣어주세요.'); return; }
+
+  var lines = text.split('\n').filter(function(l) { return l.trim(); });
+  var schedule = {}; // { 사입상품명(lowercase): 날짜(YYYY-MM-DD) }
+
+  // 현재 연도 추출
+  var currentYear = new Date().getFullYear();
+
+  lines.forEach(function(line) {
+    // "수-더라인sl : 회M15> 11/16월밤 예정" 파싱
+    var colonIdx = line.indexOf(':');
+    if (colonIdx === -1) return;
+
+    var internalName = line.substring(0, colonIdx).trim();
+    var rest = line.substring(colonIdx + 1);
+
+    // > 이후에서 날짜 추출
+    var arrowIdx = rest.indexOf('>');
+    if (arrowIdx === -1) return;
+
+    var dateStr = rest.substring(arrowIdx + 1).trim();
+
+    // "원단" 표시 제거 (원단은 원자재 입고일이므로 실제 완제품은 더 늦음 → 일단 파싱)
+    dateStr = dateStr.replace('원단', '');
+
+    // 날짜 추출: 11/16, 범위면 뒤쪽 날짜 사용 (11/12~11/16 → 11/16)
+    var dateMatches = dateStr.match(/(\d{1,2})\/(\d{1,2})/g);
+    if (!dateMatches || dateMatches.length === 0) return;
+
+    // 범위의 경우 마지막(가장 늦은) 날짜 사용
+    var lastDate = dateMatches[dateMatches.length - 1];
+    var dateParts = lastDate.split('/');
+    var month = parseInt(dateParts[0]);
+    var day = parseInt(dateParts[1]);
+    var isoDate = currentYear + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+
+    var key = internalName.toLowerCase();
+
+    // 같은 상품이 여러 줄이면 가장 늦은 날짜 사용
+    if (!schedule[key] || isoDate > schedule[key]) {
+      schedule[key] = isoDate;
+    }
+  });
+
+  // 매칭하여 날짜 세팅
+  var matched = 0;
+  var dateInputs = document.querySelectorAll('.preorder-date');
+  dateInputs.forEach(function(input) {
+    var groupKey = input.getAttribute('data-group-key');
+    var parts = groupKey.split('|');
+    var internalName = parts[1] || '';
+    var internalLower = internalName.toLowerCase();
+
+    // 정확한 매칭
+    if (schedule[internalLower]) {
+      input.value = schedule[internalLower];
+      matched++;
+      return;
+    }
+
+    // 부분 매칭: 카톡 이름이 사입상품명에 포함되거나 반대
+    for (var schedKey in schedule) {
+      if (internalLower.indexOf(schedKey) > -1 || schedKey.indexOf(internalLower) > -1) {
+        input.value = schedule[schedKey];
+        matched++;
+        return;
+      }
+    }
+  });
+
+  var resultEl = document.getElementById('kakaoResult');
+  resultEl.textContent = dateInputs.length + '개 중 ' + matched + '개 자동 세팅 완료';
+  resultEl.style.color = matched > 0 ? '#2e7d32' : '#c62828';
+
+  saveDates();
   computeStatuses();
   showPreview();
 }
@@ -711,17 +832,25 @@ function onDateChange() {
 function computeStatuses() {
   if (stockData.length === 0) return;
 
-  // 선주문 날짜 수집
+  // 선주문 날짜 수집 (그룹 기반)
+  var groupDates = {};
   var dateInputs = document.querySelectorAll('.preorder-date');
-  var preorderDates = {};
   dateInputs.forEach(function(input) {
-    var idx = parseInt(input.getAttribute('data-po-idx'));
-    if (input.value && preorderData[idx]) {
-      var po = preorderData[idx];
+    var groupKey = input.getAttribute('data-group-key');
+    if (input.value && groupKey) {
+      groupDates[groupKey] = input.value;
+    }
+  });
+
+  // 그룹 날짜를 개별 옵션에 매핑
+  var preorderDates = {};
+  preorderData.forEach(function(po) {
+    var date = groupDates[po.group_key] || '';
+    if (date) {
       var key = po.product_name + '|' + po.color + '|' + po.size;
       preorderDates[key] = {
         qty: po.qty,
-        date: input.value
+        date: date
       };
     }
   });
@@ -966,6 +1095,8 @@ function resetAll() {
   document.getElementById('previewCard').classList.add('hidden');
   document.getElementById('preorderDateSection').classList.add('hidden');
   document.getElementById('warningPanel').classList.remove('visible');
+  document.getElementById('kakaoScheduleInput').value = '';
+  document.getElementById('kakaoResult').textContent = '';
 
   // 파일 입력 리셋
   document.getElementById('stockFileInput').value = '';
