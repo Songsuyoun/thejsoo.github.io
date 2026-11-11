@@ -159,6 +159,8 @@
   }
 
   .preorder-date:focus { border-color: #1a1a1a; }
+  .preorder-date.has-date { background: #fff3e0; border-color: #ffcc80; }
+  .preorder-day { display:inline-block; width:20px; font-size:11px; color:#888; text-align:center; margin-left:4px; }
 
   .preorder-header {
     display: flex;
@@ -399,7 +401,7 @@
             <div class="preorder-header">
               <div class="preorder-name">옵션</div>
               <div class="preorder-qty">수량</div>
-              <div style="width:90px; flex-shrink:0;">입고일 (월/일)</div>
+              <div style="width:100px; flex-shrink:0;">입고일</div>
             </div>
           </div>
         </div>
@@ -765,10 +767,14 @@ function showPreorderDateInputs() {
           'data-group-key="' + esc(gkey) + '" data-color="' + esc(po.color) + '" ' +
           'value="' + savedMD + '" oninput="onDateInput(this)" onblur="onDateBlur(this)" ' +
           'placeholder="MM/DD" maxlength="5" ' +
-          'style="width:70px; text-align:center; font-size:13px;">';
+          'style="width:70px; text-align:center; font-size:13px;">' +
+        '<span class="preorder-day">' + getDayLabel(savedMD) + '</span>';
       list.appendChild(div);
     });
   });
+
+  // 초기 배경색 적용
+  updateAllDayLabels();
 }
 
 // MM/DD 자동 포맷: 숫자 2개 입력 시 / 자동 삽입
@@ -793,6 +799,32 @@ function onDateBlur(el) {
   onDateChange();
 }
 
+// MM/DD → 요일 라벨
+var DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+function getDayLabel(md) {
+  if (!md || md.indexOf('/') === -1) return '';
+  var iso = mdToIso(md);
+  if (!iso) return '';
+  var d = new Date(iso + 'T00:00:00');
+  if (isNaN(d.getTime())) return '';
+  return DAY_NAMES[d.getDay()];
+}
+
+// 모든 요일 라벨 + 배경색 갱신
+function updateAllDayLabels() {
+  document.querySelectorAll('.preorder-date').forEach(function(input) {
+    var daySpan = input.nextElementSibling;
+    if (daySpan && daySpan.classList.contains('preorder-day')) {
+      daySpan.textContent = getDayLabel(input.value);
+    }
+    if (input.value && input.value.indexOf('/') > -1) {
+      input.classList.add('has-date');
+    } else {
+      input.classList.remove('has-date');
+    }
+  });
+}
+
 // MM/DD → YYYY-MM-DD 변환
 function mdToIso(md) {
   if (!md || md.indexOf('/') === -1) return '';
@@ -805,6 +837,7 @@ function mdToIso(md) {
 }
 
 function onDateChange() {
+  updateAllDayLabels();
   saveDates();
   computeStatuses();
   showPreview();
@@ -1169,6 +1202,7 @@ function uploadData() {
   document.getElementById('loading').style.display = 'block';
   hideAlerts();
 
+  // 1) 재고 데이터 전송
   fetch(GAS_URL, {
     method: 'POST',
     mode: 'no-cors',
@@ -1176,10 +1210,44 @@ function uploadData() {
     body: JSON.stringify({ items: uploadItems })
   })
   .then(function() {
+    // 2) 선주문 데이터도 전송 (있으면)
+    if (preorderData.length > 0) {
+      var poItems = [];
+      var dateInputs = document.querySelectorAll('.preorder-date');
+      var optionDates = {};
+      dateInputs.forEach(function(input) {
+        if (input.value) {
+          optionDates[input.getAttribute('data-option-key')] = mdToIso(input.value);
+        }
+      });
+
+      preorderData.forEach(function(po) {
+        var optionKey = po.product_name + '|' + po.color + '|' + po.size;
+        poItems.push({
+          supplier: po.supplier,
+          internal_name: po.internal_name,
+          product_name: po.product_name,
+          color: po.color,
+          size: po.size,
+          qty: po.qty,
+          expected_date: optionDates[optionKey] || ''
+        });
+      });
+
+      return fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updatePreorder', preorders: poItems })
+      });
+    }
+  })
+  .then(function() {
     document.getElementById('loading').style.display = 'none';
     btn.disabled = false;
     var checkCount = mergedData.filter(function(d) { return d.status === 'check'; }).length;
     var msg = '✓ ' + mergedData.length + '개 옵션 업로드 완료!';
+    if (preorderData.length > 0) msg += ' + 선주문 ' + preorderData.length + '개';
     if (checkCount > 0) msg += ' (확인필요 ' + checkCount + '개 → 위젯에 미표시)';
     showAlert('success', msg);
   })

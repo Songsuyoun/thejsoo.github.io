@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>입고 예정 현황 — 더제이수</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #faf9f7; min-height: 100vh; }
+
+  .top-bar {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .top-bar h1 { font-size: 15px; font-weight: 500; letter-spacing: 1px; }
+  .top-bar .updated { font-size: 11px; color: #999; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+
+  /* 검색/필터 */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-bar input {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+  }
+  .filter-bar input:focus { outline: none; border-color: #1a1a1a; }
+  .filter-bar select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    min-width: 140px;
+  }
+
+  /* 요약 카드 */
+  .summary-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .summary-card {
+    flex: 1;
+    min-width: 120px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .summary-card .num { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+  .summary-card .label { font-size: 11px; color: #999; margin-top: 2px; }
+  .summary-card.highlight .num { color: #e65100; }
+  .summary-card.green .num { color: #2e7d32; }
+
+  /* 테이블 */
+  .table-wrap {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: #f8f6f3; }
+  th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 500;
+    color: #5d4e37;
+    font-size: 12px;
+    border-bottom: 1px solid #e8e8e8;
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #fdfcfa; }
+
+  .date-cell { white-space: nowrap; }
+  .date-set { color: #e65100; font-weight: 500; }
+  .date-none { color: #ccc; font-size: 12px; }
+  tr.row-has-date { background: #fff8f0; }
+  tr.row-has-date:hover { background: #fff3e0; }
+
+  .group-header-row td {
+    background: #f8f6f3;
+    font-weight: 500;
+    color: #5d4e37;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .empty-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    font-size: 14px;
+  }
+
+  .refresh-btn {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .refresh-btn:hover { background: #333; }
+
+  .loading-spinner {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+  }
+
+  @media (max-width: 600px) {
+    .filter-bar { flex-direction: column; }
+    .filter-bar input, .filter-bar select { min-width: 100%; }
+    .summary-card { min-width: 80px; }
+    td, th { padding: 8px 8px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>입고 예정 현황</h1>
+  <div>
+    <span class="updated" id="updatedAt">불러오는 중...</span>
+    <button class="refresh-btn" onclick="loadData()" style="margin-left:12px;">새로고침</button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- 요약 -->
+  <div class="summary-row" id="summaryRow">
+    <div class="summary-card">
+      <div class="num" id="totalCount">-</div>
+      <div class="label">전체 옵션</div>
+    </div>
+    <div class="summary-card green">
+      <div class="num" id="dateSetCount">-</div>
+      <div class="label">날짜 확정</div>
+    </div>
+    <div class="summary-card highlight">
+      <div class="num" id="dateNoneCount">-</div>
+      <div class="label">날짜 미정</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" id="supplierCount">-</div>
+      <div class="label">거래처</div>
+    </div>
+  </div>
+
+  <!-- 필터 -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="상품명, 색상, 사이즈 검색..." oninput="applyFilter()">
+    <select id="supplierFilter" onchange="applyFilter()">
+      <option value="">전체 거래처</option>
+    </select>
+    <select id="dateFilter" onchange="applyFilter()">
+      <option value="">전체</option>
+      <option value="set">날짜 확정</option>
+      <option value="none">날짜 미정</option>
+    </select>
+  </div>
+
+  <!-- 테이블 -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>거래처</th>
+          <th>사입상품명</th>
+          <th>상품명</th>
+          <th>옵션</th>
+          <th>수량</th>
+          <th>예상 입고일</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="6" class="loading-spinner">데이터 불러오는 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1kR_wFxI3Hd3o9KwLvvti9IQcstZjaLzNgSkIJ9l3BA4S7VFGqfaKdr1Z1natPj0wZA/exec';
+var allData = [];
+var DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+
+function loadData() {
+  document.getElementById('updatedAt').textContent = '불러오는 중...';
+  document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading-spinner">데이터 불러오는 중...</td></tr>';
+
+  var callbackName = 'jsonpCb_' + Date.now();
+  window[callbackName] = function(resp) {
+    delete window[callbackName];
+    document.head.removeChild(script);
+
+    if (!resp.success || !resp.preorders) {
+      document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-msg">선주문 데이터가 없습니다.</td></tr>';
+      document.getElementById('updatedAt').textContent = '데이터 없음';
+      return;
+    }
+
+    allData = resp.preorders;
+    document.getElementById('updatedAt').textContent = '업데이트: ' + (resp.updated_at || '-');
+
+    // 거래처 필터 옵션 생성
+    var suppliers = {};
+    allData.forEach(function(d) { if (d.supplier) suppliers[d.supplier] = true; });
+    var sel = document.getElementById('supplierFilter');
+    sel.innerHTML = '<option value="">전체 거래처</option>';
+    Object.keys(suppliers).sort().forEach(function(s) {
+      sel.innerHTML += '<option value="' + esc(s) + '">' + esc(s) + '</option>';
+    });
+
+    applyFilter();
+  };
+
+  var script = document.createElement('script');
+  script.src = GAS_URL + '?action=preorder&callback=' + callbackName;
+  script.onerror = function() {
+    delete window[callbackName];
+    document.head.removeChild(script);
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-msg">데이터를 불러올 수 없습니다.</td></tr>';
+    document.getElementById('updatedAt').textContent = '로드 실패';
+  };
+  document.head.appendChild(script);
+}
+
+function applyFilter() {
+  var search = document.getElementById('searchInput').value.toLowerCase().trim();
+  var supplier = document.getElementById('supplierFilter').value;
+  var dateF = document.getElementById('dateFilter').value;
+
+  var filtered = allData.filter(function(d) {
+    // 거래처 필터
+    if (supplier && d.supplier !== supplier) return false;
+    // 날짜 필터
+    if (dateF === 'set' && !d.expected_date) return false;
+    if (dateF === 'none' && d.expected_date) return false;
+    // 검색
+    if (search) {
+      var haystack = [d.supplier, d.internal_name, d.product_name, d.color, d.size].join(' ').toLowerCase();
+      var words = search.split(/\s+/);
+      for (var i = 0; i < words.length; i++) {
+        if (haystack.indexOf(words[i]) === -1) return false;
+      }
+    }
+    return true;
+  });
+
+  // 요약
+  var dateSet = filtered.filter(function(d) { return !!d.expected_date; }).length;
+  document.getElementById('totalCount').textContent = filtered.length;
+  document.getElementById('dateSetCount').textContent = dateSet;
+  document.getElementById('dateNoneCount').textContent = filtered.length - dateSet;
+
+  var supplierSet = {};
+  filtered.forEach(function(d) { supplierSet[d.supplier] = true; });
+  document.getElementById('supplierCount').textContent = Object.keys(supplierSet).length;
+
+  // 사입상품명 기준 그룹핑
+  var groups = {};
+  var groupOrder = [];
+  filtered.forEach(function(d) {
+    var gkey = d.supplier + '|' + d.internal_name;
+    if (!groups[gkey]) {
+      groups[gkey] = { supplier: d.supplier, internal_name: d.internal_name, items: [] };
+      groupOrder.push(gkey);
+    }
+    groups[gkey].items.push(d);
+  });
+
+  var tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">조건에 맞는 데이터가 없습니다.</td></tr>';
+    return;
+  }
+
+  groupOrder.forEach(function(gkey) {
+    var group = groups[gkey];
+
+    // 그룹 헤더
+    var headerRow = document.createElement('tr');
+    headerRow.className = 'group-header-row';
+    headerRow.innerHTML = '<td colspan="6">' + esc(group.supplier) + ' — ' + esc(group.internal_name) + ' (' + group.items.length + '개)</td>';
+    tbody.appendChild(headerRow);
+
+    group.items.forEach(function(d) {
+      var tr = document.createElement('tr');
+      if (d.expected_date) tr.className = 'row-has-date';
+      var optionStr = d.color + (d.size ? ', ' + d.size : '');
+
+      // 날짜 + 요일
+      var dateHtml = '';
+      if (d.expected_date) {
+        var dayName = getDayName(d.expected_date);
+        var shortDate = formatDate(d.expected_date);
+        dateHtml = '<span class="date-set">' + shortDate + ' ' + dayName + '</span>';
+      } else {
+        dateHtml = '<span class="date-none">미정</span>';
+      }
+
+      // 상품명에서 [the J.Soo ...] 제거해서 짧게
+      var shortName = d.product_name.replace(/\[the J\.Soo[^\]]*\]\s*/, '');
+
+      tr.innerHTML =
+        '<td>' + esc(d.supplier) + '</td>' +
+        '<td>' + esc(d.internal_name) + '</td>' +
+        '<td>' + esc(shortName) + '</td>' +
+        '<td>' + esc(optionStr) + '</td>' +
+        '<td style="text-align:center;">' + d.qty + '</td>' +
+        '<td class="date-cell">' + dateHtml + '</td>';
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  // "2026-11-16" → "11/16"
+  var match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return parseInt(match[2]) + '/' + parseInt(match[3]);
+  // already MM/DD
+  return dateStr;
+}
+
+function getDayName(dateStr) {
+  if (!dateStr) return '';
+  var match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return '';
+  var d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return '';
+  return '(' + DAY_NAMES[d.getDay()] + ')';
+}
+
+function esc(str) {
+  if (!str) return '';
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// 페이지 로드 시 자동 조회
+loadData();
+</script>
+</body>
+</html>
