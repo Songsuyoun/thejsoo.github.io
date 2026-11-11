@@ -161,6 +161,22 @@
   .preorder-date:focus { border-color: #1a1a1a; }
   .preorder-date.has-date { background: #fff3e0; border-color: #ffcc80; }
   .preorder-day { display:inline-block; width:20px; font-size:11px; color:#888; text-align:center; margin-left:4px; }
+  .date-changed-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: #ffebee;
+    color: #c62828;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid #ef9a9a;
+    animation: pulse-warn 1.5s ease-in-out 3;
+  }
+  @keyframes pulse-warn {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
 
   .preorder-header {
     display: flex;
@@ -892,6 +908,15 @@ function applyKakaoSchedule() {
   var text = document.getElementById('kakaoScheduleInput').value.trim();
   if (!text) { alert('카톡 일정을 붙여넣어주세요.'); return; }
 
+  // 이전 변경 태그 초기화
+  document.querySelectorAll('.date-changed-tag').forEach(function(el) { el.remove(); });
+  document.querySelectorAll('.preorder-date').forEach(function(input) {
+    input.style.outline = '';
+    input.style.background = '';
+  });
+  var prevDetail = document.getElementById('kakaoChangeDetail');
+  if (prevDetail) prevDetail.innerHTML = '';
+
   var lines = text.split('\n').filter(function(l) { return l.trim(); });
 
   // 파싱 결과: [ { internalName, colors: ['블랙','그레이',...], date: 'MM/DD' }, ... ]
@@ -934,8 +959,9 @@ function applyKakaoSchedule() {
     entries.push({ internalName: internalName, colors: colors, date: mdDate });
   });
 
-  // 매칭하여 날짜 세팅
+  // 매칭하여 날짜 세팅 + 변경 감지
   var matched = 0;
+  var changed = []; // 날짜가 변경된 항목 추적
   var dateInputs = document.querySelectorAll('.preorder-date');
 
   dateInputs.forEach(function(input) {
@@ -943,6 +969,9 @@ function applyKakaoSchedule() {
     var optColor = input.getAttribute('data-color');
     var parts = groupKey.split('|');
     var internalName = (parts[1] || '').toLowerCase();
+    var prevDate = input.value; // 기존에 세팅된 날짜
+
+    var newDate = '';
 
     for (var i = 0; i < entries.length; i++) {
       var entry = entries[i];
@@ -954,7 +983,7 @@ function applyKakaoSchedule() {
       if (!nameMatch) continue;
 
       // 색상 매칭: 해당 줄에 이 색상이 포함되어 있으면 세팅
-      var colorMatch = entry.colors.length === 0; // 색상 정보 없으면 전체 적용
+      var colorMatch = entry.colors.length === 0;
       for (var j = 0; j < entry.colors.length; j++) {
         if (optColor === entry.colors[j] || optColor.indexOf(entry.colors[j]) > -1 || entry.colors[j].indexOf(optColor) > -1) {
           colorMatch = true;
@@ -963,11 +992,35 @@ function applyKakaoSchedule() {
       }
 
       if (colorMatch) {
-        // 같은 옵션에 여러 줄이 매칭되면 가장 늦은 날짜
-        if (!input.value || entry.date > input.value) {
-          input.value = entry.date;
+        if (!newDate || entry.date > newDate) {
+          newDate = entry.date;
         }
         matched++;
+      }
+    }
+
+    if (newDate) {
+      input.value = newDate;
+
+      // 날짜 변경 감지: 이전 날짜가 있었고 새 날짜와 다르면
+      if (prevDate && prevDate !== newDate) {
+        changed.push({
+          color: optColor,
+          groupKey: groupKey,
+          prevDate: prevDate,
+          newDate: newDate
+        });
+        // 변경된 항목 시각적 강조
+        input.style.outline = '2px solid #c62828';
+        input.style.background = '#ffebee';
+        // 변경 표시 태그 추가
+        var changeTag = input.parentElement.querySelector('.date-changed-tag');
+        if (!changeTag) {
+          changeTag = document.createElement('span');
+          changeTag.className = 'date-changed-tag';
+          input.parentElement.appendChild(changeTag);
+        }
+        changeTag.textContent = prevDate + ' → ' + newDate;
       }
     }
   });
@@ -977,8 +1030,39 @@ function applyKakaoSchedule() {
   dateInputs.forEach(function(input) { if (input.value) uniqueMatched++; });
 
   var resultEl = document.getElementById('kakaoResult');
-  resultEl.textContent = dateInputs.length + '개 중 ' + uniqueMatched + '개 자동 세팅 완료';
-  resultEl.style.color = uniqueMatched > 0 ? '#2e7d32' : '#c62828';
+  var resultMsg = dateInputs.length + '개 중 ' + uniqueMatched + '개 자동 세팅 완료';
+  if (changed.length > 0) {
+    resultMsg += '  ⚠️ 날짜 변경 ' + changed.length + '건 감지!';
+    resultEl.style.color = '#c62828';
+  } else {
+    resultEl.style.color = uniqueMatched > 0 ? '#2e7d32' : '#c62828';
+  }
+  resultEl.textContent = resultMsg;
+
+  // 변경 내역 상세 리스트
+  var detailEl = document.getElementById('kakaoChangeDetail');
+  if (!detailEl) {
+    detailEl = document.createElement('div');
+    detailEl.id = 'kakaoChangeDetail';
+    resultEl.parentElement.appendChild(detailEl);
+  }
+  if (changed.length > 0) {
+    var html = '<div style="margin-top:10px; padding:10px 14px; background:#ffebee; border:1px solid #ef9a9a; border-radius:6px;">';
+    html += '<div style="font-size:12px; font-weight:600; color:#c62828; margin-bottom:6px;">⚠️ 날짜 변경 감지 — 업체에서 몰래 바꿨을 수 있어요!</div>';
+    changed.forEach(function(c) {
+      var parts = c.groupKey.split('|');
+      var displayName = parts[1] || parts[0];
+      html += '<div style="font-size:11px; color:#333; padding:2px 0;">';
+      html += '• <b>' + displayName + '</b> ' + c.color;
+      html += ' — <span style="text-decoration:line-through; color:#999;">' + c.prevDate + '</span>';
+      html += ' → <span style="color:#c62828; font-weight:600;">' + c.newDate + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    detailEl.innerHTML = html;
+  } else {
+    detailEl.innerHTML = '';
+  }
 
   saveDates();
   computeStatuses();
@@ -1160,23 +1244,26 @@ function showWarnings() {
   panel.classList.add('visible');
   list.innerHTML = '';
 
-  // 상품별 그룹핑
+  // 상품별 그룹핑 → 옵션은 각각 별도 줄
   var grouped = {};
+  var groupOrder = [];
   checkItems.forEach(function(item) {
     var key = item.product_name;
-    if (!grouped[key]) grouped[key] = [];
-    var optStr = item.color + (item.size ? ',' + item.size : '');
+    if (!grouped[key]) { grouped[key] = []; groupOrder.push(key); }
+    var optStr = item.color + (item.size ? ', ' + item.size : '');
     grouped[key].push(optStr);
   });
 
-  for (var name in grouped) {
+  groupOrder.forEach(function(name) {
     var div = document.createElement('div');
     div.className = 'warning-item';
+    var optionsHtml = grouped[name].map(function(opt) {
+      return '<div class="wi-option">' + esc(opt) + '</div>';
+    }).join('');
     div.innerHTML =
-      '<div class="wi-name">' + esc(name) + '</div>' +
-      '<div class="wi-option">' + grouped[name].map(esc).join(' / ') + '</div>';
+      '<div class="wi-name">' + esc(name) + '</div>' + optionsHtml;
     list.appendChild(div);
-  }
+  });
 }
 
 // ===== 업로드 =====

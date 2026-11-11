@@ -20,7 +20,7 @@
   .top-bar h1 { font-size: 15px; font-weight: 500; letter-spacing: 1px; }
   .top-bar .updated { font-size: 11px; color: #999; }
 
-  .container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
 
   /* 검색/필터 */
   .filter-bar {
@@ -78,7 +78,7 @@
     border-radius: 8px;
     overflow: hidden;
   }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
   thead { background: #f8f6f3; }
   th {
     padding: 10px 12px;
@@ -93,6 +93,8 @@
     padding: 10px 12px;
     border-bottom: 1px solid #f0f0f0;
     color: #333;
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   tr:last-child td { border-bottom: none; }
   tr:hover { background: #fdfcfa; }
@@ -100,8 +102,22 @@
   .date-cell { white-space: nowrap; }
   .date-set { color: #e65100; font-weight: 500; }
   .date-none { color: #ccc; font-size: 12px; }
+  .date-changed {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: #ffebee;
+    color: #c62828;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 3px;
+    border: 1px solid #ef9a9a;
+  }
+  .date-changed .prev { text-decoration: line-through; color: #999; }
   tr.row-has-date { background: #fff8f0; }
   tr.row-has-date:hover { background: #fff3e0; }
+  tr.row-date-changed { background: #fff0f0; }
+  tr.row-date-changed:hover { background: #ffe0e0; }
 
   .group-header-row td {
     background: #f8f6f3;
@@ -174,6 +190,10 @@
       <div class="num" id="supplierCount">-</div>
       <div class="label">거래처</div>
     </div>
+    <div class="summary-card" id="changedCard" style="display:none; border-color:#ef9a9a;">
+      <div class="num" style="color:#c62828;" id="changedCount">0</div>
+      <div class="label" style="color:#c62828;">⚠️ 날짜 변경</div>
+    </div>
   </div>
 
   <!-- 필터 -->
@@ -186,12 +206,21 @@
       <option value="">전체</option>
       <option value="set">날짜 확정</option>
       <option value="none">날짜 미정</option>
+      <option value="changed">⚠️ 날짜 변경</option>
     </select>
   </div>
 
   <!-- 테이블 -->
   <div class="table-wrap">
     <table>
+      <colgroup>
+        <col style="width:9%;">
+        <col style="width:20%;">
+        <col style="width:25%;">
+        <col style="width:14%;">
+        <col style="width:6%;">
+        <col style="width:26%;">
+      </colgroup>
       <thead>
         <tr>
           <th>거래처</th>
@@ -266,6 +295,7 @@ function applyFilter() {
     // 날짜 필터
     if (dateF === 'set' && !d.expected_date) return false;
     if (dateF === 'none' && d.expected_date) return false;
+    if (dateF === 'changed' && !d.prev_date) return false;
     // 검색
     if (search) {
       var haystack = [d.supplier, d.internal_name, d.product_name, d.color, d.size].join(' ').toLowerCase();
@@ -279,9 +309,13 @@ function applyFilter() {
 
   // 요약
   var dateSet = filtered.filter(function(d) { return !!d.expected_date; }).length;
+  var dateChanged = filtered.filter(function(d) { return !!d.prev_date; }).length;
   document.getElementById('totalCount').textContent = filtered.length;
   document.getElementById('dateSetCount').textContent = dateSet;
   document.getElementById('dateNoneCount').textContent = filtered.length - dateSet;
+  document.getElementById('changedCount').textContent = dateChanged;
+  var changedCard = document.getElementById('changedCard');
+  changedCard.style.display = dateChanged > 0 ? '' : 'none';
 
   var supplierSet = {};
   filtered.forEach(function(d) { supplierSet[d.supplier] = true; });
@@ -318,15 +352,24 @@ function applyFilter() {
 
     group.items.forEach(function(d) {
       var tr = document.createElement('tr');
-      if (d.expected_date) tr.className = 'row-has-date';
+      if (d.prev_date) {
+        tr.className = 'row-date-changed';
+      } else if (d.expected_date) {
+        tr.className = 'row-has-date';
+      }
       var optionStr = d.color + (d.size ? ', ' + d.size : '');
 
-      // 날짜 + 요일
+      // 날짜 + 요일 + 변경 표시
       var dateHtml = '';
       if (d.expected_date) {
         var dayName = getDayName(d.expected_date);
         var shortDate = formatDate(d.expected_date);
         dateHtml = '<span class="date-set">' + shortDate + ' ' + dayName + '</span>';
+        // 날짜 변경된 경우 이전 날짜 표시
+        if (d.prev_date) {
+          var prevShort = formatDate(d.prev_date);
+          dateHtml += ' <span class="date-changed"><span class="prev">' + prevShort + '</span> → 변경</span>';
+        }
       } else {
         dateHtml = '<span class="date-none">미정</span>';
       }
@@ -346,21 +389,26 @@ function applyFilter() {
   });
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  // "2026-11-16" → "11/16"
+function parseDate(dateStr) {
+  if (!dateStr) return null;
+  // "2026-11-16" 형태
   var match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return parseInt(match[2]) + '/' + parseInt(match[3]);
-  // already MM/DD
-  return dateStr;
+  if (match) return new Date(parseInt(match[1]), parseInt(match[2])-1, parseInt(match[3]));
+  // "Tue Nov 24 2026 00:00:00 GMT+0900" 형태 (GAS에서 올 수 있음)
+  var d = new Date(dateStr);
+  if (!isNaN(d.getTime())) return d;
+  return null;
+}
+
+function formatDate(dateStr) {
+  var d = parseDate(dateStr);
+  if (!d) return '';
+  return (d.getMonth()+1) + '/' + d.getDate();
 }
 
 function getDayName(dateStr) {
-  if (!dateStr) return '';
-  var match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return '';
-  var d = new Date(dateStr + 'T00:00:00');
-  if (isNaN(d.getTime())) return '';
+  var d = parseDate(dateStr);
+  if (!d) return '';
   return '(' + DAY_NAMES[d.getDay()] + ')';
 }
 
