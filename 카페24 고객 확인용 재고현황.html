@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>더제이수 당일배송 재고 업로드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: #888;
+    font-weight: 300;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .card h2 {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  /* ===== 설정 영역 ===== */
+  .config-group {
+    margin-bottom: 16px;
+  }
+
+  .config-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .config-group input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', monospace;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .config-group input[type="text"]:focus {
+    border-color: #1a1a1a;
+  }
+
+  .config-group .hint {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+  }
+
+  .save-config-btn {
+    display: inline-block;
+    padding: 8px 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    background: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+  }
+
+  .save-config-btn:hover {
+    background: #333;
+  }
+
+  /* ===== 파일 업로드 ===== */
+  .upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .upload-area:hover {
+    border-color: #1a1a1a;
+    background: #fafafa;
+  }
+
+  .upload-area.dragover {
+    border-color: #1a1a1a;
+    background: #f5f0eb;
+  }
+
+  .upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .upload-icon {
+    font-size: 32px;
+    color: #ccc;
+    margin-bottom: 12px;
+  }
+
+  .upload-text {
+    font-size: 13px;
+    color: #888;
+  }
+
+  .upload-text strong {
+    color: #1a1a1a;
+    font-weight: 500;
+  }
+
+  /* ===== 미리보기 테이블 ===== */
+  .preview-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .preview-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .stat-item strong {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead th {
+    background: #fafafa;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 1px solid #e8e8e8;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: #fafafa;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .status-available {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .status-soldout {
+    background: #fce4ec;
+    color: #c62828;
+  }
+
+  /* ===== 버튼 ===== */
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 12px 32px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Noto Sans KR', sans-serif;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: #1a1a1a;
+    color: #fff;
+    border: 1px solid #1a1a1a;
+  }
+
+  .btn-primary:hover {
+    background: #333;
+  }
+
+  .btn-primary:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: #fff;
+    color: #1a1a1a;
+    border: 1px solid #ddd;
+  }
+
+  .btn-secondary:hover {
+    border-color: #1a1a1a;
+  }
+
+  /* ===== 알림 ===== */
+  .alert {
+    padding: 14px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-top: 16px;
+    display: none;
+  }
+
+  .alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+  }
+
+  .alert-error {
+    background: #fce4ec;
+    color: #c62828;
+    border: 1px solid #f8bbd0;
+  }
+
+  .alert-info {
+    background: #f5f0eb;
+    color: #5d4e37;
+    border: 1px solid #e8ddd0;
+  }
+
+  /* ===== 로딩 ===== */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #e8e8e8;
+    border-top-color: #1a1a1a;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .loading-text {
+    font-size: 13px;
+    color: #888;
+  }
+
+  /* ===== 히든 ===== */
+  .hidden { display: none !important; }
+
+  /* ===== 모바일 ===== */
+  @media (max-width: 600px) {
+    .container { padding: 24px 16px; }
+    .card { padding: 20px 16px; }
+    .btn { padding: 10px 20px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>THE J.SOO DELIVERY STOCK</h1>
+    <p>셀메이트 재고 → 당일배송 위젯 업로드</p>
+  </div>
+
+  <!-- 설정 카드 -->
+  <div class="card" id="configCard">
+    <h2>SETTINGS</h2>
+    <div class="config-group">
+      <label>GAS 웹 앱 URL</label>
+      <input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+      <div class="hint">Google Apps Script 배포 URL을 입력하세요 (최초 1회만 설정)</div>
+    </div>
+    <button class="save-config-btn" onclick="saveConfig()">저장</button>
+  </div>
+
+  <!-- 업로드 카드 -->
+  <div class="card">
+    <h2>UPLOAD</h2>
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFile(this.files[0])">
+      <div class="upload-icon">↑</div>
+      <div class="upload-text">
+        셀메이트 재고 CSV 파일을 여기에 드래그하거나<br>
+        <strong>클릭하여 선택</strong>하세요
+      </div>
+    </div>
+    <div class="alert alert-info" id="filterInfo" style="display:block; margin-top:16px;">
+      [the J.Soo] 와 [the J.Soo Premium] 상품만 자동 필터링됩니다
+    </div>
+  </div>
+
+  <!-- 미리보기 카드 -->
+  <div class="card hidden" id="previewCard">
+    <h2>PREVIEW</h2>
+    <div class="preview-info">
+      <div class="preview-stats">
+        <div class="stat-item">전체: <strong id="totalCount">0</strong>개 옵션</div>
+        <div class="stat-item">발송가능: <strong id="availCount">0</strong></div>
+        <div class="stat-item">품절: <strong id="soldoutCount">0</strong></div>
+        <div class="stat-item">상품: <strong id="productCount">0</strong>개</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>카페24코드</th>
+            <th>상품명</th>
+            <th>색상</th>
+            <th>사이즈</th>
+            <th>가용재고</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+    <div id="moreRows" class="hidden" style="text-align:center; padding:12px; font-size:12px; color:#888;"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="resetUpload()">취소</button>
+      <button class="btn btn-primary" id="uploadBtn" onclick="uploadData()">업로드</button>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Google Sheets에 업로드 중...</div>
+    </div>
+
+    <div class="alert alert-success" id="successAlert"></div>
+    <div class="alert alert-error" id="errorAlert"></div>
+  </div>
+</div>
+
+<script>
+// ===== 설정 관리 =====
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1kR_wFxI3Hd3o9KwLvvti9IQcstZjaLzNgSkIJ9l3BA4S7VFGqfaKdr1Z1natPj0wZA/exec';
+var parsedData = [];
+
+function loadConfig() {
+  try {
+    var saved = localStorage.getItem('jsoo_delivery_gas_url');
+    if (saved) {
+      GAS_URL = saved;
+      document.getElementById('gasUrl').value = saved;
+    }
+  } catch(e) {}
+}
+
+function saveConfig() {
+  var url = document.getElementById('gasUrl').value.trim();
+  if (!url) {
+    alert('GAS 웹 앱 URL을 입력하세요.');
+    return;
+  }
+  GAS_URL = url;
+  try {
+    localStorage.setItem('jsoo_delivery_gas_url', url);
+  } catch(e) {}
+  alert('저장되었습니다!');
+}
+
+loadConfig();
+
+// ===== 드래그 & 드롭 =====
+var uploadArea = document.getElementById('uploadArea');
+
+uploadArea.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  this.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', function() {
+  this.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.classList.remove('dragover');
+  var file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+// ===== CSV 파싱 =====
+function handleFile(file) {
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var buffer = e.target.result;
+
+    // euc-kr 디코딩 시도
+    var text = '';
+    try {
+      text = new TextDecoder('euc-kr').decode(buffer);
+    } catch(err) {
+      try {
+        text = new TextDecoder('utf-8').decode(buffer);
+      } catch(err2) {
+        text = new TextDecoder('cp949').decode(buffer);
+      }
+    }
+
+    parseCSV(text);
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function parseCSV(text) {
+  var lines = text.split('\n');
+  if (lines.length < 2) {
+    alert('CSV 데이터가 없습니다.');
+    return;
+  }
+
+  // 헤더 파싱 (첫 줄)
+  var headers = parseCSVLine(lines[0]);
+
+  // 컬럼 인덱스 찾기
+  var colMap = {};
+  headers.forEach(function(h, i) {
+    var ht = h.trim();
+    if (ht === '상품명') colMap.product_name = i;
+    if (ht === '옵션명') colMap.option_name = i;
+    if (ht === '가용재고') colMap.stock = i;
+    if (ht === '품절여부') colMap.soldout = i;
+    if (ht === '상품코드(카페)') colMap.cafe24_code = i;
+  });
+
+  // 필수 컬럼 체크
+  var required = ['product_name', 'option_name', 'stock', 'cafe24_code'];
+  for (var i = 0; i < required.length; i++) {
+    if (colMap[required[i]] === undefined) {
+      alert('필수 컬럼이 없습니다: ' + required[i] + '\n셀메이트 재고현황 CSV인지 확인하세요.');
+      return;
+    }
+  }
+
+  parsedData = [];
+
+  for (var i = 1; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+
+    var cols = parseCSVLine(line);
+    var productName = (cols[colMap.product_name] || '').trim();
+    var optionName = (cols[colMap.option_name] || '').trim();
+    var stock = parseInt(cols[colMap.stock]) || 0;
+    var soldout = (cols[colMap.soldout] || '').trim();
+    var cafe24Code = (cols[colMap.cafe24_code] || '').trim();
+
+    // [the J.Soo] 또는 [the J.Soo Premium] 상품만 필터
+    if (!productName.startsWith('[the J.Soo')) continue;
+
+    // 카페24 코드 없으면 스킵
+    if (!cafe24Code) continue;
+
+    // 옵션명 파싱 (색상,사이즈 분리)
+    var color = optionName;
+    var size = '';
+    if (optionName.indexOf(',') > -1) {
+      var parts = optionName.split(',');
+      color = parts[0].trim();
+      size = parts.slice(1).join(',').trim();
+    }
+
+    // 상태 결정: 품절이거나 가용재고 0이면 soldout
+    var status = 'available';
+    if (soldout === '품절' || stock <= 0) {
+      status = 'soldout';
+    }
+
+    // 상품명에서 접두어 제거 (표시용)
+    var displayName = productName
+      .replace('[the J.Soo Premium] ', '')
+      .replace('[the J.Soo] ', '');
+
+    parsedData.push({
+      cafe24_code: cafe24Code,
+      product_name: displayName,
+      color: color,
+      size: size,
+      stock: stock,
+      status: status
+    });
+  }
+
+  if (parsedData.length === 0) {
+    alert('[the J.Soo] / [the J.Soo Premium] 상품이 없거나\n카페24 코드가 없는 데이터입니다.');
+    return;
+  }
+
+  showPreview();
+}
+
+function parseCSVLine(line) {
+  var result = [];
+  var current = '';
+  var inQuotes = false;
+
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+// ===== 미리보기 =====
+function showPreview() {
+  var previewCard = document.getElementById('previewCard');
+  previewCard.classList.remove('hidden');
+
+  var availCount = parsedData.filter(function(d) { return d.status === 'available'; }).length;
+  var soldoutCount = parsedData.filter(function(d) { return d.status === 'soldout'; }).length;
+  var productCodes = new Set(parsedData.map(function(d) { return d.cafe24_code; }));
+
+  document.getElementById('totalCount').textContent = parsedData.length;
+  document.getElementById('availCount').textContent = availCount;
+  document.getElementById('soldoutCount').textContent = soldoutCount;
+  document.getElementById('productCount').textContent = productCodes.size;
+
+  var tbody = document.getElementById('previewBody');
+  tbody.innerHTML = '';
+
+  var showCount = Math.min(parsedData.length, 50);
+  for (var i = 0; i < showCount; i++) {
+    var d = parsedData[i];
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + esc(d.cafe24_code) + '</td>' +
+      '<td>' + esc(d.product_name) + '</td>' +
+      '<td>' + esc(d.color) + '</td>' +
+      '<td>' + esc(d.size || '-') + '</td>' +
+      '<td>' + d.stock + '</td>' +
+      '<td><span class="status-badge status-' + d.status + '">' +
+        (d.status === 'available' ? '발송가능' : '품절') + '</span></td>';
+    tbody.appendChild(tr);
+  }
+
+  var moreRows = document.getElementById('moreRows');
+  if (parsedData.length > 50) {
+    moreRows.classList.remove('hidden');
+    moreRows.textContent = '외 ' + (parsedData.length - 50) + '개 옵션 (전체 업로드됩니다)';
+  } else {
+    moreRows.classList.add('hidden');
+  }
+
+  previewCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+function esc(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== 업로드 =====
+function uploadData() {
+  if (!GAS_URL) {
+    alert('먼저 Settings에서 GAS 웹 앱 URL을 설정하세요.');
+    return;
+  }
+
+  if (parsedData.length === 0) {
+    alert('업로드할 데이터가 없습니다.');
+    return;
+  }
+
+  var btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+
+  var loading = document.getElementById('loading');
+  loading.style.display = 'block';
+
+  hideAlerts();
+
+  fetch(GAS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items: parsedData })
+  })
+  .then(function() {
+    // no-cors에서는 응답을 읽을 수 없으므로 성공으로 간주
+    loading.style.display = 'none';
+    btn.disabled = false;
+    showAlert('success', '✓ ' + parsedData.length + '개 옵션 업로드 완료! Google Sheets를 확인하세요.');
+  })
+  .catch(function(err) {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    showAlert('error', '업로드 실패: ' + err.message);
+  });
+}
+
+function showAlert(type, message) {
+  hideAlerts();
+  var el = document.getElementById(type + 'Alert');
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+function hideAlerts() {
+  document.getElementById('successAlert').style.display = 'none';
+  document.getElementById('errorAlert').style.display = 'none';
+}
+
+// ===== 리셋 =====
+function resetUpload() {
+  parsedData = [];
+  document.getElementById('previewCard').classList.add('hidden');
+  document.getElementById('fileInput').value = '';
+  hideAlerts();
+}
+</script>
+</body>
+</html>
