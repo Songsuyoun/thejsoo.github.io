@@ -153,7 +153,7 @@
   // 위젯 렌더링
   // ============================================================
   function renderWidget(container, data) {
-    var opts = (data.options || []).filter(function(o) { return o.status !== 'check'; });
+    var opts = (data.options || []).filter(function(o) { return o.status !== 'check' && o.status !== 'soldout'; });
     if (opts.length === 0) { container.style.display = 'none'; return; }
 
     var h = '';
