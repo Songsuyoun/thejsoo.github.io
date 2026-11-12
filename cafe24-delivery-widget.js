@@ -43,7 +43,7 @@
     CACHE_DURATION: 5 * 60 * 1000,  // 5분 캐시
     MARGIN_TOP: 20,             // ← 위젯 위 여백 (px)
     MARGIN_BOTTOM: 16,          // ← 위젯 아래 여백 (px)
-    TEST_CODE: 'P000BHMU',    // ← 테스트용 (나중에 '' 로 비우면 됨)
+    TEST_CODE: '',    // ← 테스트용 (나중에 '' 로 비우면 됨)
 
     // MADE + PREMIUM BRAND 카테고리 번호 (이 카테고리에서만 위젯 표시)
     ALLOWED_CATEGORIES: [
