@@ -272,7 +272,7 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    setTimeout(init, 500); // 카페24 동적 로딩 대기
+    setTimeout(init, 100); // 카페24 동적 로딩 대기
   }
 
 })();
