@@ -228,39 +228,52 @@
   // 초기화
   // ============================================================
   function init() {
-    // ★ 테스트 모드: 카테고리 필터 OFF (모든 상품에서 위젯 표시)
+    console.log('[JSOO위젯] 시작');
+
+    // ★ 테스트 모드: 카테고리 필터 OFF
     // if (!isAllowedCategory()) return;
 
+    // 구매버튼 찾기 (여러 셀렉터 시도)
     var container = document.getElementById(CONFIG.CONTAINER_ID);
     if (!container) {
-        var buyBtn = document.querySelector('.xans-product-action') ||
+      var buyBtn = document.querySelector('.xans-product-action') ||
                    document.querySelector('[module="product_action"]') ||
                    document.querySelector('.ec-base-button.gColumn') ||
-                   document.querySelector('.btnArea');
+                   document.querySelector('.btnArea') ||
+                   document.querySelector('#btnBuy');
+
+      console.log('[JSOO위젯] 구매버튼:', buyBtn ? buyBtn.className : 'NOT FOUND');
+
       if (buyBtn) {
+        // btnBuy인 경우 부모의 부모로 올라가기
+        if (buyBtn.id === 'btnBuy') buyBtn = buyBtn.closest('.ec-base-button') || buyBtn.parentElement;
         container = document.createElement('div');
         container.id = CONFIG.CONTAINER_ID;
         buyBtn.parentNode.insertBefore(container, buyBtn);
       } else {
+        console.log('[JSOO위젯] 구매버튼을 찾지 못함 — 위젯 삽입 불가');
         return;
       }
     }
 
     var code = getProductCode();
+    console.log('[JSOO위젯] 상품코드:', code);
     if (!code) return;
 
     fetchStockData(code, function(data) {
+      console.log('[JSOO위젯] GAS 응답:', data ? 'OK' : 'FAIL', data);
       if (!data || !data.success || !data.options || data.options.length === 0) {
         container.style.display = 'none'; return;
       }
       renderWidget(container, data);
+      console.log('[JSOO위젯] 렌더링 완료!');
     });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    init();
+    setTimeout(init, 500); // 카페24 동적 로딩 대기
   }
 
 })();
