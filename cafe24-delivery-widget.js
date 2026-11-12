@@ -154,6 +154,7 @@
   // ============================================================
   function renderWidget(container, data) {
     var opts = (data.options || []).filter(function(o) { return o.status !== 'check' && o.status !== 'soldout'; });
+    var sizeOrder = {'XS':0,'S':1,'M':2,'L':3,'XL':4,'XXL':5,'Free':6,'FREE':6}; opts.sort(function(a,b) { if (a.color !== b.color) return a.color < b.color ? -1 : 1; return (sizeOrder[a.size]||99) - (sizeOrder[b.size]||99); });
     if (opts.length === 0) { container.style.display = 'none'; return; }
 
     var h = '';
@@ -174,8 +175,8 @@
       '.jdw-op:last-child{border-bottom:none}' +
       '.jdw-on{font-size:12px;color:#111;font-weight:400;letter-spacing:.5px}' +
       '.jdw-st{font-size:11px;font-weight:400;letter-spacing:.3px;white-space:nowrap}' +
-      '.jdw-st-a{color:#111}' +
-      '.jdw-st-p{color:#c62828}' +
+      '.jdw-st-a{color:#111;font-weight:600}' +
+      '.jdw-st-p{color:#aaa}' +
       '.jdw-st-s{color:#999;text-decoration:line-through}' +
       '@media(max-width:600px){.jdw-hd{padding:13px 15px}.jdw-nt{padding:12px 15px}.jdw-op{padding:10px 15px}}' +
     '</style>';
@@ -205,7 +206,7 @@
 
       var txt = '', cls = '';
       if (o.status === 'available') {
-        txt = '당일배송'; cls = 'jdw-st-a';
+        txt = '당일발송'; cls = 'jdw-st-a';
       } else if (o.status === 'preorder') {
         txt = o.expected_date ? fmtDate(o.expected_date) + ' 이후 순차배송' : '입고 후 순차배송';
         cls = 'jdw-st-p';
