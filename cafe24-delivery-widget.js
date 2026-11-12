@@ -233,9 +233,10 @@
 
     var container = document.getElementById(CONFIG.CONTAINER_ID);
     if (!container) {
-      var buyBtn = document.querySelector('.xans-product-action') ||
-                   document.querySelector('.btnArea') ||
-                   document.querySelector('#productDetail .btn');
+        var buyBtn = document.querySelector('.xans-product-action') ||
+                   document.querySelector('[module="product_action"]') ||
+                   document.querySelector('.ec-base-button.gColumn') ||
+                   document.querySelector('.btnArea');
       if (buyBtn) {
         container = document.createElement('div');
         container.id = CONFIG.CONTAINER_ID;
