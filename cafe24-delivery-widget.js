@@ -228,7 +228,8 @@
   // 초기화
   // ============================================================
   function init() {
-    if (!isAllowedCategory()) return;
+    // ★ 테스트 모드: 카테고리 필터 OFF (모든 상품에서 위젯 표시)
+    // if (!isAllowedCategory()) return;
 
     var container = document.getElementById(CONFIG.CONTAINER_ID);
     if (!container) {
