@@ -97,6 +97,7 @@
   function getProductCode() {
     if (CONFIG.TEST_CODE) return CONFIG.TEST_CODE;
     if (typeof product_code !== 'undefined' && product_code) return product_code;
+    try { var m = document.querySelector('.xans-product-detail')?.innerHTML.match(/P000[A-Z0-9]+/); if (m) return m[0]; } catch(e) {}
     try { if (typeof EC_FRONT_JS_CONFIG_SHOP !== 'undefined') return EC_FRONT_JS_CONFIG_SHOP.product_code; } catch(e) {}
     var meta = document.querySelector('meta[property="product:code"]') || document.querySelector('meta[name="product_code"]');
     if (meta) return meta.getAttribute('content');
