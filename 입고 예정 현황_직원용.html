@@ -634,33 +634,29 @@ function saveChanges() {
 
   document.getElementById('saveCount').textContent = '저장중...';
 
-  // POST 전송 (form + iframe으로 CORS 우회)
-  var frameName = 'gasFrame_' + Date.now();
-  var iframe = document.createElement('iframe');
-  iframe.name = frameName;
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-
-  var form = document.createElement('form');
-  form.method = 'POST';
-  form.action = GAS_URL;
-  form.target = frameName;
-  var input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = 'payload';
-  input.value = postData;
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-
-  // 저장 완료 처리
-  alert(updates.length + '개 입고일 저장 요청 완료!');
-  changes = {};
-  updateSaveBar();
-  setTimeout(function() {
-    loadData();
-    try { document.body.removeChild(form); document.body.removeChild(iframe); } catch(e) {}
-  }, 3000);
+  // GET 전송 (JSONP — CORS 문제 없음)
+  document.getElementById('saveCount').textContent = '저장중...';
+  var updatesEncoded = encodeURIComponent(JSON.stringify(updates));
+  var saveCb = 'saveCb_' + Date.now();
+  window[saveCb] = function(result) {
+    delete window[saveCb];
+    if (result && result.success) {
+      alert(result.message || '저장 완료!');
+      changes = {};
+      updateSaveBar();
+      setTimeout(function() { loadData(); }, 1000);
+    } else {
+      alert('저장 실패: ' + (result ? result.message : '알 수 없는 오류'));
+      document.getElementById('saveCount').textContent = keys.length + '개 변경';
+    }
+  };
+  var s = document.createElement('script');
+  s.src = GAS_URL + '?action=saveDate&updates=' + updatesEncoded + '&callback=' + saveCb;
+  s.onerror = function() {
+    alert('저장 실패: 네트워크 오류');
+    document.getElementById('saveCount').textContent = keys.length + '개 변경';
+  };
+  document.head.appendChild(s);
 }
 
 function cancelChanges() {
