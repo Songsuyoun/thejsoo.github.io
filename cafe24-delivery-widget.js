@@ -43,7 +43,6 @@
     CACHE_DURATION: 5 * 60 * 1000,  // 5분 캐시
     MARGIN_TOP: 20,             // ← 위젯 위 여백 (px)
     MARGIN_BOTTOM: 16,          // ← 위젯 아래 여백 (px)
-    TEST_CODE: '',    // ← 테스트용 (나중에 '' 로 비우면 됨)
 
     // MADE + PREMIUM BRAND 카테고리 번호 (이 카테고리에서만 위젯 표시)
     ALLOWED_CATEGORIES: [
@@ -95,9 +94,7 @@
   // 카페24 상품코드 감지
   // ============================================================
   function getProductCode() {
-    if (CONFIG.TEST_CODE) return CONFIG.TEST_CODE;
     if (typeof product_code !== 'undefined' && product_code) return product_code;
-    try { var m = document.querySelector('.xans-product-detail')?.innerHTML.match(/P000[A-Z0-9]+/); if (m) return m[0]; } catch(e) {}
     try { if (typeof EC_FRONT_JS_CONFIG_SHOP !== 'undefined') return EC_FRONT_JS_CONFIG_SHOP.product_code; } catch(e) {}
     var meta = document.querySelector('meta[property="product:code"]') || document.querySelector('meta[name="product_code"]');
     if (meta) return meta.getAttribute('content');
@@ -137,7 +134,11 @@
   // ============================================================
   // 날짜 포맷: "2026-11-26" → "11/26"
   // ============================================================
-  function fmtDate(d) { if (!d) return ''; var m = d.match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return parseInt(m[2]) + '/' + parseInt(m[3]); var dt = new Date(d); if (!isNaN(dt.getTime())) return (dt.getMonth()+1) + '/' + dt.getDate(); return d; }
+  function fmtDate(d) {
+    if (!d) return '';
+    var m = d.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+    return m ? parseInt(m[2]) + '/' + parseInt(m[3]) : d;
+  }
 
   // ============================================================
   // HTML 이스케이프
@@ -153,20 +154,19 @@
   // 위젯 렌더링
   // ============================================================
   function renderWidget(container, data) {
-    var opts = (data.options || []).filter(function(o) { return o.status !== 'check' && o.status !== 'soldout'; });
-    var sizeOrder = {'XS':0,'S':1,'M':2,'L':3,'XL':4,'XXL':5,'Free':6,'FREE':6}; opts.sort(function(a,b) { if (a.color !== b.color) return a.color < b.color ? -1 : 1; return (sizeOrder[a.size]||99) - (sizeOrder[b.size]||99); });
+    var opts = (data.options || []).filter(function(o) { return o.status !== 'soldout'; });
     if (opts.length === 0) { container.style.display = 'none'; return; }
 
     var h = '';
     h += '<style>' +
       '.jdw{font-family:Pretendard,-apple-system,BlinkMacSystemFont,system-ui,Roboto,sans-serif;' +
-        'border:1px solid #231F20;margin:' + CONFIG.MARGIN_TOP + 'px 0 ' + CONFIG.MARGIN_BOTTOM + 'px 0;background:#fff}' +
-      '.jdw-hd{display:flex;justify-content:center;align-items:center;gap:8px;padding:14px 18px;cursor:pointer;user-select:none}' +
+        'border:1px solid #e0e0e0;margin:' + CONFIG.MARGIN_TOP + 'px 0 ' + CONFIG.MARGIN_BOTTOM + 'px 0;background:#fff}' +
+      '.jdw-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}' +
       '.jdw-hd:hover{background:#fafafa}' +
-      '.jdw-hd-t{font-size:13px;font-weight:400;color:#111;letter-spacing:.5px}' +
+      '.jdw-hd-t{font-size:12px;font-weight:400;color:#111;letter-spacing:.5px}' +
       '.jdw-arr{display:flex;align-items:center;transition:transform .25s ease}' +
       '.jdw.open .jdw-arr{transform:rotate(180deg)}' +
-      '.jdw-bd{display:none;border-top:1px solid #231F20}' +
+      '.jdw-bd{display:none;border-top:1px solid #e0e0e0}' +
       '.jdw.open .jdw-bd{display:block}' +
       '.jdw-nt{padding:14px 18px;background:#f9f9f9;border-bottom:1px solid #f0f0f0}' +
       '.jdw-nt-i{font-size:11px;color:#888;line-height:1.7;letter-spacing:.3px}' +
@@ -175,8 +175,9 @@
       '.jdw-op:last-child{border-bottom:none}' +
       '.jdw-on{font-size:12px;color:#111;font-weight:400;letter-spacing:.5px}' +
       '.jdw-st{font-size:11px;font-weight:400;letter-spacing:.3px;white-space:nowrap}' +
-      '.jdw-st-a{color:#111;font-weight:600}' +
-      '.jdw-st-p{color:#aaa}' +
+      '.jdw-st-a{color:#111;font-weight:700}' +
+      '.jdw-st-p{color:#111}' +
+      '.jdw-st-c{color:#888}' +
       '.jdw-st-s{color:#999;text-decoration:line-through}' +
       '@media(max-width:600px){.jdw-hd{padding:13px 15px}.jdw-nt{padding:12px 15px}.jdw-op{padding:10px 15px}}' +
     '</style>';
@@ -206,10 +207,12 @@
 
       var txt = '', cls = '';
       if (o.status === 'available') {
-        txt = '당일발송'; cls = 'jdw-st-a';
+        txt = '당일배송'; cls = 'jdw-st-a';
       } else if (o.status === 'preorder') {
         txt = o.expected_date ? fmtDate(o.expected_date) + ' 이후 순차배송' : '입고 후 순차배송';
         cls = 'jdw-st-p';
+      } else if (o.status === 'check') {
+        txt = '입고 확인중'; cls = 'jdw-st-c';
       } else if (o.status === 'soldout') {
         txt = '품절'; cls = 'jdw-st-s';
       }
@@ -273,7 +276,7 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    setTimeout(init, 100); // 카페24 동적 로딩 대기
+    setTimeout(init, 500); // 카페24 동적 로딩 대기
   }
 
 })();
