@@ -100,6 +100,14 @@
     if (meta) return meta.getAttribute('content');
     var inp = document.querySelector('input[name="product_code"]');
     if (inp) return inp.value;
+    // 카페24 상세페이지 HTML에서 P000 코드 추출
+    try {
+      var detailEl = document.querySelector('.xans-product-detail');
+      if (detailEl) {
+        var m = detailEl.innerHTML.match(/P000[A-Z0-9]+/);
+        if (m) return m[0];
+      }
+    } catch(e) {}
     return null;
   }
 
