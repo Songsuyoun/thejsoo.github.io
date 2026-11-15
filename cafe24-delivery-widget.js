@@ -95,7 +95,7 @@
   // ============================================================
   function getProductCode() {
     if (typeof product_code !== 'undefined' && product_code) return product_code;
-    try { if (typeof EC_FRONT_JS_CONFIG_SHOP !== 'undefined') return EC_FRONT_JS_CONFIG_SHOP.product_code; } catch(e) {}
+    try { if (typeof EC_FRONT_JS_CONFIG_SHOP !== 'undefined' && EC_FRONT_JS_CONFIG_SHOP.product_code) return EC_FRONT_JS_CONFIG_SHOP.product_code; } catch(e) {}
     var meta = document.querySelector('meta[property="product:code"]') || document.querySelector('meta[name="product_code"]');
     if (meta) return meta.getAttribute('content');
     var inp = document.querySelector('input[name="product_code"]');
