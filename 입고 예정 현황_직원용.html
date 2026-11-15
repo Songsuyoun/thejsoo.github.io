@@ -4,422 +4,684 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>입고 예정 현황 — 더제이수</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap');
+  :root { --bg: #f7f5f2; --card: #fff; --border: #e8e4df; --text: #111; --sub: #888; --accent: #c62828; --warn-bg: #fff8e1; --warn-border: #ffe082; --success: #2e7d32; --tag-changed: #fff3e0; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Noto Sans KR', sans-serif; background: #faf9f7; min-height: 100vh; }
+  body { font-family: Pretendard, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.6; }
 
-  .top-bar {
-    background: #1a1a1a;
-    color: #fff;
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .top-bar h1 { font-size: 15px; font-weight: 500; letter-spacing: 1px; }
-  .top-bar .updated { font-size: 11px; color: #999; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 16px; font-weight: 600; letter-spacing: .5px; margin-bottom: 4px; }
+  .subtitle { font-size: 11px; color: var(--sub); margin-bottom: 20px; }
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  /* 상태 바 */
+  .status-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .status-chip { padding: 6px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; font-size: 11px; color: var(--sub); }
+  .status-chip b { color: var(--text); font-weight: 600; }
 
-  /* 검색/필터 */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .filter-bar input {
-    flex: 1;
-    min-width: 180px;
-    padding: 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: inherit;
-    background: #fff;
-  }
-  .filter-bar input:focus { outline: none; border-color: #1a1a1a; }
-  .filter-bar select {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: inherit;
-    background: #fff;
-    min-width: 140px;
-  }
+  /* 확인 필요 */
+  .check-panel { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .check-panel h3 { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+  .check-panel p { font-size: 11px; color: var(--sub); margin-bottom: 10px; }
+  .check-list { font-size: 12px; }
+  .check-item { padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.05); display: flex; justify-content: space-between; }
+  .check-item:last-child { border-bottom: none; }
+  .check-name { color: var(--text); }
+  .check-opt { color: var(--sub); }
+  .check-empty { font-size: 11px; color: var(--success); }
 
-  /* 요약 카드 */
-  .summary-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .summary-card {
-    flex: 1;
-    min-width: 120px;
-    background: #fff;
-    border: 1px solid #e8e8e8;
-    border-radius: 8px;
-    padding: 14px 16px;
-    text-align: center;
-  }
-  .summary-card .num { font-size: 24px; font-weight: 600; color: #1a1a1a; }
-  .summary-card .label { font-size: 11px; color: #999; margin-top: 2px; }
-  .summary-card.highlight .num { color: #e65100; }
-  .summary-card.green .num { color: #2e7d32; }
+  /* 카톡 붙여넣기 */
+  .kakao-section { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .kakao-section h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .kakao-section .desc { font-size: 11px; color: var(--sub); margin-bottom: 10px; }
+  .kakao-section textarea { width: 100%; height: 80px; border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-size: 12px; font-family: inherit; resize: vertical; }
+  .kakao-section .example { font-size: 10px; color: #bbb; margin-top: 4px; }
+  .btn { display: inline-block; padding: 8px 18px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: inherit; background: var(--card); cursor: pointer; margin-top: 8px; }
+  .btn:hover { background: #f9f9f9; }
+  .btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+  .btn-primary:hover { background: #333; }
 
-  /* 테이블 */
-  .table-wrap {
-    background: #fff;
-    border: 1px solid #e8e8e8;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-  thead { background: #f8f6f3; }
-  th {
-    padding: 10px 12px;
-    text-align: left;
-    font-weight: 500;
-    color: #5d4e37;
-    font-size: 12px;
-    border-bottom: 1px solid #e8e8e8;
-    white-space: nowrap;
-  }
-  td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #f0f0f0;
-    color: #333;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover { background: #fdfcfa; }
+  /* 선주문 테이블 */
+  .po-section { margin-bottom: 20px; }
+  .po-section h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+  .year-select { font-size: 12px; margin-bottom: 12px; }
+  .year-select select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; }
 
-  .date-cell { white-space: nowrap; }
-  .date-set { color: #e65100; font-weight: 500; }
-  .date-none { color: #ccc; font-size: 12px; }
-  .date-changed {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 6px;
-    background: #ffebee;
-    color: #c62828;
-    font-size: 10px;
-    font-weight: 600;
-    border-radius: 3px;
-    border: 1px solid #ef9a9a;
-  }
-  .date-changed .prev { text-decoration: line-through; color: #999; }
-  tr.row-has-date { background: #fff8f0; }
-  tr.row-has-date:hover { background: #fff3e0; }
-  tr.row-date-changed { background: #fff0f0; }
-  tr.row-date-changed:hover { background: #ffe0e0; }
+  .po-group { margin-bottom: 16px; }
+  .po-group-header { background: #f5f0eb; padding: 10px 14px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; }
+  .po-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: 0 0 6px 6px; overflow: hidden; }
+  .po-table th { background: #fafaf8; padding: 8px 12px; font-size: 11px; font-weight: 500; color: var(--sub); text-align: left; border-bottom: 1px solid var(--border); }
+  .po-table td { padding: 8px 12px; font-size: 12px; border-bottom: 1px solid #f5f3f0; vertical-align: middle; }
+  .po-table tr:last-child td { border-bottom: none; }
+  .po-table .opt-name { color: var(--text); }
+  .po-table .qty { text-align: right; color: var(--sub); font-size: 11px; }
+  .po-table .date-cell { position: relative; }
+  .date-input { width: 90px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; font-family: inherit; text-align: center; }
+  .date-input:focus { border-color: var(--text); outline: none; }
+  .date-changed { background: var(--tag-changed); border-radius: 3px; padding: 1px 6px; font-size: 10px; color: #e65100; margin-left: 4px; white-space: nowrap; }
 
-  .group-header-row td {
-    background: #f8f6f3;
-    font-weight: 500;
-    color: #5d4e37;
-    padding: 8px 12px;
-    font-size: 12px;
-    border-bottom: 1px solid #e8e8e8;
-  }
+  /* 저장 바 */
+  .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 12px; text-align: center; display: none; }
+  .save-bar.show { display: block; }
+  .save-count { font-size: 12px; color: var(--sub); margin-right: 12px; }
 
-  .empty-msg {
-    text-align: center;
-    padding: 60px 20px;
-    color: #999;
-    font-size: 14px;
-  }
+  /* 로딩 */
+  .loading { text-align: center; padding: 40px; color: var(--sub); font-size: 12px; }
 
-  .refresh-btn {
-    background: #1a1a1a;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-family: inherit;
-    cursor: pointer;
-  }
-  .refresh-btn:hover { background: #333; }
-
-  .loading-spinner {
-    text-align: center;
-    padding: 40px;
-    color: #999;
-  }
-
-  @media (max-width: 600px) {
-    .filter-bar { flex-direction: column; }
-    .filter-bar input, .filter-bar select { min-width: 100%; }
-    .summary-card { min-width: 80px; }
-    td, th { padding: 8px 8px; font-size: 12px; }
+  @media(max-width:600px) {
+    .wrap { padding: 16px 12px 60px; }
+    .po-table th, .po-table td { padding: 6px 8px; }
+    .date-input { width: 80px; font-size: 11px; }
   }
 </style>
 </head>
 <body>
-
-<div class="top-bar">
+<div class="wrap">
   <h1>입고 예정 현황</h1>
-  <div>
-    <span class="updated" id="updatedAt">불러오는 중...</span>
-    <button class="refresh-btn" onclick="loadData()" style="margin-left:12px;">새로고침</button>
+  <div class="subtitle">선주문 현황 · 예상 입고일 관리 — 자동 업데이트</div>
+
+  <div class="status-bar" id="statusBar">
+    <span class="status-chip">로딩중...</span>
+  </div>
+
+  <!-- 확인 필요 -->
+  <div class="check-panel" id="checkPanel" style="display:none">
+    <h3>⚠ 확인 필요</h3>
+    <p>가용재고 0 &amp; 품절 미표시 &amp; 선주문 없음 — 위젯에 표시되지 않습니다.<br>선주문을 추가하거나 셀메이트에서 품절 처리해주세요.</p>
+    <div class="check-list" id="checkList"></div>
+  </div>
+
+  <!-- 카톡 붙여넣기 -->
+  <div class="kakao-section">
+    <h3>💬 카톡 입고 일정 붙여넣기 <span style="font-weight:400;font-size:11px;color:#bbb">(선택)</span></h3>
+    <div class="desc">거래처에서 카톡으로 받은 입고 일정을 그대로 붙여넣으면 자동으로 날짜가 세팅됩니다.</div>
+    <textarea id="kakaoInput" placeholder="예) 수-더라인s1 : 회M15> 11/16월밤 예정&#10;수-루미jk : 회20 검L20 > 11/12목밤 예정"></textarea>
+    <div class="example">형식: 상품키워드 > MM/DD 또는 M/D</div>
+    <button class="btn" onclick="parseKakao()">날짜 자동 세팅</button>
+  </div>
+
+  <!-- 색상 약어 사전 -->
+  <div class="kakao-section" id="dictSection">
+    <h3>📖 이프유 색상 약어 사전 <span style="font-weight:400;font-size:11px;color:#bbb">(자동 학습됨)</span></h3>
+    <div class="desc">카톡 파싱할 때 모르는 약어가 나오면 자동으로 물어봅니다. 여기서 직접 추가/수정도 가능해요.</div>
+    <div id="dictList" style="margin:8px 0;font-size:12px;color:#555"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <input type="text" id="newAbbr" placeholder="약어 (예: 아)" style="width:80px;padding:4px 8px;border:1px solid #e8e4df;border-radius:4px;font-size:12px;font-family:inherit">
+      <span style="color:#bbb">→</span>
+      <input type="text" id="newColor" placeholder="실제 색상 (예: 아이보리)" style="width:140px;padding:4px 8px;border:1px solid #e8e4df;border-radius:4px;font-size:12px;font-family:inherit">
+      <button class="btn" onclick="addDictEntry()" style="margin-top:0;padding:4px 12px">추가</button>
+    </div>
+  </div>
+
+  <!-- 선주문 목록 -->
+  <div class="po-section">
+    <h3>예상 입고일 확인</h3>
+    <div class="year-select">연도: <select id="yearSelect" onchange="renderPreorders()"></select></div>
+    <div id="poList"><div class="loading">데이터 로딩중...</div></div>
   </div>
 </div>
 
-<div class="container">
-  <!-- 요약 -->
-  <div class="summary-row" id="summaryRow">
-    <div class="summary-card">
-      <div class="num" id="totalCount">-</div>
-      <div class="label">전체 옵션</div>
-    </div>
-    <div class="summary-card green">
-      <div class="num" id="dateSetCount">-</div>
-      <div class="label">날짜 확정</div>
-    </div>
-    <div class="summary-card highlight">
-      <div class="num" id="dateNoneCount">-</div>
-      <div class="label">날짜 미정</div>
-    </div>
-    <div class="summary-card">
-      <div class="num" id="supplierCount">-</div>
-      <div class="label">거래처</div>
-    </div>
-    <div class="summary-card" id="changedCard" style="display:none; border-color:#ef9a9a;">
-      <div class="num" style="color:#c62828;" id="changedCount">0</div>
-      <div class="label" style="color:#c62828;">⚠️ 날짜 변경</div>
-    </div>
-  </div>
-
-  <!-- 필터 -->
-  <div class="filter-bar">
-    <input type="text" id="searchInput" placeholder="상품명, 색상, 사이즈 검색..." oninput="applyFilter()">
-    <select id="supplierFilter" onchange="applyFilter()">
-      <option value="">전체 거래처</option>
-    </select>
-    <select id="dateFilter" onchange="applyFilter()">
-      <option value="">전체</option>
-      <option value="set">날짜 확정</option>
-      <option value="none">날짜 미정</option>
-      <option value="changed">⚠️ 날짜 변경</option>
-    </select>
-  </div>
-
-  <!-- 테이블 -->
-  <div class="table-wrap">
-    <table>
-      <colgroup>
-        <col style="width:9%;">
-        <col style="width:20%;">
-        <col style="width:25%;">
-        <col style="width:14%;">
-        <col style="width:6%;">
-        <col style="width:26%;">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>거래처</th>
-          <th>사입상품명</th>
-          <th>상품명</th>
-          <th>옵션</th>
-          <th>수량</th>
-          <th>예상 입고일</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <tr><td colspan="6" class="loading-spinner">데이터 불러오는 중...</td></tr>
-      </tbody>
-    </table>
-  </div>
+<!-- 저장 바 -->
+<div class="save-bar" id="saveBar">
+  <span class="save-count" id="saveCount">0개 변경</span>
+  <button class="btn btn-primary" onclick="saveChanges()">저장</button>
+  <button class="btn" onclick="cancelChanges()">취소</button>
 </div>
 
 <script>
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1kR_wFxI3Hd3o9KwLvvti9IQcstZjaLzNgSkIJ9l3BA4S7VFGqfaKdr1Z1natPj0wZA/exec';
-var allData = [];
-var DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+var preorders = [];
+var checkItems = [];
+var changes = {}; // key → new date
 
-function loadData() {
-  document.getElementById('updatedAt').textContent = '불러오는 중...';
-  document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading-spinner">데이터 불러오는 중...</td></tr>';
-
-  var callbackName = 'jsonpCb_' + Date.now();
-  window[callbackName] = function(resp) {
-    delete window[callbackName];
-    document.head.removeChild(script);
-
-    if (!resp.success || !resp.preorders) {
-      document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-msg">선주문 데이터가 없습니다.</td></tr>';
-      document.getElementById('updatedAt').textContent = '데이터 없음';
-      return;
-    }
-
-    allData = resp.preorders;
-    document.getElementById('updatedAt').textContent = '업데이트: ' + (resp.updated_at || '-');
-
-    // 거래처 필터 옵션 생성
-    var suppliers = {};
-    allData.forEach(function(d) { if (d.supplier) suppliers[d.supplier] = true; });
-    var sel = document.getElementById('supplierFilter');
-    sel.innerHTML = '<option value="">전체 거래처</option>';
-    Object.keys(suppliers).sort().forEach(function(s) {
-      sel.innerHTML += '<option value="' + esc(s) + '">' + esc(s) + '</option>';
-    });
-
-    applyFilter();
-  };
-
-  var script = document.createElement('script');
-  script.src = GAS_URL + '?action=preorder&callback=' + callbackName;
-  script.onerror = function() {
-    delete window[callbackName];
-    document.head.removeChild(script);
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-msg">데이터를 불러올 수 없습니다.</td></tr>';
-    document.getElementById('updatedAt').textContent = '로드 실패';
-  };
-  document.head.appendChild(script);
+// ============================================================
+// JSONP 로드
+// ============================================================
+function jsonp(params, callback) {
+  var cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+  window[cb] = function(data) { callback(data); delete window[cb]; };
+  var s = document.createElement('script');
+  s.src = GAS_URL + '?' + params + '&callback=' + cb;
+  s.onerror = function() { callback(null); delete window[cb]; };
+  document.head.appendChild(s);
 }
 
-function applyFilter() {
-  var search = document.getElementById('searchInput').value.toLowerCase().trim();
-  var supplier = document.getElementById('supplierFilter').value;
-  var dateF = document.getElementById('dateFilter').value;
-
-  var filtered = allData.filter(function(d) {
-    // 거래처 필터
-    if (supplier && d.supplier !== supplier) return false;
-    // 날짜 필터
-    if (dateF === 'set' && !d.expected_date) return false;
-    if (dateF === 'none' && d.expected_date) return false;
-    if (dateF === 'changed' && !d.prev_date) return false;
-    // 검색
-    if (search) {
-      var haystack = [d.supplier, d.internal_name, d.product_name, d.color, d.size].join(' ').toLowerCase();
-      var words = search.split(/\s+/);
-      for (var i = 0; i < words.length; i++) {
-        if (haystack.indexOf(words[i]) === -1) return false;
-      }
+// ============================================================
+// 데이터 로드
+// ============================================================
+function loadData() {
+  // 선주문 로드
+  jsonp('action=preorder', function(data) {
+    if (data && data.success) {
+      preorders = data.preorders || [];
+      renderStatus(data);
+      renderPreorders();
     }
-    return true;
   });
 
-  // 요약
-  var dateSet = filtered.filter(function(d) { return !!d.expected_date; }).length;
-  var dateChanged = filtered.filter(function(d) { return !!d.prev_date; }).length;
-  document.getElementById('totalCount').textContent = filtered.length;
-  document.getElementById('dateSetCount').textContent = dateSet;
-  document.getElementById('dateNoneCount').textContent = filtered.length - dateSet;
-  document.getElementById('changedCount').textContent = dateChanged;
-  var changedCard = document.getElementById('changedCard');
-  changedCard.style.display = dateChanged > 0 ? '' : 'none';
-
-  var supplierSet = {};
-  filtered.forEach(function(d) { supplierSet[d.supplier] = true; });
-  document.getElementById('supplierCount').textContent = Object.keys(supplierSet).length;
-
-  // 사입상품명 기준 그룹핑
-  var groups = {};
-  var groupOrder = [];
-  filtered.forEach(function(d) {
-    var gkey = d.supplier + '|' + d.internal_name;
-    if (!groups[gkey]) {
-      groups[gkey] = { supplier: d.supplier, internal_name: d.internal_name, items: [] };
-      groupOrder.push(gkey);
+  // 확인필요 항목 로드
+  jsonp('action=needCheck', function(data) {
+    if (data && data.success) {
+      checkItems = data.items || [];
+      renderCheckPanel();
     }
-    groups[gkey].items.push(d);
   });
+}
 
-  var tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
+// ============================================================
+// 상태 바
+// ============================================================
+function renderStatus(data) {
+  var total = preorders.length;
+  var withDate = preorders.filter(function(p) { return p.expected_date; }).length;
+  var noDate = total - withDate;
+  var updated = data.updated_at || '';
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">조건에 맞는 데이터가 없습니다.</td></tr>';
+  var html = '';
+  html += '<span class="status-chip">선주문 <b>' + total + '</b>건</span>';
+  html += '<span class="status-chip">입고일 설정 <b>' + withDate + '</b>건</span>';
+  if (noDate > 0) html += '<span class="status-chip">미설정 <b>' + noDate + '</b>건</span>';
+  if (updated) html += '<span class="status-chip">마지막 업데이트 <b>' + updated.substring(0, 16) + '</b></span>';
+
+  document.getElementById('statusBar').innerHTML = html;
+}
+
+// ============================================================
+// 확인 필요 패널
+// ============================================================
+function renderCheckPanel() {
+  var panel = document.getElementById('checkPanel');
+  var list = document.getElementById('checkList');
+
+  if (checkItems.length === 0) {
+    panel.style.display = 'block';
+    list.innerHTML = '<div class="check-empty">✅ 확인 필요 항목 없음</div>';
     return;
   }
 
-  groupOrder.forEach(function(gkey) {
-    var group = groups[gkey];
+  // 상품별 그룹
+  var groups = {};
+  checkItems.forEach(function(item) {
+    if (!groups[item.product_name]) groups[item.product_name] = [];
+    groups[item.product_name].push(item);
+  });
 
-    // 그룹 헤더
-    var headerRow = document.createElement('tr');
-    headerRow.className = 'group-header-row';
-    headerRow.innerHTML = '<td colspan="6">' + esc(group.supplier) + ' — ' + esc(group.internal_name) + ' (' + group.items.length + '개)</td>';
-    tbody.appendChild(headerRow);
+  var html = '';
+  Object.keys(groups).forEach(function(name) {
+    var opts = groups[name].map(function(i) {
+      return i.color + (i.size ? ',' + i.size : '');
+    }).join(' / ');
+    html += '<div class="check-item"><span class="check-name">' + esc(name) + '</span><span class="check-opt">' + esc(opts) + '</span></div>';
+  });
 
-    group.items.forEach(function(d) {
-      var tr = document.createElement('tr');
-      if (d.prev_date) {
-        tr.className = 'row-date-changed';
-      } else if (d.expected_date) {
-        tr.className = 'row-has-date';
+  list.innerHTML = html;
+  panel.style.display = 'block';
+}
+
+// ============================================================
+// 선주문 목록 렌더링
+// ============================================================
+function renderPreorders() {
+  var year = document.getElementById('yearSelect').value;
+  var container = document.getElementById('poList');
+
+  if (preorders.length === 0) {
+    container.innerHTML = '<div class="loading">선주문 데이터가 없습니다.</div>';
+    return;
+  }
+
+  // 거래처+사입상품명 기준 그룹
+  var groups = {};
+  preorders.forEach(function(po, idx) {
+    var key = (po.supplier || '기타') + ' — ' + (po.internal_name || po.product_name);
+    if (!groups[key]) groups[key] = { items: [], product_name: po.product_name };
+    po._idx = idx;
+    groups[key].items.push(po);
+  });
+
+  var html = '';
+  Object.keys(groups).forEach(function(groupName) {
+    var group = groups[groupName];
+    html += '<div class="po-group">';
+    html += '<div class="po-group-header">' + esc(groupName) + ' <span style="font-weight:400;color:#999">(' + group.items.length + '개)</span></div>';
+    html += '<table class="po-table"><tr><th>옵션</th><th style="text-align:right">수량</th><th>입고일</th></tr>';
+
+    group.items.forEach(function(po) {
+      var optName = po.color + (po.size ? ', ' + po.size : '');
+      var dateKey = (po.internal_name || '') + '|' + (po.color || '') + '|' + (po.size || '');
+      var currentDate = changes[dateKey] !== undefined ? changes[dateKey] : (po.expected_date ? formatDateForInput(po.expected_date) : '');
+      var changedTag = '';
+
+      if (po.prev_date) {
+        changedTag = '<span class="date-changed">이전: ' + formatDateShort(po.prev_date) + '</span>';
       }
-      var optionStr = d.color + (d.size ? ', ' + d.size : '');
 
-      // 날짜 + 요일 + 변경 표시
-      var dateHtml = '';
-      if (d.expected_date) {
-        var dayName = getDayName(d.expected_date);
-        var shortDate = formatDate(d.expected_date);
-        dateHtml = '<span class="date-set">' + shortDate + ' ' + dayName + '</span>';
-        // 날짜 변경된 경우 이전 날짜 표시
-        if (d.prev_date) {
-          var prevShort = formatDate(d.prev_date);
-          dateHtml += ' <span class="date-changed"><span class="prev">' + prevShort + '</span> → 변경</span>';
-        }
-      } else {
-        dateHtml = '<span class="date-none">미정</span>';
-      }
-
-      // 상품명에서 [the J.Soo ...] 제거해서 짧게
-      var shortName = d.product_name.replace(/\[the J\.Soo[^\]]*\]\s*/, '');
-
-      tr.innerHTML =
-        '<td>' + esc(d.supplier) + '</td>' +
-        '<td>' + esc(d.internal_name) + '</td>' +
-        '<td>' + esc(shortName) + '</td>' +
-        '<td>' + esc(optionStr) + '</td>' +
-        '<td style="text-align:center;">' + d.qty + '</td>' +
-        '<td class="date-cell">' + dateHtml + '</td>';
-      tbody.appendChild(tr);
+      html += '<tr>';
+      html += '<td class="opt-name">' + esc(optName) + '</td>';
+      html += '<td class="qty">' + po.qty + '개</td>';
+      html += '<td class="date-cell">';
+      html += '<input type="text" class="date-input" placeholder="MM/DD" value="' + currentDate + '" data-key="' + esc(dateKey) + '" data-idx="' + po._idx + '" onchange="onDateChange(this)" onfocus="this.select()">';
+      html += changedTag;
+      html += '</td>';
+      html += '</tr>';
     });
+
+    html += '</table></div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// ============================================================
+// 날짜 변경 감지
+// ============================================================
+function onDateChange(input) {
+  var key = input.getAttribute('data-key');
+  var idx = parseInt(input.getAttribute('data-idx'));
+  var val = input.value.trim();
+
+  // MM/DD → YYYY-MM-DD
+  var year = document.getElementById('yearSelect').value;
+  var fullDate = '';
+  if (val) {
+    var parts = val.replace(/[./]/g, '/').split('/');
+    if (parts.length === 2) {
+      var mm = parts[0].padStart(2, '0');
+      var dd = parts[1].padStart(2, '0');
+      fullDate = year + '-' + mm + '-' + dd;
+      input.value = mm + '/' + dd;
+    } else if (parts.length === 3) {
+      fullDate = parts[0] + '-' + parts[1].padStart(2, '0') + '-' + parts[2].padStart(2, '0');
+    }
+  }
+
+  var original = preorders[idx] ? formatDateForInput(preorders[idx].expected_date) : '';
+  if (input.value !== original) {
+    changes[key] = input.value;
+  } else {
+    delete changes[key];
+  }
+
+  updateSaveBar();
+}
+
+function updateSaveBar() {
+  var count = Object.keys(changes).length;
+  var bar = document.getElementById('saveBar');
+  document.getElementById('saveCount').textContent = count + '개 변경';
+  bar.className = 'save-bar' + (count > 0 ? ' show' : '');
+}
+
+// ============================================================
+// 카톡 파싱 (이프유 자동 계산 + 일반)
+// ============================================================
+
+// 이프유 색상 약어 → 실제 색상 매칭 (기본 사전)
+var DEFAULT_COLOR_MAP = {
+  '아': ['아이보리', '아이', 'ivory'],
+  '검': ['블랙', '검정', '검', 'black'],
+  '회': ['그레이', '회색', '차콜', 'gray', 'grey'],
+  '크림': ['크림', '베이지', 'cream'],
+  '연베': ['연베이지', '베이지'],
+  '밤': ['브라운', '밤색', '밤', 'brown'],
+  '베': ['베이지'],
+  '핑': ['핑크', 'pink'],
+  '네': ['네이비', 'navy'],
+  '차': ['차콜'],
+  '그': ['그레이'],
+  '블': ['블랙']
+};
+
+// 사용자 추가 사전 (localStorage에 저장)
+var userColorMap = {};
+
+function loadUserDict() {
+  try {
+    var saved = localStorage.getItem('jsoo_color_dict');
+    if (saved) userColorMap = JSON.parse(saved);
+  } catch(e) {}
+  renderDict();
+}
+
+function saveUserDict() {
+  try {
+    localStorage.setItem('jsoo_color_dict', JSON.stringify(userColorMap));
+  } catch(e) {}
+  renderDict();
+}
+
+function renderDict() {
+  var el = document.getElementById('dictList');
+  if (!el) return;
+  var allKeys = Object.keys(DEFAULT_COLOR_MAP).concat(Object.keys(userColorMap));
+  var unique = allKeys.filter(function(v, i, a) { return a.indexOf(v) === i; }).sort();
+
+  if (unique.length === 0) { el.innerHTML = '<span style="color:#bbb">등록된 약어 없음</span>'; return; }
+
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+  unique.forEach(function(k) {
+    var colors = userColorMap[k] || DEFAULT_COLOR_MAP[k] || [];
+    var isUser = !!userColorMap[k];
+    html += '<span style="padding:3px 10px;background:' + (isUser ? '#e3f2fd' : '#f5f5f5') + ';border-radius:12px;font-size:11px">';
+    html += '<b>' + esc(k) + '</b> → ' + esc(colors.join(', '));
+    if (isUser) html += ' <a href="#" onclick="removeDictEntry(\'' + esc(k) + '\');return false" style="color:#c62828;text-decoration:none;margin-left:2px">✕</a>';
+    html += '</span>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function addDictEntry() {
+  var abbr = document.getElementById('newAbbr').value.trim();
+  var color = document.getElementById('newColor').value.trim();
+  if (!abbr || !color) { alert('약어와 색상을 모두 입력해주세요'); return; }
+  userColorMap[abbr] = [color];
+  saveUserDict();
+  document.getElementById('newAbbr').value = '';
+  document.getElementById('newColor').value = '';
+}
+
+function removeDictEntry(key) {
+  delete userColorMap[key];
+  saveUserDict();
+}
+
+// 약어로 모르는 색상이 나오면 물어보기
+function askUnknownColor(abbr, context) {
+  var answer = prompt(
+    '모르는 색상 약어: "' + abbr + '"\n' +
+    (context ? '(문맥: ' + context + ')\n\n' : '\n') +
+    '실제 색상 이름을 입력해주세요 (예: 아이보리, 블랙)\n' +
+    '건너뛰려면 비워두고 확인'
+  );
+  if (answer && answer.trim()) {
+    userColorMap[abbr] = [answer.trim()];
+    saveUserDict();
+    return true;
+  }
+  return false;
+}
+
+function matchColor(abbr, actualColor) {
+  if (!abbr || !actualColor) return false;
+  var actual = actualColor.toLowerCase().trim();
+  // 정확히 일치
+  if (actual.indexOf(abbr) !== -1) return true;
+  // 사용자 사전 우선
+  var mappings = userColorMap[abbr] || DEFAULT_COLOR_MAP[abbr];
+  if (mappings) {
+    for (var i = 0; i < mappings.length; i++) {
+      if (actual.indexOf(mappings[i].toLowerCase()) !== -1) return true;
+    }
+  }
+  return false;
+}
+
+function getAllColorMappings(abbr) {
+  return userColorMap[abbr] || DEFAULT_COLOR_MAP[abbr] || null;
+}
+
+function parseKakao() {
+  var text = document.getElementById('kakaoInput').value.trim();
+  if (!text) return;
+
+  var lines = text.split('\n');
+  var year = document.getElementById('yearSelect').value;
+
+  // 1단계: 카톡에서 배치 정보 추출
+  // 형식: 수-상품명 : 색상(설명)수량 색상수량 > MM/DD날짜 예정
+  var batches = []; // {productKey, colorAbbr, qty, date}
+
+  lines.forEach(function(line) {
+    if (!line.trim()) return;
+
+    // > 기준으로 분리
+    var gtParts = line.split('>');
+    if (gtParts.length < 2) return;
+
+    var productPart = gtParts[0].trim();
+    var datePart = gtParts.slice(1).join('>').trim();
+
+    // 날짜 추출 (마지막 날짜 사용 — 범위면 뒤쪽)
+    var dateMatches = datePart.match(/(\d{1,2})[\/.](\d{1,2})/g);
+    if (!dateMatches) return;
+    var lastDate = dateMatches[dateMatches.length - 1];
+    var dm = lastDate.match(/(\d{1,2})[\/.](\d{1,2})/);
+    var dateStr = dm[1].padStart(2, '0') + '/' + dm[2].padStart(2, '0');
+
+    // 상품명 추출 (수- 뒤, : 앞)
+    var nameMatch = productPart.match(/수[\-\s]*([^:]+)/);
+    if (!nameMatch) return;
+    var productKey = nameMatch[1].trim();
+
+    // 색상+수량 추출 (: 뒤)
+    var colonIdx = productPart.indexOf(':');
+    if (colonIdx === -1) return;
+    var colorPart = productPart.substring(colonIdx + 1).trim();
+
+    // 패턴: 아(연노랑)50 검50 회M15 등
+    var colorQtyRegex = /([가-힣a-zA-Z]+)(?:\([^)]*\))?(?:[A-Z])?(\d+)/g;
+    var cqMatch;
+    while ((cqMatch = colorQtyRegex.exec(colorPart)) !== null) {
+      batches.push({
+        productKey: productKey,
+        colorAbbr: cqMatch[1],
+        qty: parseInt(cqMatch[2]) || 0,
+        date: dateStr
+      });
+    }
+  });
+
+  if (batches.length === 0) {
+    alert('파싱할 수 있는 데이터가 없습니다.\n형식: 수-상품명 : 색상수량 > MM/DD');
+    return;
+  }
+
+  // 2단계: 상품+색상별로 배치 그룹 (날짜순 정렬)
+  var batchGroups = {}; // "productKey|colorAbbr" → [{qty, date}]
+  batches.forEach(function(b) {
+    var gKey = b.productKey + '|' + b.colorAbbr;
+    if (!batchGroups[gKey]) batchGroups[gKey] = [];
+    batchGroups[gKey].push({ qty: b.qty, date: b.date });
+  });
+
+  // 날짜순 정렬
+  Object.keys(batchGroups).forEach(function(gKey) {
+    batchGroups[gKey].sort(function(a, b) { return a.date.localeCompare(b.date); });
+  });
+
+  // 2.5단계: 모르는 약어 확인
+  var askedAbbrs = {};
+  batches.forEach(function(b) {
+    if (askedAbbrs[b.colorAbbr]) return;
+    var known = getAllColorMappings(b.colorAbbr);
+    if (!known) {
+      // 선주문 데이터에서 직접 매칭 시도
+      var directMatch = false;
+      preorders.forEach(function(po) {
+        if ((po.color || '').indexOf(b.colorAbbr) !== -1) directMatch = true;
+      });
+      if (!directMatch) {
+        askUnknownColor(b.colorAbbr, '상품: ' + b.productKey);
+      }
+    }
+    askedAbbrs[b.colorAbbr] = true;
+  });
+
+  // 3단계: 선주문 데이터와 매칭 + 잔여수량 기반 날짜 계산
+  var matched = 0;
+  var logMessages = [];
+
+  preorders.forEach(function(po) {
+    var internalName = po.internal_name || '';
+    var poColor = (po.color || '').trim();
+    var poQty = parseInt(po.qty) || 0;
+
+    // 배치 그룹에서 매칭 찾기
+    Object.keys(batchGroups).forEach(function(gKey) {
+      var parts = gKey.split('|');
+      var productKey = parts[0];
+      var colorAbbr = parts[1];
+
+      // 상품명 매칭 (사입상품명에 키워드 포함)
+      if (internalName.indexOf(productKey) === -1) return;
+
+      // 색상 매칭
+      if (!matchColor(colorAbbr, poColor)) return;
+
+      // 매칭됨! 잔여수량 기반 날짜 계산
+      var batchList = batchGroups[gKey];
+      var cumulative = 0;
+      var coverDate = batchList[batchList.length - 1].date; // 기본: 마지막 날짜
+
+      // 같은 상품+색상의 전체 잔여수량 합산
+      var totalRemaining = 0;
+      preorders.forEach(function(p) {
+        if ((p.internal_name || '') === internalName && matchColor(colorAbbr, (p.color || '').trim())) {
+          totalRemaining += parseInt(p.qty) || 0;
+        }
+      });
+
+      for (var i = 0; i < batchList.length; i++) {
+        cumulative += batchList[i].qty;
+        if (cumulative >= totalRemaining) {
+          coverDate = batchList[i].date;
+          break;
+        }
+      }
+
+      var key = (po.internal_name || '') + '|' + (po.color || '') + '|' + (po.size || '');
+      changes[key] = coverDate;
+
+      var inputs = document.querySelectorAll('.date-input[data-key="' + CSS.escape(key) + '"]');
+      inputs.forEach(function(inp) { inp.value = coverDate; });
+      matched++;
+
+      logMessages.push(internalName + ' ' + poColor + (po.size ? ',' + po.size : '') + ' → ' + coverDate + ' (잔여' + totalRemaining + ', 누적입고' + cumulative + ')');
+    });
+  });
+
+  updateSaveBar();
+
+  if (matched > 0) {
+    var msg = matched + '개 옵션에 날짜 세팅 완료!\n\n';
+    msg += logMessages.slice(0, 10).join('\n');
+    if (logMessages.length > 10) msg += '\n... 외 ' + (logMessages.length - 10) + '건';
+    alert(msg);
+  } else {
+    alert('매칭되는 상품을 찾지 못했습니다.\n사입상품명 키워드를 확인해주세요.');
+  }
+}
+
+// ============================================================
+// 저장
+// ============================================================
+function saveChanges() {
+  var keys = Object.keys(changes);
+  if (keys.length === 0) return;
+
+  var year = document.getElementById('yearSelect').value;
+  var updates = keys.map(function(key) {
+    var parts = key.split('|');
+    var val = changes[key];
+    var fullDate = '';
+    if (val) {
+      var dp = val.replace(/[./]/g, '/').split('/');
+      if (dp.length === 2) {
+        fullDate = year + '-' + dp[0].padStart(2, '0') + '-' + dp[1].padStart(2, '0');
+      } else {
+        fullDate = val;
+      }
+    }
+    return {
+      internal_name: parts[0] || '',
+      color: parts[1] || '',
+      size: parts[2] || '',
+      expected_date: fullDate
+    };
+  });
+
+  var postData = JSON.stringify({ action: 'updateExpectedDate', updates: updates });
+
+  document.getElementById('saveCount').textContent = '저장중...';
+
+  // POST 전송
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: postData,
+    redirect: 'follow'
+  })
+  .then(function(r) { return r.text(); })
+  .then(function(text) {
+    try {
+      var result = JSON.parse(text);
+      alert(result.message || '저장 완료');
+    } catch(e) {
+      alert('저장 완료');
+    }
+    changes = {};
+    updateSaveBar();
+    loadData(); // 새로고침
+  })
+  .catch(function(err) {
+    alert('저장 실패: ' + err.message);
+    document.getElementById('saveCount').textContent = keys.length + '개 변경';
   });
 }
 
-function parseDate(dateStr) {
-  if (!dateStr) return null;
-  // "2026-11-16" 형태
-  var match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return new Date(parseInt(match[1]), parseInt(match[2])-1, parseInt(match[3]));
-  // "Tue Nov 24 2026 00:00:00 GMT+0900" 형태 (GAS에서 올 수 있음)
-  var d = new Date(dateStr);
-  if (!isNaN(d.getTime())) return d;
-  return null;
+function cancelChanges() {
+  changes = {};
+  updateSaveBar();
+  renderPreorders();
 }
 
-function formatDate(dateStr) {
-  var d = parseDate(dateStr);
+// ============================================================
+// 유틸
+// ============================================================
+function esc(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function formatDateForInput(d) {
   if (!d) return '';
-  return (d.getMonth()+1) + '/' + d.getDate();
+  var str = d.toString().trim();
+  var m = str.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return m[2].padStart(2, '0') + '/' + m[3].padStart(2, '0');
+  // Date object string
+  var dt = new Date(str);
+  if (!isNaN(dt.getTime())) {
+    return (dt.getMonth() + 1).toString().padStart(2, '0') + '/' + dt.getDate().toString().padStart(2, '0');
+  }
+  return str;
 }
 
-function getDayName(dateStr) {
-  var d = parseDate(dateStr);
+function formatDateShort(d) {
   if (!d) return '';
-  return '(' + DAY_NAMES[d.getDay()] + ')';
+  var m = d.toString().match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return parseInt(m[2]) + '/' + parseInt(m[3]);
+  return d;
 }
 
-function esc(str) {
-  if (!str) return '';
-  var div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+// 연도 셀렉트 초기화
+function initYearSelect() {
+  var sel = document.getElementById('yearSelect');
+  var now = new Date();
+  var currentYear = now.getFullYear();
+  for (var y = currentYear; y <= currentYear + 1; y++) {
+    var opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + '년';
+    sel.appendChild(opt);
+  }
 }
 
-// 페이지 로드 시 자동 조회
+// 초기화
+initYearSelect();
+loadUserDict();
 loadData();
 </script>
 </body>
