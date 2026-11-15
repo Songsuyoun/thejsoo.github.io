@@ -162,7 +162,13 @@
   // 위젯 렌더링
   // ============================================================
   function renderWidget(container, data) {
-    var opts = (data.options || []).filter(function(o) { return o.status !== 'soldout'; });
+    var opts = (data.options || []).filter(function(o) {
+      if (o.status === 'soldout') return false;
+      // 내부 옵션 숨김 (_가 포함된 옵션명)
+      var optName = (o.color || '') + (o.size || '');
+      if (optName.indexOf('_') !== -1) return false;
+      return true;
+    });
     if (opts.length === 0) { container.style.display = 'none'; return; }
 
     var h = '';
@@ -265,6 +271,23 @@
         console.log('[JSOO위젯] 구매버튼을 찾지 못함 — 위젯 삽입 불가');
         return;
       }
+    }
+
+    // 코디할인 상품 체크
+    var productTitle = '';
+    try {
+      var titleEl = document.querySelector('.headingArea h2, .xans-product-detail h2, h2.name');
+      if (!titleEl) {
+        var nameEl = document.querySelector('.xans-product-detail');
+        if (nameEl) { var tm = nameEl.innerHTML.match(/\[(?:the J\.Soo|코디할인)[^\]]*\][^<]*/); if (tm) productTitle = tm[0]; }
+      } else {
+        productTitle = titleEl.textContent || '';
+      }
+    } catch(e) {}
+
+    if (productTitle.indexOf('코디') !== -1 || productTitle.indexOf('+') !== -1) {
+      container.innerHTML = '<div style="font-family:Pretendard,sans-serif;border:1px solid #231F20;margin:' + CONFIG.MARGIN_TOP + 'px 0 ' + CONFIG.MARGIN_BOTTOM + 'px 0;padding:14px 18px;text-align:center;font-size:12px;color:#888;letter-spacing:.3px">각 상품 페이지에서 실시간 재고를 확인해주세요</div>';
+      return;
     }
 
     var code = getProductCode();
