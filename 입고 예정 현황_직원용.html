@@ -634,25 +634,33 @@ function saveChanges() {
 
   document.getElementById('saveCount').textContent = '저장중...';
 
-  // POST 전송 (CORS 우회: no-cors + text/plain)
-  fetch(GAS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body: postData
-  })
-  .then(function() {
-    // no-cors는 응답을 읽을 수 없으므로 성공으로 처리
-    alert(updates.length + '개 입고일 저장 완료!');
-    changes = {};
-    updateSaveBar();
-    // 잠시 후 새로고침 (GAS 처리 시간 확보)
-    setTimeout(function() { loadData(); }, 2000);
-  })
-  .catch(function(err) {
-    alert('저장 실패: ' + err.message);
-    document.getElementById('saveCount').textContent = keys.length + '개 변경';
-  });
+  // POST 전송 (form + iframe으로 CORS 우회)
+  var frameName = 'gasFrame_' + Date.now();
+  var iframe = document.createElement('iframe');
+  iframe.name = frameName;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = GAS_URL;
+  form.target = frameName;
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'payload';
+  input.value = postData;
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+
+  // 저장 완료 처리
+  alert(updates.length + '개 입고일 저장 요청 완료!');
+  changes = {};
+  updateSaveBar();
+  setTimeout(function() {
+    loadData();
+    try { document.body.removeChild(form); document.body.removeChild(iframe); } catch(e) {}
+  }, 3000);
 }
 
 function cancelChanges() {
