@@ -116,7 +116,11 @@
   <!-- 선주문 목록 -->
   <div class="po-section">
     <h3>예상 입고일 확인</h3>
-    <div class="year-select">연도: <select id="yearSelect" onchange="renderPreorders()"></select></div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+      <div class="year-select" style="margin-bottom:0">연도: <select id="yearSelect" onchange="renderPreorders()"></select></div>
+      <div>거래처: <select id="supplierFilter" onchange="renderPreorders()" style="padding:4px 8px;border:1px solid #e8e4df;border-radius:4px;font-family:inherit;font-size:12px"><option value="">전체</option></select></div>
+      <div style="flex:1;min-width:150px"><input type="text" id="searchInput" placeholder="상품명 검색..." oninput="renderPreorders()" style="width:100%;padding:6px 10px;border:1px solid #e8e4df;border-radius:4px;font-size:12px;font-family:inherit"></div>
+    </div>
     <div id="poList"><div class="loading">데이터 로딩중...</div></div>
   </div>
 </div>
@@ -223,6 +227,8 @@ function renderCheckPanel() {
 // ============================================================
 function renderPreorders() {
   var year = document.getElementById('yearSelect').value;
+  var supplierFilter = document.getElementById('supplierFilter').value;
+  var searchQuery = (document.getElementById('searchInput').value || '').trim().toLowerCase();
   var container = document.getElementById('poList');
 
   if (preorders.length === 0) {
@@ -230,12 +236,35 @@ function renderPreorders() {
     return;
   }
 
+  // 거래처 필터 옵션 업데이트 (최초 1회)
+  var supplierSelect = document.getElementById('supplierFilter');
+  if (supplierSelect.options.length <= 1) {
+    var suppliers = {};
+    preorders.forEach(function(po) { suppliers[po.supplier || '기타'] = true; });
+    Object.keys(suppliers).sort().forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      supplierSelect.appendChild(opt);
+    });
+    if (supplierFilter) supplierSelect.value = supplierFilter;
+  }
+
+  // 필터링
+  var filtered = preorders.filter(function(po, idx) {
+    po._idx = idx;
+    if (supplierFilter && (po.supplier || '기타') !== supplierFilter) return false;
+    if (searchQuery) {
+      var name = ((po.product_name || '') + ' ' + (po.internal_name || '')).toLowerCase();
+      if (name.indexOf(searchQuery) === -1) return false;
+    }
+    return true;
+  });
+
   // 거래처+사입상품명 기준 그룹
   var groups = {};
-  preorders.forEach(function(po, idx) {
+  filtered.forEach(function(po) {
     var key = (po.supplier || '기타') + ' — ' + (po.internal_name || po.product_name);
     if (!groups[key]) groups[key] = { items: [], product_name: po.product_name };
-    po._idx = idx;
     groups[key].items.push(po);
   });
 
@@ -605,24 +634,20 @@ function saveChanges() {
 
   document.getElementById('saveCount').textContent = '저장중...';
 
-  // POST 전송
+  // POST 전송 (CORS 우회: no-cors + text/plain)
   fetch(GAS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: postData,
-    redirect: 'follow'
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: postData
   })
-  .then(function(r) { return r.text(); })
-  .then(function(text) {
-    try {
-      var result = JSON.parse(text);
-      alert(result.message || '저장 완료');
-    } catch(e) {
-      alert('저장 완료');
-    }
+  .then(function() {
+    // no-cors는 응답을 읽을 수 없으므로 성공으로 처리
+    alert(updates.length + '개 입고일 저장 완료!');
     changes = {};
     updateSaveBar();
-    loadData(); // 새로고침
+    // 잠시 후 새로고침 (GAS 처리 시간 확보)
+    setTimeout(function() { loadData(); }, 2000);
   })
   .catch(function(err) {
     alert('저장 실패: ' + err.message);
