@@ -7,7 +7,7 @@
 <script>
 /* ===== 관리자 설정 =====
    구글 시트 Apps Script를 웹앱으로 배포한 뒤 받은 주소(…/exec)를 아래 따옴표 안에 붙여넣으세요. */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbw4-80kDOYRj_puB2uIxIhCasCfxXC14UKwB8TnQ6Y5uT5kS0vfrEBbwko5EU4DZ-_U4w/exec';
+const GAS_URL = '';
 </script>
 <style>
 :root{
@@ -492,13 +492,17 @@ function computeFromWork(){
   ordersCache=null;
   const all={}, look={};
   for(const g of Object.keys(GIFTS)) for(const kd of ['new','check']) for(const x of ((work&&work[g]&&work[g][kd])||[])) look[x.no]=x;
+  // 처리 완료된 주문은 작업 목록에서 빠지므로, 이름·연락처·상품은 공유된 전체 주문에서 찾음
+  const allMap={}; for(const o of (csRemote||[])) allMap[o.no]=o;
+  const fromAll=no=>{ const o=allMap[no]; return o?{no,paid:o.d?fmt(o.d):'',name:o.name,phone:o.phone,items:(o.items||[]).filter(x=>!x.back).map(x=>x.nm+(x.q>1?` ×${x.q}`:'')).join(' / ')}:null; };
   const row=(x,i)=>({no:x.no,rank:i+1,d:null,paidText:x.paid||'',name:x.name||'',phone:x.phone||'',addr:'',itemsText:x.items||'',items:null,amt:null,nowAmt:null,cp:null,npay:'',status:'',padQty:+x.qty||0,padNeed:+x.need||0,padBack:+x.back||0});
   for(const g of Object.keys(GIFTS)){
     const w=(work&&work[g])||{new:[],check:[]}, P=processed[g], G=GIFTS[g];
     const nw=w.new.filter(x=>!P.has(x.no)).map(row);
     const ck=w.check.filter(x=>P.has(x.no)).map(row);
-    const dn=[...P].filter(no=>!ck.some(c=>c.no===no)).map((no,i)=>{ const r=row(look[no]||{no},i); if(g==='padding') r.padQty=+(info.padding[no]||{}).qty||r.padQty; return r; });
+    const dn=[...P].filter(no=>!ck.some(c=>c.no===no)).map((no,i)=>{ const r=row(look[no]||fromAll(no)||{no},i); if(g==='padding') r.padQty=+(info.padding[no]||{}).qty||r.padQty; return r; });
     const unlimited=!(G.qty>0);
+    dn.sort((a,b)=>String(a.paidText).localeCompare(String(b.paidText))||a.no.localeCompare(b.no)); dn.forEach((r,i)=>r.rank=i+1);
     let used=P.size, want=nw.length;
     if(g==='padding'){ used=[...P].reduce((s,no)=>s+(+(info.padding[no]||{}).qty||1),0); want=nw.reduce((s,o)=>s+(o.padQty||1),0); }
     all[g]={new:nw,done:dn,check:ck,over:[],unlimited,left:unlimited?null:Math.max(0,G.qty-used-want),doneTotal:P.size};
@@ -524,7 +528,7 @@ async function loadAll(){
     csAt=(work&&work.at)||'';
   }catch(e){}
   finally{ csLoading=false; }
-  renderCS();
+  render();
 }
 async function publishWork(){
   const all=computeFromCSV(), w={};
