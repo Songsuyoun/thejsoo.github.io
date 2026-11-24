@@ -1148,7 +1148,19 @@ function parseSheetData(text, sep) {
     return -1;
   }
 
-  var colSup    = findCol(['공급처','공급사']);
+  // 공급처 컬럼: 헤더에 여러 번 나올 수 있으므로 마지막 매칭 사용
+  function findColLast(names) {
+    if (!headerCols) return -1;
+    var lastIdx = -1;
+    for (var ni = 0; ni < names.length; ni++) {
+      for (var ci = 0; ci < headerCols.length; ci++) {
+        if (headerCols[ci].indexOf(names[ni]) >= 0) lastIdx = ci;
+      }
+      if (lastIdx >= 0) return lastIdx;
+    }
+    return -1;
+  }
+  var colSup    = findColLast(['공급처','공급사']);
   var colNm     = findCol(['상품명']);
   var colColor  = findCol(['색상']);
   var colSize   = findCol(['사이즈','size','SIZE']);
@@ -1198,7 +1210,7 @@ function parseSheetData(text, sep) {
       var ctr   = colCtr   >= 0 ? (c[colCtr]  ||'').trim() : '';
 
       var colorTags = splitTags(color);
-      var sizeTags  = splitTags(size).map(function(v){ return v.toUpperCase()==='FREE' ? 'FREE' : v; });
+      var sizeTags  = splitTags(size).map(function(v){ return v; });
 
       var product = { nm:nm, sup:sup, color:colorTags, size:sizeTags, costP:costP, saleP:saleP, fab:fab, ctr:normCtr(ctr), desc:desc };
       parsed.push(product);
@@ -1215,7 +1227,11 @@ function parseSheetData(text, sep) {
 
   // 경고: 공급사 미매핑
   if (parsed.length) {
-    var unmapped = parsed.filter(function(r){ return r.sup && !SUPPLIERS.find(function(s){ return s.name === r.sup; }); });
+    var unmapped = parsed.filter(function(r){
+      if (!r.sup) return false;
+      var ns = r.sup.replace(/\s*[\(\（][^\)\）]*[\)\）]/g,'').trim();
+      return !SUPPLIERS.find(function(s){ return s.name === r.sup || s.name === ns; });
+    });
     var uniqueUnmapped = [];
     unmapped.forEach(function(r){ if(uniqueUnmapped.indexOf(r.sup)<0) uniqueUnmapped.push(r.sup); });
     if (uniqueUnmapped.length) warns.push('⚠️ 공급사 목록에 없는 공급처: ' + uniqueUnmapped.join(', ') + ' → 가져온 후 공급사 직접 선택 필요 (공급사코드 자동입력 안 됨)');
