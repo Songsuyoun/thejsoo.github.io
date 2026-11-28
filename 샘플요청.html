@@ -63,15 +63,7 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
 .divider span { font-size: 11px; color: var(--gray-400); font-weight: 600; white-space: nowrap; }
 
-/* 이미지 업로드 */
-.upload-area { border: 2px dashed var(--gray-200); border-radius: 10px; padding: 22px 20px; text-align: center; cursor: pointer; background: var(--gray-100); position: relative; transition: all 0.15s; }
-.upload-area:hover { border-color: var(--black); background: #EEEDEA; }
-.upload-area.has-image { border-color: var(--green); border-style: solid; background: var(--green-light); }
-.upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.upload-icon { font-size: 26px; margin-bottom: 6px; }
-.upload-area h3 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.upload-area p { font-size: 11px; color: var(--gray-600); }
-.preview-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid var(--gray-200); margin-top: 12px; display: none; }
+
 
 /* 분석 버튼 */
 .btn-analyze { width: 100%; background: var(--accent); color: white; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; margin-top: 12px; display: none; transition: all 0.15s; }
@@ -178,36 +170,21 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 
 <header>
   <div class="logo">더제이수 <span>샘플요청</span></div>
-  <div class="step-badge">① 요청 등록</div>
+  <div class="step-badge">엑셀 다운로드</div>
 </header>
 
 <div class="main">
 
-  <div class="guide">
-    <strong>① 텍스트</strong> 신상마켓 찜 목록 전체 복붙 → 파싱<br>
-    <strong>② 이미지</strong> 스크롤 캡처 1장 업로드 → 자동 크롭<br>
-    <strong>③ 확인 후 저장</strong> → 구글 시트 + 드라이브 자동 저장
-  </div>
+  <div class="guide"><strong>① 텍스트</strong> 신상마켓 찜 목록 전체 복붙 → 파싱<br><strong>② 확인 후 엑셀 다운로드</strong></div>
 
   <!-- 바로가기 버튼 -->
-  <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
-    <a href="https://docs.google.com/spreadsheets/d/1cSF19qDVRfIAdFMGOFMbD73yajki4zUdPoEFE0vemEY/edit"
-       target="_blank"
-       style="flex:1; text-align:center; padding:10px 8px; background:var(--green-light); border:1.5px solid var(--green); border-radius:10px; font-size:12px; font-weight:700; color:var(--green); text-decoration:none;">
-      📊 샘플 관리 시트
-    </a>
-    <a href="https://drive.google.com/drive/folders/1agUM10wUZz04gPE-Ta6kabvDDVKfW0a9"
-       target="_blank"
-       style="flex:1; text-align:center; padding:10px 8px; background:var(--blue-light); border:1.5px solid var(--blue); border-radius:10px; font-size:12px; font-weight:700; color:var(--blue); text-decoration:none;">
-      🖼️ 드라이브 폴더
-    </a>
+  <div style="display:flex; gap:8px; margin-bottom:10px;">
     <a href="https://docs.google.com/spreadsheets/d/1bP7Nwovu3wFV7T1UOlUhS-O56nMeZ7-3lSZ0iNHUcrc/edit"
        target="_blank"
        style="flex:1; text-align:center; padding:10px 8px; background:var(--amber-light); border:1.5px solid var(--amber); border-radius:10px; font-size:12px; font-weight:700; color:var(--amber); text-decoration:none;">
       📋 거래처 시트
     </a>
   </div>
-
   <!-- 거래처 DB 상태 -->
   <div class="db-bar">
     <span class="db-status loading" id="dbStatus">거래처 로딩 중...</span>
@@ -228,28 +205,7 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
     <textarea class="text-area" id="textInput"
       placeholder="신상마켓 찜 목록에서 복사한 텍스트를 그대로 붙여넣으세요&#10;&#10;예시:&#10;E776 실버바 진주 귀걸이&#10;APM PLACE / 루미에르&#10;₩5,000&#10;17&#10;샌디 골지 니트가디건&#10;디오트 / MAYBEEN메이빈&#10;₩26,000&#10;131"></textarea>
     <div class="parse-preview" id="parsePreview"></div>
-
-    <div class="divider"><span>이미지 업로드 (선택 — 없으면 텍스트만 저장)</span></div>
-
-    <!-- STEP 2: 이미지 -->
-    <div class="step-label" style="margin-bottom:10px;">
-      <div class="step-num">2</div>
-      <div class="step-text">찜 목록 스크롤 캡처 이미지 업로드</div>
-      <button onclick="openGuide()" style="margin-left:auto; background:#F5F4F1; border:1.5px solid #E6E3DE; border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; font-family:var(--font); cursor:pointer; color:#6B6760; display:flex; align-items:center; gap:4px;">❓ 캡처 방법</button>
-    </div>
-    <div class="upload-area" id="uploadArea">
-      <input type="file" id="fileInput" accept="image/*">
-      <div class="upload-icon" id="uploadIcon">📸</div>
-      <h3 id="uploadTitle">이미지를 클릭해서 선택하거나 Ctrl+V</h3>
-      <p id="uploadSub">텍스트 상품 수에 맞게 자동으로 이미지가 잘려요</p>
-    </div>
-    <img id="previewImg" class="preview-img" alt="">
-
-    <button class="btn-analyze" id="btnProcess" onclick="processAll()" style="display:block; margin-top:14px; background:#E8756A; color:white; width:100%; border:none; border-radius:10px; padding:16px; font-size:15px; font-weight:700; font-family:var(--font); cursor:pointer;">
-      ✅ 3단계 · 샘플 요청 목록 확인하기
-    </button>
-
-  </div>
+</div>
 
   <!-- 로딩 -->
   <div class="loading" id="loading">
@@ -272,25 +228,12 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 <!-- 저장 버튼 -->
 <div class="save-all-wrap" id="saveAllWrap">
   <div class="save-all-inner">
-    <div style="display:flex; gap:8px;">
-      <button class="btn-save-all" id="btnSaveAll" onclick="saveToSheet()" style="flex:1;">
-        📊 구글 시트 저장 (<span id="totalCount">0</span>개)
-      </button>
-      <button class="btn-save-all" onclick="downloadSampleExcel()" style="flex:1; background:var(--green);">
+    <button class="btn-save-all" onclick="downloadSampleExcel()" style="background:var(--green); width:100%;">
         📥 엑셀 다운로드
+        <span style="font-size:10px; font-weight:400; opacity:0.8; margin-left:4px;">미등록 거래처 자동 저장</span>
       </button>
-    </div>
   </div>
 </div>
-
-<!-- 캡처 방법 안내 팝업 -->
-<div id="guideModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:flex-end; justify-content:center;">
-  <div style="background:white; border-radius:20px 20px 0 0; padding:24px 20px 40px; width:100%; max-width:680px; max-height:85vh; overflow-y:auto; animation:slideUpModal 0.3s ease;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-      <div style="font-size:16px; font-weight:700;">📸 이미지 캡처 방법</div>
-      <button onclick="closeGuide()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#888; padding:0;">✕</button>
-    </div>
-
     <!-- 공통 주의사항 -->
     <div style="background:#FDECEA; border-left:4px solid #E8756A; border-radius:8px; padding:11px 14px; margin-bottom:18px; font-size:12px; color:#C0392B; line-height:1.8; font-weight:700;">
       ⚠️ 공통 주의사항<br>
@@ -337,7 +280,6 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
 
 <script>
 var GAS_VENDOR_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
-var GAS_SAMPLE_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
 
 var BUILTIN_VENDORS = [
   {"업체명":"글로우님프","전화번호":"2250-1890","위치":"APM B1-8"},
@@ -507,8 +449,6 @@ function parseText() {
 }
 
 // ── STEP 2: 이미지 업로드 ──
-document.getElementById('fileInput').addEventListener('change', function(e) {
-  if (e.target.files[0]) handleImageFile(e.target.files[0]);
 });
 document.addEventListener('paste', function(e) {
   // 이미지 붙여넣기 처리 (텍스트 입력창 포함 어디서든)
@@ -548,10 +488,7 @@ function handleImageFile(file) {
     document.getElementById('uploadIcon').textContent = '✅';
     document.getElementById('uploadTitle').textContent = '이미지 등록됨';
     document.getElementById('uploadSub').textContent = file.name;
-    document.getElementById('previewImg').src = full;
-    document.getElementById('previewImg').style.display = 'block';
-
-    // 텍스트도 있으면 3단계 버튼 표시
+            // 텍스트도 있으면 3단계 버튼 표시
     if (textParsed && products.length > 0) {
       showBtnProcess(true);
       showToast('✅ 이미지 등록 완료! 아래 버튼을 눌러주세요');
@@ -791,26 +728,6 @@ function removeProduct(i) {
   }
   renderCards();
 }
-
-// ── 구글 시트 저장 ──
-async function saveToSheet() {
-  if (!products.length) { showToast('저장할 상품이 없어요'); return; }
-
-  // 미매칭 거래처 중 주소/연락처 미입력 체크
-  var incomplete = [];
-  products.forEach(function(p, pi) {
-    if (!p.matched && !p.vendorSaved) {
-      var addrEl  = document.getElementById('addr-'  + pi);
-      var phoneEl = document.getElementById('phone-' + pi);
-      var addrVal  = addrEl  ? addrEl.value.trim()  : '';
-      var phoneVal = phoneEl ? phoneEl.value.trim() : '';
-      if (!addrVal || !phoneVal) {
-        var vendorEl = document.getElementById('vendor-' + pi);
-        incomplete.push((vendorEl ? vendorEl.value : p.거래처) || p.상품명);
-      }
-    }
-  });
-
   if (incomplete.length > 0) {
     // 경고는 하되 저장은 계속 진행
     showToast('⚠️ 미매칭 거래처 ' + incomplete.length + '개는 주소·연락처 없이 저장돼요');
@@ -846,22 +763,7 @@ async function saveToSheet() {
           '반납일': '', '출처': '신상마켓', '비고': '',
           imageBase64: imgBase64, imageFileName: imgFileName
         });
-        await fetch(GAS_SAMPLE_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain' },
-          body: body
-        });
-      } else {
-        var payload = encodeURIComponent(JSON.stringify({
-          '상품명': name, '거래처': vendor, '연락처': phone, '주소': addr,
-          '이미지URL': '', '요청일': today,
-          '입고일': '', '반납기한': '', '상태': '요청중',
-          '반납일': '', '출처': '신상마켓', '비고': ''
-        }));
-        await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload, { mode: 'no-cors' });
-      }
-      success++;
+        await       success++;
     } catch(e) { console.error(e); }
   }
 
@@ -878,9 +780,7 @@ async function saveToSheet() {
 function resetAll() {
   products = []; currentImageBase64 = ''; currentImageType = ''; textParsed = false;
   document.getElementById('textInput').value = '';
-  document.getElementById('fileInput').value = '';
-  document.getElementById('previewImg').style.display = 'none';
-  document.getElementById('parsePreview').style.display = 'none';
+      document.getElementById('parsePreview').style.display = 'none';
   document.getElementById('parsedCount').textContent = '';
   document.getElementById('uploadArea').classList.remove('has-image');
   document.getElementById('uploadIcon').textContent = '📸';
@@ -891,18 +791,9 @@ function resetAll() {
   showBtnProcess(false);
 }
 
-function openGuide() {
-  var m = document.getElementById('guideModal');
-  m.style.display = 'flex';
-}
-function closeGuide() {
-  document.getElementById('guideModal').style.display = 'none';
-}
+
 // 모달 바깥 클릭 시 닫기
-document.addEventListener('click', function(e) {
-  var modal = document.getElementById('guideModal');
-  if (e.target === modal) closeGuide();
-});
+
 
 // 같은 거래처 카드 실시간 동기화
 // 알림 팝업
