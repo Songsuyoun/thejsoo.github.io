@@ -19,6 +19,7 @@
   .week strong{min-width:150px;text-align:center;font-size:15px}
   .btn{border:1px solid var(--ink);background:#fff;color:var(--ink);padding:7px 12px;border-radius:6px}
   .btn:hover{background:#f0efed}
+  a.btn{text-decoration:none;display:inline-block}
   .btn.dark{background:var(--ink);color:#fff}
   .btn.dark:hover{background:#000}
   .btn.ghost{border-color:var(--line)}
@@ -31,6 +32,8 @@
   .col{background:#efeeeb;border-radius:10px;padding:10px;min-height:300px;display:flex;flex-direction:column;gap:10px;border:2px solid transparent}
   .col.today{background:#e9e6e1}
   .col.over{border-color:var(--ink)}
+  .col.hot .drop{border-color:var(--ink);color:var(--ink);background:#fff}
+  .drop small{font-size:11.5px;color:#8f8a84}
   .colhead{display:flex;align-items:center;gap:6px}
   .colhead b{font-size:15px}
   .colhead .cnt{color:var(--sub);font-size:12px}
@@ -38,7 +41,7 @@
   .drop:hover{background:#fff}
   .card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:grab}
   .card.dragging{opacity:.4}
-  .thumb{width:100%;height:170px;object-fit:cover;object-position:center 20%;background:#ddd;display:block;cursor:zoom-in}
+  .thumb{width:100%;height:260px;object-fit:contain;background:#f3f2f0;display:block;cursor:zoom-in}
   .nophoto{aspect-ratio:4/1;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:12px;background:#f3f2f0}
   .body{padding:10px;display:flex;flex-direction:column;gap:6px}
   .ttl{font-weight:700;font-size:14px;word-break:keep-all}
@@ -70,7 +73,7 @@
   .item .nm{font-weight:600}
   .item .meta{grid-column:1/3;color:var(--sub);font-size:12.5px}
   .empty{padding:30px;text-align:center;color:var(--sub)}
-  .lightbox img{max-width:92vw;max-height:88vh;border-radius:8px}
+  .lightbox img{max-width:92vw;max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:8px}
   #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:60;max-width:90vw}
   #toast.on{opacity:1}
 </style>
@@ -86,11 +89,13 @@
     <button class="btn ghost sm" id="thisW">이번 주</button>
   </div>
   <div class="spacer"></div>
+  <a class="btn ghost" href="https://docs.google.com/spreadsheets/d/1cSF19qDVRfIAdFMGOFMbD73yajki4zUdPoEFE0vemEY/edit" target="_blank" rel="noopener">샘플관리 시트</a>
+  <a class="btn ghost" href="https://drive.google.com/drive/folders/1t9ogRh33jCElN048umjNhul4e-C1r3Mf" target="_blank" rel="noopener">사진 폴더</a>
   <button class="btn ghost" id="reload">새로고침</button>
   <button class="btn dark" id="copyWeek">이번 주 전체 카톡 복사</button>
   <div class="demo" id="demoBar" hidden>데모 모드예요. 저장되지 않아요. 파일 위쪽 GAS_URL에 웹앱 주소를 넣으면 실제 샘플 시트와 연결돼요.</div>
 </header>
-<p class="help">① 대표님: 업데이트할 상품 사진을 요일 칸에 끌어다 놓기 ② 직원: 카드의 <b>샘플 연결</b>을 눌러 샘플 시트 상품 고르기 ③ <b>카톡 복사</b>로 채널톡·카톡에 붙여넣기 · 카드는 끌어서 다른 요일로 옮길 수 있어요.</p>
+<p class="help">① 대표님: 업데이트할 상품 사진을 요일 칸에 끌어다 놓거나, 복사한 뒤 그 칸에 마우스를 두고 Ctrl+V ② 직원: 카드의 <b>샘플 연결</b>을 눌러 샘플 시트 상품 고르기 ③ <b>카톡 복사</b>로 채널톡·카톡에 붙여넣기 · 카드는 끌어서 다른 요일로 옮길 수 있어요.</p>
 
 <main id="board"></main>
 
@@ -167,7 +172,7 @@ function buildGroups(){
   for(const s of samples){
     const parts=splitName(s.name), base=parts[0];
     const k=keyOf(s.vendor,s.inDate,base);
-    if(!groups.has(k)) groups.set(k,{key:k,vendor:s.vendor,inDate:s.inDate,base,rows:[],colors:new Set(),sizes:new Set(),mix:'',price:'',due:'',colorSize:'',updateDate:'',statuses:new Set()});
+    if(!groups.has(k)) groups.set(k,{key:k,vendor:s.vendor,inDate:s.inDate,base,rows:[],colors:new Set(),sizes:new Set(),mix:'',price:'',due:'',colorSize:'',colorCol:'',sizeCol:'',updateDate:'',statuses:new Set()});
     const g=groups.get(k);
     g.rows.push(s); g.statuses.add(s.status);
     if(parts[1]) g.colors.add(parts[1]);
@@ -175,15 +180,18 @@ function buildGroups(){
     if(!g.mix && s.mix) g.mix=s.mix;
     if(!g.price && s.price) g.price=s.price;
     if(!g.colorSize && s.colorSize) g.colorSize=s.colorSize;
+    if(!g.colorCol && s.colors) g.colorCol=s.colors;
+    if(!g.sizeCol && s.sizes) g.sizeCol=s.sizes;
     if(!g.updateDate && s.updateDate) g.updateDate=s.updateDate;
     if(s.due && (!g.due || s.due<g.due)) g.due=s.due;
   }
 }
+function tidy(list){ return String(list||'').split(/[,，/]+/).map(x=>x.trim()).filter(Boolean).join(', '); }
 function groupInfo(g){
-  let colors='', sizes='';
+  // 1순위: 칼라·사이즈 칸 / 2순위: 예전 '칼라/사이즈' 칸 / 3순위: 상품명에서 추출
   const m=(g.colorSize||'').match(/칼라\s*:\s*([^/]+?)(?:\s*\/\s*|$)/), n=(g.colorSize||'').match(/사이즈\s*:\s*(.+)$/);
-  colors = m ? m[1].trim() : [...g.colors].join(', ');
-  sizes  = n ? n[1].trim() : [...g.sizes].join(', ');
+  const colors = g.colorCol ? tidy(g.colorCol) : m ? m[1].trim() : [...g.colors].join(', ');
+  const sizes  = g.sizeCol  ? tidy(g.sizeCol)  : n ? n[1].trim() : [...g.sizes].join(', ');
   const price = g.price ? String(g.price).replace(/[^\d]/g,'') : '';
   return { colors, sizes, mix:g.mix, price: price ? Number(price).toLocaleString('ko-KR')+'원' : '', due:g.due,
            returned: !g.statuses.has('보유중') };
@@ -229,7 +237,7 @@ function render(){
     return `<section class="col ${d===today?'today':''}" data-date="${d}">
       <div class="colhead"><b>${md(d)}</b><span class="cnt">${list.length}건</span><span class="spacer"></span>
         <button class="btn ghost sm" data-copy="${d}" ${list.length?'':'disabled'}>카톡 복사</button></div>
-      <div class="drop" data-pick="${d}">사진을 끌어다 놓거나<br>눌러서 추가</div>
+      <div class="drop" data-pick="${d}">사진을 끌어다 놓거나 눌러서 추가<br><small>복사한 사진은 이 칸에 마우스를 두고 Ctrl+V</small></div>
       ${list.map(c=>cardHtml(c,opts)).join('')}
     </section>`;
   }).join('');
@@ -322,7 +330,7 @@ async function addPhotos(files,date){
     const temp={id:'tmp'+Math.random(),date,_uploading:true}; cards.push(temp); render();
     try{
       const dataUrl=await shrink(f);
-      const {photoId}=await apiPost({action:'upload',dataUrl,fileName:date+'_'+f.name.replace(/\.[^.]+$/,'')+'.jpg'});
+      const {photoId}=await apiPost({action:'upload',dataUrl,fileName:date+'_'+(f.name&&f.name!=='image.png'?f.name.replace(/\.[^.]+$/,''):'붙여넣기_'+Date.now())+'.jpg'});
       const {card}=await apiPost({action:'add',date,photoId});
       Object.keys(temp).forEach(k=>delete temp[k]); Object.assign(temp,card);
     }catch(e){ cards.splice(cards.indexOf(temp),1); toast(e.message,4000); }
@@ -413,6 +421,22 @@ document.addEventListener('drop',e=>{
   const files=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/')||/\.(jpe?g|png|webp|heic)$/i.test(f.name));
   if(files.length) addPhotos(files,date);
   else toast('사진 파일을 끌어다 놓아 주세요. 채널톡 사진은 먼저 PC에 저장한 뒤 끌어다 놓으면 돼요.',4000);
+});
+
+
+// 복사한 사진 붙여넣기 (Ctrl+V): 마우스가 올라가 있는 요일 칸에 추가
+let hotDate=null;
+document.addEventListener('mouseover',e=>{
+  const col=e.target.closest?.('.col'); const d=col?col.dataset.date:null;
+  if(d!==hotDate){ document.querySelectorAll('.col.hot').forEach(x=>x.classList.remove('hot')); hotDate=d; if(col) col.classList.add('hot'); }
+});
+document.addEventListener('paste',e=>{
+  const files=[...(e.clipboardData?.items||[])].filter(i=>i.kind==='file'&&i.type.startsWith('image/')).map(i=>i.getAsFile()).filter(Boolean);
+  if(!files.length) return;               // 글자 붙여넣기는 그대로 둠
+  e.preventDefault();
+  if(document.querySelector('.modal.on')) return;
+  if(!hotDate){ toast('사진을 넣을 요일 칸 위에 마우스를 올리고 다시 Ctrl+V 해 주세요',3500); return; }
+  addPhotos(files,hotDate);
 });
 
 $('#prevW').onclick=()=>{ weekStart=addDays(weekStart,-7); loadBoard(); };
