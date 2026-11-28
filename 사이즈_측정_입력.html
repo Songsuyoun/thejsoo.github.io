@@ -338,6 +338,8 @@ textarea:focus { border-color: var(--border-focus); background: #fff; }
 // ═══════════════════════════════════════════
 let SCRIPT_URL = localStorage.getItem('thejsoo_script_url') || 'https://script.google.com/macros/s/AKfycbxJorWS_vIVR7lYxV8zYaVbpIZT8EYjAftPOcz4T2Hh6fKhxg0P8SAgoHpv30RaVMBBRg/exec';
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dN88i8_YCbhg9gY-bX95wzYCfFAFYZBSTmTCnK9XQHA';
+// 상품 업데이트 보드 GAS: 저장 후 사이즈 시트의 '거래처' 칸을 채워 줌
+const BOARD_GAS_URL = 'https://script.google.com/macros/s/AKfycbzNuv4WIue5-K9XdKHZItw28VqeQGdDRnmWL_TAH3EvFujR9OAZ4xtK0sF4DO3zOjEOng/exec';
 
 const TYPES = {
   '상의':             ['어깨','가슴','암홀','팔길이','소매','밑단','총길이','허리'],
@@ -398,6 +400,7 @@ function init() {
 //  주소 예: ...?product=26_FW_베러BL&vendor=님프&sizes=S,%20M
 // ═══════════════════════════════════════════
 let fromBoard = false;
+let boardSizes = []; // 보드에서 넘어온 사이즈 목록 (사이즈 추가 시 순서대로 사용)
 function applyBoardParams() {
   const q = new URLSearchParams(location.search);
   const product = (q.get('product') || '').trim();
@@ -411,14 +414,10 @@ function applyBoardParams() {
   const sizes = (q.get('sizes') || '').split(/[,/]/).map(x => x.trim().toUpperCase()).filter(Boolean)
     .map(x => (x === 'F' || x === 'FREE SIZE') ? 'FREE' : x);
   const uniq = [...new Set(sizes)];
-  if (uniq.length) {
-    uniq.forEach(n => sizeBlocks.push({ id: ++blockIdCounter, name: n, vals: {} }));
-    renderAllBlocks();
-  } else {
-    addSizeBlock();
-  }
+  boardSizes = uniq;
+  addSizeBlock(); // 첫 사이즈(예: S)만 띄움. 다른 사이즈는 '사이즈 추가'를 누르면 순서대로 채워짐
   const bn = document.getElementById('board-banner');
-  bn.innerHTML = `📋 상품 업데이트 보드에서 불러왔어요<br><b>${esc(vendor || '거래처 없음')} · ${esc(product)}</b>${uniq.length ? `<br>사이즈: ${esc(uniq.join(', '))}` : ''}`;
+  bn.innerHTML = `📋 상품 업데이트 보드에서 불러왔어요<br><b>${esc(vendor || '거래처 없음')} · ${esc(product)}</b>${uniq.length > 1 ? `<br>샘플 사이즈: ${esc(uniq.join(', '))} · 다른 사이즈도 잴 때는 아래 <b>사이즈 추가</b>` : ''}`;
   bn.style.display = 'block';
   return true;
 }
@@ -444,7 +443,9 @@ function switchType(t) {
 // ═══════════════════════════════════════════
 function addSizeBlock() {
   const id = ++blockIdCounter;
-  sizeBlocks.push({ id, name: '', vals: {} });
+  const used = sizeBlocks.map(b => b.name);
+  const nextName = boardSizes.find(n => !used.includes(n)) || '';
+  sizeBlocks.push({ id, name: nextName, vals: {} });
   renderAllBlocks();
   setTimeout(() => {
     const inp = document.getElementById(`sname-${id}`);
@@ -868,6 +869,12 @@ async function saveAll() {
     const data = await res.json();
     if (data.result === 'ok') {
       showToast(`✅ ${rows.length}개 사이즈 저장 완료!`, 'ok');
+      const vendorNow = rows[0] && rows[0].vendor;
+      if (vendorNow) {
+        fetch(BOARD_GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'fillSizeVendor', product: rows[0].product, date: rows[0].date, vendor: vendorNow }) })
+          .catch(() => {});
+      }
       resetForm();
     } else {
       throw new Error(data.error || '저장 실패');
@@ -886,6 +893,7 @@ function resetForm() {
   document.getElementById('memo').value = '';
   if (fromBoard) {
     fromBoard = false;
+    boardSizes = [];
     document.getElementById('board-banner').style.display = 'none';
     history.replaceState(null, '', location.pathname); // 새로고침해도 다시 채워지지 않게
   }

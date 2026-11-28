@@ -64,6 +64,7 @@
   .unlinked{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:8px;font-size:12.5px;text-align:center}
   .memo{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:12.5px;resize:vertical;min-height:30px}
   .mline{font-size:12px;line-height:1.5}
+  .mchips{display:flex;flex-wrap:wrap;gap:4px}
   .acts{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
   .acts select{font:inherit;font-size:12px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:#fff}
   .acts label{font-size:12px;display:flex;align-items:center;gap:3px;margin-left:auto}
@@ -220,6 +221,23 @@ function measureLine(m){
   const v=Object.entries(m.vals||{}).map(([k,x])=>k+' '+x).join(' · ');
   return (m.size||'-')+(v?' — '+v:'');
 }
+// 실측 표시: 사이즈마다 ✓ (잰 것) / 아직 (안 잰 것). 마우스를 올리면 수치가 보여요
+function normSize(x){
+  x=String(x||'').trim();
+  if(/^(f|free|프리|프리사이즈|fr)$/i.test(x)) return 'Free';
+  return x.toUpperCase();
+}
+function splitSizes(t){ return String(t||'').split(/[,\/]+/).map(normSize).filter(Boolean); }
+function measureView(i,ms){
+  if(!ms.length) return '<span class="tag need">아직 안 잼</span>';
+  const done=new Map();
+  ms.forEach(m=>splitSizes(m.size).forEach(sz=>done.set(sz,measureLine(m))));
+  const want=splitSizes(i.sizes);
+  const all=[...want, ...[...done.keys()].filter(k=>!want.includes(k))];
+  return '<span class="mchips">'+all.map(sz=>done.has(sz)
+    ? `<span class="tag ok" title="${esc(done.get(sz))}">${esc(sz)} ✓</span>`
+    : `<span class="tag need">${esc(sz)} 아직</span>`).join('')+'</span>';
+}
 function sizeLink(c,i){
   const q=new URLSearchParams({product:c.product, vendor:c.vendor||'', sizes:(i&&i.sizes)||''});
   return SIZE_URL+'?'+q.toString();
@@ -291,7 +309,7 @@ function cardHtml(c,opts){
         <span>컬러</span><span>${esc(i.colors)||'-'}</span>
         <span>사이즈</span><span>${esc(i.sizes)||'-'}</span>
         <span>혼용률</span><span>${i.mix?esc(i.mix):'<span class="tag need">📞 확인 필요</span>'}</span>
-        <span>실측</span><span>${ms.length?ms.map(m=>`<div class="mline">${esc(measureLine(m))}</div>`).join(''):'<span class="tag need">아직 안 잼</span>'}</span>
+        <span>실측</span><span>${measureView(i,ms)}</span>
       </div>
       <div>${dueWarn}${i.returned?' <span class="tag alert">샘플 반납됨</span>':''}</div>`;
     if(editing.has(c.id)){
