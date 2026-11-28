@@ -137,7 +137,7 @@ pre.sample{color:var(--ink);background:var(--paper);border-radius:8px;padding:12
 <div class="wrap">
   <header class="top">
     <h1>세일 상품 등록 매뉴얼</h1>
-    <p class="order">작업 순서 · <span>세일 리스트 전달</span> → <span>① 타사이트 일괄 판매중지</span> → <span>② 셀메이트 일괄 품절</span> → <span>③ 카페24 일괄 처리 (옵션 · 재고 · 진열함 · 카테고리)</span> → <span>④ 카페24 검수 (화면 복사)</span><br>세일 끝나고 · <span>⑤ 되돌리기 (셀메이트 품절 풀기 → 카페24 문구 빼기 → 재고 · 진열 → 세일 카테고리 빼기)</span></p>
+    <p class="order">작업 순서 · <span>세일 리스트 전달</span> → <span>① 타사이트 일괄 판매중지</span> → <span>② 셀메이트 일괄 품절</span> → <span>③ 카페24 일괄 처리 (옵션 · 재고 · 진열함 · 카테고리)</span> → <span>④ 카페24 검수 (화면 복사)</span><br>세일 끝나고 · <span>⑤ 되돌리기 (문구 빼기 → 바로 재고 맞추기 → 살릴 상품만 셀메이트·999 → 세일 카테고리 빼기 → 검수)</span></p>
   </header>
 
   <div class="tabs" role="tablist" aria-label="작업 구분">
@@ -146,7 +146,7 @@ pre.sample{color:var(--ink);background:var(--paper);border-radius:8px;padding:12
     <button type="button" role="tab" id="t-cafe24" aria-controls="p-cafe24" aria-selected="false">③ 카페24<small>옵션 · 재고 · 진열함 · 카테고리</small></button>
     <button type="button" role="tab" id="t-qa" aria-controls="p-qa" aria-selected="false">④ 검수<small>카페24 화면 복사 → 재고 · 카테고리 확인</small></button>
     <span class="tab-sep" aria-hidden="true">세일 끝나고</span>
-    <button type="button" role="tab" id="t-end" aria-controls="p-end" aria-selected="false">⑤ 되돌리기<small>문구 · 카테고리 빼기 · 정상 판매 복구</small></button>
+    <button type="button" role="tab" id="t-end" aria-controls="p-end" aria-selected="false">⑤ 세일 종료 되돌리기<small>문구 빼기 · 재고 · 살릴 상품 · 카테고리</small></button>
   </div>
 
   <div class="panel" id="p-other" role="tabpanel" aria-labelledby="t-other">
@@ -692,137 +692,201 @@ P000BELY,P000BGNF,P000BFOD, … (23개)
   </div>
   <div class="panel" id="p-end" role="tabpanel" aria-labelledby="t-end" hidden>
   <nav class="toc" aria-label="세일 종료 단계">
-    <a href="#e1"><span class="n">1</span>정상 판매 목록 받기</a>
-    <a href="#e2"><span class="n">2</span>셀메이트 품절 풀기</a>
-    <a href="#e3"><span class="n">3</span>카페24 문구 빼기</a>
-    <a href="#e4"><span class="n">4</span>카페24 재고 · 진열</a>
-    <a href="#e5"><span class="n">5</span>세일 카테고리 빼기</a>
-    <a href="#e6"><span class="n">✓</span>검수</a>
+    <a href="#e1"><span class="n">1</span>대상 상품 뽑기</a>
+    <a href="#e2"><span class="n">2</span>옵션·재고 파일 받기</a>
+    <a href="#e3"><span class="n">3</span>문구 빼고 올리기</a>
+    <a href="#e4"><span class="n">4</span>바로 재고 맞추기 ★</a>
+    <a href="#e5"><span class="n">5</span>살릴 상품 고르기</a>
+    <a href="#e6"><span class="n">6</span>살릴 상품 열기</a>
+    <a href="#e7"><span class="n">7</span>세일 카테고리 빼기</a>
+    <a href="#e8"><span class="n">✓</span>검수</a>
   </nav>
 
   <main>
     <div class="flow" aria-label="세일 종료 전체 흐름">
-      <div><div class="k">STEP 1</div><div class="t">목록 받기</div><div class="d">대표님이 정상 판매로 돌릴 상품 목록 전달</div></div>
-      <div><div class="k">STEP 2</div><div class="t">셀메이트</div><div class="d">정상 판매 상품만 품절 풀기</div></div>
-      <div><div class="k">STEP 3~4</div><div class="t">카페24</div><div class="d">문구 빼기 → 바로 재고 · 진열</div></div>
-      <div><div class="k">STEP 5</div><div class="t">카테고리</div><div class="d">세일 카테고리 전부 빼기 → 검수</div></div>
+      <div><div class="k">STEP 1~2</div><div class="t">준비</div><div class="d">대상 상품코드 뽑기 → 옵션·재고 파일 받기</div></div>
+      <div><div class="k">STEP 3~4 ★</div><div class="t">한 번에 이어서</div><div class="d">문구 뺀 옵션 올리기 → 바로 재고 맞추기</div></div>
+      <div><div class="k">STEP 5~6</div><div class="t">살릴 상품 (있을 때만)</div><div class="d">이미지 보고 고르기 → 셀메이트 → 카페24 999</div></div>
+      <div><div class="k">STEP 7~8</div><div class="t">마무리</div><div class="d">세일 카테고리 빼기 → 검수</div></div>
     </div>
 
-    <div class="notice" style="margin:0"><span class="lbl">세일 상품은 두 종류로 나눠서 처리해요</span>
+    <div class="key">
+      <div class="key-t">★ 꼭 지킬 것 두 가지</div>
+      <ol>
+        <li><b>3단계(옵션 올리기)와 4단계(재고 맞추기)는 쉬지 않고 이어서 해요.</b> 문구를 빼면 카페24가 품목을 순서대로 덮어써서 재고가 엉뚱한 옵션으로 밀려요. (예: 베이지 재고 17 → 핑크로) 4단계를 해야 제자리로 돌아와요.</li>
+        <li><b>살릴 상품은 셀메이트 품절을 먼저 풀고, 그다음에 카페24를 999로 열어요.</b> 순서가 바뀌면 셀메이트에서 아직 품절인 상품에 주문이 들어와요.</li>
+      </ol>
+    </div>
+
+    <div class="notice" style="margin:0"><span class="lbl">세일이 끝나면 상품은 두 종류가 돼요</span>
       <div class="tbl"><table>
-        <thead><tr><th></th><th>정상 판매로 돌리는 상품<br><small style="font-weight:400">(대표님 목록에 있는 상품)</small></th><th>재고만 팔고 끝내는 상품<br><small style="font-weight:400">(목록에 없는 나머지 세일 상품)</small></th></tr></thead>
+        <thead><tr><th></th><th>남은 재고만 팔고 끝내는 상품<br><small style="font-weight:400">(대부분 · 기본값)</small></th><th>정상 판매로 살리는 상품<br><small style="font-weight:400">(대표님이 고른 것만)</small></th></tr></thead>
         <tbody>
           <tr><td>반품불가 문구</td><td>빼기</td><td>빼기</td></tr>
           <tr><td>세일 카테고리</td><td>전부 빼기</td><td>전부 빼기</td></tr>
-          <tr><td>셀메이트 품절</td><td><b>품절 풀기</b></td><td>품절 그대로</td></tr>
-          <tr><td>카페24 재고</td><td><b>전 옵션 999</b> (재고 없던 옵션도)</td><td>셀메이트 재고 그대로</td></tr>
-          <tr><td>카페24 품절표시</td><td><b>체크 풀기 (F)</b></td><td>체크 그대로 (T)</td></tr>
-          <tr><td>카페24 진열</td><td><b>전 옵션 진열함</b></td><td>재고 있으면 진열함, 0이면 진열안함</td></tr>
+          <tr><td>카페24 재고</td><td>셀메이트 재고 그대로</td><td><b>전 옵션 999</b> (재고 없던 옵션도)</td></tr>
+          <tr><td>카페24 진열</td><td><b>전부 진열함</b> (재고 0은 [품절]로 보임)</td><td>전 옵션 진열함</td></tr>
+          <tr><td>카페24 품절표시</td><td>체크 (T)</td><td><b>체크 해제 (F)</b></td></tr>
+          <tr><td>셀메이트 품절</td><td>품절 그대로</td><td><b>품절 풀기</b></td></tr>
           <tr><td>타사이트</td><td colspan="2">다시 열지 않아요</td></tr>
         </tbody>
       </table></div>
     </div>
 
-    <div class="key">
-      <div class="key-t">★ 순서를 꼭 지켜 주세요</div>
-      <ol>
-        <li><b>셀메이트 품절을 먼저 풀어요.</b> 카페24에서 먼저 999로 열면, 셀메이트에서는 아직 품절인 상품에 주문이 들어와요.</li>
-        <li><b>카페24 문구를 뺀 뒤에는 바로 재고 파일을 올려요.</b> 옵션을 수정하면 재고가 다른 옵션으로 밀릴 수 있어서, 재고 파일로 바로 다시 맞춰요.</li>
-      </ol>
-    </div>
-
     <!-- E1 -->
     <section class="step" id="e1">
       <div class="step-head"><div class="badge">1</div><div>
-        <h2>정상 판매로 돌릴 상품 목록 받기</h2>
-        <div class="where"><span>대표님</span></div>
+        <h2>되돌릴 상품코드 뽑기</h2>
+        <div class="where"><span>카페24</span>›<span>상품</span>›<span>상품목록</span></div>
       </div></div>
       <ol class="do">
-        <li>대표님이 <b>정상 판매로 돌릴 상품 목록</b>을 줘요. 이 목록에 없는 세일 상품은 전부 "재고만 팔고 끝내는 상품"이에요.</li>
-        <li>이번 세일의 <b>세일 작업리스트 엑셀</b>도 같이 준비해요. 세일 상품 전체 목록이에요.</li>
+        <li>상품목록에서 상품분류를 <b>SALE(~70%)</b>로 검색해요. 목록 보기는 <b>100개씩</b>으로 해요.</li>
+        <li>화면을 <b>전체 복사</b>해요. 페이지가 여러 개면 페이지마다 복사해요. (복사하는 법은 <b>④ 검수 탭</b>과 같아요)</li>
+        <li><b>LAST PIECE(~70%)</b>도 똑같이 검색해서 복사해요.</li>
+        <li>복사한 내용을 모두 Claude에게 붙여넣고 아래 문장을 보내요.
+          <div class="say"><q id="say-e0">세일이 끝났어. 붙여넣은 건 SALE·LAST PIECE 카테고리 상품목록 화면 복사본이야. 상품코드 기준으로 되돌릴 상품을 정리하고, 카페24 검색용으로 50개씩 묶어줘. 옵션에 반품불가 문구가 없는 상품이 있으면 알려줘.</q><button class="copy" data-copy="say-e0" type="button">복사</button></div>
+        </li>
+        <li>Claude가 상품 수와 <b>50개씩 묶은 코드</b>를 줘요. (11월 블프: 193개 · 4묶음)</li>
       </ol>
     </section>
 
     <!-- E2 -->
     <section class="step" id="e2">
       <div class="step-head"><div class="badge">2</div><div>
-        <h2>셀메이트: 정상 판매 상품만 품절 풀기</h2>
-        <div class="where"><span>셀메이트</span>›<span>재고관리</span>›<span>상품 · 옵션 수정</span>›<span>옵션일괄수정 탭</span></div>
+        <h2>옵션 파일 · 재고 파일 받기</h2>
+        <div class="where"><span>카페24</span>›<span>상품목록</span> · <span>재고관리</span>›<span>상품 재고 관리</span></div>
       </div></div>
+      <p style="margin:0 0 10px;font-weight:600">① 옵션 파일 — 상품 › 상품목록</p>
       <ol class="do">
-        <li>셀메이트 옵션수정 양식을 받아요. 방법은 <b>① 타사이트 탭 1단계</b>와 같아요 (등록일자 2017-01-01 ~ 오늘, 옵션명 포함). 이때는 오늘 새로 받으면 돼요.</li>
-        <li>양식, 세일 작업리스트, 정상 판매 목록을 Claude에게 올리고 아래 문장을 보내요.
-          <div class="say"><q id="say-e1">세일 종료, 셀메이트 품절 해제 파일 만들어줘. 첨부한 건 셀메이트 옵션수정 양식(등록일자 2017-01-01부터, 옵션명 포함), 세일 작업리스트 엑셀, 정상 판매로 돌릴 상품 목록이야. 정상 판매 상품의 모든 옵션 중 지금 품절인 것만 품절을 풀어줘. 정상 판매 목록에 없는 세일 상품은 품절 그대로 둬. 양식은 셀메이트 원본 그대로, 옵션명은 지금 값 그대로 채우고 나머지 칸은 빈칸, 확인용으로 상품명도 넣어줘. 셀메이트에서 못 찾는 상품이나 애매한 건 꼭 말해줘.</q><button class="copy" data-copy="say-e1" type="button">복사</button></div>
-        </li>
-        <li>받은 파일은 <b>② 셀메이트 탭 3~4단계</b>와 똑같이 올려요. 상품명 칸 내용만 지우고, 2줄 테스트 후 전체를 올려요.</li>
+        <li>검색 항목을 <b class="ui">상품코드</b>로 바꾸고 <b>1묶음</b>을 붙여넣어요.</li>
+        <li>검색창 오른쪽 <b class="ui">+</b>를 눌러 칸을 늘리고 <b>2묶음, 3묶음…</b>을 차례로 넣어요.</li>
+        <li><b class="ui">검색</b> → 상품 수가 맞는지 확인 → 목록 보기 개수를 늘려서 <b>전체 선택</b>해요.</li>
+        <li><b class="ui">엑셀 다운로드</b> → 양식에서 <b>[옵션/재고 초기화 양식]</b>을 받아요. 칸이 <b>13개</b>인지 확인해요.</li>
       </ol>
-      <div class="warn"><b>절대 손대지 마세요</b> · 상품위치삭제여부 · 발송및출고자동화여부는 <b>"사용안함" 그대로</b> 둬요.</div>
+      <p style="margin:6px 0 10px;font-weight:600">② 재고 파일 — 상품 › 재고관리 › 상품 재고 관리</p>
+      <ol class="do">
+        <li>같은 방법으로 상품코드 묶음을 넣고 검색 → <b>전체 선택</b>해요.</li>
+        <li><b class="ui">엑셀다운로드</b> → <b>[기본양식]</b>을 받아요. 품목코드·품목명·재고수량 칸이 있으면 맞아요.</li>
+      </ol>
+      <div class="warn"><b>칸이 90개쯤인 파일은 틀린 양식이에요</b> · "상품 등록/수정" 양식은 이미지·가격까지 덮어써서 위험해요. 꼭 [옵션/재고 초기화 양식]을 받아요.</div>
     </section>
 
     <!-- E3 -->
     <section class="step" id="e3">
       <div class="step-head"><div class="badge">3</div><div>
-        <h2>카페24: 옵션에서 반품불가 문구 빼기</h2>
-        <div class="where"><span>카페24</span>›<span>상품</span>›<span>옵션 수정 탭</span></div>
+        <h2>반품불가 문구 빼고 옵션 올리기</h2>
+        <div class="where"><span>카페24</span>›<span>상품관리</span>›<span>상품 엑셀 관리</span>›<span>옵션 수정 탭</span></div>
       </div></div>
       <ol class="do">
-        <li>세일 상품 <b>전체</b>의 옵션 파일과 재고 파일을 받아요. 방법은 <b>③ 카페24 탭 1단계</b>와 같아요.</li>
-        <li>두 파일을 Claude에게 올리고 아래 문장을 보내요.
-          <div class="say"><q id="say-e2">세일 종료, 이 상품들 옵션에서 반품불가 문구 빼줘. 재고 파일도 같이 줄게. 문구만 빼고 나머지는 카페24 양식 그대로 해줘. 품목이 빠져서 재고가 밀릴 상품 있으면 알려줘.</q><button class="copy" data-copy="say-e2" type="button">복사</button></div>
+        <li>2단계 두 파일을 Claude에게 올리고 보내요.
+          <div class="say"><q id="say-e1">세일 종료, 이 상품들 옵션에서 반품불가 문구 빼줘. 재고 파일도 같이 줄게. 문구만 빼고 나머지는 카페24 양식 그대로 해줘. 품목이 빠져서 재고가 밀릴 상품 있으면 알려줘.</q><button class="copy" data-copy="say-e1" type="button">복사</button></div>
         </li>
-        <li>받은 파일을 <b>③ 카페24 탭 2단계</b>와 같은 곳(옵션 수정 탭)에 올려요. 한 번에 <b>500개</b>까지 올라가요.</li>
-        <li>성공 개수를 확인하고 <b>바로 4단계</b>로 가요.</li>
+        <li>Claude가 <span class="mono">카페24_옵션수정_날짜_문구제거.csv</span>와 <b>재고가 밀릴 상품 목록</b>을 줘요. 예전 변형 문구("반품이 제한", "★/필수 동의★")도 같이 빠져요.</li>
+        <li><b class="ui">옵션 수정</b> 탭에 파일을 끌어다 놓고 <b class="ui">엑셀 업로드</b>를 눌러요.</li>
+        <li><b>N개 성공</b>이 상품 수와 같은지 확인해요. (한 번에 500개까지)</li>
+        <li><b>쉬지 말고 바로 4단계</b>로 가요.</li>
       </ol>
     </section>
 
     <!-- E4 -->
     <section class="step" id="e4">
       <div class="step-head"><div class="badge">4</div><div>
-        <h2>카페24: 재고 · 품절표시 · 진열 맞추기</h2>
-        <div class="where"><span>카페24</span>›<span>상품</span>›<span>재고 관리</span></div>
+        <h2>★ 바로 재고 맞추기 (대상 전부)</h2>
+        <div class="where"><span>카페24</span>›<span>재고관리</span>›<span>상품 재고 관리</span></div>
       </div></div>
       <ol class="do">
-        <li>3단계를 올린 뒤의 카페24 재고 파일을 <b>다시</b> 받아요. 오늘 셀메이트 재고 파일(stk_stockList)도 받아요.</li>
-        <li>두 파일과 정상 판매 목록을 Claude에게 올리고 아래 문장을 보내요.
-          <div class="say"><q id="say-e3">세일 종료 재고 파일 만들어줘. 첨부한 건 카페24 재고 파일, 오늘 셀메이트 재고 파일, 정상 판매로 돌릴 상품 목록이야. 정상 판매 상품은 재고 없던 옵션까지 모든 옵션을 재고 999, 품절표시 F, 진열 T, 판매 T로 해줘. 나머지 세일 상품은 셀메이트 가용재고로 맞추고(마이너스는 0), 품절표시와 판매는 T, 재고 0이면 진열 F로 해줘. 카페24 양식 그대로, 상품명+옵션명으로 매칭하고 안 맞거나 애매한 건 꼭 말해줘.</q><button class="copy" data-copy="say-e3" type="button">복사</button></div>
+        <li>카페24 재고 파일 <b>[기본양식]을 다시</b> 받아요. 3단계를 올린 <b>뒤의</b> 파일이어야 해요. 2단계 파일은 쓰지 않아요.</li>
+        <li>셀메이트에서 오늘 재고 파일(<span class="mono">stk_stockList_….csv</span>)을 받아요.</li>
+        <li>두 파일을 Claude에게 올리고 보내요.
+          <div class="say"><q id="say-e2">세일 종료 1차 재고 맞춰줘. 전부 셀메이트 재고로 맞추고, 재고 0은 품절표시 체크만 하고 진열 F로는 하지 말아줘. 상품명+옵션명으로 매칭하고 안 맞거나 애매한 건 꼭 말해줘.</q><button class="copy" data-copy="say-e2" type="button">복사</button></div>
         </li>
-        <li>받은 파일을 <b>③ 카페24 탭 3단계</b>와 같은 곳에 올려요. 한 번에 <b>1,000줄</b>까지 올라가요. 파일이 여러 개면 전부 올려요.</li>
+        <li>Claude가 준 파일을 <b class="ui">재고정보 업로드</b>로 올리고 <b>N개 성공</b>을 확인해요. (한 번에 1,000줄까지)</li>
       </ol>
+      <div class="notice"><span class="lbl">이 단계에서 바뀌는 것</span>
+        <ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted)">
+          <li><b style="color:var(--ink)">재고</b> = 셀메이트 가용재고 (마이너스는 0) · 밀렸던 재고도 제자리로 돌아와요</li>
+          <li><b style="color:var(--ink)">진열 · 판매 · 품절표시 = 전부 T</b> · 재고 0인 옵션도 숨기지 않고 쇼핑몰에 [품절]로 보여요</li>
+          <li>카페24와 셀메이트 이름이 다른 상품(예: "(2color)", "_Black", "/Free", "롱S(+5cm)↔S(롱)")은 Claude가 짝을 맞춰서 알려줘요</li>
+          <li>셀메이트에 아예 없는 상품(예: [세트] 상품)은 재고를 건드리지 않고 따로 물어봐요</li>
+        </ul>
+      </div>
     </section>
 
     <!-- E5 -->
     <section class="step" id="e5">
       <div class="step-head"><div class="badge">5</div><div>
-        <h2>세일 카테고리 전부 빼기</h2>
-        <div class="where"><span>카페24</span>›<span>상품 목록</span>›<span>분류수정</span></div>
+        <h2>정상 판매로 살릴 상품 고르기 <small style="font-weight:400;color:var(--muted)">(대표님)</small></h2>
+        <div class="where"><span>Claude</span></div>
       </div></div>
       <ol class="do">
-        <li>상품목록에서 세일 상품 코드로 검색하고 전체 선택해요. 코드는 세일 작업리스트의 상품코드 시트에 있어요.</li>
-        <li><b class="ui">분류수정</b>을 열어요. 화면은 <b>③ 카페24 탭 4단계</b>와 같아요.</li>
-        <li>SALE(~70%) · LAST PIECE(~70%)와 그 아래 <b>N% SALE 중분류</b>를 고르고, 수정방식은 <b class="ui">선택한 상품 분류 삭제</b>를 골라요.</li>
-        <li>세일율마다 들어간 중분류가 달라요. 들어간 세일 카테고리가 전부 빠질 때까지 반복해요.</li>
+        <li>Claude에게 보내요.
+          <div class="say"><q id="say-e3">되돌린 상품들 이미지랑 현재 재고 보면서 살릴 상품 고르고 싶어. 이미지 목록 만들어줘.</q><button class="copy" data-copy="say-e3" type="button">복사</button></div>
+        </li>
+        <li>Claude가 주는 <span class="mono">세일종료_상품_이미지.html</span>을 PC에서 열어요. 카드마다 <b>이미지 · 상품명 · 코드 · 재고 있는 옵션</b>이 보이고, 전 옵션 재고 0인 상품은 흐리게 보여요.</li>
+        <li>살릴 상품에 <b>"정상 판매로 살리기"</b>를 체크 → 위쪽 <b class="ui">선택한 상품코드 복사</b>를 눌러요.</li>
+        <li>복사한 코드를 6단계에 써요. <b>살릴 상품이 없으면 6단계는 건너뛰어요.</b></li>
       </ol>
-      <div class="warn"><b>"변경" 말고 "삭제"</b> · "선택한 상품 분류로 변경"을 누르면 원래 카테고리까지 다 빠져요.</div>
     </section>
 
     <!-- E6 -->
     <section class="step" id="e6">
+      <div class="step-head"><div class="badge">6</div><div>
+        <h2>살릴 상품 열기 — 셀메이트 먼저, 카페24 나중</h2>
+        <div class="where">살릴 상품이 있을 때만 · 나중에 해도 돼요</div>
+      </div></div>
+      <p style="margin:0 0 10px;font-weight:600">① 셀메이트 품절 풀기</p>
+      <ol class="do">
+        <li>셀메이트 옵션수정 양식을 받아요. (<b>① 타사이트 탭 1단계</b>와 같은 방법: 등록일자 2017-01-01 ~ 오늘, 옵션명 포함)</li>
+        <li>양식과 살릴 상품코드를 Claude에게 보내요.
+          <div class="say"><q id="say-e4">세일 종료, 셀메이트 품절 해제 파일 만들어줘. 첨부한 건 셀메이트 옵션수정 양식(등록일자 2017-01-01부터, 옵션명 포함)이고, 붙여넣은 건 정상 판매로 살릴 상품코드야. 이 상품들의 모든 옵션 중 지금 품절인 것만 품절을 풀어줘. 양식은 셀메이트 원본 그대로, 옵션명은 지금 값 그대로, 나머지 칸은 빈칸, 확인용으로 상품명도 넣어줘.</q><button class="copy" data-copy="say-e4" type="button">복사</button></div>
+        </li>
+        <li>받은 파일은 <b>② 셀메이트 탭 3~4단계</b>처럼 올려요. 상품명 칸 내용만 지우고 → <b>2줄 테스트</b> → 전체.</li>
+      </ol>
+      <div class="warn" style="margin-bottom:16px"><b>절대 손대지 마세요</b> · 상품위치삭제여부 · 발송및출고자동화여부는 <b>"사용안함" 그대로</b>. 옵션명 칸은 지우지 않아요.</div>
+      <p style="margin:6px 0 10px;font-weight:600">② 카페24 999로 열기 (①이 끝난 뒤에만)</p>
+      <ol class="do">
+        <li>상품 재고 관리에서 <b>살릴 상품코드만</b> 검색 → <b>[기본양식]</b>을 받아요.</li>
+        <li>Claude에게 보내요.
+          <div class="say"><q id="say-e5">세일 종료 2차 재고 파일 만들어줘. 첨부한 카페24 재고 파일 상품은 정상 판매로 돌릴 상품이야. 재고 없던 옵션까지 모든 옵션을 재고 999, 품절표시 F, 진열 T, 판매 T로 해줘. 카페24 양식 그대로.</q><button class="copy" data-copy="say-e5" type="button">복사</button></div>
+        </li>
+        <li><b class="ui">재고정보 업로드</b>로 올리고 <b>N개 성공</b>을 확인해요.</li>
+      </ol>
+    </section>
+
+    <!-- E7 -->
+    <section class="step" id="e7">
+      <div class="step-head"><div class="badge">7</div><div>
+        <h2>세일 카테고리 빼기</h2>
+        <div class="where"><span>카페24</span>›<span>상품목록</span>›<span>분류수정</span></div>
+      </div></div>
+      <ol class="do">
+        <li>상품목록에서 상품분류를 <b>SALE(~70%)</b>로 검색 → <b>전체 선택</b>해요.</li>
+        <li><b class="ui">분류수정</b>을 열고 <b>SALE(~70%)</b>와 그 아래 <b>N% SALE</b>을 골라요. 수정방식은 <b class="ui">선택한 상품 분류 삭제</b>.</li>
+        <li>40% · 50% · 60% · 70% 중분류가 다 빠질 때까지 반복해요.</li>
+        <li><b>LAST PIECE(~70%)</b>도 똑같이 해요. 마지막에 분류 검색 결과가 <b>0개</b>면 끝.</li>
+      </ol>
+      <div class="warn"><b>"변경" 말고 "삭제"</b> · "선택한 상품 분류로 변경"을 누르면 MADE · SELECT · PREMIUM BRAND 같은 원래 카테고리까지 다 빠져요.</div>
+    </section>
+
+    <!-- E8 -->
+    <section class="step" id="e8">
       <div class="step-head"><div class="badge">✓</div><div>
         <h2>검수</h2>
         <div class="where"><span>Claude</span></div>
       </div></div>
       <ol class="do">
-        <li>카페24 재고 화면과 상품목록 화면(상품분류가 보이게)을 전체 복사해요. 방법은 <b>④ 검수 탭</b>과 같아요.</li>
-        <li>오늘 셀메이트 재고 파일, 정상 판매 목록과 함께 Claude에게 보내요.
-          <div class="say"><q id="say-e4">세일 종료 검수해줘. 붙여넣은 건 카페24 재고 화면 전체 복사와 상품목록 화면 전체 복사(상품분류 보이게)이고, 첨부한 건 오늘 셀메이트 재고 파일과 정상 판매 상품 목록이야. 정상 판매 상품은 모든 옵션이 재고 999·진열함인지, 나머지 세일 상품은 셀메이트 재고와 같고 재고 0이면 진열안함인지, 반품불가 문구나 세일 카테고리(SALE·LAST PIECE·N% SALE)가 남은 상품이 없는지 확인해서 다른 것만 알려줘.</q><button class="copy" data-copy="say-e4" type="button">복사</button></div>
+        <li>상품 재고 관리 화면과 상품목록 화면(상품분류 보이게)을 대상 상품코드로 검색해서 전체 복사해요. (<b>④ 검수 탭</b> 방법)</li>
+        <li>오늘 셀메이트 재고 파일과 함께 보내요.
+          <div class="say"><q id="say-e6">세일 종료 검수해줘. 붙여넣은 건 카페24 재고 화면과 상품목록 화면 전체 복사고, 첨부한 건 오늘 셀메이트 재고 파일이야. 재고가 셀메이트와 같은지, 반품불가 문구나 세일 카테고리(SALE·LAST PIECE·N% SALE)가 남은 상품이 없는지, 살린 상품은 999·진열함인지 확인해서 다른 것만 알려줘.</q><button class="copy" data-copy="say-e6" type="button">복사</button></div>
         </li>
       </ol>
       <ul class="check">
-        <li><label><input type="checkbox" id="ec1"><span>셀메이트: 정상 판매 상품 품절 풀림, 나머지는 품절 그대로</span></label></li>
-        <li><label><input type="checkbox" id="ec2"><span>카페24: 반품불가 문구 전부 빠짐</span></label></li>
-        <li><label><input type="checkbox" id="ec3"><span>카페24: 정상 판매 상품 전 옵션 999 · 품절표시 해제 · 진열함</span></label></li>
-        <li><label><input type="checkbox" id="ec4"><span>카페24: 세일 카테고리 남은 상품 없음</span></label></li>
+        <li><label><input type="checkbox" id="ec1"><span>옵션에 반품불가 문구가 남은 상품 없음</span></label></li>
+        <li><label><input type="checkbox" id="ec2"><span>재고가 셀메이트와 같음 · 재고 0도 진열함 + [품절] 표시</span></label></li>
+        <li><label><input type="checkbox" id="ec3"><span>SALE · LAST PIECE 분류 검색 결과 0개</span></label></li>
+        <li><label><input type="checkbox" id="ec4"><span>(살린 상품이 있으면) 셀메이트 미품절 + 카페24 999 · 품절표시 해제</span></label></li>
       </ul>
+      <p style="font-size:13px;color:var(--muted);margin:16px 0 0">11월 블프 기록: 대상 193개 · 옵션 193개 성공 · 1차 재고 839줄 · 재고 밀림 15개 상품(1차 재고로 복구) · [세트] 렌 트위드는 셀메이트에 없어 제외.</p>
     </section>
   </main>
   </div>
