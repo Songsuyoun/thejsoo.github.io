@@ -569,7 +569,7 @@ function getMaterialString() {
     var name = nameEl.value.trim();
     var pct  = pctEl.value.trim();
     if (name && pct) {
-      parts.push(normalizeMaterial(name) + ' ' + pct + '%');
+      parts.push(normalizeMaterial(name) + ' ' + pct + '％');  // ％ = 전각 퍼센트 (URL 오류 방지)
     }
   });
   return parts.join(' ');
@@ -631,7 +631,7 @@ function renderAddedList() {
   addedProducts.forEach(function(p, i) {
     var lines = [];
     if (p.vendor)   lines.push('거래처: ' + p.vendor);
-    if (p.material) lines.push('혼용율: ' + p.material);
+    if (p.material) lines.push('혼용률: ' + p.material);
     if (p.color)    lines.push('칼라: ' + p.color);
     if (p.size)     lines.push('사이즈: ' + p.size);
     if (p.price)    lines.push('단가: ' + Number(p.price).toLocaleString() + '원');
@@ -696,7 +696,7 @@ async function saveAll() {
         '상태': '보유중',
         '요청일': inDate,
         '출처': '수기입고',
-        '혼용율': p.material || '',
+        '혼용률': p.material || '',
         '칼라': p.color || '',
         '사이즈': p.size || '',
         '단가': p.price || '',
