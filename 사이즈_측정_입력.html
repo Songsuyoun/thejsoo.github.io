@@ -195,6 +195,10 @@ textarea:focus { border-color: var(--border-focus); background: #fff; }
 .btn-sheet-cancel { flex: 1; height: 50px; border: none; border-radius: 12px; background: var(--accent-light); color: #555; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
 .btn-sheet-ok { flex: 2; height: 50px; border: none; border-radius: 12px; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
 
+/* ─── 보드에서 열림 배너 ─── */
+.board-banner { background:#fff; border:1.5px solid var(--accent); border-radius:12px; padding:10px 14px; font-size:13px; margin-bottom:12px; line-height:1.5; }
+.board-banner b { font-weight:700; }
+
 /* ─── 스피너 ─── */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -242,6 +246,7 @@ textarea:focus { border-color: var(--border-focus); background: #fff; }
 </div>
 
 <div class="page">
+  <div class="board-banner" id="board-banner" style="display:none"></div>
 
   <!-- 기본 정보 카드 -->
   <div class="card">
@@ -258,6 +263,10 @@ textarea:focus { border-color: var(--border-focus); background: #fff; }
         <div class="field-label">상품명 <span class="req">*</span></div>
         <input type="text" id="product" placeholder="상품명 입력" autocomplete="off">
         <div class="field-hint" id="product-hint">제작 상품의 경우, 소재·디자인 포인트 등 주요 특징을 함께 적어주세요.</div>
+      </div>
+      <div>
+        <div class="field-label">거래처 <span style="color:#aaa;font-weight:500;">(사입 상품)</span></div>
+        <input type="text" id="vendor" placeholder="거래처명 (샘플 시트와 같은 이름)" autocomplete="off">
       </div>
     </div>
   </div>
@@ -379,10 +388,41 @@ function init() {
     wrap.appendChild(b);
   });
 
-  addSizeBlock(); // 첫 블록
+  if (!applyBoardParams()) addSizeBlock(); // 보드에서 넘어온 정보가 있으면 채우고, 없으면 빈 블록 1개
   renderExtraAddButtons(); // 초기 추가 섹션 버튼
   checkBanner();
 }
+
+// ═══════════════════════════════════════════
+//  상품 업데이트 보드에서 넘어온 정보 채우기
+//  주소 예: ...?product=26_FW_베러BL&vendor=님프&sizes=S,%20M
+// ═══════════════════════════════════════════
+let fromBoard = false;
+function applyBoardParams() {
+  const q = new URLSearchParams(location.search);
+  const product = (q.get('product') || '').trim();
+  if (!product) return false;
+  fromBoard = true;
+  const vendor = (q.get('vendor') || '').trim();
+  document.getElementById('product').value = product;
+  document.getElementById('vendor').value = vendor;
+  selectOrderType('사입');
+  // 사이즈: 쉼표로 나눠 블록을 미리 만들어 둠 (F → FREE)
+  const sizes = (q.get('sizes') || '').split(/[,/]/).map(x => x.trim().toUpperCase()).filter(Boolean)
+    .map(x => (x === 'F' || x === 'FREE SIZE') ? 'FREE' : x);
+  const uniq = [...new Set(sizes)];
+  if (uniq.length) {
+    uniq.forEach(n => sizeBlocks.push({ id: ++blockIdCounter, name: n, vals: {} }));
+    renderAllBlocks();
+  } else {
+    addSizeBlock();
+  }
+  const bn = document.getElementById('board-banner');
+  bn.innerHTML = `📋 상품 업데이트 보드에서 불러왔어요<br><b>${esc(vendor || '거래처 없음')} · ${esc(product)}</b>${uniq.length ? `<br>사이즈: ${esc(uniq.join(', '))}` : ''}`;
+  bn.style.display = 'block';
+  return true;
+}
+function esc(t) { return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ═══════════════════════════════════════════
 //  타입 전환
@@ -763,6 +803,7 @@ async function saveAll() {
 
   const product = document.getElementById('product').value.trim();
   const memo    = document.getElementById('memo').value.trim();
+  const vendor  = document.getElementById('vendor').value.trim();
 
   if (!orderType) { showToast('제작 / 사입을 선택해주세요', 'err'); return; }
   if (!product)   { showToast('상품명을 입력해주세요', 'err'); document.getElementById('product').focus(); return; }
@@ -799,14 +840,16 @@ async function saveAll() {
       ? (memo ? `${memo} / 추가: ${extraNames}` : `추가: ${extraNames}`)
       : memo;
 
+    vals['거래처'] = vendor || '';
     return {
       date:     dateStr,
       orderType,
       product,
+      vendor,
       type:     currentType,
       sizeName: b.name,
       memo:     fullMemo,
-      allCols:  [...cols, ...extraSections.flatMap(s => s.cols)],
+      allCols:  [...cols, ...extraSections.flatMap(s => s.cols), '거래처'],
       vals
     };
   });
@@ -839,7 +882,13 @@ async function saveAll() {
 
 function resetForm() {
   document.getElementById('product').value = '';
+  document.getElementById('vendor').value = '';
   document.getElementById('memo').value = '';
+  if (fromBoard) {
+    fromBoard = false;
+    document.getElementById('board-banner').style.display = 'none';
+    history.replaceState(null, '', location.pathname); // 새로고침해도 다시 채워지지 않게
+  }
   orderType = '';
   document.getElementById('btn-saip').classList.remove('selected');
   document.getElementById('btn-jejak').classList.remove('selected');

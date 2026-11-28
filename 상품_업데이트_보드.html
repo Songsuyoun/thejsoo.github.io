@@ -27,6 +27,12 @@
   .spacer{flex:1}
   .demo{width:100%;background:var(--warn-bg);color:var(--warn);padding:8px 12px;border-radius:6px;font-size:13px}
   .help{color:var(--sub);font-size:12.5px;padding:10px 20px 0}
+  .help summary{cursor:pointer;display:inline-block;font-weight:600;color:var(--ink)}
+  .help p{margin:6px 0 0}
+  .edit{display:flex;flex-direction:column;gap:6px;background:#faf9f7;border:1px solid var(--line);border-radius:6px;padding:8px}
+  .edit label{display:grid;grid-template-columns:48px 1fr;align-items:center;gap:6px;font-size:12px;color:var(--sub)}
+  .edit input{font:inherit;font-size:12.5px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;width:100%;color:var(--ink);background:#fff}
+  .edit .row{display:flex;gap:6px;justify-content:flex-end}
   main{display:grid;grid-template-columns:repeat(5,minmax(230px,1fr));gap:12px;padding:12px 20px 40px;overflow-x:auto}
   @media(max-width:900px){main{grid-template-columns:1fr}}
   .col{background:#efeeeb;border-radius:10px;padding:10px;min-height:300px;display:flex;flex-direction:column;gap:10px;border:2px solid transparent}
@@ -54,6 +60,7 @@
   .tag.ok{background:var(--ok-bg);color:var(--ok)}
   .unlinked{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:8px;font-size:12.5px;text-align:center}
   .memo{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:12.5px;resize:vertical;min-height:30px}
+  .mline{font-size:12px;line-height:1.5}
   .acts{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
   .acts select{font:inherit;font-size:12px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:#fff}
   .acts label{font-size:12px;display:flex;align-items:center;gap:3px;margin-left:auto}
@@ -95,7 +102,7 @@
   <button class="btn dark" id="copyWeek">이번 주 전체 카톡 복사</button>
   <div class="demo" id="demoBar" hidden>데모 모드예요. 저장되지 않아요. 파일 위쪽 GAS_URL에 웹앱 주소를 넣으면 실제 샘플 시트와 연결돼요.</div>
 </header>
-<p class="help">① 대표님: 업데이트할 상품 사진을 요일 칸에 끌어다 놓거나, 복사한 뒤 그 칸에 마우스를 두고 Ctrl+V ② 직원: 카드의 <b>샘플 연결</b>을 눌러 샘플 시트 상품 고르기 ③ <b>카톡 복사</b>로 채널톡·카톡에 붙여넣기 · 카드는 끌어서 다른 요일로 옮길 수 있어요.</p>
+<details class="help"><summary>사용 방법 보기</summary><p>① 대표님: 업데이트할 상품 사진을 요일 칸에 끌어다 놓거나, 복사한 뒤 그 칸에 마우스를 두고 Ctrl+V ② 직원: 카드의 <b>샘플 연결</b>을 눌러 샘플 시트 상품 고르기 ③ <b>카톡 복사</b>로 채널톡·카톡에 붙여넣기 · 카드는 끌어서 다른 요일로 옮길 수 있어요.</p></details>
 
 <main id="board"></main>
 
@@ -125,14 +132,17 @@
 /* ===== 설정: GAS 웹앱 주소를 넣으세요 ===== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzNuv4WIue5-K9XdKHZItw28VqeQGdDRnmWL_TAH3EvFujR9OAZ4xtK0sF4DO3zOjEOng/exec';
 /* ========================================= */
+const SIZE_URL = 'https://songsuyoun.github.io/thejsoo.github.io/%EC%82%AC%EC%9D%B4%EC%A6%88_%EC%B8%A1%EC%A0%95_%EC%9E%85%EB%A0%A5.html';
 
 const DAYS = ['일','월','화','수','목','금','토'];
 const DEMO = !GAS_URL;
 let weekStart = startOfWeek(new Date());
 let cards = [];       // 이번 주 카드
 let samples = [];     // 샘플 시트 행
+let sizesData = [];   // 사이즈 측정 시트 행(실측)
 let groups = new Map();
 let pickFor = null;   // 연결 중인 카드 id
+const editing = new Set(); // 정보 수정 중인 카드 id
 let dropDate = null;  // 파일 선택 시 대상 날짜
 
 /* ---------- 날짜 ---------- */
@@ -197,6 +207,21 @@ function groupInfo(g){
            returned: !g.statuses.has('보유중') };
 }
 
+/* ---------- 실측 찾기 ---------- */
+const norm = t => String(t||'').replace(/\s+/g,'').toLowerCase();
+function measuredFor(c){
+  if(!c.product) return [];
+  return sizesData.filter(m => norm(m.product)===norm(c.product) && (!m.vendor || norm(m.vendor)===norm(c.vendor)));
+}
+function measureLine(m){
+  const v=Object.entries(m.vals||{}).map(([k,x])=>k+' '+x).join(' · ');
+  return (m.size||'-')+(v?' — '+v:'');
+}
+function sizeLink(c,i){
+  const q=new URLSearchParams({product:c.product, vendor:c.vendor||'', sizes:(i&&i.sizes)||''});
+  return SIZE_URL+'?'+q.toString();
+}
+
 /* ---------- API ---------- */
 async function apiGet(params){
   if(DEMO) return demoGet(params);
@@ -212,7 +237,7 @@ async function apiPost(body){
 
 /* ---------- 불러오기 ---------- */
 async function loadSamples(){
-  try{ samples=(await apiGet({action:'samples'})).samples||[]; buildGroups(); fillVendors(); }
+  try{ const j=await apiGet({action:'samples'}); samples=j.samples||[]; sizesData=j.sizes||[]; buildGroups(); fillVendors(); }
   catch(e){ toast('샘플 시트를 못 불러왔어요: '+e.message,4000); }
 }
 async function loadBoard(){
@@ -254,7 +279,7 @@ function cardHtml(c,opts){
           <div class="kv"><span>거래처</span><span>${esc(c.vendor)}</span></div>
           <span class="tag alert">샘플 시트에서 못 찾음</span>`;
   }else{
-    const i=groupInfo(g);
+    const i=groupInfo(g); const ms=measuredFor(c);
     const dueWarn = i.due && i.due < c.date ? `<span class="tag alert">반납기한 ${md(i.due)} — 업데이트 전</span>` : '';
     info=`<div class="ttl">${esc(c.product)}</div>
       <div class="kv">
@@ -263,8 +288,18 @@ function cardHtml(c,opts){
         <span>컬러</span><span>${esc(i.colors)||'-'}</span>
         <span>사이즈</span><span>${esc(i.sizes)||'-'}</span>
         <span>혼용률</span><span>${i.mix?esc(i.mix):'<span class="tag need">📞 확인 필요</span>'}</span>
+        <span>실측</span><span>${ms.length?ms.map(m=>`<div class="mline">${esc(measureLine(m))}</div>`).join(''):'<span class="tag need">아직 안 잼</span>'}</span>
       </div>
       <div>${dueWarn}${i.returned?' <span class="tag alert">샘플 반납됨</span>':''}</div>`;
+    if(editing.has(c.id)){
+      info+=`<div class="edit">
+        <label>단가<input data-ef="price" inputmode="numeric" value="${esc(String(g.price||'').replace(/[^\d]/g,''))}" placeholder="예: 32000"></label>
+        <label>컬러<input data-ef="colors" value="${esc(i.colors)}" placeholder="예: 검정, 베이지"></label>
+        <label>사이즈<input data-ef="sizes" value="${esc(i.sizes)}" placeholder="예: S, M"></label>
+        <label>혼용률<input data-ef="mix" value="${esc(i.mix)}" placeholder="예: 폴리 80% 레이온 20%"></label>
+        <div class="row"><button class="btn ghost sm" data-ecancel="${esc(c.id)}">취소</button><button class="btn dark sm" data-esave="${esc(c.id)}">시트에 저장</button></div>
+      </div>`;
+    }
   }
   const img=c.photoId?`<img class="thumb" src="${photoSrc(c)}" data-zoom="${esc(c.id)}" alt="" loading="lazy">`:`<div class="nophoto">사진 없음</div>`;
   return `<article class="card" draggable="true" data-id="${esc(c.id)}">
@@ -274,6 +309,8 @@ function cardHtml(c,opts){
       <textarea class="memo" data-memo="${esc(c.id)}" placeholder="메모 (예: 블랙만 업데이트)">${esc(c.memo)}</textarea>
       <div class="acts">
         <button class="btn sm ${c.product?'ghost':'dark'}" data-link="${esc(c.id)}">${c.product?'샘플 변경':'샘플 연결'}</button>
+        ${g&&!editing.has(c.id)?`<button class="btn sm ghost" data-edit="${esc(c.id)}">정보 수정</button>`:''}
+        ${c.product?`<a class="btn sm ghost" target="_blank" rel="noopener" href="${esc(sizeLink(c,g?groupInfo(g):null))}">사이즈 재러 가기</a>`:''}
         <select data-move="${esc(c.id)}" data-cur="${esc(c.date)}" title="요일 옮기기">${opts}</select>
         <button class="btn ghost sm" data-del="${esc(c.id)}">삭제</button>
       </div>
@@ -294,6 +331,8 @@ function cardText(c,n){
     lines.push(`- 컬러: ${i.colors||'-'}`);
     lines.push(`- 사이즈: ${i.sizes||'-'}`);
     lines.push(`- 혼용률: ${i.mix||'📞 확인 필요'}`);
+    const ms=measuredFor(c);
+    lines.push(`- 실측: ${ms.length?'완료 ('+ms.map(m=>m.size).join(', ')+')':'아직 안 잼'}`);
   }
   if(c.memo) lines.push(`- 메모: ${c.memo}`);
   if(c.photoId && !c.photoId.startsWith('data:')) lines.push(`- 사진: https://drive.google.com/file/d/${c.photoId}/view`);
@@ -348,6 +387,29 @@ async function updateCard(id,fields,quiet){
   catch(e){ Object.assign(c,backup); render(); toast('저장 실패: '+e.message,4000); }
 }
 
+/* ---------- 상품 정보 수정 → 샘플 시트 저장 ---------- */
+async function saveInfo(id,cardEl){
+  const c=cards.find(x=>x.id===id); if(!c) return;
+  const fields={};
+  cardEl.querySelectorAll('[data-ef]').forEach(inp=>{
+    let v=inp.value.trim();
+    if(inp.dataset.ef!=='price') v=v.replace(/\s*,\s*/g,', ');
+    fields[inp.dataset.ef]=v;
+  });
+  const btn=cardEl.querySelector('[data-esave]'); btn.disabled=true; btn.textContent='저장 중…';
+  try{
+    const r=await apiPost({action:'updateSample',vendor:c.vendor,inDate:c.inDate,product:c.product,fields});
+    // 화면에도 바로 반영
+    samples.forEach(sm=>{
+      if(sm.vendor===c.vendor && sm.inDate===c.inDate && norm(splitName(sm.name)[0])===norm(c.product)){
+        sm.mix=fields.mix; sm.colors=fields.colors; sm.sizes=fields.sizes; sm.price=fields.price; sm.colorSize='';
+      }
+    });
+    buildGroups(); editing.delete(id); render();
+    toast(`샘플 시트에 저장했어요 (${r.rows||0}행)`);
+  }catch(e){ btn.disabled=false; btn.textContent='시트에 저장'; toast('저장 실패: '+e.message,4000); }
+}
+
 /* ---------- 샘플 고르기 ---------- */
 function fillVendors(){
   const vs=[...new Set(samples.map(s=>s.vendor).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
@@ -384,6 +446,9 @@ document.addEventListener('click',e=>{
   if(t.dataset.pick){ dropDate=t.dataset.pick; $('#fileIn').click(); }
   else if(t.dataset.copy){ copy(dayText(t.dataset.copy)); }
   else if(t.dataset.link){ openPicker(t.dataset.link); }
+  else if(t.dataset.edit){ editing.add(t.dataset.edit); render(); }
+  else if(t.dataset.ecancel){ editing.delete(t.dataset.ecancel); render(); }
+  else if(t.dataset.esave){ saveInfo(t.dataset.esave, t.closest('.card')); }
   else if(t.dataset.del){
     if(confirm('이 카드를 지울까요? (드라이브의 사진은 남아 있어요)')){
       const id=t.dataset.del; const i=cards.findIndex(c=>c.id===id); const removed=cards.splice(i,1)[0]; render();
@@ -452,7 +517,7 @@ $('#copyWeek').onclick=()=>{
 /* ---------- 데모 데이터 ---------- */
 let demoCards=[];
 function demoGet(p){
-  if(p.action==='samples') return {ok:true,samples:DEMO_SAMPLES};
+  if(p.action==='samples') return {ok:true,samples:DEMO_SAMPLES,sizes:[{product:'26_FW_브리T',vendor:'님프',size:'FREE',vals:{'어깨':'38','가슴':'42','총길이':'50.5'}}]};
   if(p.action==='board') return {ok:true,cards:demoCards.filter(c=>c.date>=p.from&&c.date<=p.to).map(c=>({...c}))};
 }
 function demoPost(b){
@@ -460,6 +525,7 @@ function demoPost(b){
   if(b.action==='add'){ const c={id:'d'+Date.now()+Math.random().toString(36).slice(2,5),date:b.date,photoId:b.photoId||'',vendor:'',product:'',inDate:'',status:'연결 필요',memo:''}; demoCards.push(c); return {ok:true,card:{...c}}; }
   if(b.action==='update'){ const c=demoCards.find(x=>x.id===b.id); Object.assign(c,b.fields); return {ok:true,card:{...c}}; }
   if(b.action==='remove'){ demoCards=demoCards.filter(x=>x.id!==b.id); return {ok:true}; }
+  if(b.action==='updateSample'){ return {ok:true,rows:DEMO_SAMPLES.filter(sm=>sm.vendor===b.vendor&&sm.inDate===b.inDate&&norm(splitName(sm.name)[0])===norm(b.product)).length}; }
 }
 const DEMO_SAMPLES=[
   ['26_FW_브리T/밤색/F','님프','2026-11-17','2026-12-01','보유중','','칼라: 밤색, 아이, 차콜 / 사이즈: F',''],
@@ -486,7 +552,10 @@ function demoSeed(){
 (async()=>{
   if(DEMO){ $('#demoBar').hidden=false; demoSeed(); }
   await loadSamples(); await loadBoard();
-  if(!DEMO) setInterval(()=>{ if(!document.querySelector('.modal.on') && document.activeElement?.tagName!=='TEXTAREA') loadBoard(); },60000);
+  // 사이즈 재고 돌아오면 실측이 바로 보이게
+  let lastFocusLoad=0;
+  window.addEventListener('focus',async()=>{ if(DEMO||Date.now()-lastFocusLoad<20000) return; lastFocusLoad=Date.now(); await loadSamples(); render(); });
+  if(!DEMO) setInterval(()=>{ if(!document.querySelector('.modal.on') && !['TEXTAREA','INPUT'].includes(document.activeElement?.tagName) && !editing.size) loadBoard(); },60000);
 })();
 </script>
 </body>
