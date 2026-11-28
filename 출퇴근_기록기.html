@@ -13,6 +13,7 @@
   --green:#2a6b4a; --green-bg:#eaf4ef;
   --red:#b5293a; --red-bg:#fce8eb;
   --blue:#1a4f8a; --blue-bg:#e8f0fb;
+  --amber:#854F0B; --amber-bg:#FAEEDA; --amber-border:#FAC775;
   --shadow:0 4px 24px rgba(0,0,0,0.07);
 }
 body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:100vh; color:var(--text1); display:flex; flex-direction:column; align-items:center; padding:32px 24px; }
@@ -20,11 +21,11 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
 
 /* 좌우 레이아웃 */
 .main-layout { display:flex; gap:16px; width:100%; max-width:860px; align-items:flex-start; }
-.left-col { flex:0 0 460px; display:flex; flex-direction:column; gap:0; }
-.right-col { flex:1; min-width:0; }
+.left-col { flex:0 0 460px; display:flex; flex-direction:column; gap:16px; }
+.right-col { flex:1; min-width:0; display:flex; flex-direction:column; gap:16px; }
 
 /* 출퇴근 카드 */
-.card { background:var(--surface); border-radius:20px; padding:32px 28px; width:100%; box-shadow:var(--shadow); border:0.5px solid var(--border); margin-bottom:0; }
+.card { background:var(--surface); border-radius:20px; padding:32px 28px; width:100%; box-shadow:var(--shadow); border:0.5px solid var(--border); }
 .clock-area { text-align:center; padding-bottom:22px; margin-bottom:22px; border-bottom:0.5px solid var(--border); }
 .clock-notice { font-size:11px; color:var(--text3); margin-bottom:8px; }
 .clock { font-size:46px; font-weight:300; letter-spacing:-2px; line-height:1; margin-bottom:6px; }
@@ -59,22 +60,67 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
 .refresh-btn:hover { background:var(--bg); color:var(--text2); }
 
 .status-list { display:flex; flex-direction:column; gap:8px; }
-.status-item { display:flex; align-items:center; padding:12px 16px; border-radius:12px; background:var(--bg); border:0.5px solid var(--border); gap:12px; }
+.status-item { display:flex; align-items:center; padding:12px 16px; border-radius:12px; background:var(--bg); border:0.5px solid var(--border); gap:12px; flex-wrap:wrap; }
 .status-name { font-size:14px; font-weight:500; color:var(--text1); min-width:60px; flex-shrink:0; }
-.status-badges { display:flex; gap:6px; margin-left:auto; flex-shrink:0; }
+.status-badges { display:flex; gap:6px; margin-left:auto; flex-shrink:0; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
 .badge { font-size:12px; font-weight:600; padding:4px 0; border-radius:100px; white-space:nowrap; width:58px; text-align:center; display:inline-block; }
 .badge-in-ok  { background:var(--green-bg); color:var(--green); }
 .badge-out-ok { background:var(--blue-bg);  color:var(--blue);  }
 .badge-in-no  { background:#f1efeb; color:#ccc; }
 .badge-out-no { background:#f1efeb; color:#ccc; }
+
+/* 근태 메모 뱃지 */
+.memo-badge { font-size:11px; font-weight:600; padding:3px 10px; border-radius:100px; white-space:nowrap; display:inline-block; border:0.5px solid; }
+.memo-badge-early { background:var(--green-bg); color:var(--green); border-color:#9FE1CB; }
+.memo-badge-late  { background:var(--amber-bg); color:var(--amber); border-color:var(--amber-border); }
+.memo-badge-off   { background:var(--blue-bg);  color:var(--blue);  border-color:#B5D4F4; }
+
 .status-loading { text-align:center; padding:24px; font-size:13px; color:var(--text3); }
+
+/* 근태 메모 등록 카드 */
+.memo-card { background:var(--surface); border-radius:20px; padding:24px 28px; width:100%; box-shadow:var(--shadow); border:0.5px solid var(--border); }
+.memo-card-title { font-size:15px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+.memo-card-desc { font-size:12px; color:var(--text3); margin-bottom:18px; }
+.memo-form { display:flex; flex-direction:column; gap:12px; }
+.memo-input { font-family:inherit; border:1px solid var(--border); border-radius:10px; padding:11px 14px; font-size:14px; color:var(--text1); background:var(--surface); transition:border-color 0.2s; width:100%; }
+.memo-input:focus { outline:none; border-color:var(--text2); }
+.memo-name-preview { font-size:12px; font-weight:500; color:var(--blue); padding-left:4px; min-height:16px; }
+.memo-type-btns { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.memo-type-btn { border:1.5px solid var(--border); background:var(--bg); border-radius:10px; padding:10px 6px; font-family:inherit; font-size:13px; font-weight:500; color:var(--text2); cursor:pointer; transition:all 0.15s; text-align:center; }
+.memo-type-btn:hover { border-color:var(--text3); background:#ede9e3; }
+.memo-type-btn.selected-early { background:var(--green-bg); color:var(--green); border-color:#9FE1CB; }
+.memo-type-btn.selected-late  { background:var(--amber-bg); color:var(--amber); border-color:var(--amber-border); }
+.memo-type-btn.selected-off   { background:var(--blue-bg);  color:var(--blue);  border-color:#B5D4F4; }
+.memo-submit { background:var(--text1); color:white; border:none; border-radius:10px; padding:12px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; width:100%; transition:all 0.15s; }
+.memo-submit:hover { background:#333; }
+.memo-submit:disabled { opacity:0.3; cursor:not-allowed; }
+
+/* 이번 달 근태 현황 카드 */
+.monthly-card { background:var(--surface); border-radius:20px; padding:28px; width:100%; box-shadow:var(--shadow); border:0.5px solid var(--border); }
+.monthly-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
+.monthly-title { font-size:16px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+.monthly-desc { font-size:12px; color:var(--text3); }
+.monthly-month-nav { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.month-nav-btn { background:none; border:0.5px solid var(--border); border-radius:8px; padding:5px 12px; font-family:inherit; font-size:13px; color:var(--text2); cursor:pointer; transition:all 0.15s; }
+.month-nav-btn:hover { background:var(--bg); border-color:var(--text2); }
+.month-label { font-size:14px; font-weight:600; color:var(--text1); min-width:80px; text-align:center; }
+.monthly-list { display:flex; flex-direction:column; gap:6px; }
+.monthly-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:var(--bg); border:0.5px solid var(--border); }
+.monthly-name { font-size:13px; font-weight:500; color:var(--text1); min-width:56px; flex-shrink:0; }
+.monthly-badges { display:flex; gap:5px; flex-wrap:wrap; }
+.monthly-day-badge { font-size:11px; font-weight:500; padding:2px 8px; border-radius:100px; white-space:nowrap; border:0.5px solid; }
+.monthly-day-badge-early { background:var(--green-bg); color:var(--green); border-color:#9FE1CB; }
+.monthly-day-badge-late  { background:var(--amber-bg); color:var(--amber); border-color:var(--amber-border); }
+.monthly-day-badge-off   { background:var(--blue-bg);  color:var(--blue);  border-color:#B5D4F4; }
+.monthly-empty { font-size:12px; color:var(--text3); padding-left:4px; }
+.monthly-loading { text-align:center; padding:20px; font-size:13px; color:var(--text3); }
 
 /* 모달 팝업 */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:9999; opacity:0; pointer-events:none; transition:opacity 0.2s; padding:24px; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
 .modal { background:var(--surface); border-radius:20px; padding:32px 28px; max-width:340px; width:100%; text-align:center; box-shadow:0 8px 40px rgba(0,0,0,0.15); }
 .modal-icon { font-size:32px; margin-bottom:14px; }
-.modal-msg { font-size:14px; line-height:1.7; color:var(--text1); margin-bottom:24px; font-weight:500; }
+.modal-msg { font-size:14px; line-height:1.7; color:var(--text1); margin-bottom:24px; font-weight:500; white-space:pre-wrap; }
 .modal-btn { border:none; cursor:pointer; font-family:inherit; font-weight:600; font-size:14px; padding:12px 32px; border-radius:10px; transition:all 0.15s; }
 .modal-btn-ok  { background:var(--green); color:white; }
 .modal-btn-ok:hover  { background:#235a3e; }
@@ -85,6 +131,33 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
 .ip-banner { display:none; background:var(--red-bg); border:0.5px solid var(--red); border-radius:12px; padding:14px 18px; margin-bottom:16px; align-items:center; gap:10px; }
 .ip-banner-icon { font-size:18px; flex-shrink:0; }
 .ip-banner-msg { font-size:13px; color:var(--red); line-height:1.5; font-weight:500; }
+
+/* 관리자 패널 */
+.admin-toggle-btn { background:none; border:0.5px solid var(--border); border-radius:10px; padding:8px 16px; font-family:inherit; font-size:12px; color:var(--text3); cursor:pointer; margin-bottom:16px; transition:all 0.15s; }
+.admin-toggle-btn:hover { background:var(--bg); color:var(--text2); border-color:var(--text2); }
+.admin-toggle-btn.active { background:var(--text1); color:white; border-color:var(--text1); }
+.admin-panel { background:var(--surface); border-radius:20px; padding:24px 28px; width:100%; box-shadow:var(--shadow); border:0.5px solid var(--border); display:none; }
+.admin-panel.show { display:block; }
+.admin-login-row { display:flex; gap:8px; align-items:center; margin-bottom:14px; }
+.admin-login-row input { flex:1; font-family:inherit; border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:14px; color:var(--text1); }
+.admin-login-row input:focus { outline:none; border-color:var(--text2); }
+.admin-login-btn { background:var(--text1); color:white; border:none; border-radius:10px; padding:10px 18px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.admin-login-btn:hover { background:#333; }
+.admin-status { font-size:12px; padding-left:2px; min-height:16px; margin-bottom:12px; }
+.admin-status.ok  { color:var(--green); }
+.admin-status.err { color:var(--red); }
+.staff-list-admin { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.staff-item-admin { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:var(--bg); border:0.5px solid var(--border); }
+.staff-item-code { font-size:11px; color:var(--text3); font-family:monospace; }
+.staff-item-name { font-size:14px; font-weight:500; color:var(--text1); flex:1; }
+.staff-delete-btn { background:none; border:none; cursor:pointer; color:var(--text3); font-size:14px; padding:2px 6px; border-radius:6px; transition:all 0.15s; }
+.staff-delete-btn:hover { background:var(--red-bg); color:var(--red); }
+.staff-add-row { display:flex; gap:8px; flex-wrap:wrap; }
+.staff-add-row input { flex:1; min-width:100px; font-family:inherit; border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--text1); }
+.staff-add-row input:focus { outline:none; border-color:var(--text2); }
+.staff-add-btn { background:var(--green); color:white; border:none; border-radius:10px; padding:10px 18px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.staff-add-btn:hover { background:#235a3e; }
+.admin-section-title { font-size:13px; font-weight:600; color:var(--text2); margin-bottom:10px; }
 
 /* 토스트 / 로딩 */
 .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--text1); color:white; padding:11px 22px; border-radius:100px; font-size:13px; opacity:0; pointer-events:none; transition:all 0.25s; z-index:9999; max-width:88vw; text-align:center; line-height:1.5; }
@@ -135,9 +208,32 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
         📋 출퇴근 기록지 바로가기
       </a>
     </div>
+
+    <!-- 근태 메모 등록 카드 -->
+    <div class="memo-card">
+      <div class="memo-card-title">📌 근태 메모 등록</div>
+      <div class="memo-card-desc">조기출근 · 늦은출근 · OFF 예정일을 미리 등록하세요</div>
+      <div class="memo-form">
+        <div>
+          <input class="memo-input" type="text" id="memoCode" placeholder="사원코드 입력" oninput="lookupMemoCode()" maxlength="20">
+          <div class="memo-name-preview" id="memoNamePreview"></div>
+        </div>
+        <input class="memo-input" type="date" id="memoDate">
+        <div class="memo-type-btns">
+          <button class="memo-type-btn" id="typeBtnEarly" onclick="selectMemoType('조기출근')">🌅 조기출근</button>
+          <button class="memo-type-btn" id="typeBtnLate"  onclick="selectMemoType('늦은출근')">🕐 늦은출근</button>
+          <button class="memo-type-btn" id="typeBtnOff"   onclick="selectMemoType('OFF')">🏖️ OFF</button>
+        </div>
+        <div id="memoTimeRow" style="display:none;">
+          <input class="memo-input" type="time" id="memoTime" oninput="checkMemoReady()">
+          <div style="font-size:12px;color:var(--text3);padding-left:4px;margin-top:4px;" id="memoTimeLabel">예상 출근 시간을 입력하세요</div>
+        </div>
+        <button class="memo-submit" id="memoSubmitBtn" onclick="submitMemo()" disabled>등록하기</button>
+      </div>
+    </div>
   </div>
 
-  <!-- 오른쪽: 전체 현황판 -->
+  <!-- 오른쪽: 전체 현황판 + 이번 달 근태 + 관리자 -->
   <div class="right-col">
     <div class="status-card">
       <div class="status-header">
@@ -148,6 +244,54 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
         <button class="refresh-btn" onclick="loadStatus()">↻ 새로고침</button>
       </div>
       <div id="statusGrid" class="status-loading">불러오는 중...</div>
+    </div>
+
+    <!-- 관리자 패널 -->
+    <div style="text-align:right;">
+      <button class="admin-toggle-btn" id="adminToggleBtn" onclick="toggleAdminPanel()">🔒 관리자</button>
+    </div>
+    <div class="admin-panel" id="adminPanel">
+      <div class="memo-card-title" style="margin-bottom:4px;">👤 직원 관리</div>
+      <div class="memo-card-desc" style="margin-bottom:14px;">직원을 추가하거나 삭제할 수 있어요 (관리자 전용)</div>
+
+      <!-- 로그인 -->
+      <div id="adminLoginArea">
+        <div class="admin-login-row">
+          <input type="password" id="adminPwInput" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')adminLogin()">
+          <button class="admin-login-btn" onclick="adminLogin()">확인</button>
+        </div>
+        <div class="admin-status" id="adminLoginStatus"></div>
+      </div>
+
+      <!-- 로그인 후 직원 관리 영역 -->
+      <div id="adminStaffArea" style="display:none;">
+        <div class="admin-section-title">현재 직원 목록</div>
+        <div class="staff-list-admin" id="staffListAdmin">불러오는 중...</div>
+        <div class="admin-section-title">직원 추가</div>
+        <div class="staff-add-row" style="margin-bottom:8px;">
+          <input type="date" id="newStaffJoinDate" oninput="previewNewCode()">
+          <input type="text" id="newStaffName" placeholder="이름" maxlength="10">
+          <button class="staff-add-btn" onclick="addStaff()">추가</button>
+        </div>
+        <div style="font-size:12px;color:var(--text3);padding-left:2px;" id="newCodePreview"></div>
+      </div>
+    </div>
+
+    <!-- 이번 달 근태 메모 현황 -->
+    <div class="monthly-card">
+      <div class="monthly-header">
+        <div>
+          <div class="monthly-title">📅 직원별 근태 메모 현황</div>
+          <div class="monthly-desc">월별로 등록된 근태 메모를 확인하세요</div>
+        </div>
+        <button class="refresh-btn" onclick="loadMonthly()">↻ 새로고침</button>
+      </div>
+      <div class="monthly-month-nav">
+        <button class="month-nav-btn" onclick="changeMonth(-1)">◀</button>
+        <span class="month-label" id="monthLabel">--</span>
+        <button class="month-nav-btn" onclick="changeMonth(1)">▶</button>
+      </div>
+      <div id="monthlyGrid" class="monthly-loading">불러오는 중...</div>
     </div>
   </div>
 </div>
@@ -168,28 +312,27 @@ body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); min-height:1
 <div class="overlay" id="overlay"><div class="spinner"></div></div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzpcdROg6GPEDCCp0YeQTLwnG_NSlzLVGaygHx55i1O_spa4GW-UDKGczy7jIIweWVf/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwzZWXrp1g2lnFy7uSvlbVXf2DTlulrJkYkApc67wyQSxI2tr9uK6RhOdoUk2rWvEwllA/exec';
 
-const STAFF = [
-  { code:'201812268',  name:'이수나' },
-  { code:'2019030715', name:'임미정' },
-  { code:'2025030452', name:'손수민' },
-  { code:'2021091334', name:'이수정2' },
-  { code:'2025062354', name:'이은희' },
-  { code:'2025062355', name:'이혜정' },
-  { code:'2025062557', name:'윤혜정' },
-  { code:'2019101420', name:'이수정' },
-  { code:'2026082466', name:'김이슬' },
-];
-
-// ── 허용 IP 대역 목록 ──
+// 허용 IP 대역
 const ALLOWED_IP_PREFIXES = [
-  '121.145.247.',  // 고정 IP 대역
-  '221.167.',      // 회사 통신사 대역 전체
+  '121.145.247.',
+  '221.167.',
 ];
 
-const staffMap = {};
-STAFF.forEach(s => { staffMap[s.code] = s.name; });
+// 직원 목록 — 시트에서 로드 후 채워짐
+let STAFF = [];
+const staffMap = {};  // code → name
+
+async function loadStaffList() {
+  try {
+    const res = await gasGet({ action: 'getStaffPublic' });
+    if (res.result === 'success' && Array.isArray(res.data)) {
+      STAFF = res.data;
+      STAFF.forEach(s => { staffMap[s.code] = s.name; });
+    }
+  } catch(e) {}
+}
 
 // ── IP 확인 ──
 let ipVerified = false;
@@ -219,8 +362,9 @@ async function checkIP() {
 }
 
 // ── 서버 시계 (GAS 시간 기준) ──
-let serverOffset = 0; // 서버시간과 로컬시간의 차이(ms)
+let serverOffset = 0;
 let clockInterval = null;
+let serverToday = '';
 
 async function syncServerTime() {
   try {
@@ -228,15 +372,18 @@ async function syncServerTime() {
     const res = await gasGet({ action: 'getTime' });
     const localAfter = Date.now();
     if (res.result === 'success') {
-      // 서버 시간을 Date 객체로 변환
       const serverTime = new Date(res.date + 'T' + res.time + '+09:00');
       const localMid = (localBefore + localAfter) / 2;
       serverOffset = serverTime.getTime() - localMid;
+      serverToday = res.date;
 
-      // 날짜 표시 업데이트
       document.getElementById('clockDate').textContent = `${res.display} (${res.day})`;
-      // 로드 완료 → 안내 문구 숨기기
       document.getElementById('clockNotice').style.display = 'none';
+
+      // 날짜 기본값 설정 (오늘)
+      if (!document.getElementById('memoDate').value) {
+        document.getElementById('memoDate').value = res.date;
+      }
     }
   } catch(e) {}
 }
@@ -255,7 +402,6 @@ function startClock() {
   }, 1000);
 }
 
-// 5분마다 서버 시간 재동기화
 syncServerTime().then(startClock);
 setInterval(() => syncServerTime(), 5 * 60 * 1000);
 
@@ -342,17 +488,14 @@ async function doRecord(targets, type, overwrite) {
   const noIn     = results.filter(r => r.result === 'no_checkin').map(r => r.name);
   const dup      = results.filter(r => r.result === 'duplicate').map(r => r.name);
 
-  // 이미 퇴근 찍은 사람 있으면 확인 모달
   if (alreadyOut.length > 0) {
     const names = alreadyOut.map(r => `${r.name}님 (기존 퇴근 ${r.prevTime}`).join(', ');
     showConfirmModal(
       `${names})\n\n퇴근 시간을 지금 시간으로 갱신할까요?`,
       async () => {
-        // 확인 누르면 already_out 대상만 overwrite=true로 재요청
         await doRecord(alreadyOut.map(r => ({ name:r.name, code:r.code })), type, true);
       }
     );
-    // 이미 성공한 사람 있으면 먼저 표시
     if (ok.length > 0) {
       loadStatus();
       clearCodeList();
@@ -379,35 +522,41 @@ function clearCodeList() {
   addCodeRow();
 }
 
-// ── 전체 직원 현황 로드 (GAS 서버 오늘 날짜 기준) ──
+// ── 전체 직원 현황 로드 ──
 async function loadStatus() {
   const grid = document.getElementById('statusGrid');
   grid.className = 'status-loading';
   grid.textContent = '불러오는 중...';
   try {
-    // 날짜도 서버에서 받은 값 사용
     const timeRes = await gasGet({ action:'getTime' });
     const today = timeRes.date;
-    const res = await gasGet({ action:'getRecords', from:today, to:today, name:'' });
-    renderStatus(res.data || []);
+    const [recordRes, memoRes] = await Promise.all([
+      gasGet({ action:'getRecords', from:today, to:today, name:'' }),
+      gasGet({ action:'getMemos', date:today })
+    ]);
+    renderStatus(recordRes.data || [], memoRes.data || []);
   } catch(e) {
     grid.className = 'status-loading';
     grid.textContent = '불러오기 실패. 새로고침 해주세요.';
   }
 }
 
-function renderStatus(data) {
+function renderStatus(data, memos) {
   const grid = document.getElementById('statusGrid');
 
-  // 이름 → { in, out } 매핑
   const statusMap = {};
   data.forEach(r => { statusMap[r.name] = { in: r.in, out: r.out }; });
+
+  // 메모: 이름 → { type, time }
+  const memoMap = {};
+  memos.forEach(m => { memoMap[m.name] = { type: m.type, time: m.time || '' }; });
 
   grid.className = 'status-list';
   grid.innerHTML = STAFF.map(s => {
     const st = statusMap[s.name] || { in:'', out:'' };
     const hasIn  = st.in  && st.in  !== '';
     const hasOut = st.out && st.out !== '';
+    const memo   = memoMap[s.name]?.type || '';
 
     const inBadge  = hasIn
       ? `<span class="badge badge-in-ok">출근 ✓</span>`
@@ -416,12 +565,168 @@ function renderStatus(data) {
       ? `<span class="badge badge-out-ok">퇴근 ✓</span>`
       : `<span class="badge badge-out-no">퇴근</span>`;
 
+    const memoTime = memoMap[s.name]?.time || '';
+    let memoBadge = '';
+    if (memo === '조기출근') memoBadge = `<span class="memo-badge memo-badge-early">🌅 조기출근${memoTime ? ' ' + memoTime : ''}</span>`;
+    else if (memo === '늦은출근') memoBadge = `<span class="memo-badge memo-badge-late">🕐 늦은출근${memoTime ? ' ' + memoTime : ''}</span>`;
+    else if (memo === 'OFF') memoBadge = `<span class="memo-badge memo-badge-off">🏖️ OFF</span>`;
+
     return `
       <div class="status-item">
         <span class="status-name">${s.name}</span>
-        <div class="status-badges">${inBadge}${outBadge}</div>
+        <div class="status-badges">${memoBadge}${inBadge}${outBadge}</div>
       </div>`;
   }).join('');
+}
+
+// ── 이번 달 근태 메모 현황 ──
+let currentMonth = ''; // 'YYYY-MM'
+
+function getYM(offset = 0) {
+  const now = new Date(Date.now() + serverOffset);
+  const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+function changeMonth(delta) {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  currentMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  loadMonthly();
+}
+
+async function loadMonthly() {
+  if (!currentMonth) currentMonth = getYM(0);
+  const [y, m] = currentMonth.split('-');
+  document.getElementById('monthLabel').textContent = `${y}년 ${m}월`;
+
+  const grid = document.getElementById('monthlyGrid');
+  grid.className = 'monthly-loading';
+  grid.textContent = '불러오는 중...';
+
+  try {
+    const res = await gasGet({ action:'getMonthlyMemos', month: currentMonth });
+    renderMonthly(res.data || []);
+  } catch(e) {
+    grid.className = 'monthly-loading';
+    grid.textContent = '불러오기 실패. 새로고침 해주세요.';
+  }
+}
+
+function renderMonthly(data) {
+  const grid = document.getElementById('monthlyGrid');
+
+  // 직원별로 그룹핑
+  const byName = {};
+  STAFF.forEach(s => { byName[s.name] = []; });
+  data.forEach(m => {
+    if (byName[m.name] !== undefined) byName[m.name].push(m);
+  });
+
+  const typeClass = { '조기출근':'early', '늦은출근':'late', 'OFF':'off' };
+  const typeEmoji = { '조기출근':'🌅', '늦은출근':'🕐', 'OFF':'🏖️' };
+
+  // 메모가 하나라도 있는 직원만 표시 (없으면 전원 표시)
+  const hasAny = STAFF.some(s => byName[s.name].length > 0);
+
+  grid.className = 'monthly-list';
+  grid.innerHTML = STAFF.map(s => {
+    const memos = byName[s.name] || [];
+    if (hasAny && memos.length === 0) return ''; // 메모 없는 직원 숨김
+
+    const badges = memos.length > 0
+      ? memos.sort((a,b) => a.date.localeCompare(b.date)).map(m => {
+          const day = m.date.split('-')[2];
+          const cls = typeClass[m.type] || 'off';
+          const em  = typeEmoji[m.type] || '';
+          const timeStr = m.time ? ` ${m.time}` : '';
+          return `<span class="monthly-day-badge monthly-day-badge-${cls}" title="${m.date}">${em} ${Number(day)}일${timeStr}</span>`;
+        }).join('')
+      : `<span class="monthly-empty">메모 없음</span>`;
+
+    return `
+      <div class="monthly-row">
+        <span class="monthly-name">${s.name}</span>
+        <div class="monthly-badges">${badges}</div>
+      </div>`;
+  }).filter(Boolean).join('') || `<div class="monthly-loading">이번 달 근태 메모가 없어요</div>`;
+}
+
+// ── 근태 메모 등록 ──
+let selectedMemoType = '';
+
+function lookupMemoCode() {
+  const code = document.getElementById('memoCode').value.trim();
+  const name = staffMap[code];
+  document.getElementById('memoNamePreview').textContent = name ? `👤 ${name}` : (code ? '알 수 없는 사원코드예요' : '');
+  checkMemoReady();
+}
+
+function selectMemoType(type) {
+  selectedMemoType = type;
+  document.getElementById('typeBtnEarly').className = 'memo-type-btn' + (type === '조기출근' ? ' selected-early' : '');
+  document.getElementById('typeBtnLate').className  = 'memo-type-btn' + (type === '늦은출근' ? ' selected-late'  : '');
+  document.getElementById('typeBtnOff').className   = 'memo-type-btn' + (type === 'OFF'      ? ' selected-off'   : '');
+
+  // 시간 입력 필드 표시/숨김
+  const needTime = type === '조기출근' || type === '늦은출근';
+  document.getElementById('memoTimeRow').style.display = needTime ? 'block' : 'none';
+  document.getElementById('memoTimeLabel').textContent =
+    type === '조기출근' ? '🌅 예상 조기출근 시간을 입력하세요' : '🕐 예상 늦은출근 시간을 입력하세요';
+  if (!needTime) document.getElementById('memoTime').value = '';
+
+  checkMemoReady();
+}
+
+function checkMemoReady() {
+  const code = document.getElementById('memoCode').value.trim();
+  const date = document.getElementById('memoDate').value;
+  const name = staffMap[code];
+  const needTime = selectedMemoType === '조기출근' || selectedMemoType === '늦은출근';
+  const time = document.getElementById('memoTime').value;
+  const ok = name && date && selectedMemoType && (!needTime || time);
+  document.getElementById('memoSubmitBtn').disabled = !ok;
+}
+
+document.getElementById('memoDate').addEventListener('change', checkMemoReady);
+
+async function submitMemo() {
+  const code = document.getElementById('memoCode').value.trim();
+  const date = document.getElementById('memoDate').value;
+  const name = staffMap[code];
+
+  if (!name || !date || !selectedMemoType) return;
+
+  const time = document.getElementById('memoTime').value;
+  setLoading(true);
+  try {
+    const params = { action:'saveMemo', name, date, type:selectedMemoType };
+    if (time) params.time = time;
+    const res = await gasGet(params);
+    if (res.result === 'success') {
+      const timeStr = time ? ` (${time})` : '';
+      showModal(`✅ ${name}님\n${date} ${selectedMemoType}${timeStr} 등록 완료!`, 'ok');
+      // 폼 초기화
+      document.getElementById('memoCode').value = '';
+      document.getElementById('memoNamePreview').textContent = '';
+      document.getElementById('memoTime').value = '';
+      document.getElementById('memoTimeRow').style.display = 'none';
+      selectedMemoType = '';
+      document.getElementById('typeBtnEarly').className = 'memo-type-btn';
+      document.getElementById('typeBtnLate').className  = 'memo-type-btn';
+      document.getElementById('typeBtnOff').className   = 'memo-type-btn';
+      document.getElementById('memoSubmitBtn').disabled = true;
+      loadStatus();
+    } else {
+      showModal('등록 중 오류가 발생했어요.\n다시 시도해주세요.', 'err');
+    }
+  } catch(e) {
+    showModal('오류가 발생했어요.\n다시 시도해주세요.', 'err');
+  } finally {
+    setLoading(false);
+  }
 }
 
 // ── GAS 통신 ──
@@ -469,10 +774,175 @@ function setLoading(on) {
   document.getElementById('overlay').classList.toggle('show', on);
 }
 
+// ── 관리자 패널 ──
+let adminLoggedIn = false;
+let adminPw = '';
+
+function toggleAdminPanel() {
+  const panel = document.getElementById('adminPanel');
+  const btn = document.getElementById('adminToggleBtn');
+  const isShow = panel.classList.toggle('show');
+  btn.classList.toggle('active', isShow);
+  if (!isShow) {
+    // 패널 닫을 때 로그아웃
+    adminLoggedIn = false;
+    adminPw = '';
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminLoginStatus').textContent = '';
+    document.getElementById('adminLoginArea').style.display = 'block';
+    document.getElementById('adminStaffArea').style.display = 'none';
+  }
+}
+
+async function adminLogin() {
+  const pw = document.getElementById('adminPwInput').value;
+  if (!pw) return;
+  setLoading(true);
+  try {
+    const res = await gasGet({ action: 'adminLogin', pw });
+    if (res.result === 'success') {
+      adminLoggedIn = true;
+      adminPw = pw;
+      document.getElementById('adminLoginStatus').className = 'admin-status ok';
+      document.getElementById('adminLoginStatus').textContent = '✅ 관리자로 로그인됐어요';
+      document.getElementById('adminLoginArea').style.display = 'none';
+      document.getElementById('adminStaffArea').style.display = 'block';
+      loadAdminStaffList();
+    } else {
+      document.getElementById('adminLoginStatus').className = 'admin-status err';
+      document.getElementById('adminLoginStatus').textContent = '❌ 비밀번호가 틀렸어요';
+    }
+  } catch(e) {
+    document.getElementById('adminLoginStatus').className = 'admin-status err';
+    document.getElementById('adminLoginStatus').textContent = '오류가 발생했어요. 다시 시도해주세요.';
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function loadAdminStaffList() {
+  const listEl = document.getElementById('staffListAdmin');
+  listEl.innerHTML = '불러오는 중...';
+  try {
+    const res = await gasGet({ action: 'getStaff' });
+    if (res.result === 'success') {
+      STAFF = res.data || [];
+      // staffMap 갱신
+      Object.keys(staffMap).forEach(k => delete staffMap[k]);
+      STAFF.forEach(s => { staffMap[s.code] = s.name; });
+
+      if (STAFF.length === 0) {
+        listEl.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0;">등록된 직원이 없어요</div>';
+        return;
+      }
+      listEl.innerHTML = STAFF.map(s => `
+        <div class="staff-item-admin">
+          <span class="staff-item-name">${s.name}</span>
+          <span class="staff-item-code" style="margin-left:auto;margin-right:10px;font-size:12px;color:var(--text3);">${s.code}</span>
+          <button class="staff-delete-btn" onclick="deleteStaff('${s.code}', '${s.name}')">🗑</button>
+        </div>`).join('');
+    }
+  } catch(e) {
+    listEl.innerHTML = '<div style="font-size:13px;color:var(--red);">불러오기 실패</div>';
+  }
+}
+
+// 마지막 코드의 뒷번호(숫자) 추출 — 앞 8자리(날짜) 제거 후 나머지
+function getLastSeq() {
+  if (STAFF.length === 0) return 0;
+  let maxSeq = 0;
+  STAFF.forEach(s => {
+    const code = s.code;
+    if (code.length > 8) {
+      const seq = parseInt(code.slice(8), 10);
+      if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
+    }
+  });
+  return maxSeq;
+}
+
+function buildNewCode(joinDate) {
+  // joinDate: 'YYYY-MM-DD'
+  const datePart = joinDate.replace(/-/g, ''); // 'YYYYMMDD'
+  const nextSeq = getLastSeq() + 1;
+  // 최소 2자리 유지
+  const seqStr = String(nextSeq).padStart(2, '0');
+  return datePart + seqStr;
+}
+
+function previewNewCode() {
+  const joinDate = document.getElementById('newStaffJoinDate').value;
+  const previewEl = document.getElementById('newCodePreview');
+  if (!joinDate) {
+    previewEl.textContent = '';
+    return;
+  }
+  const code = buildNewCode(joinDate);
+  previewEl.textContent = `생성될 사원코드: ${code}`;
+}
+
+async function addStaff() {
+  if (!adminLoggedIn) return;
+  const joinDate = document.getElementById('newStaffJoinDate').value;
+  const name = document.getElementById('newStaffName').value.trim();
+  if (!joinDate || !name) {
+    showModal('입사일과 이름을 모두 입력해주세요.', 'err');
+    return;
+  }
+  const code = buildNewCode(joinDate);
+  setLoading(true);
+  try {
+    const res = await gasGet({ action: 'addStaff', pw: adminPw, code, name });
+    if (res.result === 'success') {
+      document.getElementById('newStaffJoinDate').value = '';
+      document.getElementById('newStaffName').value = '';
+      document.getElementById('newCodePreview').textContent = '';
+      // 사원코드 팝업으로 알려주기
+      showModal(`✅ ${name}님 등록 완료!\n\n사원코드: ${code}\n\n직원에게 이 코드를 알려주세요 📋`, 'ok');
+      loadAdminStaffList();
+      loadStatus();
+    } else {
+      showModal(res.msg || '추가 중 오류가 발생했어요.', 'err');
+    }
+  } catch(e) {
+    showModal('오류가 발생했어요.', 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function deleteStaff(code, name) {
+  if (!adminLoggedIn) return;
+  if (!confirm(`${name}님을 직원 목록에서 삭제할까요?`)) return;
+  setLoading(true);
+  try {
+    const res = await gasGet({ action: 'deleteStaff', pw: adminPw, code });
+    if (res.result === 'success') {
+      showModal(`✅ ${name}님이 삭제됐어요.`, 'ok');
+      loadAdminStaffList();
+      loadStatus();
+    } else {
+      showModal(res.msg || '삭제 중 오류가 발생했어요.', 'err');
+    }
+  } catch(e) {
+    showModal('오류가 발생했어요.', 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
 // 최초 실행
 checkIP();
 addCodeRow();
-loadStatus();
+// 직원 목록 먼저 로드 후 현황 로드
+loadStaffList().then(() => {
+  loadStatus();
+});
+// 서버 시간 동기화 후 월 초기화
+syncServerTime().then(() => {
+  currentMonth = getYM(0);
+  loadMonthly();
+});
 </script>
 </body>
 </html>
