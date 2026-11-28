@@ -410,7 +410,7 @@ async function updateCard(id,fields,quiet){
 
 /* ---------- 저장 전 양식 맞추기 ---------- */
 // 컬러 줄임말 → 정식 이름 (필요하면 여기에 한 줄씩 추가)
-const COLOR_FIX={'아이':'아이보리'};
+const COLOR_FIX={'아이':'아이보리','블':'블랙','흑':'블랙','베':'베이지','차':'차콜','그':'그레이','네':'네이비','카':'카키','밤':'브라운','크':'크림','먹':'먹색'};
 function fixColors(v){
   return v.split(/[,\/]+/).map(s=>s.trim()).filter(Boolean)
     .map(s=>COLOR_FIX[s]||s).join(', ');
