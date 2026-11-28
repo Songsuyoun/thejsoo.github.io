@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>상품 업데이트 보드 | 더제이수</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{
@@ -236,15 +239,15 @@ async function apiPost(body){
 }
 
 /* ---------- 불러오기 ---------- */
-async function loadSamples(){
-  try{ const j=await apiGet({action:'samples'}); samples=j.samples||[]; sizesData=j.sizes||[]; buildGroups(); fillVendors(); }
+async function loadSamples(fresh){
+  try{ const j=await apiGet(fresh?{action:'samples',fresh:'1'}:{action:'samples'}); samples=j.samples||[]; sizesData=j.sizes||[]; buildGroups(); fillVendors(); saveLocal(); }
   catch(e){ toast('샘플 시트를 못 불러왔어요: '+e.message,4000); }
 }
 async function loadBoard(){
   const d=weekDates();
   try{ cards=(await apiGet({action:'board',from:d[0],to:d[4]})).cards||[]; }
   catch(e){ toast('보드를 못 불러왔어요: '+e.message,4000); }
-  render();
+  render(); saveLocal();
 }
 
 /* ---------- 그리기 ---------- */
@@ -507,7 +510,7 @@ document.addEventListener('paste',e=>{
 $('#prevW').onclick=()=>{ weekStart=addDays(weekStart,-7); loadBoard(); };
 $('#nextW').onclick=()=>{ weekStart=addDays(weekStart,7); loadBoard(); };
 $('#thisW').onclick=()=>{ weekStart=startOfWeek(new Date()); loadBoard(); };
-$('#reload').onclick=async()=>{ await loadSamples(); await loadBoard(); toast('새로 불러왔어요'); };
+$('#reload').onclick=async()=>{ setLoading(true); await Promise.all([loadSamples(true), loadBoard()]); setLoading(false); toast('새로 불러왔어요'); };
 $('#copyWeek').onclick=()=>{
   const t=weekDates().map(dayText).filter(Boolean).join('\n\n──────────\n\n');
   if(!t){ toast('이번 주에 등록된 상품이 없어요'); return; }
@@ -518,6 +521,7 @@ $('#copyWeek').onclick=()=>{
 let demoCards=[];
 function demoGet(p){
   if(p.action==='samples') return {ok:true,samples:DEMO_SAMPLES,sizes:[{product:'26_FW_브리T',vendor:'님프',size:'FREE',vals:{'어깨':'38','가슴':'42','총길이':'50.5'}}]};
+  if(p.action==='init') return {ok:true,samples:DEMO_SAMPLES,sizes:[{product:'26_FW_브리T',vendor:'님프',size:'FREE',vals:{'어깨':'38','가슴':'42','총길이':'50.5'}}],cards:demoCards.filter(c=>c.date>=p.from&&c.date<=p.to).map(c=>({...c}))};
   if(p.action==='board') return {ok:true,cards:demoCards.filter(c=>c.date>=p.from&&c.date<=p.to).map(c=>({...c}))};
 }
 function demoPost(b){
@@ -548,10 +552,32 @@ function demoSeed(){
   ];
 }
 
+/* ---------- 빠른 첫 화면: 지난번 데이터를 먼저 보여 주고, 최신 데이터로 바꿈 ---------- */
+const LS_KEY='update_board_cache_v1';
+function saveLocal(){ if(DEMO) return; try{ localStorage.setItem(LS_KEY, JSON.stringify({samples,sizes:sizesData,cards,week:weekDates()[0]})); }catch(e){} }
+function loadLocal(){
+  if(DEMO) return false;
+  try{
+    const c=JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(!c) return false;
+    samples=c.samples||[]; sizesData=c.sizes||[]; buildGroups(); fillVendors();
+    cards = c.week===weekDates()[0] ? (c.cards||[]) : [];
+    render(); return true;
+  }catch(e){ return false; }
+}
+function setLoading(on){ const b=$('#reload'); b.textContent=on?'불러오는 중…':'새로고침'; b.disabled=on; }
+
 /* ---------- 시작 ---------- */
 (async()=>{
   if(DEMO){ $('#demoBar').hidden=false; demoSeed(); }
-  await loadSamples(); await loadBoard();
+  loadLocal();                       // 1) 저장해 둔 화면 바로 표시
+  setLoading(true);
+  const d=weekDates();
+  try{                               // 2) 서버에 한 번만 요청해서 샘플+실측+보드를 받아옴
+    const j=await apiGet({action:'init',from:d[0],to:d[4]});
+    samples=j.samples||[]; sizesData=j.sizes||[]; cards=j.cards||[];
+    buildGroups(); fillVendors(); render(); saveLocal();
+  }catch(e){ await loadSamples(); await loadBoard(); }
+  setLoading(false);
   // 사이즈 재고 돌아오면 실측이 바로 보이게
   let lastFocusLoad=0;
   window.addEventListener('focus',async()=>{ if(DEMO||Date.now()-lastFocusLoad<20000) return; lastFocusLoad=Date.now(); await loadSamples(); render(); });
