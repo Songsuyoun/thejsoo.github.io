@@ -41,7 +41,7 @@
   .drop:hover{background:#fff}
   .card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:grab}
   .card.dragging{opacity:.4}
-  .thumb{width:100%;height:260px;object-fit:contain;background:#f3f2f0;display:block;cursor:zoom-in}
+  .thumb{width:100%;height:190px;object-fit:contain;background:#f3f2f0;display:block;cursor:zoom-in}
   .nophoto{aspect-ratio:4/1;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:12px;background:#f3f2f0}
   .body{padding:10px;display:flex;flex-direction:column;gap:6px}
   .ttl{font-weight:700;font-size:14px;word-break:keep-all}
@@ -237,8 +237,8 @@ function render(){
     return `<section class="col ${d===today?'today':''}" data-date="${d}">
       <div class="colhead"><b>${md(d)}</b><span class="cnt">${list.length}건</span><span class="spacer"></span>
         <button class="btn ghost sm" data-copy="${d}" ${list.length?'':'disabled'}>카톡 복사</button></div>
-      <div class="drop" data-pick="${d}">사진을 끌어다 놓거나 눌러서 추가<br><small>복사한 사진은 이 칸에 마우스를 두고 Ctrl+V</small></div>
       ${list.map(c=>cardHtml(c,opts)).join('')}
+      <div class="drop" data-pick="${d}">사진을 끌어다 놓거나 눌러서 추가<br><small>복사한 사진은 이 칸에 마우스를 두고 Ctrl+V</small></div>
     </section>`;
   }).join('');
   document.querySelectorAll('.col select[data-move]').forEach(s=>{ s.value=s.dataset.cur; });
