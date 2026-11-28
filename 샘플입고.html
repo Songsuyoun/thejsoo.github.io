@@ -482,20 +482,27 @@ function onColorInput(val) {
 }
 
 // ── 사이즈 ──
+// selectedSize → 배열로 변경
+var selectedSizes = [];
+
 function toggleSize(btn) {
   var size = btn.dataset.size;
-  if (selectedSize === size) {
-    selectedSize = '';
+  var idx = selectedSizes.indexOf(size);
+  if (idx >= 0) {
+    selectedSizes.splice(idx, 1);
     btn.classList.remove('selected');
   } else {
-    selectedSize = size;
-    document.querySelectorAll('.size-btn').forEach(function(el) { el.classList.remove('selected'); });
+    selectedSizes.push(size);
     btn.classList.add('selected');
-    document.getElementById('sizeInput').value = '';  // 직접입력 초기화
   }
+  // 버튼 선택 시 직접입력 초기화
+  document.getElementById('sizeInput').value = '';
+  selectedSize = selectedSizes.join(', ');
 }
 function onSizeInput(val) {
   selectedSize = val.trim();
+  // 직접입력 시 버튼 선택 해제
+  selectedSizes = [];
   document.querySelectorAll('.size-btn').forEach(function(el) { el.classList.remove('selected'); });
 }
 
@@ -589,6 +596,7 @@ function clearProductForm() {
   selectedColor = '';
   // 사이즈 초기화
   selectedSize = '';
+  selectedSizes = [];
   document.querySelectorAll('.size-btn').forEach(function(el) { el.classList.remove('selected'); });
   document.getElementById('sizeInput').value = '';
   // 단가 초기화
