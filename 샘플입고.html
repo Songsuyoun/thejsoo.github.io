@@ -12,7 +12,6 @@
   --green: #2D6A4F; --green-light: #EAF4EE;
   --blue: #1A56A0; --blue-light: #EBF2FC;
   --red: #C0392B; --red-light: #FDECEA;
-  --amber: #B8860B; --amber-light: #FEF9E7;
   --accent: #E8756A;
   --radius: 14px; --shadow: 0 2px 12px rgba(0,0,0,0.07); --font: 'Noto Sans KR', sans-serif;
 }
@@ -28,10 +27,9 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 
 .main { max-width: 680px; margin: 0 auto; padding: 20px 16px; width: 100%; }
 
-/* 섹션 */
 .section { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
 .section-title { font-size: 13px; font-weight: 700; color: var(--gray-600); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-.step-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--black); color: white; font-size: 11px; font-weight: 700; }
+.step-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--black); color: white; font-size: 11px; font-weight: 700; flex-shrink: 0; }
 
 /* 거래처 검색 */
 .search-wrap { position: relative; }
@@ -43,8 +41,6 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .search-item:hover { background: var(--gray-100); }
 .search-item-name { font-weight: 600; }
 .search-item-meta { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
-
-/* 거래처 정보 카드 */
 .vendor-info-card { display: none; background: var(--blue-light); border: 1.5px solid #c0d8f0; border-radius: 10px; padding: 12px 14px; margin-top: 10px; }
 .vendor-info-card.show { display: block; }
 .vendor-info-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
@@ -58,40 +54,70 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .date-input { border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 11px 12px; font-size: 14px; font-family: var(--font); background: var(--white); outline: none; width: 100%; }
 .date-input:focus { border-color: var(--black); }
 
-/* 상품 목록 (요청중) */
-.product-list { display: flex; flex-direction: column; gap: 8px; }
-.product-item { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.15s; background: var(--white); }
-.product-item:hover { border-color: var(--gray-400); }
-.product-item.selected { border-color: var(--green); background: var(--green-light); }
-.product-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--gray-200); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; transition: all 0.15s; }
-.product-check.on { background: var(--green); border-color: var(--green); color: white; }
-.product-name { font-size: 13px; font-weight: 600; flex: 1; line-height: 1.4; }
-.product-source { font-size: 11px; color: var(--gray-400); margin-left: auto; flex-shrink: 0; }
+/* 상품 추가 폼 */
+.product-form { display: flex; flex-direction: column; gap: 10px; }
+.form-row { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+.form-input { border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 11px 13px; font-size: 14px; font-family: var(--font); background: var(--white); outline: none; width: 100%; }
+.form-input:focus { border-color: var(--black); }
 
-.empty-products { text-align: center; padding: 24px; color: var(--gray-400); font-size: 13px; }
+/* 혼용율 */
+.material-wrap { display: flex; flex-direction: column; gap: 6px; }
+.material-rows { display: flex; flex-direction: column; gap: 6px; }
+.material-row { display: flex; align-items: center; gap: 6px; }
+.material-name-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: var(--font); background: var(--white); outline: none; }
+.material-name-input:focus { border-color: var(--black); }
+.material-pct-wrap { display: flex; align-items: center; gap: 4px; }
+.material-pct-input { width: 64px; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 9px 10px; font-size: 13px; font-family: var(--font); background: var(--white); outline: none; text-align: right; }
+.material-pct-input:focus { border-color: var(--black); }
+.pct-unit { font-size: 12px; color: var(--gray-600); }
+.btn-del-material { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 16px; padding: 2px 4px; }
+.btn-del-material:hover { color: var(--red); }
+.btn-add-material { background: none; border: 1px dashed var(--gray-200); border-radius: 7px; padding: 7px 12px; font-size: 12px; font-weight: 600; color: var(--gray-600); cursor: pointer; font-family: var(--font); margin-top: 2px; width: 100%; text-align: left; }
+.btn-add-material:hover { background: var(--gray-100); }
+.material-preview { font-size: 11px; color: var(--blue); background: var(--blue-light); border-radius: 6px; padding: 5px 10px; margin-top: 2px; min-height: 24px; }
 
-/* 직접 추가 */
-.add-item-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
-.add-item-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 11px 13px; font-size: 14px; font-family: var(--font); background: var(--white); outline: none; }
-.add-item-input:focus { border-color: var(--black); }
-.btn-add-item { padding: 11px 16px; border-radius: 8px; border: none; background: var(--black); color: white; font-size: 13px; font-weight: 700; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+/* 칼라 */
+.color-wrap { display: flex; flex-direction: column; gap: 8px; }
+.color-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.color-chip { padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--gray-200); font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font); background: var(--white); transition: all 0.12s; color: var(--black); }
+.color-chip:hover { border-color: var(--gray-400); }
+.color-chip.selected { border-color: var(--black); background: var(--black); color: white; }
+.color-input { border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: var(--font); background: var(--white); outline: none; width: 100%; }
+.color-input:focus { border-color: var(--black); }
 
-/* 직접 추가 목록 */
-.manual-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.manual-item { border: 1.5px dashed var(--gray-200); border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; gap: 8px; background: var(--gray-100); }
-.manual-item-name { flex: 1; font-size: 13px; }
-.btn-del-manual { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 16px; padding: 2px; line-height: 1; }
-.btn-del-manual:hover { color: var(--red); }
+/* 사이즈 */
+.size-btns { display: flex; gap: 8px; }
+.size-btn { flex: 1; padding: 11px 0; border-radius: 8px; border: 1.5px solid var(--gray-200); font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font); background: var(--white); transition: all 0.12s; color: var(--black); }
+.size-btn:hover { border-color: var(--gray-400); }
+.size-btn.selected { border-color: var(--black); background: var(--black); color: white; }
 
-/* 선택 요약 */
-.summary-bar { background: var(--green-light); border: 1.5px solid var(--green); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; display: none; }
-.summary-bar.show { display: block; }
-.summary-text { font-size: 13px; color: var(--green); font-weight: 600; }
+/* 단가 */
+.price-wrap { display: flex; align-items: center; gap: 6px; }
+.price-input { flex: 1; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 11px 13px; font-size: 14px; font-family: var(--font); background: var(--white); outline: none; }
+.price-input:focus { border-color: var(--black); }
+.price-unit { font-size: 13px; color: var(--gray-600); font-weight: 500; white-space: nowrap; }
+
+/* 추가 버튼 */
+.btn-add-product { width: 100%; padding: 13px; border-radius: 10px; border: none; background: var(--black); color: white; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; margin-top: 4px; }
+.btn-add-product:hover { background: #333; }
+
+/* 추가된 상품 목록 */
+.added-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.added-item { border: 1.5px solid var(--green); background: var(--green-light); border-radius: 10px; padding: 11px 13px; display: flex; align-items: flex-start; gap: 10px; }
+.added-item-info { flex: 1; }
+.added-item-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.added-item-meta { font-size: 11px; color: var(--gray-600); line-height: 1.6; }
+.btn-del-added { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 16px; padding: 2px; flex-shrink: 0; }
+.btn-del-added:hover { color: var(--red); }
+
+/* 힌트 */
+.hint { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
 
 /* 저장 버튼 */
 .save-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 14px 16px; z-index: 50; }
-.save-inner { max-width: 680px; margin: 0 auto; display: flex; gap: 8px; }
-.btn-save { flex: 1; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: background 0.15s; }
+.save-inner { max-width: 680px; margin: 0 auto; }
+.btn-save { width: 100%; background: var(--green); color: white; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; }
 .btn-save:disabled { background: var(--gray-400) !important; cursor: not-allowed !important; }
 
 /* 완료 팝업 */
@@ -102,38 +128,23 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 .popup-icon { font-size: 48px; margin-bottom: 12px; }
 .popup-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
 .popup-desc { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6; }
-.popup-items { background: var(--gray-100); border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; text-align: left; }
+.popup-items { background: var(--gray-100); border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; text-align: left; max-height: 240px; overflow-y: auto; }
 .popup-items-title { font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 8px; }
 .popup-item { font-size: 12px; color: var(--black); padding: 3px 0; border-bottom: 1px solid var(--gray-200); }
 .popup-item:last-child { border-bottom: none; }
 .btn-popup-close { width: 100%; padding: 14px; border-radius: 10px; border: none; background: var(--green); color: white; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; }
 
-/* 로딩 */
-.spinner { width: 28px; height: 28px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 로딩 상태 */
-.loading-products { display: flex; align-items: center; gap: 12px; padding: 20px; justify-content: center; color: var(--gray-600); font-size: 13px; }
-
-/* 힌트 텍스트 */
-.hint { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
-
-.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 400; max-width: calc(100vw - 40px); text-align: center; }
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--black); color: white; padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 400; max-width: calc(100vw - 40px); text-align: center; white-space: pre-line; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* 전체선택 버튼 */
-.section-title-right { margin-left: auto; }
-.btn-select-all { background: none; border: 1px solid var(--gray-200); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; font-family: var(--font); cursor: pointer; color: var(--gray-600); }
-.btn-select-all:hover { background: var(--gray-100); }
 
 @media (max-width: 480px) {
   .main { padding: 14px 12px; }
-  .date-row { grid-template-columns: 1fr 1fr; }
-  .save-inner { flex-direction: column; }
-  input, select, textarea, button { touch-action: manipulation; }
-  input[type="text"], input[type="date"] { font-size: 16px !important; }
+  input, select, button { touch-action: manipulation; }
+  input[type="text"], input[type="date"], input[type="number"] { font-size: 16px !important; }
   .search-input { font-size: 16px !important; }
-  .add-item-input { font-size: 16px !important; }
 }
 </style>
 </head>
@@ -164,8 +175,6 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
       <div class="search-dropdown" id="vendorDropdown"></div>
     </div>
     <div class="hint">초성 검색 지원 (예: ㄷㄹㅍ → 드라이플라워)</div>
-
-    <!-- 선택된 거래처 정보 -->
     <div class="vendor-info-card" id="vendorInfoCard">
       <div class="vendor-info-name" id="viName"></div>
       <div class="vendor-info-row">📞 <span id="viPhone"></span></div>
@@ -191,41 +200,76 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
     </div>
   </div>
 
-  <!-- STEP 3: 요청중 상품 선택 -->
+  <!-- STEP 3: 상품 추가 -->
   <div class="section">
     <div class="section-title">
       <span class="step-badge">3</span>
-      요청중 상품 선택
-      <div class="section-title-right">
-        <button class="btn-select-all" onclick="selectAll()" id="btnSelectAll" style="display:none;">전체선택</button>
+      상품 추가
+    </div>
+    <div class="product-form">
+      <!-- 거래처 상품명 -->
+      <div class="form-row">
+        <div class="form-label">거래처 상품명 <span style="color:var(--accent)">*</span></div>
+        <input type="text" class="form-input" id="inputName" placeholder="예: 울 오버핏 코트">
       </div>
-    </div>
 
-    <!-- 초기 안내 -->
-    <div id="productPlaceholder" style="text-align:center; padding:24px; color:var(--gray-400); font-size:13px;">
-      ① 거래처를 먼저 선택해 주세요
-    </div>
-
-    <!-- 로딩 -->
-    <div id="productLoading" class="loading-products" style="display:none;">
-      <div class="spinner"></div>
-      <span>요청중 상품 불러오는 중...</span>
-    </div>
-
-    <!-- 상품 목록 -->
-    <div id="productList" class="product-list" style="display:none;"></div>
-
-    <!-- 직접 추가 -->
-    <div id="addSection" style="display:none; margin-top:14px;">
-      <div style="font-size:12px; font-weight:700; color:var(--gray-600); margin-bottom:8px;">➕ 목록에 없는 상품 직접 추가</div>
-      <div class="add-item-row">
-        <input type="text" class="add-item-input" id="manualInput"
-          placeholder="상품명 입력"
-          onkeydown="if(event.key==='Enter') addManualItem()">
-        <button class="btn-add-item" onclick="addManualItem()">추가</button>
+      <!-- 혼용율 -->
+      <div class="form-row">
+        <div class="form-label">혼용율</div>
+        <div class="material-wrap">
+          <div class="material-rows" id="materialRows">
+            <div class="material-row" data-idx="0">
+              <input type="text" class="material-name-input" placeholder="소재명 (예: 울)" oninput="updateMaterialPreview()">
+              <div class="material-pct-wrap">
+                <input type="number" class="material-pct-input" placeholder="0" min="0" max="100" oninput="updateMaterialPreview()">
+                <span class="pct-unit">%</span>
+              </div>
+              <button class="btn-del-material" onclick="delMaterialRow(this)" title="삭제">✕</button>
+            </div>
+          </div>
+          <button class="btn-add-material" onclick="addMaterialRow()">+ 소재 추가</button>
+          <div class="material-preview" id="materialPreview">-</div>
+        </div>
+        <div class="hint">소재명은 약어 자동 변환 (울·나이→나일론·폴리→폴리에스터 등)</div>
       </div>
-      <div class="manual-list" id="manualList"></div>
+
+      <!-- 칼라 -->
+      <div class="form-row">
+        <div class="form-label">칼라</div>
+        <div class="color-wrap">
+          <div class="color-presets" id="colorPresets">
+            <!-- JS로 렌더링 -->
+          </div>
+          <input type="text" class="color-input" id="colorInput" placeholder="직접 입력 또는 위에서 선택" oninput="onColorInput(this.value)">
+        </div>
+      </div>
+
+      <!-- 사이즈 -->
+      <div class="form-row">
+        <div class="form-label">사이즈</div>
+        <div class="size-btns">
+          <button class="size-btn" data-size="S" onclick="toggleSize(this)">S</button>
+          <button class="size-btn" data-size="M" onclick="toggleSize(this)">M</button>
+          <button class="size-btn" data-size="L" onclick="toggleSize(this)">L</button>
+          <button class="size-btn" data-size="Free" onclick="toggleSize(this)">Free</button>
+        </div>
+        <input type="text" class="form-input" id="sizeInput" placeholder="직접 입력 (예: XL, 55, 44-66)" style="margin-top:8px;" oninput="onSizeInput(this.value)">
+      </div>
+
+      <!-- 단가 -->
+      <div class="form-row">
+        <div class="form-label">단가</div>
+        <div class="price-wrap">
+          <input type="number" class="price-input" id="priceInput" placeholder="0" min="0">
+          <span class="price-unit">원</span>
+        </div>
+      </div>
+
+      <button class="btn-add-product" onclick="addProduct()">+ 목록에 추가</button>
     </div>
+
+    <!-- 추가된 상품 목록 -->
+    <div class="added-list" id="addedList"></div>
   </div>
 
 </div>
@@ -256,50 +300,106 @@ header { background: var(--black); padding: 16px 20px; display: flex; align-item
 <div class="toast" id="toast"></div>
 
 <script>
-var GAS_VENDOR_URL = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
-var GAS_SAMPLE_URL = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
+var GAS_VENDOR_URL  = 'https://script.google.com/macros/s/AKfycbyDdnhYVgXfr0MTOj0l_kKm6l7cQ061k6cHqtNPauhF7gYuKJWVFRcCQHij3c297b8O/exec';
+var GAS_SAMPLE_URL  = 'https://script.google.com/macros/s/AKfycbwfelSlPiN9AwwD5aID2ypYYjLh9B6lb2TpXHj6qXYIgNqEivojUicTGn7WzMwCChLGEQ/exec';
 
-// ── 거래처 DB ──
 var vendorDB = [];
-var selectedVendor = null;   // { 업체명, 전화번호, 위치 }
-var requestedItems = [];     // 해당 거래처의 요청중 상품 목록
-var manualItems = [];        // 직접 추가 상품
-var allSamplesCache = null;  // 전체 샘플 캐시 (로딩 최적화)
+var selectedVendor = null;
+var addedProducts = [];   // 이번 입고에 추가된 상품 목록
+var selectedSize = '';    // 선택된 사이즈
+var selectedColor = '';   // 선택된 칼라
+
+// ── 색상 프리셋 ──
+var COLOR_PRESETS = [
+  { label: '블랙', value: '블랙' },
+  { label: '화이트', value: '화이트' },
+  { label: '아이보리', value: '아이보리' },
+  { label: '베이지', value: '베이지' },
+  { label: '그레이', value: '그레이' },
+  { label: '네이비', value: '네이비' },
+  { label: '브라운', value: '브라운' },
+  { label: '카키', value: '카키' },
+  { label: '버건디', value: '버건디' },
+  { label: '블루', value: '블루' },
+  { label: '핑크', value: '핑크' },
+  { label: '레드', value: '레드' },
+];
+
+// ── 색상 약어 맵 (입력 → 정식명) ──
+var COLOR_ALIAS = {
+  '아이': '아이보리', '아이보': '아이보리', 'ivory': '아이보리',
+  '검정': '블랙', '검': '블랙', 'black': '블랙', 'bk': '블랙',
+  '흰': '화이트', '흰색': '화이트', 'white': '화이트', 'wh': '화이트',
+  '베': '베이지', 'beige': '베이지',
+  '회색': '그레이', '그레': '그레이', 'gray': '그레이', 'grey': '그레이',
+  '남': '네이비', '남색': '네이비', 'navy': '네이비', 'nv': '네이비',
+  '갈색': '브라운', 'brown': '브라운',
+  '카': '카키', 'khaki': '카키',
+  '버건': '버건디', '와인': '버건디', 'burgundy': '버건디', 'wine': '버건디',
+  '파란': '블루', '파랑': '블루', '파': '블루', 'blue': '블루',
+  '분홍': '핑크', '핑': '핑크', 'pink': '핑크',
+  '빨강': '레드', '빨': '레드', 'red': '레드',
+  '연두': '라임', 'lime': '라임',
+  '노랑': '옐로우', '노란': '옐로우', 'yellow': '옐로우',
+  '보라': '퍼플', 'purple': '퍼플', '자주': '퍼플',
+  '민트': '민트', 'mint': '민트',
+  '코랄': '코랄', 'coral': '코랄',
+  '오렌지': '오렌지', 'orange': '오렌지',
+};
+
+// ── 소재 약어 맵 ──
+var MATERIAL_ALIAS = {
+  '울': '울', '울100': '울', 'wool': '울',
+  '나이': '나일론', '나이론': '나일론', '나일': '나일론', 'nylon': '나일론', 'ny': '나일론',
+  '폴리': '폴리에스터', '폴리에': '폴리에스터', 'poly': '폴리에스터', 'polyester': '폴리에스터', 'pe': '폴리에스터',
+  '아크': '아크릴', '아크릴': '아크릴', 'acrylic': '아크릴',
+  '코튼': '면', '면': '면', 'cotton': '면', 'ct': '면',
+  '린넨': '린넨', 'linen': '린넨',
+  '비스': '비스코스', '비스코스': '비스코스', 'viscose': '비스코스',
+  '레이온': '레이온', 'rayon': '레이온',
+  '텐셀': '텐셀', 'tencel': '텐셀', 'lyocell': '라이오셀',
+  '모달': '모달', 'modal': '모달',
+  '캐시': '캐시미어', '캐시미어': '캐시미어', 'cashmere': '캐시미어',
+  '앙고라': '앙고라', 'angora': '앙고라',
+  '스판': '스판덱스', '스판덱스': '스판덱스', 'spandex': '스판덱스', 'elastane': '스판덱스',
+  '실크': '실크', 'silk': '실크',
+  '가죽': '가죽', '피혁': '가죽', 'leather': '가죽',
+  '폴리우레탄': '폴리우레탄', 'pu': '폴리우레탄', 'polyurethane': '폴리우레탄',
+};
+
+function normalizeMaterial(raw) {
+  var s = raw.trim().toLowerCase();
+  for (var k in MATERIAL_ALIAS) {
+    if (s === k.toLowerCase()) return MATERIAL_ALIAS[k];
+  }
+  return raw.trim();
+}
+
+function normalizeColor(raw) {
+  var s = raw.trim().toLowerCase();
+  for (var k in COLOR_ALIAS) {
+    if (s === k.toLowerCase()) return COLOR_ALIAS[k];
+  }
+  return raw.trim();
+}
 
 // ── 초기화 ──
 window.addEventListener('load', function() {
   setDefaultDates();
-  // 거래처 + 전체샘플 동시에 미리 로드 (각각 독립 실행, 한쪽 실패해도 다른쪽 영향 없음)
   loadVendors();
-  preloadSamples();
+  renderColorPresets();
 });
 
 function setDefaultDates() {
   var today = new Date();
-  var due   = new Date(today);
+  var due = new Date(today);
   due.setDate(due.getDate() + 14);
   document.getElementById('inDate').value  = formatDate(today);
   document.getElementById('dueDate').value = formatDate(due);
 }
 
 function formatDate(d) {
-  var y = d.getFullYear();
-  var m = String(d.getMonth()+1).padStart(2,'0');
-  var dd = String(d.getDate()).padStart(2,'0');
-  return y + '-' + m + '-' + dd;
-}
-
-// ── 전체 샘플 미리 로드 (캐시) ──
-async function preloadSamples() {
-  try {
-    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll');
-    var data = await res.json();
-    if (data.result === 'ok') {
-      allSamplesCache = data.rows || [];
-    }
-  } catch(e) {
-    allSamplesCache = null; // 실패 시 null 유지 → 거래처 선택 시 재시도
-  }
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
 // ── 거래처 로드 ──
@@ -307,26 +407,16 @@ async function loadVendors() {
   try {
     var res = await fetch(GAS_VENDOR_URL + '?action=getVendors');
     var data = await res.json();
-    if (data.result === 'ok') {
-      vendorDB = data.vendors || [];
-    }
-  } catch(e) {
-    console.warn('거래처 로드 실패, 빌트인 목록 사용');
-    vendorDB = [];
-  }
+    if (data.result === 'ok') vendorDB = data.vendors || [];
+  } catch(e) {}
 }
 
-// ── 거래처 검색 입력 ──
+// ── 거래처 검색 ──
 function onVendorInput(val) {
   val = val.trim();
   var dd = document.getElementById('vendorDropdown');
+  if (!val) { dd.style.display = 'none'; return; }
 
-  if (!val) {
-    dd.style.display = 'none';
-    return;
-  }
-
-  // 검색 매칭
   var matched = vendorDB.filter(function(v) {
     var name = v['업체명'] || '';
     var alias = v['별칭'] || '';
@@ -336,288 +426,286 @@ function onVendorInput(val) {
       || matchChosong(alias, val);
   }).slice(0, 12);
 
-  if (!matched.length) {
-    dd.style.display = 'none';
-    return;
-  }
+  if (!matched.length) { dd.style.display = 'none'; return; }
 
   dd.innerHTML = '';
   matched.forEach(function(v) {
     var div = document.createElement('div');
     div.className = 'search-item';
-    var name = v['업체명'] || '';
-    var phone = v['전화번호'] || '';
-    var addr  = v['위치'] || '';
     div.innerHTML =
-      '<div class="search-item-name">' + highlight(name, val) + '</div>' +
-      '<div class="search-item-meta">' + esc(phone) + (addr ? ' · ' + esc(addr) : '') + '</div>';
-    div.addEventListener('click', function() {
-      selectVendor(v);
-    });
+      '<div class="search-item-name">' + highlight(v['업체명']||'', val) + '</div>' +
+      '<div class="search-item-meta">' + esc(v['전화번호']||'') + (v['위치'] ? ' · ' + esc(v['위치']) : '') + '</div>';
+    div.addEventListener('click', function() { selectVendor(v); });
     dd.appendChild(div);
   });
   dd.style.display = 'block';
 }
 
-function highlight(text, keyword) {
-  if (!keyword) return esc(text);
-  var re = new RegExp('(' + escapeReg(keyword) + ')', 'gi');
-  return esc(text).replace(re, '<strong style="color:var(--accent);">$1</strong>');
-}
+function closeDropdown() { document.getElementById('vendorDropdown').style.display = 'none'; }
 
-function closeDropdown() {
-  document.getElementById('vendorDropdown').style.display = 'none';
-}
-
-// ── 거래처 선택 ──
 function selectVendor(v) {
   selectedVendor = v;
   document.getElementById('vendorSearchInput').value = v['업체명'] || '';
   closeDropdown();
-
-  // 거래처 정보 표시
-  document.getElementById('viName').textContent = v['업체명'] || '';
-  document.getElementById('viPhone').textContent = v['전화번호'] || '-';
-  document.getElementById('viAddr').textContent  = v['위치'] || '-';
+  document.getElementById('viName').textContent   = v['업체명'] || '';
+  document.getElementById('viPhone').textContent  = v['전화번호'] || '-';
+  document.getElementById('viAddr').textContent   = v['위치'] || '-';
   document.getElementById('vendorInfoCard').classList.add('show');
-
-  // 요청중 상품 로드
-  loadRequestedItems(v['업체명']);
-}
-
-// ── 요청중 상품 로드 (캐시 우선, 없으면 fetch) ──
-async function loadRequestedItems(vendorName) {
-  document.getElementById('productPlaceholder').style.display = 'none';
-  document.getElementById('productList').style.display = 'none';
-  document.getElementById('addSection').style.display = 'none';
-  document.getElementById('btnSelectAll').style.display = 'none';
-  requestedItems = [];
-  updateSaveBtn();
-
-  // ✅ 캐시가 있으면 네트워크 없이 즉시 필터
-  if (allSamplesCache !== null) {
-    requestedItems = allSamplesCache
-      .filter(function(r) {
-        return r['거래처'] === vendorName && r['상태'] === '요청중';
-      })
-      .map(function(r) {
-        return Object.assign({}, r, { selected: false });
-      });
-    renderProductList();
-    document.getElementById('addSection').style.display = 'block';
-    updateSaveBtn();
-    return;
-  }
-
-  // ⏳ 캐시 없으면 로딩 표시 후 fetch (fallback)
-  document.getElementById('productLoading').style.display = 'flex';
-  try {
-    var res = await fetch(GAS_SAMPLE_URL + '?action=getAll');
-    var data = await res.json();
-    if (data.result === 'ok') {
-      allSamplesCache = data.rows || []; // 이번 기회에 캐시 저장
-      requestedItems = allSamplesCache
-        .filter(function(r) {
-          return r['거래처'] === vendorName && r['상태'] === '요청중';
-        })
-        .map(function(r) {
-          return Object.assign({}, r, { selected: false });
-        });
-    }
-  } catch(e) {
-    showToast('❌ 데이터 로드 실패');
-  }
-  document.getElementById('productLoading').style.display = 'none';
-  renderProductList();
-  document.getElementById('addSection').style.display = 'block';
   updateSaveBtn();
 }
 
-// ── 요청중 상품 렌더링 ──
-function renderProductList() {
-  var listEl = document.getElementById('productList');
-
-  if (!requestedItems.length) {
-    listEl.innerHTML = '<div class="empty-products">이 거래처의 요청중 상품이 없어요.<br>아래에서 직접 추가하세요.</div>';
-    listEl.style.display = 'block';
-    document.getElementById('btnSelectAll').style.display = 'none';
-    return;
-  }
-
-  document.getElementById('btnSelectAll').style.display = 'inline-flex';
-
-  var html = '';
-  requestedItems.forEach(function(item, idx) {
-    var isSelected = item.selected;
-    html += '<div class="product-item' + (isSelected ? ' selected' : '') + '" onclick="toggleProduct(' + idx + ')" id="pitem-' + idx + '">';
-    html += '<div class="product-check' + (isSelected ? ' on' : '') + '" id="pcheck-' + idx + '">' + (isSelected ? '✓' : '') + '</div>';
-    html += '<div class="product-name">' + esc(item['상품명'] || '') + '</div>';
-    if (item['출처']) html += '<div class="product-source">' + esc(item['출처']) + '</div>';
-    html += '</div>';
+// ── 색상 프리셋 렌더링 ──
+function renderColorPresets() {
+  var wrap = document.getElementById('colorPresets');
+  wrap.innerHTML = '';
+  COLOR_PRESETS.forEach(function(c) {
+    var btn = document.createElement('button');
+    btn.className = 'color-chip';
+    btn.textContent = c.label;
+    btn.dataset.value = c.value;
+    btn.onclick = function() {
+      document.querySelectorAll('.color-chip').forEach(function(el) { el.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedColor = c.value;
+      document.getElementById('colorInput').value = c.value;
+    };
+    wrap.appendChild(btn);
   });
-
-  listEl.innerHTML = html;
-  listEl.style.display = 'block';
 }
 
-// ── 상품 체크 토글 ──
-function toggleProduct(idx) {
-  requestedItems[idx].selected = !requestedItems[idx].selected;
-  var el = document.getElementById('pitem-' + idx);
-  var chk = document.getElementById('pcheck-' + idx);
-  if (requestedItems[idx].selected) {
-    el.classList.add('selected');
-    chk.classList.add('on'); chk.textContent = '✓';
+function onColorInput(val) {
+  var normalized = normalizeColor(val);
+  selectedColor = normalized;
+  document.querySelectorAll('.color-chip').forEach(function(el) {
+    el.classList.toggle('selected', el.dataset.value === normalized);
+  });
+}
+
+// ── 사이즈 ──
+function toggleSize(btn) {
+  var size = btn.dataset.size;
+  if (selectedSize === size) {
+    selectedSize = '';
+    btn.classList.remove('selected');
   } else {
-    el.classList.remove('selected');
-    chk.classList.remove('on'); chk.textContent = '';
+    selectedSize = size;
+    document.querySelectorAll('.size-btn').forEach(function(el) { el.classList.remove('selected'); });
+    btn.classList.add('selected');
+    document.getElementById('sizeInput').value = '';  // 직접입력 초기화
   }
-  updateSaveBtn();
+}
+function onSizeInput(val) {
+  selectedSize = val.trim();
+  document.querySelectorAll('.size-btn').forEach(function(el) { el.classList.remove('selected'); });
 }
 
-// ── 전체 선택 ──
-function selectAll() {
-  var anyUnselected = requestedItems.some(function(r) { return !r.selected; });
-  requestedItems.forEach(function(r, idx) {
-    r.selected = anyUnselected;
+// ── 혼용율 ──
+function addMaterialRow() {
+  var rows = document.getElementById('materialRows');
+  var idx = rows.children.length;
+  var div = document.createElement('div');
+  div.className = 'material-row';
+  div.dataset.idx = idx;
+  div.innerHTML =
+    '<input type="text" class="material-name-input" placeholder="소재명 (예: 폴리)" oninput="updateMaterialPreview()">' +
+    '<div class="material-pct-wrap">' +
+      '<input type="number" class="material-pct-input" placeholder="0" min="0" max="100" oninput="updateMaterialPreview()">' +
+      '<span class="pct-unit">%</span>' +
+    '</div>' +
+    '<button class="btn-del-material" onclick="delMaterialRow(this)" title="삭제">✕</button>';
+  rows.appendChild(div);
+}
+
+function delMaterialRow(btn) {
+  var row = btn.closest('.material-row');
+  var rows = document.getElementById('materialRows');
+  if (rows.children.length <= 1) {
+    row.querySelectorAll('input').forEach(function(el) { el.value = ''; });
+  } else {
+    row.remove();
+  }
+  updateMaterialPreview();
+}
+
+function updateMaterialPreview() {
+  var rows = document.getElementById('materialRows').querySelectorAll('.material-row');
+  var parts = [];
+  rows.forEach(function(row) {
+    var nameEl = row.querySelector('.material-name-input');
+    var pctEl  = row.querySelector('.material-pct-input');
+    if (!nameEl || !pctEl) return;
+    var name = nameEl.value.trim();
+    var pct  = pctEl.value.trim();
+    if (name && pct) {
+      parts.push(normalizeMaterial(name) + ' ' + pct + '%');
+    }
   });
-  renderProductList();
+  var preview = document.getElementById('materialPreview');
+  preview.textContent = parts.length ? parts.join(' ') : '-';
+}
+
+function getMaterialString() {
+  var rows = document.getElementById('materialRows').querySelectorAll('.material-row');
+  var parts = [];
+  rows.forEach(function(row) {
+    var nameEl = row.querySelector('.material-name-input');
+    var pctEl  = row.querySelector('.material-pct-input');
+    if (!nameEl || !pctEl) return;
+    var name = nameEl.value.trim();
+    var pct  = pctEl.value.trim();
+    if (name && pct) {
+      parts.push(normalizeMaterial(name) + ' ' + pct + '%');
+    }
+  });
+  return parts.join(' ');
+}
+
+// ── 상품 추가 ──
+function addProduct() {
+  var name = document.getElementById('inputName').value.trim();
+  if (!name) { showToast('상품명을 입력해주세요'); return; }
+
+  var material = getMaterialString();
+  var color    = normalizeColor(document.getElementById('colorInput').value.trim());
+  var size     = selectedSize;
+  var price    = document.getElementById('priceInput').value.trim();
+
+  addedProducts.push({ name: name, material: material, color: color, size: size, price: price });
+  renderAddedList();
+  clearProductForm();
   updateSaveBtn();
 }
 
-// ── 직접 추가 ──
-function addManualItem() {
-  var inp = document.getElementById('manualInput');
-  var val = inp.value.trim();
-  if (!val) return;
-  manualItems.push(val);
-  inp.value = '';
-  renderManualList();
-  updateSaveBtn();
+function clearProductForm() {
+  document.getElementById('inputName').value = '';
+  // 혼용율 초기화
+  var rows = document.getElementById('materialRows');
+  rows.innerHTML = '';
+  addMaterialRowEl(rows);
+  updateMaterialPreview();
+  // 칼라 초기화
+  document.getElementById('colorInput').value = '';
+  document.querySelectorAll('.color-chip').forEach(function(el) { el.classList.remove('selected'); });
+  selectedColor = '';
+  // 사이즈 초기화
+  selectedSize = '';
+  document.querySelectorAll('.size-btn').forEach(function(el) { el.classList.remove('selected'); });
+  document.getElementById('sizeInput').value = '';
+  // 단가 초기화
+  document.getElementById('priceInput').value = '';
 }
 
-function removeManualItem(idx) {
-  manualItems.splice(idx, 1);
-  renderManualList();
-  updateSaveBtn();
+function addMaterialRowEl(container) {
+  var div = document.createElement('div');
+  div.className = 'material-row';
+  div.innerHTML =
+    '<input type="text" class="material-name-input" placeholder="소재명 (예: 울)" oninput="updateMaterialPreview()">' +
+    '<div class="material-pct-wrap">' +
+      '<input type="number" class="material-pct-input" placeholder="0" min="0" max="100" oninput="updateMaterialPreview()">' +
+      '<span class="pct-unit">%</span>' +
+    '</div>' +
+    '<button class="btn-del-material" onclick="delMaterialRow(this)" title="삭제">✕</button>';
+  container.appendChild(div);
 }
 
-function renderManualList() {
+function renderAddedList() {
   var html = '';
-  manualItems.forEach(function(name, idx) {
-    html += '<div class="manual-item">';
-    html += '<div class="manual-item-name">✏️ ' + esc(name) + '</div>';
-    html += '<button class="btn-del-manual" onclick="removeManualItem(' + idx + ')">✕</button>';
-    html += '</div>';
+  addedProducts.forEach(function(p, i) {
+    var meta = [];
+    if (p.material) meta.push('혼용율: ' + p.material);
+    if (p.color)    meta.push('칼라: ' + p.color);
+    if (p.size)     meta.push('사이즈: ' + p.size);
+    if (p.price)    meta.push('단가: ' + Number(p.price).toLocaleString() + '원');
+
+    html += '<div class="added-item">' +
+      '<div class="added-item-info">' +
+        '<div class="added-item-name">' + esc(p.name) + '</div>' +
+        (meta.length ? '<div class="added-item-meta">' + esc(meta.join(' · ')) + '</div>' : '') +
+      '</div>' +
+      '<button class="btn-del-added" onclick="removeProduct(' + i + ')">✕</button>' +
+      '</div>';
   });
-  document.getElementById('manualList').innerHTML = html;
+  document.getElementById('addedList').innerHTML = html;
+}
+
+function removeProduct(i) {
+  addedProducts.splice(i, 1);
+  renderAddedList();
+  updateSaveBtn();
 }
 
 // ── 저장 버튼 상태 ──
 function updateSaveBtn() {
-  var hasVendor = !!selectedVendor;
-  var selectedCount = requestedItems.filter(function(r) { return r.selected; }).length + manualItems.length;
   var btn = document.getElementById('btnSave');
-  btn.disabled = !hasVendor || selectedCount === 0;
-  if (hasVendor && selectedCount > 0) {
-    btn.textContent = '📥 입고 처리 (' + selectedCount + '개)';
-    btn.style.background = 'var(--green)';
-  } else if (!hasVendor) {
+  var ok = selectedVendor && addedProducts.length > 0;
+  btn.disabled = !ok;
+  if (!selectedVendor) {
     btn.textContent = '① 거래처를 먼저 선택하세요';
-    btn.style.background = 'var(--gray-400)';
+  } else if (addedProducts.length === 0) {
+    btn.textContent = '③ 상품을 추가하세요';
   } else {
-    btn.textContent = '③ 상품을 선택하거나 추가하세요';
-    btn.style.background = 'var(--gray-400)';
+    btn.textContent = '📥 입고 처리 (' + addedProducts.length + '개)';
   }
 }
 
 // ── 입고 저장 ──
 async function saveAll() {
   if (!selectedVendor) { showToast('거래처를 선택해주세요'); return; }
-
-  var selectedRequested = requestedItems.filter(function(r) { return r.selected; });
-  var totalCount = selectedRequested.length + manualItems.length;
-  if (totalCount === 0) { showToast('상품을 선택하거나 추가해주세요'); return; }
+  if (!addedProducts.length) { showToast('상품을 추가해주세요'); return; }
 
   var inDate  = document.getElementById('inDate').value;
   var dueDate = document.getElementById('dueDate').value;
   if (!inDate || !dueDate) { showToast('날짜를 입력해주세요'); return; }
 
   var btn = document.getElementById('btnSave');
-  btn.disabled = true; btn.textContent = '처리 중...';
+  btn.disabled = true;
+  btn.textContent = '처리 중...';
 
   var success = 0;
   var savedNames = [];
 
-  // 1. 요청중 상품: 상태 업데이트 (보유중으로)
-  for (var i = 0; i < selectedRequested.length; i++) {
-    var item = selectedRequested[i];
-    try {
-      var payload = encodeURIComponent(JSON.stringify({
-        '_row': item['_row'],
-        '상태': '보유중',
-        '입고일': inDate,
-        '반납기한': dueDate
-      }));
-      var r1 = await fetch(GAS_SAMPLE_URL + '?action=updateStatus&data=' + payload);
-      var j1 = await r1.json();
-      if (j1.result === 'ok') { success++; savedNames.push(item['상품명'] || ''); }
-      else { console.error('updateStatus 실패:', j1); }
-    } catch(e) { console.error('updateStatus 오류:', e); }
-  }
-
-  // 2. 직접 추가 상품: 새 행으로 저장 (action=add)
-  for (var j = 0; j < manualItems.length; j++) {
-    var mName = manualItems[j];
+  for (var i = 0; i < addedProducts.length; i++) {
+    var p = addedProducts[i];
     try {
       var newRow = {
-        '상품명': mName,
+        '상품명': p.name,
         '거래처': selectedVendor['업체명'],
-        '연락처': selectedVendor['전화번호'],
-        '주소': selectedVendor['위치'],
+        '연락처': selectedVendor['전화번호'] || '',
+        '주소': selectedVendor['위치'] || '',
         '입고일': inDate,
         '반납기한': dueDate,
         '상태': '보유중',
         '요청일': inDate,
         '출처': '수기입고',
+        '혼용율': p.material || '',
+        '칼라': p.color || '',
+        '사이즈': p.size || '',
+        '단가': p.price || '',
         '비고': ''
       };
-      var payload2 = encodeURIComponent(JSON.stringify(newRow));
-      var r2 = await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload2);
-      var j2 = await r2.json();
-      if (j2.result === 'ok') { success++; savedNames.push(mName); }
-      else { console.error('add 실패:', j2); }
-    } catch(e) { console.error('add 오류:', e); }
+      var payload = encodeURIComponent(JSON.stringify(newRow));
+      var res = await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload);
+      var data = await res.json();
+      if (data.result === 'ok') { success++; savedNames.push(p.name); }
+    } catch(e) {}
   }
 
-  // 결과 처리
-  var failCount = (selectedRequested.length + manualItems.length) - success;
-  if (failCount > 0) {
-    showToast('⚠️ ' + failCount + '개 저장 실패 — 콘솔(F12) 확인');
-  }
+  var failCount = addedProducts.length - success;
   if (success > 0) {
-    // ✅ 캐시 업데이트: 입고 처리된 상품은 캐시에서도 '보유중'으로 변경
-    // (다른 거래처 선택 시 목록에 안 뜨도록)
-    if (allSamplesCache) {
-      selectedRequested.forEach(function(item) {
-        var cached = allSamplesCache.find(function(r) { return r['_row'] === item['_row']; });
-        if (cached) {
-          cached['상태'] = '보유중';
-          cached['입고일'] = inDate;
-          cached['반납기한'] = dueDate;
-        }
-      });
-    }
-    showSuccessPopup(selectedVendor['업체명'], savedNames, inDate, dueDate);
+    showSuccessPopup(selectedVendor['업체명'], savedNames, inDate, dueDate, failCount);
+  } else {
+    showToast('❌ 저장 실패. 네트워크를 확인해주세요');
+    btn.disabled = false;
+    updateSaveBtn();
   }
-  btn.disabled = false;
 }
 
 // ── 완료 팝업 ──
-function showSuccessPopup(vendorName, names, inDate, dueDate) {
+function showSuccessPopup(vendorName, names, inDate, dueDate, failCount) {
   document.getElementById('popupDesc').innerHTML =
     '<strong>' + esc(vendorName) + '</strong> · ' + names.length + '개 상품<br>' +
-    '입고일 ' + inDate + ' · 반납기한 ' + dueDate;
+    '입고일 ' + inDate + ' · 반납기한 ' + dueDate +
+    (failCount > 0 ? '<br><span style="color:var(--red)">⚠ ' + failCount + '개 저장 실패</span>' : '');
 
   var itemHtml = '';
   names.forEach(function(n) {
@@ -636,22 +724,25 @@ function closePopup() {
 // ── 전체 초기화 ──
 function resetAll() {
   selectedVendor = null;
-  requestedItems = [];
-  manualItems = [];
+  addedProducts = [];
+  selectedSize = '';
+  selectedColor = '';
   document.getElementById('vendorSearchInput').value = '';
   document.getElementById('vendorInfoCard').classList.remove('show');
-  document.getElementById('productPlaceholder').style.display = 'block';
-  document.getElementById('productList').style.display = 'none';
-  document.getElementById('productList').innerHTML = '';
-  document.getElementById('addSection').style.display = 'none';
-  document.getElementById('manualList').innerHTML = '';
-  document.getElementById('btnSelectAll').style.display = 'none';
+  clearProductForm();
+  document.getElementById('addedList').innerHTML = '';
   setDefaultDates();
   updateSaveBtn();
 }
 
 // ── 유틸 ──
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function highlight(text, keyword) {
+  if (!keyword) return esc(text);
+  var re = new RegExp('(' + escapeReg(keyword) + ')', 'gi');
+  return esc(text).replace(re, '<strong style="color:var(--accent);">$1</strong>');
+}
 
 function showToast(msg) {
   var t = document.getElementById('toast');
@@ -660,35 +751,26 @@ function showToast(msg) {
   setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 
-// 초성 검색
 var CHOSONG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
 function getChosong(str) {
   var result = '';
   for (var i = 0; i < str.length; i++) {
     var code = str.charCodeAt(i) - 0xAC00;
-    if (code >= 0 && code <= 11171) {
-      result += CHOSONG[Math.floor(code / 588)];
-    } else {
-      result += str[i];
-    }
+    result += (code >= 0 && code <= 11171) ? CHOSONG[Math.floor(code / 588)] : str[i];
   }
   return result;
 }
 function matchChosong(target, keyword) {
   if (!keyword || !target) return false;
   var isChosong = keyword.split('').every(function(c) { return CHOSONG.indexOf(c) >= 0; });
-  if (isChosong) return getChosong(target).indexOf(keyword) >= 0;
-  return false;
+  return isChosong ? getChosong(target).indexOf(keyword) >= 0 : false;
 }
 function escapeReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-// 바깥 클릭 시 드롭다운 닫기
 document.addEventListener('click', function(e) {
   var inp = document.getElementById('vendorSearchInput');
   var dd  = document.getElementById('vendorDropdown');
-  if (inp && !inp.contains(e.target) && dd && !dd.contains(e.target)) {
-    dd.style.display = 'none';
-  }
+  if (inp && !inp.contains(e.target) && dd && !dd.contains(e.target)) dd.style.display = 'none';
 });
 </script>
 </body>
