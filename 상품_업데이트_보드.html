@@ -390,15 +390,54 @@ async function updateCard(id,fields,quiet){
   catch(e){ Object.assign(c,backup); render(); toast('저장 실패: '+e.message,4000); }
 }
 
+/* ---------- 저장 전 양식 맞추기 ---------- */
+// 컬러 줄임말 → 정식 이름 (필요하면 여기에 한 줄씩 추가)
+const COLOR_FIX={'아이':'아이보리'};
+function fixColors(v){
+  return v.split(/[,\/]+/).map(s=>s.trim()).filter(Boolean)
+    .map(s=>COLOR_FIX[s]||s).join(', ');
+}
+function fixSizes(v){
+  return v.split(/[,\/]+/).map(s=>s.trim()).filter(Boolean).map(s=>{
+    if(/^(f|free|프리|프리사이즈|fr)$/i.test(s)) return 'Free';
+    if(/^(xs|s|m|l|xl|xxl)$/i.test(s)) return s.toUpperCase();
+    return s;
+  }).join(', ');
+}
+// "울80레이온20", "울 80%, 레이온 20%", "80% 울 20% 레이온" → "울 80% 레이온 20%"
+function fixMix(v){
+  v=v.trim(); if(!v) return v;
+  const out=[]; let m;
+  if(/^\d/.test(v)){   // 숫자가 앞에 오는 경우: "80% 울 20% 레이온"
+    const numFirst=/(\d+(?:\.\d+)?)\s*%?\s*([가-힣A-Za-z]+)/g;
+    while((m=numFirst.exec(v))) out.push(`${m[2]} ${m[1]}%`);
+  }else{
+    const nameFirst=/([가-힣A-Za-z]+)\s*[:：\-]?\s*(\d+(?:\.\d+)?)\s*%?/g;
+    while((m=nameFirst.exec(v))) out.push(`${m[1]} ${m[2]}%`);
+  }
+  return out.length ? out.join(' ') : v;   // 못 알아보면 입력 그대로
+}
+function mixTotal(v){ return (v.match(/(\d+(?:\.\d+)?)%/g)||[]).reduce((a,x)=>a+parseFloat(x),0); }
+
 /* ---------- 상품 정보 수정 → 샘플 시트 저장 ---------- */
 async function saveInfo(id,cardEl){
   const c=cards.find(x=>x.id===id); if(!c) return;
   const fields={};
   cardEl.querySelectorAll('[data-ef]').forEach(inp=>{
-    let v=inp.value.trim();
-    if(inp.dataset.ef!=='price') v=v.replace(/\s*,\s*/g,', ');
-    fields[inp.dataset.ef]=v;
+    let v=inp.value.trim(); const k=inp.dataset.ef;
+    if(k==='colors') v=fixColors(v);
+    else if(k==='sizes') v=fixSizes(v);
+    else if(k==='mix') v=fixMix(v);
+    else if(k==='price') v=v.replace(/[^\d]/g,'');
+    fields[k]=v;
   });
+  if(fields.mix){
+    const t=mixTotal(fields.mix);
+    if(!t && !confirm(`혼용률에 숫자(%)가 없어요.\n입력: ${fields.mix}\n\n예) 울 80% 레이온 20%\n\n[취소]를 누르면 다시 고칠 수 있어요.\n그래도 이대로 저장할까요?`)){
+      cardEl.querySelector('[data-ef="mix"]')?.focus(); return;
+    }
+    if(t &&Math.abs(t-100)>0.01 && !confirm(`혼용률 합계가 ${t}%예요.\n${fields.mix}\n\n이대로 저장할까요?`)) return;
+  }
   const btn=cardEl.querySelector('[data-esave]'); btn.disabled=true; btn.textContent='저장 중…';
   try{
     const r=await apiPost({action:'updateSample',vendor:c.vendor,inDate:c.inDate,product:c.product,fields});
