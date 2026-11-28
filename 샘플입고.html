@@ -683,21 +683,25 @@ async function saveAll() {
   for (var i = 0; i < addedProducts.length; i++) {
     var p = addedProducts[i];
     try {
+      // 시트 헤더 순서: 상품명/거래처/연락처/주소/이미지URL/요청일/입고일/반납기한/상태/반납일/출처/비고/혼용률/칼라/사이즈/단가/업데이트일
       var newRow = {
         '상품명': p.name,
         '거래처': selectedVendor ? selectedVendor['업체명'] : (p.vendor || ''),
         '연락처': selectedVendor ? (selectedVendor['전화번호'] || '') : '',
         '주소': selectedVendor ? (selectedVendor['위치'] || '') : '',
+        '이미지URL': '',
+        '요청일': inDate,
         '입고일': inDate,
         '반납기한': dueDate,
         '상태': '보유중',
-        '요청일': inDate,
+        '반납일': '',
         '출처': '수기입고',
+        '비고': '',
         '혼용률': p.material || '',
         '칼라': p.color || '',
         '사이즈': p.size || '',
         '단가': p.price || '',
-        '비고': ''
+        '업데이트일': ''
       };
       var payload = encodeURIComponent(JSON.stringify(newRow));
       var res = await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload);
