@@ -656,12 +656,10 @@ function removeProduct(i) {
 // ── 저장 버튼 상태 ──
 function updateSaveBtn() {
   var btn = document.getElementById('btnSave');
-  var ok = selectedVendor && addedProducts.length > 0;
+  var ok = addedProducts.length > 0;
   btn.disabled = !ok;
-  if (!selectedVendor) {
-    btn.textContent = '① 거래처를 먼저 선택하세요';
-  } else if (addedProducts.length === 0) {
-    btn.textContent = '③ 상품을 추가하세요';
+  if (addedProducts.length === 0) {
+    btn.textContent = selectedVendor ? '③ 상품을 추가하세요' : '① 거래처 선택 후 상품을 추가하세요';
   } else {
     btn.textContent = '📥 입고 처리 (' + addedProducts.length + '개)';
   }
@@ -669,7 +667,6 @@ function updateSaveBtn() {
 
 // ── 입고 저장 ──
 async function saveAll() {
-  if (!selectedVendor) { showToast('거래처를 선택해주세요'); return; }
   if (!addedProducts.length) { showToast('상품을 추가해주세요'); return; }
 
   var inDate  = document.getElementById('inDate').value;
@@ -688,9 +685,9 @@ async function saveAll() {
     try {
       var newRow = {
         '상품명': p.name,
-        '거래처': selectedVendor['업체명'],
-        '연락처': selectedVendor['전화번호'] || '',
-        '주소': selectedVendor['위치'] || '',
+        '거래처': selectedVendor ? selectedVendor['업체명'] : (p.vendor || ''),
+        '연락처': selectedVendor ? (selectedVendor['전화번호'] || '') : '',
+        '주소': selectedVendor ? (selectedVendor['위치'] || '') : '',
         '입고일': inDate,
         '반납기한': dueDate,
         '상태': '보유중',
