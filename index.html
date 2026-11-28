@@ -28,6 +28,7 @@
       color: var(--text-primary);
     }
 
+    /* ── 상단 ── */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -36,27 +37,84 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 1rem;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .header-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
-    .header-right { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+    .header-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .clock { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .search {
+      width: 220px;
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg);
+      font: inherit;
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .search:focus { border-color: var(--border-hover); background: var(--surface); }
 
-    main { max-width: 1040px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+    main { max-width: 1040px; margin: 0 auto; padding: 2rem 2rem 4rem; }
 
-    .section { margin-bottom: 2.5rem; }
-    .section-label {
-      font-size: 11px;
+    /* ── 출퇴근 바 ── */
+    .attend {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      margin-bottom: 2.25rem;
+      background: var(--text-primary);
+      color: #fff;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: transform 0.14s, box-shadow 0.18s;
+    }
+    .attend:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .attend .left { display: flex; align-items: center; gap: 12px; }
+    .attend .icon { font-size: 22px; }
+    .attend .label { font-size: 15px; font-weight: 700; }
+    .attend .desc { font-size: 12px; opacity: 0.6; margin-top: 2px; }
+    .attend .go { font-size: 13px; opacity: 0.7; }
+
+    /* ── 구역 ── */
+    .group-title {
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin: 0 0 1.25rem;
+      letter-spacing: -0.01em;
+    }
+    .group-title.second { margin-top: 1rem; }
+
+    .section { margin-bottom: 2.25rem; }
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
       margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
+    .section-label .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .section-label .sub { font-size: 11.5px; font-weight: 400; color: var(--text-muted); }
     .section-label::after {
       content: '';
       flex: 1;
@@ -66,71 +124,72 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       gap: 12px;
     }
 
-    .btn-card {
+    /* ── 카드 ── */
+    .card {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding: 20px 20px 18px;
+      gap: 6px;
+      padding: 18px 20px 16px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      cursor: default;
       text-decoration: none;
       color: inherit;
-      transition: border-color 0.18s, box-shadow 0.18s, transform 0.14s;
-      min-height: 90px;
+      min-height: 96px;
       position: relative;
       overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.14s;
       animation: fadeUp 0.35s ease both;
     }
-    .btn-card:nth-child(1) { animation-delay: 0.04s; }
-    .btn-card:nth-child(2) { animation-delay: 0.08s; }
-    .btn-card:nth-child(3) { animation-delay: 0.12s; }
-    .btn-card:nth-child(4) { animation-delay: 0.16s; }
-    .btn-card:nth-child(5) { animation-delay: 0.20s; }
-
-    .btn-card.linked { cursor: pointer; }
-    .btn-card.linked:hover {
-      border-color: var(--border-hover);
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
-    }
-    .btn-card.linked:active { transform: scale(0.98); box-shadow: var(--shadow); }
-
-    .btn-card .icon { font-size: 24px; line-height: 1; }
-    .btn-card .label { font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.35; }
-
-    .arrow {
-      position: absolute;
-      right: 16px;
-      top: 18px;
-      font-size: 13px;
-      color: var(--text-muted);
-      opacity: 0;
-      transform: translateX(-4px);
-      transition: opacity 0.16s, transform 0.16s;
-    }
-    .btn-card.linked:hover .arrow { opacity: 1; transform: translateX(0); }
-
-    .btn-card::before {
+    .card::before {
       content: '';
       position: absolute;
       left: 0; top: 0; bottom: 0;
       width: 3px;
-      border-radius: 14px 0 0 14px;
+      background: var(--accent);
     }
-    .cat-order::before  { background: #c8a97a; }
-    .cat-detail::before { background: #7ab5c8; }
-    .cat-sample::before { background: #8ec87a; }
-    .cat-stock::before  { background: #b57ac8; }
-    .cat-manual::before  { background: #7a7ac8; }
+    .card:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+    .card:active { transform: scale(0.98); box-shadow: var(--shadow); }
+
+    .card .top { display: flex; align-items: center; gap: 8px; }
+    .card .icon { font-size: 20px; line-height: 1; }
+    .card .label { font-size: 14px; font-weight: 700; line-height: 1.35; }
+    .card .desc { font-size: 12px; color: var(--text-secondary); line-height: 1.45; }
+
+    .tag {
+      position: absolute;
+      right: 14px;
+      top: 14px;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--bg);
+      color: var(--text-secondary);
+    }
+
+    .card.disabled { cursor: default; opacity: 0.55; }
+    .card.disabled:hover { border-color: var(--border); box-shadow: none; transform: none; }
+
+    .empty {
+      display: none;
+      text-align: center;
+      padding: 3rem 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -142,202 +201,254 @@
       border-top: 1px solid var(--border);
       background: var(--surface);
     }
+
+    @media (max-width: 640px) {
+      header { padding: 0 1rem; }
+      .clock { display: none; }
+      .search { width: 150px; }
+      main { padding: 1.5rem 1rem 3rem; }
+    }
   </style>
 </head>
 <body>
 
 <header>
   <span class="header-title">더제이수 자동화 프로그램</span>
-  <span class="header-right" id="clock"></span>
+  <div class="header-right">
+    <input class="search" id="search" type="search" placeholder="도구 찾기 (예: 재고)" autocomplete="off" />
+    <span class="clock" id="clock"></span>
+  </div>
 </header>
 
 <main>
 
-  <div class="section">
-    <div class="section-label">근태</div>
+  <!-- 출퇴근: 매일 쓰는 것이라 맨 위 -->
+  <a class="attend" data-search="출퇴근 기록 근태 출근 퇴근" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%B6%9C%ED%87%B4%EA%B7%BC_%EA%B8%B0%EB%A1%9D%EA%B8%B0.html" target="_blank">
+    <span class="left">
+      <span class="icon">🕐</span>
+      <span>
+        <div class="label">출퇴근 기록</div>
+        <div class="desc">출근·퇴근할 때 눌러 주세요</div>
+      </span>
+    </span>
+    <span class="go">열기 →</span>
+  </a>
+
+  <p class="group-title">상품이 흘러가는 순서대로 정리했어요</p>
+
+  <!-- ① 기획·발주 -->
+  <div class="section" style="--accent:#c8a97a">
+    <div class="section-label"><span class="num">1</span>기획·발주 <span class="sub">거래처·공장에 주문 넣기</span></div>
     <div class="grid">
-      <a class="btn-card cat-ops linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%B6%9C%ED%87%B4%EA%B7%BC_%EA%B8%B0%EB%A1%9D%EA%B8%B0.html" target="_blank">
-        <span class="icon">🕐</span>
-        <span class="label">출퇴근 기록</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/order_tool.html" target="_blank">
+        <span class="top"><span class="icon">📋</span><span class="label">발주서</span></span>
+        <span class="desc">거래처 발주서 만들기</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%A0%9C%EC%9E%91%EB%B0%9C%EC%A3%BC_%EA%B0%80%EA%B3%B5%EA%B8%B0.html" target="_blank">
+        <span class="top"><span class="icon">🏭</span><span class="label">제작 발주서</span></span>
+        <span class="desc">공장 제작 발주서 만들기</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/made_order_kakao.html" target="_blank">
+        <span class="top"><span class="icon">💬</span><span class="label">거래처 발주 메시지</span></span>
+        <span class="desc">카톡으로 보낼 발주 메시지 만들기</span>
+      </a>
+      <div class="card disabled">
+        <span class="tag">준비 중</span>
+        <span class="top"><span class="icon">📝</span><span class="label">선주문(제작) 등록</span></span>
+        <span class="desc">곧 열려요</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 샘플 -->
+  <div class="section" style="--accent:#8ec87a">
+    <div class="section-label"><span class="num">2</span>샘플 <span class="sub">요청 → 입고 → 업데이트 요일 정하기 → 측정 → 반납</span></div>
+    <div class="grid">
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/샘플요청.html" target="_blank">
+        <span class="top"><span class="icon">📤</span><span class="label">샘플 요청</span></span>
+        <span class="desc">거래처에 샘플 요청하기</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%83%98%ED%94%8C%EC%9E%85%EA%B3%A0.html" target="_blank">
+        <span class="top"><span class="icon">📬</span><span class="label">샘플 입고</span></span>
+        <span class="desc">들어온 샘플 등록하기</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%83%81%ED%92%88_%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8_%EB%B3%B4%EB%93%9C" target="_blank">
+        <span class="top"><span class="icon">📅</span><span class="label">상품 업데이트 보드</span></span>
+        <span class="desc">요일별 업데이트 상품 정하고 카톡 공유</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%82%AC%EC%9D%B4%EC%A6%88_%EC%B8%A1%EC%A0%95_%EC%9E%85%EB%A0%A5.html" target="_blank">
+        <span class="top"><span class="icon">📏</span><span class="label">사이즈 측정 입력</span></span>
+        <span class="desc">샘플 사이즈 재서 입력하기</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/샘플반납.html" target="_blank">
+        <span class="top"><span class="icon">↩️</span><span class="label">샘플 반납</span></span>
+        <span class="desc">반납할 샘플 체크하기</span>
       </a>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-label">발주</div>
+  <!-- ③ 촬영·디자인 -->
+  <div class="section" style="--accent:#e0a3a3">
+    <div class="section-label"><span class="num">3</span>이미지·상세페이지 <span class="sub">사진 정리하고 상세 만들기</span></div>
     <div class="grid">
-      <a class="btn-card cat-order linked" href="https://songsuyoun.github.io/thejsoo.github.io/order_tool.html" target="_blank">
-        <span class="icon">📋</span>
-        <span class="label">발주서</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EB%8D%94%EC%A0%9C%EC%9D%B4%EC%88%98_%EC%9D%B4%EB%AF%B8%EC%A7%80%EB%A6%AC%EC%82%AC%EC%9D%B4%EC%A0%80.html" target="_blank">
+        <span class="top"><span class="icon">🖼️</span><span class="label">이미지 리사이저</span></span>
+        <span class="desc">사진 크기 한 번에 바꾸기</span>
       </a>
-      <a class="btn-card cat-order linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%A0%9C%EC%9E%91%EB%B0%9C%EC%A3%BC_%EA%B0%80%EA%B3%B5%EA%B8%B0.html" target="_blank">
-        <span class="icon">🏭</span>
-        <span class="label">제작 발주서</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%83%81%EC%84%B8%ED%8E%98%EC%9D%B4%EC%A7%80_%EC%82%AC%EC%A7%84%ED%95%A9%EC%B9%98%EA%B8%B0.html" target="_blank">
+        <span class="top"><span class="icon">🧩</span><span class="label">상세페이지 사진 합치기</span></span>
+        <span class="desc">여러 장을 한 장으로 합치기</span>
       </a>
-      <a class="btn-card cat-order linked" href="https://songsuyoun.github.io/thejsoo.github.io/made_order_kakao.html" target="_blank">
-        <span class="icon">💬</span>
-        <span class="label">거래처 발주 메시지 생성</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/카페24_상세페이지_html_생성기.html" target="_blank">
+        <span class="top"><span class="icon">📄</span><span class="label">카페24 상세페이지 코드</span></span>
+        <span class="desc">자사몰 상세페이지 코드 만들기</span>
       </a>
-      <a class="btn-card cat-order" href="#" onclick="return false">
-        <span class="icon">📝</span>
-        <span class="label">선주문(제작) 등록</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/W%EC%BB%A8%EC%85%89_%EC%83%81%EC%84%B8%ED%8E%98%EC%9D%B4%EC%A7%80_%EC%BD%94%EB%93%9C_%EC%83%9D%EC%84%B1%EA%B8%B0.html" target="_blank">
+        <span class="top"><span class="icon">📄</span><span class="label">W컨셉 상세페이지 코드</span></span>
+        <span class="desc">W컨셉 상세페이지 코드 만들기</span>
       </a>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-label">상세페이지</div>
+  <!-- ④ 상품 등록 -->
+  <div class="section" style="--accent:#7ab5c8">
+    <div class="section-label"><span class="num">4</span>상품 등록 <span class="sub">자사몰·타 사이트에 올리기</span></div>
     <div class="grid">
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/카페24_상품등록_엑셀_생성기.html" target="_blank">
-        <span class="icon">🛒</span>
-        <span class="label">카페24 상품 등록</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/카페24_상품등록_엑셀_생성기.html" target="_blank">
+        <span class="top"><span class="icon">🛒</span><span class="label">카페24 상품 등록</span></span>
+        <span class="desc">상품 등록 엑셀 만들기</span>
       </a>
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%BD%94%EB%94%94_%EC%83%81%ED%92%88_%EC%97%91%EC%85%80%EC%83%9D%EC%84%B1%EA%B8%B0.html" target="_blank">
-        <span class="icon">👗</span>
-        <span class="label">카페24 코디 상품 등록</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%BD%94%EB%94%94_%EC%83%81%ED%92%88_%EC%97%91%EC%85%80%EC%83%9D%EC%84%B1%EA%B8%B0.html" target="_blank">
+        <span class="top"><span class="icon">👗</span><span class="label">카페24 코디 상품 등록</span></span>
+        <span class="desc">코디 상품 등록 엑셀 만들기</span>
       </a>
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/카페24_사이즈코드_생성기.html" target="_blank">
-        <span class="icon">📐</span>
-        <span class="label">카페24 사이즈 코드</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/카페24_사이즈코드_생성기.html" target="_blank">
+        <span class="top"><span class="icon">📐</span><span class="label">카페24 사이즈 코드</span></span>
+        <span class="desc">사이즈표 코드 만들기</span>
       </a>
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/카페24_상세페이지_html_생성기.html" target="_blank">
-        <span class="icon">🖼️</span>
-        <span class="label">카페24 상세페이지 코드</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EB%A7%88%EC%BC%93%ED%94%8C%EB%9F%AC%EC%8A%A4.html" target="_blank">
-        <span class="icon">🛍️</span>
-        <span class="label">마켓플러스</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/W%EC%BB%A8%EC%85%89_%EC%83%81%EC%84%B8%ED%8E%98%EC%9D%B4%EC%A7%80_%EC%BD%94%EB%93%9C_%EC%83%9D%EC%84%B1%EA%B8%B0.html" target="_blank">
-        <span class="icon">🖼️</span>
-        <span class="label">W컨셉 상세페이지 코드</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EB%8D%94%EC%A0%9C%EC%9D%B4%EC%88%98_%EC%9D%B4%EB%AF%B8%EC%A7%80%EB%A6%AC%EC%82%AC%EC%9D%B4%EC%A0%80.html" target="_blank">
-        <span class="icon">🖼️</span>
-        <span class="label">이미지 리사이저</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-detail linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%83%81%EC%84%B8%ED%8E%98%EC%9D%B4%EC%A7%80_%EC%82%AC%EC%A7%84%ED%95%A9%EC%B9%98%EA%B8%B0.html" target="_blank">
-        <span class="icon">🖼️</span>
-        <span class="label">상세페이지 사진 합치기</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EB%A7%88%EC%BC%93%ED%94%8C%EB%9F%AC%EC%8A%A4.html" target="_blank">
+        <span class="top"><span class="icon">🛍️</span><span class="label">마켓플러스</span></span>
+        <span class="desc">타 사이트 연동 작업</span>
       </a>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-label">샘플</div>
+  <!-- ⑤ 세일 -->
+  <div class="section" style="--accent:#d4a45a">
+    <div class="section-label"><span class="num">5</span>세일 <span class="sub">세일 시작·종료 처리</span></div>
     <div class="grid">
-      <a class="btn-card cat-sample linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%82%AC%EC%9D%B4%EC%A6%88_%EC%B8%A1%EC%A0%95_%EC%9E%85%EB%A0%A5.html" target="_blank">
-        <span class="icon">📏</span>
-        <span class="label">사이즈 측정 입력</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-sample linked" href="https://songsuyoun.github.io/thejsoo.github.io/샘플요청.html" target="_blank">
-        <span class="icon">📤</span>
-        <span class="label">샘플 요청</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-sample linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%83%98%ED%94%8C%EC%9E%85%EA%B3%A0.html" target="_blank">
-        <span class="icon">📬</span>
-        <span class="label">샘플 입고</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-sample linked" href="https://songsuyoun.github.io/thejsoo.github.io/샘플반납.html" target="_blank">
-        <span class="icon">↩️</span>
-        <span class="label">샘플 반납</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%84%B8%EC%9D%BC_%EC%B9%B4%ED%8E%9824%EC%9D%BC%EA%B4%84%EC%B2%98%EB%A6%AC_%EB%A9%94%EB%89%B4%EC%96%BC.html" target="_blank">
+        <span class="tag">매뉴얼</span>
+        <span class="top"><span class="icon">🏷️</span><span class="label">세일 카페24 일괄처리</span></span>
+        <span class="desc">세일 상품 처리 순서</span>
       </a>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-label">재고</div>
+  <!-- ⑥ 입고·재고 -->
+  <div class="section" style="--accent:#b57ac8">
+    <div class="section-label"><span class="num">6</span>입고·재고 <span class="sub">들어온 상품 확인하고 재고 맞추기</span></div>
     <div class="grid">
-      <a class="btn-card cat-stock linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EB%94%94%ED%99%80%EB%A6%AD_%EC%9E%AC%EA%B3%A0%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8_%EB%8F%84%EA%B5%AC.html" target="_blank">
-        <span class="icon">🔄</span>
-        <span class="label">디홀릭 재고 업데이트</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/가입고_엑셀_생성기.html" target="_blank">
+        <span class="top"><span class="icon">📊</span><span class="label">가입고 엑셀 생성기</span></span>
+        <span class="desc">셀메이트 가입고 파일 만들기</span>
       </a>
-      <a class="btn-card cat-stock linked" href="https://songsuyoun.github.io/thejsoo.github.io/W%EC%BB%A8%EC%85%89_%EC%9E%AC%EA%B3%A0_%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8.html" target="_blank">
-        <span class="icon">🔄</span>
-        <span class="label">W컨셉 재고 업데이트</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%9E%85%EA%B3%A0%EA%B2%80%EC%88%98_staff.html" target="_blank">
+        <span class="top"><span class="icon">🔍</span><span class="label">상품 입고 검수 (작업자)</span></span>
+        <span class="desc">입고 수량·특이사항 체크</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%9E%85%EA%B3%A0%EA%B2%80%EC%88%98_admin.html" target="_blank">
+        <span class="top"><span class="icon">🗂️</span><span class="label">상품 입고 검수 (관리자)</span></span>
+        <span class="desc">검수 결과 확인하기</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%EB%94%94%ED%99%80%EB%A6%AD_%EC%9E%AC%EA%B3%A0%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8_%EB%8F%84%EA%B5%AC.html" target="_blank">
+        <span class="top"><span class="icon">🔄</span><span class="label">디홀릭 재고 업데이트</span></span>
+        <span class="desc">디홀릭 재고 파일 만들기</span>
+      </a>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/W%EC%BB%A8%EC%85%89_%EC%9E%AC%EA%B3%A0_%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8.html" target="_blank">
+        <span class="top"><span class="icon">🔄</span><span class="label">W컨셉 재고 업데이트</span></span>
+        <span class="desc">W컨셉 재고 파일 만들기</span>
       </a>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-label">물류</div>
+  <!-- ⑦ 물류 -->
+  <div class="section" style="--accent:#8a9bb0">
+    <div class="section-label"><span class="num">7</span>물류 <span class="sub">출고·포장</span></div>
     <div class="grid">
-      <a class="btn-card cat-ops linked" href="https://songsuyoun.github.io/thejsoo.github.io/가입고_엑셀_생성기.html" target="_blank">
-        <span class="icon">📊</span>
-        <span class="label">가입고 엑셀 생성기</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/물류_작업자별_분배.html" target="_blank">
+        <span class="top"><span class="icon">📦</span><span class="label">물류 작업자 수량 분배기</span></span>
+        <span class="desc">작업자별 출고 수량 나누기</span>
       </a>
-      <a class="btn-card cat-ops linked" href="https://songsuyoun.github.io/thejsoo.github.io/물류_작업자별_분배.html" target="_blank">
-        <span class="icon">📦</span>
-        <span class="label">물류 작업자 수량 분배기</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-ops linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%9E%85%EA%B3%A0%EA%B2%80%EC%88%98_staff.html" target="_blank">
-        <span class="icon">🔍</span>
-        <span class="label">상품 입고 검수(작업자)</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-ops linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%9E%85%EA%B3%A0%EA%B2%80%EC%88%98_admin.html" target="_blank">
-        <span class="icon">🗂️</span>
-        <span class="label">상품 입고 검수(관리자)</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%ED%83%80%EC%98%A4%EB%B0%94%EC%98%A4_%EB%BD%81%EB%BD%81%EC%9D%B4%EA%B5%AC%EB%A7%A4.html" target="_blank">
+        <span class="tag">매뉴얼</span>
+        <span class="top"><span class="icon">🫧</span><span class="label">타오바오 뽁뽁이 구매</span></span>
+        <span class="desc">포장재 주문 방법</span>
       </a>
     </div>
   </div>
-  <div class="section">
-    <div class="section-label">메뉴얼</div>
+
+  <!-- ⑧ CS -->
+  <div class="section" style="--accent:#7a7ac8">
+    <div class="section-label"><span class="num">8</span>CS <span class="sub">고객 문의·반품·교환</span></div>
     <div class="grid">
-      <a class="btn-card cat-manual linked" href="https://songsuyoun.github.io/thejsoo.github.io/%ED%83%80%EC%98%A4%EB%B0%94%EC%98%A4_%EB%BD%81%EB%BD%81%EC%9D%B4%EA%B5%AC%EB%A7%A4.html" target="_blank">
-        <span class="icon">📦</span>
-        <span class="label">타오바오 뽁뽁이 구매</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-manual linked" href="https://songsuyoun.github.io/thejsoo.github.io/%ED%83%80%EC%82%AC%EC%9D%B4%ED%8A%B8_%EB%B0%98%ED%92%88%EA%B5%90%ED%99%98_%EB%A7%A4%EB%89%B4%EC%96%BC.html" target="_blank">
-        <span class="icon">🔄</span>
-        <span class="label">CS) 반품·교환</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="btn-card cat-manual linked" href="https://songsuyoun.github.io/thejsoo.github.io/%EC%84%B8%EC%9D%BC_%EC%B9%B4%ED%8E%9824%EC%9D%BC%EA%B4%84%EC%B2%98%EB%A6%AC_%EB%A9%94%EB%89%B4%EC%96%BC.html" target="_blank">
-        <span class="icon">🏷️</span>
-        <span class="label">세일 카페24 일괄처리</span>
-        <span class="arrow">→</span>
+      <a class="card" href="https://songsuyoun.github.io/thejsoo.github.io/%ED%83%80%EC%82%AC%EC%9D%B4%ED%8A%B8_%EB%B0%98%ED%92%88%EA%B5%90%ED%99%98_%EB%A7%A4%EB%89%B4%EC%96%BC.html" target="_blank">
+        <span class="tag">매뉴얼</span>
+        <span class="top"><span class="icon">🔁</span><span class="label">반품·교환</span></span>
+        <span class="desc">타 사이트 반품·교환 처리 방법</span>
       </a>
     </div>
   </div>
+
+  <p class="empty" id="empty">찾는 도구가 없어요. 다른 단어로 검색해 보세요.</p>
 
 </main>
 
-<footer>© 2025 더제이수(THE J'SU) — 내부 자동화 도구</footer>
+<footer>© 더제이수 (the J.Soo) — 내부 자동화 도구</footer>
 
 <script>
+  // 시계
   function updateClock() {
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
     document.getElementById('clock').textContent =
-      now.getFullYear() + '.' + pad(now.getMonth()+1) + '.' + pad(now.getDate()) +
+      now.getFullYear() + '.' + pad(now.getMonth() + 1) + '.' + pad(now.getDate()) +
       '  ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
   }
   updateClock();
   setInterval(updateClock, 1000);
+
+  // 도구 찾기: 이름·설명·구역 이름으로 걸러서 보여줌
+  const search = document.getElementById('search');
+  const sections = Array.from(document.querySelectorAll('.section'));
+  const attend = document.querySelector('.attend');
+  const groupTitle = document.querySelector('.group-title');
+  const empty = document.getElementById('empty');
+
+  search.addEventListener('input', function () {
+    const q = search.value.trim().replace(/\s+/g, '').toLowerCase();
+    let shown = 0;
+
+    sections.forEach(function (sec) {
+      const secName = sec.querySelector('.section-label').textContent.replace(/\s+/g, '').toLowerCase();
+      let visibleInSection = 0;
+      sec.querySelectorAll('.card').forEach(function (card) {
+        const text = (card.textContent + secName).replace(/\s+/g, '').toLowerCase();
+        const match = !q || text.includes(q);
+        card.style.display = match ? '' : 'none';
+        if (match) visibleInSection++;
+      });
+      sec.style.display = visibleInSection ? '' : 'none';
+      shown += visibleInSection;
+    });
+
+    const attendMatch = !q || (attend.dataset.search + attend.textContent).replace(/\s+/g, '').toLowerCase().includes(q);
+    attend.style.display = attendMatch ? '' : 'none';
+    if (attendMatch) shown++;
+
+    groupTitle.style.display = q ? 'none' : '';
+    empty.style.display = shown ? 'none' : 'block';
+  });
 </script>
 
 </body>
