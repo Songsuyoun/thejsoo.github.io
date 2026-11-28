@@ -581,11 +581,12 @@ function addProduct() {
   if (!name) { showToast('상품명을 입력해주세요'); return; }
 
   var material = getMaterialString();
-  var color    = normalizeColor(document.getElementById('colorInput').value.trim());
-  var size     = selectedSize;
+  var color    = selectedColor || normalizeColor(document.getElementById('colorInput').value.trim());
+  var size     = selectedSize || document.getElementById('sizeInput').value.trim();
   var price    = document.getElementById('priceInput').value.trim();
+  var vendor   = selectedVendor ? selectedVendor['업체명'] : '';
 
-  addedProducts.push({ name: name, material: material, color: color, size: size, price: price });
+  addedProducts.push({ name: name, vendor: vendor, material: material, color: color, size: size, price: price });
   renderAddedList();
   clearProductForm();
   updateSaveBtn();
@@ -628,16 +629,17 @@ function addMaterialRowEl(container) {
 function renderAddedList() {
   var html = '';
   addedProducts.forEach(function(p, i) {
-    var meta = [];
-    if (p.material) meta.push('혼용율: ' + p.material);
-    if (p.color)    meta.push('칼라: ' + p.color);
-    if (p.size)     meta.push('사이즈: ' + p.size);
-    if (p.price)    meta.push('단가: ' + Number(p.price).toLocaleString() + '원');
+    var lines = [];
+    if (p.vendor)   lines.push('거래처: ' + p.vendor);
+    if (p.material) lines.push('혼용율: ' + p.material);
+    if (p.color)    lines.push('칼라: ' + p.color);
+    if (p.size)     lines.push('사이즈: ' + p.size);
+    if (p.price)    lines.push('단가: ' + Number(p.price).toLocaleString() + '원');
 
     html += '<div class="added-item">' +
       '<div class="added-item-info">' +
         '<div class="added-item-name">' + esc(p.name) + '</div>' +
-        (meta.length ? '<div class="added-item-meta">' + esc(meta.join(' · ')) + '</div>' : '') +
+        (lines.length ? '<div class="added-item-meta">' + lines.map(esc).join('<br>') + '</div>' : '') +
       '</div>' +
       '<button class="btn-del-added" onclick="removeProduct(' + i + ')">✕</button>' +
       '</div>';
@@ -704,7 +706,8 @@ async function saveAll() {
       var res = await fetch(GAS_SAMPLE_URL + '?action=add&data=' + payload);
       var data = await res.json();
       if (data.result === 'ok') { success++; savedNames.push(p.name); }
-    } catch(e) {}
+      else { console.error('저장 실패:', data); }
+    } catch(e) { console.error('네트워크 오류:', e); }
   }
 
   var failCount = addedProducts.length - success;
