@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>재진행 사이즈 비교 (홈페이지 vs 새 실측)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Pretendard","Noto Sans KR",sans-serif;background:#f4f4f2;color:#1a1a1a;min-height:100vh}
+.header{background:#1e1e1e;color:#fff;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.header h1{font-size:17px;font-weight:700}
+.header p{font-size:12px;color:#aaa;margin-top:3px}
+.hbtn{font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid #555;background:transparent;color:#fff;cursor:pointer}
+.hbtn:hover{background:#333}
+.wrap{max-width:1280px;margin:0 auto;padding:22px 24px 60px}
+details.help{background:#fff;border:1px solid #e8e8e6;border-radius:12px;margin-bottom:16px}
+details.help summary{padding:12px 16px;font-size:13px;font-weight:700;cursor:pointer;color:#555}
+details.help div{padding:0 18px 14px;font-size:12.5px;line-height:1.9;color:#555}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid #e8e8e6;border-radius:12px;overflow:hidden}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;background:#f7f7f5;border-bottom:1px solid #e8e8e6}
+.card-h b{font-size:14px}
+.card-h .sub{font-size:11.5px;color:#888;font-weight:400;margin-left:6px}
+.card-b{padding:14px 16px}
+.drop{border:2px dashed #cfcfcb;border-radius:10px;padding:16px;text-align:center;color:#888;font-size:12.5px;line-height:1.8;background:#fafaf8;cursor:text;outline:none;min-height:96px}
+.drop:focus,.drop.over{border-color:#1e1e1e;background:#fff;color:#555}
+.drop b{color:#1e1e1e}
+.btn{font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid #d8d8d4;background:#fff;color:#444;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#1e1e1e;color:#1e1e1e}
+.btn.dark{background:#1e1e1e;color:#fff;border-color:#1e1e1e}
+.btn.dark:hover{background:#333}
+.btn.green{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grid-wrap{overflow-x:auto;margin-top:12px}
+table.g{border-collapse:collapse;width:100%;font-size:13px}
+table.g th,table.g td{border-bottom:1px solid #eee;padding:4px;text-align:center}
+table.g th{font-size:12px;color:#777;font-weight:600;background:#fafaf8;padding:7px 4px}
+table.g td.lb{font-weight:600;color:#333;white-space:nowrap;padding:4px 10px;text-align:left}
+table.g input{width:100%;min-width:54px;padding:6px;border:1px solid #e8e8e6;border-radius:6px;text-align:center;font-family:inherit;font-size:13px;background:#fafaf8;outline:none}
+table.g input:focus{border-color:#1e1e1e;background:#fff}
+table.g input.hd{font-weight:700}
+.empty{font-size:12.5px;color:#aaa;padding:18px 0;text-align:center}
+.note{font-size:11.5px;color:#999;margin-top:8px;line-height:1.7}
+.warn{font-size:12px;background:#fff8e1;color:#8a6100;border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.7}
+.prod{font-size:12.5px;color:#555;margin-top:8px}
+.prod b{color:#1e1e1e}
+/* 결과 */
+.res-card{background:#fff;border:1px solid #e8e8e6;border-radius:12px}
+.res-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid #e8e8e6;flex-wrap:wrap}
+.res-h b{font-size:15px}
+#result{padding:22px 24px;background:#fff;border-radius:0 0 12px 12px}
+.rt-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.rt-sub{font-size:12px;color:#888;margin-bottom:14px}
+table.r{border-collapse:collapse;min-width:360px}
+table.r th,table.r td{border-bottom:1px solid #e6e6e6;padding:9px 16px;text-align:center;font-size:14px}
+table.r th{font-size:13px;font-weight:700;color:#333;border-bottom:1.5px solid #bbb}
+table.r td.lb{font-weight:600;color:#333}
+.v-old{color:#999;font-size:12px;display:block}
+.v-new{font-weight:600}
+.d{display:inline-block;margin-left:6px;font-size:12.5px;font-weight:700;padding:1px 7px;border-radius:999px}
+.d.p{color:#d32f2f;background:#fdecea}
+.d.m{color:#1e5fd6;background:#e8f0fd}
+.d.z{color:#9e9e9e;background:#f3f3f3;font-weight:500}
+.d.s{color:#9e9e9e;font-weight:500}
+.sum{margin-top:14px;font-size:13px;line-height:1.9}
+.sum .p{color:#d32f2f;font-weight:700}
+.sum .m{color:#1e5fd6;font-weight:700}
+.legend{font-size:12px;color:#888;margin-top:10px}
+.ocr-bar{height:4px;background:#eee;border-radius:2px;overflow:hidden;margin-top:8px;display:none}
+.ocr-bar i{display:block;height:100%;width:0;background:#1e1e1e;transition:width .2s}
+/* 시트 모달 */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:20px}
+.mo.open{display:flex}
+.mo-box{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.mo-h{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #eee;font-weight:700;font-size:14px}
+.mo-b{padding:14px 18px;overflow-y:auto}
+.mo input.s{width:100%;padding:10px 12px;border:1.5px solid #e0e0dd;border-radius:10px;font-family:inherit;font-size:13.5px;outline:none;margin-bottom:12px}
+.it{padding:10px 12px;border:1.5px solid #e8e8e6;border-radius:10px;margin-bottom:7px;cursor:pointer}
+.it:hover{border-color:#1e1e1e;background:#f7f7f5}
+.it .n{font-weight:700;font-size:13.5px}
+.it .m{font-size:11.5px;color:#888;margin-top:2px}
+.x{border:none;background:#f4f4f2;width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:17px;color:#666}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1e1e1e;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:200}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>📏 재진행 사이즈 비교 — 홈페이지 vs 새로 잰 실측</h1>
+    <p>재진행 상품이 들어오면 홈페이지 사이즈와 비교해서 차이를 바로 보여줘요</p>
+  </div>
+  <button class="hbtn" onclick="resetAll()">↺ 처음부터</button>
+</div>
+
+<div class="wrap">
+  <details class="help">
+    <summary>사용 방법 보기</summary>
+    <div>
+      ① <b>왼쪽(홈페이지 사이즈)</b>: 홈페이지 상품 페이지에서 사이즈표를 마우스로 드래그해 복사(Ctrl+C) → 왼쪽 상자를 클릭하고 붙여넣기(Ctrl+V)<br>
+      &nbsp;&nbsp;&nbsp;· 캡처 이미지도 붙여넣거나 끌어다 놓을 수 있어요. 사진은 글자를 읽어서 채우는 거라 <b>숫자가 맞는지 꼭 확인</b>해 주세요.<br>
+      ② <b>오른쪽(새로 잰 사이즈)</b>: [사이즈측정 시트에서 불러오기]로 오늘 잰 값을 가져오거나, 표에 직접 입력해도 돼요<br>
+      ③ 아래 <b>비교 결과</b>에 차이가 바로 나와요. <span style="color:#d32f2f;font-weight:700">+ 빨강 = 커짐</span> · <span style="color:#1e5fd6;font-weight:700">− 파랑 = 작아짐</span><br>
+      ④ [이미지 저장]이나 [카톡용 복사]로 공유하세요
+    </div>
+  </details>
+
+  <div class="cols">
+    <!-- 홈페이지 사이즈 -->
+    <div class="card">
+      <div class="card-h"><b>① 홈페이지 사이즈 <span class="sub">기존</span></b>
+        <button class="btn" onclick="clearSide('old')">지우기</button></div>
+      <div class="card-b">
+        <div class="drop" id="drop-old" contenteditable="true" spellcheck="false"
+          data-ph="여기를 클릭하고 <b>Ctrl+V</b><br>홈페이지 사이즈표 복사본 · 캡처 이미지 모두 가능<br>이미지 파일은 끌어다 놓아도 돼요"></div>
+        <div class="ocr-bar" id="bar-old"><i></i></div>
+        <div id="msg-old"></div>
+        <div class="grid-wrap" id="grid-old"></div>
+      </div>
+    </div>
+    <!-- 새 실측 -->
+    <div class="card">
+      <div class="card-h"><b>② 새로 잰 사이즈 <span class="sub">이번 입고</span></b>
+        <div class="row">
+          <button class="btn green" onclick="openSheet()">📥 사이즈측정 시트에서 불러오기</button>
+          <button class="btn" onclick="clearSide('new')">지우기</button>
+        </div></div>
+      <div class="card-b">
+        <div class="drop" id="drop-new" contenteditable="true" spellcheck="false" style="min-height:64px"
+          data-ph="직접 입력하려면 왼쪽을 먼저 채우세요 → 같은 모양의 빈 표가 생겨요<br>(여기에 사이즈표를 붙여넣어도 돼요)"></div>
+        <div class="ocr-bar" id="bar-new"><i></i></div>
+        <div id="msg-new"></div>
+        <div class="prod" id="prod-new"></div>
+        <div class="grid-wrap" id="grid-new"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="res-card">
+    <div class="res-h">
+      <b>③ 비교 결과</b>
+      <div class="row">
+        <label style="font-size:12.5px;color:#666">상품명
+          <input id="pname" placeholder="예: 울스트라이프sk" oninput="renderResult()"
+            style="font-family:inherit;font-size:12.5px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;width:180px;margin-left:4px"></label>
+        <label style="font-size:12.5px;color:#666">오차 무시
+          <select id="tol" onchange="renderResult()" style="font-family:inherit;font-size:12.5px;padding:6px;border:1px solid #ddd;border-radius:6px;margin-left:4px">
+            <option value="0">안 함</option><option value="0.5">±0.5cm</option><option value="1">±1cm</option>
+          </select></label>
+        <button class="btn" onclick="copyText()">💬 카톡용 복사</button>
+        <button class="btn dark" onclick="saveImage()">🖼 이미지 저장</button>
+      </div>
+    </div>
+    <div id="result"><div class="empty">①, ② 를 채우면 여기에 차이가 나와요</div></div>
+  </div>
+</div>
+
+<!-- 시트 불러오기 -->
+<div class="mo" id="mo" onclick="if(event.target===this)closeSheet()">
+  <div class="mo-box">
+    <div class="mo-h">사이즈측정 시트에서 불러오기 <button class="x" onclick="closeSheet()">×</button></div>
+    <div class="mo-b">
+      <input class="s" id="msearch" placeholder="상품명으로 검색..." oninput="renderSheet()">
+      <div id="mlist"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// 사이즈 측정 입력 페이지와 같은 GAS (사이즈측정 시트)
+const SIZE_SCRIPT_URL = localStorage.getItem('thejsoo_script_url') || 'https://script.google.com/macros/s/AKfycbxJorWS_vIVR7lYxV8zYaVbpIZT8EYjAftPOcz4T2Hh6fKhxg0P8SAgoHpv30RaVMBBRg/exec';
+
+// 표 데이터: { labels:[어깨,…], sizes:[S,M], vals:{ S:{어깨:'43'} } }
+const data = { old: null, new: null };
+let newProduct = '';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m, ms = 2200) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), ms); }
+
+/* ---------- 이름 정리 ---------- */
+const HANGUL = /[가-힣]/;
+const LABEL_FIX = { '가로':'가로','세로':'세로','폭':'폭','팔 길이':'팔길이','총 길이':'총길이','암 홀':'암홀','밑 위':'밑위','허 리':'허리','어 깨':'어깨','가 슴':'가슴','밑 단':'밑단','허벅 지':'허벅지' };
+function fixLabel(l) { l = String(l).replace(/[*·•\-:]/g, '').trim(); l = LABEL_FIX[l] || l.replace(/\s+/g, ''); return l; }
+function fixSize(z) {
+  z = String(z).replace(/[*·•]/g, '').trim();
+  if (/^(f|free|프리|프리사이즈|fr|one|onesize)$/i.test(z)) return 'FREE';
+  return z.toUpperCase();
+}
+const isSizeHead = s => /^size/i.test(String(s).trim());
+function num(v) { const m = String(v ?? '').replace(',', '.').match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; }
+const fmt = n => (Math.round(n * 10) / 10).toString();
+
+/* ---------- 붙여넣은 내용 해석 ---------- */
+// 1) HTML (홈페이지에서 복사): <ul> 마다 한 열
+function parseHtml(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const uls = [...doc.querySelectorAll('ul')].map(ul => [...ul.querySelectorAll('li')].map(li => li.textContent.trim()));
+  const head = uls.findIndex(c => c.length && isSizeHead(c[0]));
+  if (head >= 0) {
+    const labels = uls[head].slice(1).map(fixLabel);
+    const cols = uls.slice(head + 1).filter(c => c.length === labels.length + 1);
+    if (cols.length) return build(labels, cols.map(c => ({ size: c[0], vals: c.slice(1) })));
+  }
+  // 표(<table>)로 복사된 경우
+  const trs = [...doc.querySelectorAll('tr')].map(tr => [...tr.querySelectorAll('th,td')].map(td => td.textContent.trim()));
+  if (trs.length > 1) return parseGrid(trs);
+  return null;
+}
+// 2) 줄글 / 탭 (홈페이지 텍스트, 엑셀·시트 복사)
+function parseText(text) {
+  const lines = text.replace(/\r/g, '').split('\n').map(l => l.replace(/^\s*[*•·\-]\s*/, '').trim()).filter(Boolean);
+  if (!lines.length) return null;
+  // 탭이나 여러 칸으로 나뉜 표 모양
+  if (lines.filter(l => /\t|\s{2,}/.test(l)).length >= 2) return parseGrid(lines.map(l => l.split(/\t|\s{2,}/).map(x => x.trim()).filter(x => x !== '')));
+  // 한 줄에 '어깨 43 44' 처럼 붙은 모양 (사진 인식 결과 포함)
+  if (lines.filter(l => HANGUL.test(l) && /\d/.test(l)).length >= 2) return parseGrid(lines.map(l => l.match(/size\s*\(?\s*cm\s*\)?|[가-힣][가-힣\s]*[가-힣]|[가-힣]|[A-Za-z]+|-?\d+(?:[.,]\d+)?|-/gi) || []));
+  // 한 칸씩 세로로 나열된 모양 (SIZE(CM), 어깨, 가슴 … / FREE, 43, 41 …)
+  let i = lines.findIndex(isSizeHead); if (i < 0) i = -1;
+  const labels = [];
+  let j = i + 1;
+  while (j < lines.length && HANGUL.test(lines[j]) && !/\d/.test(lines[j])) { labels.push(fixLabel(lines[j])); j++; }
+  if (!labels.length) return null;
+  const rest = lines.slice(j), cols = [];
+  for (let k = 0; k + labels.length < rest.length + 1 && k < rest.length; k += labels.length + 1) {
+    const chunk = rest.slice(k, k + labels.length + 1);
+    if (chunk.length === labels.length + 1) cols.push({ size: chunk[0], vals: chunk.slice(1) });
+  }
+  return cols.length ? build(labels, cols) : null;
+}
+// 2차원 표 → 방향 자동 판단 (항목이 세로/가로 어느 쪽이든)
+function parseGrid(rows) {
+  rows = rows.filter(r => r.length);
+  const firstCol = rows.map(r => r[0] || '');
+  const labelsDown = firstCol.slice(1).filter(c => HANGUL.test(c)).length >= Math.max(1, (rows.length - 1) / 2);
+  if (labelsDown) {        // 예: SIZE(CM) | FREE  /  어깨 | 43
+    const hi = rows.findIndex(r => isSizeHead(r[0]));
+    const head = hi >= 0 ? rows[hi] : null;
+    const body = rows.slice(hi >= 0 ? hi + 1 : 0).filter(r => HANGUL.test(r[0] || '') && fixLabel(r[0]).length <= 8 && r.slice(1).some(v => num(v) !== null));
+    const nSize = Math.max(...body.map(r => r.length - 1));
+    const sizes = head && head.length > 1 ? head.slice(1, nSize + 1) : Array.from({ length: nSize }, (_, i) => nSize === 1 ? 'FREE' : ['S','M','L','XL'][i] || String(i + 1));
+    return build(body.map(r => fixLabel(r[0])), sizes.map((z, si) => ({ size: z, vals: body.map(r => r[si + 1] ?? '') })));
+  }
+  // 예: SIZE(CM) | 어깨 | 가슴  /  FREE | 43 | 41
+  const head = rows[0];
+  if (!head.slice(1).some(c => HANGUL.test(c))) return null;
+  return build(head.slice(1).map(fixLabel), rows.slice(1).map(r => ({ size: r[0], vals: r.slice(1) })));
+}
+function build(labels, cols) {
+  const out = { labels: [], sizes: [], vals: {} };
+  labels.forEach(l => { if (l && !out.labels.includes(l)) out.labels.push(l); });
+  cols.forEach(c => {
+    const z = fixSize(c.size); if (!z || out.sizes.includes(z)) return;
+    out.sizes.push(z); out.vals[z] = {};
+    labels.forEach((l, i) => { const v = String(c.vals[i] ?? '').trim(); out.vals[z][fixLabel(l)] = v === '-' ? '' : v.replace(/cm$/i, ''); });
+  });
+  return out.labels.length && out.sizes.length ? out : null;
+}
+
+/* ---------- 사진 글자 읽기 (Tesseract) ---------- */
+let tessLoading = null;
+function loadTess() {
+  if (window.Tesseract) return Promise.resolve();
+  if (!tessLoading) tessLoading = new Promise((ok, no) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = ok; s.onerror = () => no(new Error('글자 인식 도구를 못 불러왔어요'));
+    document.head.appendChild(s);
+  });
+  return tessLoading;
+}
+async function readImage(side, file) {
+  const bar = $('#bar-' + side), fill = bar.querySelector('i');
+  bar.style.display = 'block'; fill.style.width = '5%';
+  msg(side, '🔎 사진에서 글자를 읽는 중… (처음엔 10~20초 걸려요)');
+  try {
+    await loadTess();
+    const r = await Tesseract.recognize(file, 'kor+eng', { logger: m => { if (m.status === 'recognizing text') fill.style.width = Math.round(10 + m.progress * 90) + '%'; } });
+    const parsed = parseText(r.data.text);
+    if (!parsed) { msg(side, '사진에서 표를 못 찾았어요. 사이즈표 부분만 잘라서 다시 올리거나, 복사해서 붙여넣어 주세요.', true); return; }
+    setData(side, parsed);
+    msg(side, '⚠️ 사진에서 읽은 값이에요. 숫자가 맞는지 확인하고, 틀리면 표에서 바로 고쳐주세요.', true);
+  } catch (e) { msg(side, '사진 읽기 실패: ' + e.message, true); }
+  finally { bar.style.display = 'none'; }
+}
+
+/* ---------- 붙여넣기 / 끌어놓기 ---------- */
+['old', 'new'].forEach(side => {
+  const el = $('#drop-' + side);
+  el.innerHTML = el.dataset.ph;
+  el.addEventListener('focus', () => { if (el.innerHTML === el.dataset.ph) el.innerHTML = ''; });
+  el.addEventListener('blur', () => { if (!el.textContent.trim()) el.innerHTML = el.dataset.ph; });
+  el.addEventListener('keydown', e => { if (!(e.ctrlKey || e.metaKey)) e.preventDefault(); });   // 붙여넣기만
+  el.addEventListener('paste', e => {
+    e.preventDefault();
+    const cd = e.clipboardData;
+    const img = [...cd.items].find(i => i.type.startsWith('image/'));
+    if (img) { readImage(side, img.getAsFile()); el.blur(); return; }
+    const html = cd.getData('text/html'), text = cd.getData('text/plain');
+    const parsed = (html && parseHtml(html)) || parseText(text);
+    el.blur();
+    if (!parsed) { msg(side, '사이즈표를 못 알아봤어요. "SIZE(CM)"부터 마지막 숫자까지 표 전체를 복사해 주세요.', true); return; }
+    setData(side, parsed); msg(side, '');
+  });
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('over'); });
+  el.addEventListener('dragleave', () => el.classList.remove('over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault(); el.classList.remove('over');
+    const f = [...e.dataTransfer.files].find(f => f.type.startsWith('image/'));
+    if (f) readImage(side, f);
+  });
+});
+function msg(side, t, warn) { $('#msg-' + side).innerHTML = t ? `<div class="${warn ? 'warn' : 'note'}">${esc(t)}</div>` : ''; }
+
+function setData(side, d) {
+  data[side] = d;
+  if (side === 'old' && !data.new) {              // 새 실측 칸에 같은 모양의 빈 표
+    data.new = { labels: [...d.labels], sizes: [...d.sizes], vals: Object.fromEntries(d.sizes.map(z => [z, {}])) };
+  }
+  renderGrid('old'); renderGrid('new'); renderResult();
+}
+function clearSide(side) {
+  data[side] = null; msg(side, '');
+  if (side === 'new') { newProduct = ''; $('#prod-new').innerHTML = ''; if (data.old) setData('old', data.old); }
+  renderGrid(side); renderResult();
+}
+function resetAll() { data.old = data.new = null; newProduct = ''; $('#pname').value = ''; $('#prod-new').innerHTML = ''; msg('old', ''); msg('new', ''); renderGrid('old'); renderGrid('new'); renderResult(); }
+
+/* ---------- 고칠 수 있는 표 ---------- */
+function renderGrid(side) {
+  const d = data[side], box = $('#grid-' + side);
+  if (!d) { box.innerHTML = ''; return; }
+  let h = `<table class="g"><tr><th>SIZE(CM)</th>${d.sizes.map((z, i) => `<th><input class="hd" data-side="${side}" data-size-i="${i}" value="${esc(z)}"></th>`).join('')}</tr>`;
+  d.labels.forEach(l => {
+    h += `<tr><td class="lb">${esc(l)}</td>${d.sizes.map(z => `<td><input inputmode="decimal" data-side="${side}" data-z="${esc(z)}" data-l="${esc(l)}" value="${esc(d.vals[z]?.[l] ?? '')}" placeholder="-"></td>`).join('')}</tr>`;
+  });
+  box.innerHTML = h + '</table>';
+}
+document.addEventListener('input', e => {
+  const t = e.target, side = t.dataset.side; if (!side || !data[side]) return;
+  const d = data[side];
+  if (t.dataset.sizeI !== undefined) {           // 사이즈 이름 고치기
+    const i = +t.dataset.sizeI, oldZ = d.sizes[i], z = fixSize(t.value) || oldZ;
+    if (z !== oldZ && !d.sizes.includes(z)) { d.vals[z] = d.vals[oldZ]; delete d.vals[oldZ]; d.sizes[i] = z;
+      document.querySelectorAll(`input[data-side="${side}"][data-z="${CSS.escape(oldZ)}"]`).forEach(x => x.dataset.z = z); }
+  } else { (d.vals[t.dataset.z] = d.vals[t.dataset.z] || {})[t.dataset.l] = t.value.trim(); }
+  renderResult();
+});
+document.addEventListener('keydown', e => {      // Enter → 다음 칸
+  if (e.key !== 'Enter' || !e.target.dataset.side) return;
+  e.preventDefault();
+  const all = [...document.querySelectorAll(`#grid-${e.target.dataset.side} input`)];
+  const n = all[all.indexOf(e.target) + 1]; if (n) n.focus();
+});
+
+/* ---------- 비교 ---------- */
+function compare() {
+  const o = data.old, n = data.new; if (!o || !n) return null;
+  const labels = [...o.labels, ...n.labels.filter(l => !o.labels.includes(l))];
+  const sizes = [...o.sizes, ...n.sizes.filter(z => !o.sizes.includes(z))];
+  const tol = parseFloat($('#tol').value) || 0;
+  const cells = {}; let filled = 0;
+  sizes.forEach(z => { cells[z] = {}; labels.forEach(l => {
+    const a = num(o.vals[z]?.[l]), b = num(n.vals[z]?.[l]);
+    let d = null; if (a !== null && b !== null) { d = Math.round((b - a) * 10) / 10; filled++; }
+    cells[z][l] = { a, b, d, kind: d === null ? 'none' : Math.abs(d) <= tol ? 'z' : d > 0 ? 'p' : 'm' };
+  }); });
+  return { labels, sizes, cells, filled };
+}
+function renderResult() {
+  const box = $('#result'), c = compare();
+  if (!c) { box.innerHTML = '<div class="empty">①, ② 를 채우면 여기에 차이가 나와요</div>'; return; }
+  const name = $('#pname').value.trim() || newProduct;
+  let h = `<div class="rt-title">${esc(name || '사이즈 비교')}</div><div class="rt-sub">홈페이지 → 새 실측 · 단위 cm${+$('#tol').value ? ` · ±${$('#tol').value}cm 이내는 같음으로 표시` : ''}</div>`;
+  h += `<table class="r"><tr><th>SIZE(CM)</th>${c.sizes.map(z => `<th>${esc(z)}</th>`).join('')}</tr>`;
+  c.labels.forEach(l => {
+    h += `<tr><td class="lb">${esc(l)}</td>`;
+    c.sizes.forEach(z => {
+      const x = c.cells[z][l];
+      if (x.a === null && x.b === null) { h += '<td><span class="d s">-</span></td>'; return; }
+      if (x.d === null) { h += `<td><span class="v-old">${x.a ?? '-'}</span><span class="v-new">${x.b ?? '-'}</span><span class="d s">${x.b === null ? '새 값 없음' : '기존 값 없음'}</span></td>`; return; }
+      const sign = x.kind === 'z' ? (x.d === 0 ? '0' : (x.d > 0 ? '+' : '') + fmt(x.d)) : (x.d > 0 ? '+' : '−') + fmt(Math.abs(x.d));
+      h += `<td><span class="v-old">${fmt(x.a)}</span><span class="v-new">${fmt(x.b)}</span><span class="d ${x.kind}">${sign}</span></td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</table>';
+  // 요약
+  const ups = [], downs = [];
+  c.sizes.forEach(z => c.labels.forEach(l => { const x = c.cells[z][l];
+    const tag = (c.sizes.length > 1 ? z + ' ' : '') + l + ' ' + (x.d > 0 ? '+' : '−') + fmt(Math.abs(x.d || 0));
+    if (x.kind === 'p') ups.push(tag); else if (x.kind === 'm') downs.push(tag); }));
+  h += `<div class="sum">${!c.filled ? '<span style="color:#aaa">② 새로 잰 값을 입력하면 차이가 계산돼요</span>'
+    : !ups.length && !downs.length ? '✅ 홈페이지 사이즈와 같아요'
+    : (ups.length ? `<div><span class="p">커짐</span> ${esc(ups.join(', '))}</div>` : '') + (downs.length ? `<div><span class="m">작아짐</span> ${esc(downs.join(', '))}</div>` : '')}</div>`;
+  h += `<div class="legend">회색 작은 숫자 = 홈페이지 · 굵은 숫자 = 새 실측 · <span style="color:#d32f2f">+빨강 커짐</span> · <span style="color:#1e5fd6">−파랑 작아짐</span></div>`;
+  box.innerHTML = h;
+}
+
+/* ---------- 공유 ---------- */
+function copyText() {
+  const c = compare(); if (!c || !c.filled) { toast('비교할 값이 없어요'); return; }
+  const name = $('#pname').value.trim() || newProduct || '사이즈 비교';
+  const lines = [`📏 ${name} 사이즈 비교 (홈페이지 → 새 실측)`];
+  c.sizes.forEach(z => {
+    if (c.sizes.length > 1) lines.push('', `[${z}]`);
+    c.labels.forEach(l => { const x = c.cells[z][l]; if (x.d === null) return;
+      const mark = x.kind === 'p' ? `🔴 +${fmt(x.d)}` : x.kind === 'm' ? `🔵 −${fmt(Math.abs(x.d))}` : '같음';
+      lines.push(`- ${l}: ${fmt(x.a)} → ${fmt(x.b)} (${mark})`); });
+  });
+  navigator.clipboard.writeText(lines.join('\n')).then(() => toast('카톡에 붙여넣으세요 ✅'));
+}
+async function saveImage() {
+  const c = compare(); if (!c) { toast('비교할 값이 없어요'); return; }
+  const canvas = await html2canvas($('#result'), { scale: 2, backgroundColor: '#ffffff' });
+  const a = document.createElement('a');
+  a.download = (($('#pname').value.trim() || newProduct || '사이즈비교').replace(/[\\/:*?"<>|]/g, '_')) + '_사이즈비교.png';
+  a.href = canvas.toDataURL('image/png'); a.click();
+}
+
+/* ---------- 사이즈측정 시트에서 불러오기 ---------- */
+let sheetRows = [];
+async function openSheet() {
+  $('#mo').classList.add('open'); $('#msearch').value = ''; $('#mlist').innerHTML = '<div class="empty">불러오는 중…</div>';
+  try {
+    const r = await fetch(SIZE_SCRIPT_URL + '?action=list'); const j = await r.json();
+    sheetRows = (j.rows || []).filter(x => !['벨트', '스카프/머플러'].includes(x.type));
+    renderSheet(); $('#msearch').focus();
+  } catch (e) { $('#mlist').innerHTML = `<div class="empty">❌ 불러오기 실패<br>${esc(e.message)}</div>`; }
+}
+function closeSheet() { $('#mo').classList.remove('open'); }
+function renderSheet() {
+  const q = $('#msearch').value.trim().toLowerCase();
+  const groups = {};
+  sheetRows.forEach((r, i) => { if (q && !String(r.product || '').toLowerCase().includes(q)) return;
+    const k = (r.date || '') + '|' + (r.product || '') + '|' + (r.type || ''); (groups[k] = groups[k] || []).push(i); });
+  const keys = Object.keys(groups).sort((a, b) => b.localeCompare(a)).slice(0, 80);
+  $('#mlist').innerHTML = keys.length ? keys.map(k => { const rs = groups[k].map(i => sheetRows[i]), f = rs[0];
+    return `<div class="it" onclick="pickSheet([${groups[k].join(',')}])"><div class="n">${esc(f.product)}</div>
+      <div class="m">${esc(f.date)} · ${esc(f.type)} · ${esc(rs.map(r => r.sizeName).join(', '))}</div></div>`; }).join('')
+    : '<div class="empty">검색 결과가 없어요</div>';
+}
+// 시트 열 이름 ↔ 홈페이지 표시 이름
+const SHEET_ALIAS = { '가로': ['스카프가로'], '세로': ['스카프세로'], '폭': ['벨트폭'], '총길이': ['총길이', '하의총길이', '벨트총길이'], '허리': ['허리', '하의허리'], '밑단': ['밑단', '하의밑단'] };
+function pickSheet(idx) {
+  const rows = idx.map(i => sheetRows[i]); closeSheet();
+  newProduct = rows[0].product || ''; $('#pname').value = $('#pname').value || newProduct;
+  $('#prod-new').innerHTML = `불러온 실측: <b>${esc(newProduct)}</b> · ${esc(rows[0].date)} · ${esc(rows[0].type)}`;
+  const base = data.old;
+  const labels = base ? [...base.labels] : Object.keys(rows[0].vals || {}).filter(k => rows.some(r => r.vals[k] && r.vals[k] !== '-'));
+  const d = { labels, sizes: [], vals: {} };
+  rows.forEach(r => { const z = fixSize(r.sizeName); if (!z) return;
+    // 'S,M'처럼 한 줄에 여러 사이즈면 나눠서 같은 값
+    z.split(/[,\/]/).map(s => fixSize(s)).filter(Boolean).forEach(zz => {
+      if (!d.sizes.includes(zz)) d.sizes.push(zz);
+      d.vals[zz] = {};
+      labels.forEach(l => { const keys = SHEET_ALIAS[l] || [l];
+        const v = keys.map(k => r.vals?.[k]).find(v => v && v !== '-'); d.vals[zz][l] = v || ''; });
+    });
+  });
+  data.new = d; renderGrid('new'); renderResult(); toast('불러왔어요');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+</script>
+</body>
+</html>
