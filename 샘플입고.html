@@ -454,6 +454,9 @@ function selectVendor(v) {
   updateSaveBtn();
 }
 
+// selectedColor → 배열로 변경
+var selectedColors = [];
+
 // ── 색상 프리셋 렌더링 ──
 function renderColorPresets() {
   var wrap = document.getElementById('colorPresets');
@@ -464,21 +467,26 @@ function renderColorPresets() {
     btn.textContent = c.label;
     btn.dataset.value = c.value;
     btn.onclick = function() {
-      document.querySelectorAll('.color-chip').forEach(function(el) { el.classList.remove('selected'); });
-      btn.classList.add('selected');
-      selectedColor = c.value;
-      document.getElementById('colorInput').value = c.value;
+      var idx = selectedColors.indexOf(c.value);
+      if (idx >= 0) {
+        selectedColors.splice(idx, 1);
+        btn.classList.remove('selected');
+      } else {
+        selectedColors.push(c.value);
+        btn.classList.add('selected');
+      }
+      document.getElementById('colorInput').value = '';
+      selectedColor = selectedColors.join(', ');
     };
     wrap.appendChild(btn);
   });
 }
 
 function onColorInput(val) {
-  var normalized = normalizeColor(val);
-  selectedColor = normalized;
-  document.querySelectorAll('.color-chip').forEach(function(el) {
-    el.classList.toggle('selected', el.dataset.value === normalized);
-  });
+  selectedColor = val.trim();
+  // 직접 입력 시 버튼 선택 해제
+  selectedColors = [];
+  document.querySelectorAll('.color-chip').forEach(function(el) { el.classList.remove('selected'); });
 }
 
 // ── 사이즈 ──
@@ -594,6 +602,7 @@ function clearProductForm() {
   document.getElementById('colorInput').value = '';
   document.querySelectorAll('.color-chip').forEach(function(el) { el.classList.remove('selected'); });
   selectedColor = '';
+  selectedColors = [];
   // 사이즈 초기화
   selectedSize = '';
   selectedSizes = [];
