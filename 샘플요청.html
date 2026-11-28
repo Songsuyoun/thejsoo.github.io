@@ -205,6 +205,7 @@ input[type="text"], input[type="password"], input[type="date"], select, textarea
     <textarea class="text-area" id="textInput"
       placeholder="신상마켓 찜 목록에서 복사한 텍스트를 그대로 붙여넣으세요&#10;&#10;예시:&#10;E776 실버바 진주 귀걸이&#10;APM PLACE / 루미에르&#10;₩5,000&#10;17&#10;샌디 골지 니트가디건&#10;디오트 / MAYBEEN메이빈&#10;₩26,000&#10;131"></textarea>
     <div class="parse-preview" id="parsePreview"></div>
+    <button class="btn-parse" id="btnProcess" onclick="processAll()">🔍 분석 &amp; 미리보기</button>
 </div>
 
   <!-- 로딩 -->
@@ -281,83 +282,45 @@ var BRAND_MAP = [
 
 var VENDORS = BUILTIN_VENDORS.slice();
 var products = [];
-var currentImageBase64 = '';
-var currentImageType = '';
 var textParsed = false;
 
-// ── 거래처 DB 로드 ──
 async function loadVendorDB() {
-  var el = document.getElementById('dbStatus');
+  var statusEl = document.getElementById('dbStatus');
   try {
-    el.textContent = '로딩 중...'; el.className = 'db-status loading';
     var res = await fetch(GAS_VENDOR_URL + '?action=getVendors');
     var data = await res.json();
     if (data.result === 'ok' && data.vendors && data.vendors.length > 0) {
-      var builtinNames = {};
-      BUILTIN_VENDORS.forEach(function(v) { builtinNames[v['업체명'].toLowerCase()] = true; });
-      var sheetMap = {};
-      data.vendors.forEach(function(v) { if(v['업체명']) sheetMap[v['업체명'].toLowerCase()] = v; });
-      VENDORS = BUILTIN_VENDORS.map(function(v) {
-        var sv = sheetMap[v['업체명'].toLowerCase()];
-        return sv ? { '업체명': v['업체명'], '전화번호': sv['전화번호']||v['전화번호'], '위치': sv['위치']||v['위치'] } : v;
+      var sheetVendors = data.vendors;
+      var names = BUILTIN_VENDORS.map(function(v) { return v['업체명']; });
+      sheetVendors.forEach(function(v) {
+        if (!names.includes(v['업체명'])) { VENDORS.push(v); names.push(v['업체명']); }
       });
-      data.vendors.forEach(function(v) {
-        if (v['업체명'] && !builtinNames[v['업체명'].toLowerCase()]) VENDORS.push(v);
-      });
-      el.textContent = '✓ 거래처 ' + VENDORS.length + '개';
-      el.className = 'db-status ok';
-      document.getElementById('dbLink').style.display = 'inline';
-    } else throw new Error('empty');
-  } catch(e) {
-    el.textContent = '거래처 ' + VENDORS.length + '개 (내장)';
-    el.className = 'db-status ok';
-    document.getElementById('dbLink').style.display = 'inline';
-  }
+    }
+  } catch(e) {}
+  statusEl.className = 'db-status ok';
+  statusEl.textContent = '✓ 거래처 ' + VENDORS.length + '개';
 }
 
 function normalizeBrand(raw) {
-  var t = (raw||'').trim();
+  var s = raw.trim();
   for (var i = 0; i < BRAND_MAP.length; i++) {
-    if (BRAND_MAP[i].re.test(t)) return BRAND_MAP[i].target;
+    if (BRAND_MAP[i].re.test(s)) return BRAND_MAP[i].target;
   }
-  return t;
-}
-function normalizeForMatch(s) {
-  return (s || '').toLowerCase().replace(/[()\[\]{}\-\.·,\s]/g, '');
+  return s;
 }
 
-function findVendor(brandRaw) {
-  var target = normalizeBrand(brandRaw).toLowerCase();
-  var targetNorm = normalizeForMatch(target);
-
-  // 1. 정확히 일치
-  for (var i = 0; i < VENDORS.length; i++) {
-    var vn = (VENDORS[i]['업체명']||'').toLowerCase();
-    if (vn === target) return VENDORS[i];
-  }
-
-  // 2. 특수문자/공백 제거 후 일치 (로와드(구.다올) vs 로와드(구-다올))
-  for (var i = 0; i < VENDORS.length; i++) {
-    var vnNorm = normalizeForMatch(VENDORS[i]['업체명']);
-    if (vnNorm === targetNorm && targetNorm.length > 1) return VENDORS[i];
-  }
-
-  // 3. 포함 관계
-  for (var i = 0; i < VENDORS.length; i++) {
-    var vnNorm = normalizeForMatch(VENDORS[i]['업체명']);
-    if (targetNorm.length > 1 && vnNorm.length > 1) {
-      if (targetNorm.indexOf(vnNorm) >= 0 || vnNorm.indexOf(targetNorm) >= 0) return VENDORS[i];
-    }
-  }
-
-  return null;
+function findVendor(raw) {
+  var name = normalizeBrand(raw);
+  var lower = name.toLowerCase();
+  return VENDORS.find(function(v) {
+    var vn = v['업체명'].toLowerCase();
+    return vn === lower || vn.includes(lower) || lower.includes(vn);
+  }) || null;
 }
 
-// ── STEP 1: 텍스트 파싱 ──
 function parseText() {
   var text = document.getElementById('textInput').value.trim();
-  if (!text) return; // 자동 호출이므로 토스트 없이
-
+  if (!text) return;
   var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l; });
   var items = [];
   var i = 0;
@@ -372,9 +335,7 @@ function parseText() {
       i += skip;
     } else { i++; }
   }
-
   if (!items.length) { showToast('상품을 인식하지 못했어요. 형식을 확인해주세요'); return; }
-
   products = items.map(function(item, idx) {
     var vendor = findVendor(item.거래처원본);
     return {
@@ -384,482 +345,186 @@ function parseText() {
       거래처원본: item.거래처원본,
       연락처: vendor ? (vendor['전화번호']||'') : '',
       주소: vendor ? (vendor['위치']||'') : '',
-      matched: !!vendor,
-      imageDataUrl: null
+      matched: !!vendor
     };
   });
-
   textParsed = true;
   var preview = document.getElementById('parsePreview');
   preview.style.display = 'block';
-  preview.textContent = '✅ ' + products.length + '개 상품 인식 완료! 이미지를 올리면 자동으로 크롭돼요.';
+  preview.textContent = '✅ ' + products.length + '개 상품 인식 완료! 아래에서 확인 후 엑셀 다운로드 하세요.';
   document.getElementById('parsedCount').textContent = products.length + '개 인식됨';
-
-  // 이미지 있으면 3단계 버튼 표시, 없으면 텍스트만 바로 카드 표시
-  if (currentImageBase64) {
-    showBtnProcess(true);
-    showToast('이미지도 등록됐어요! 3단계 버튼을 눌러주세요 😊');
-  } else {
-    renderCards();
-    showBtnProcess(false);
-  }
-}
-
-// ── STEP 2: 이미지 업로드 ──
-});
-document.addEventListener('paste', function(e) {
-  // 이미지 붙여넣기 처리 (텍스트 입력창 포함 어디서든)
-  var items = e.clipboardData && e.clipboardData.items;
-  if (!items) return;
-
-  for (var idx = 0; idx < items.length; idx++) {
-    if (items[idx].type.startsWith('image/')) {
-      var file = items[idx].getAsFile();
-      if (file) {
-        e.preventDefault();
-        handleImageFile(file);
-        showToast('📋 이미지 붙여넣기 완료!');
-      }
-      return; // 이미지면 텍스트 파싱 안 함
-    }
-  }
-
-  // 이미지 없고 텍스트면 → textarea 파싱
-  if (e.target && e.target.id === 'textInput') {
-    setTimeout(function() {
-      if (document.getElementById('textInput').value.trim()) parseText();
-    }, 100);
-  }
-});
-
-function handleImageFile(file) {
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    var full = ev.target.result;
-    currentImageBase64 = full.split(',')[1];
-    currentImageType = file.type;
-
-    // 업로드 영역 UI 업데이트
-    var area = document.getElementById('uploadArea');
-    area.classList.add('has-image');
-    document.getElementById('uploadIcon').textContent = '✅';
-    document.getElementById('uploadTitle').textContent = '이미지 등록됨';
-    document.getElementById('uploadSub').textContent = file.name;
-            // 텍스트도 있으면 3단계 버튼 표시
-    if (textParsed && products.length > 0) {
-      showBtnProcess(true);
-      showToast('✅ 이미지 등록 완료! 아래 버튼을 눌러주세요');
-    } else {
-      showBtnProcess(false);
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-function showBtnProcess(show) {
-  // 버튼은 항상 표시
-}
-
-// ── 이미지 크롭 ──
-async function cropAndRender() {
-  if (!currentImageBase64 || products.length === 0) return;
-
-  document.getElementById('loadingMsg').textContent = '이미지 크롭 중...';
-  document.getElementById('loading').classList.add('show');
-
-  var img = new Image();
-  await new Promise(function(resolve, reject) {
-    img.onload = function() {
-      // 실제 크기가 로드됐는지 확인
-      if (img.width > 0 && img.height > 0) {
-        resolve();
-      } else {
-        reject(new Error('이미지 크기를 읽을 수 없어요'));
-      }
-    };
-    img.onerror = reject;
-    img.src = 'data:' + currentImageType + ';base64,' + currentImageBase64;
-  });
-  
-  // 혹시 모를 렌더링 지연 대기
-  await new Promise(function(r) { setTimeout(r, 100); });
-  
-  if (img.width === 0 || img.height === 0) {
-    showToast('❌ 이미지 로드 실패, 다시 시도해주세요');
-    return;
-  }
-
-  var count = products.length;
-  var cols = 5; // 신상마켓 찜 리스트 항상 5열
-  var rows = Math.ceil(count / cols); // 텍스트 파싱 수 기준으로 행 수 계산 (항상 정확)
-
-  var colW = img.width / cols;
-  var rowH = img.height / rows; // 항상 행 수로 나눔 (가로/세로 비율 무관)
-
-  // 목표 비율 391:592 (0.660) 기준으로 높이 계산
-  var targetRatio = 391 / 592;
-  var cardW = colW - 4;
-  var targetH = cardW / targetRatio;
-  var yStartRatio = 0.05;  // 위 5% 제거 (별표/여백)
-  var yEndRatio = yStartRatio + targetH / rowH;
-
-  products.forEach(function(p, i) {
-    var row = Math.floor(i / cols);
-    var col = i % cols;
-
-    var x1 = Math.max(0, Math.round(col * colW) - 2);
-    var x2 = Math.min(img.width, Math.round((col + 1) * colW) - (col < cols - 1 ? 2 : 0));
-    var y1 = Math.round(row * rowH + rowH * yStartRatio);
-    var y2 = Math.min(Math.round(row * rowH + rowH * yEndRatio), img.height);
-
-    var cw = x2 - x1;
-    var ch = y2 - y1;
-
-    var canvas = document.createElement('canvas');
-    canvas.width = cw;
-    canvas.height = ch;
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(img, x1, y1, cw, ch, 0, 0, cw, ch);
-    p.imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-  });
-
-  document.getElementById('loading').classList.remove('show');
-  showBtnProcess(false);
   renderCards();
 }
 
-// ── processAll (이미지 먼저 올렸을 때) ──
 function processAll() {
+  parseText();
   if (!textParsed || products.length === 0) {
-    showToast('텍스트를 먼저 파싱해주세요');
+    showToast('신상마켓 찜 목록 텍스트를 먼저 붙여넣으세요');
     return;
-  }
-  if (currentImageBase64) {
-    cropAndRender();
   }
 }
 
-// ── 카드 렌더링 ──
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function renderCards() {
   var container = document.getElementById('productCards');
   container.innerHTML = '';
-
   var matched = products.filter(function(p) { return p.matched; }).length;
   var unmatched = products.length - matched;
   document.getElementById('statsRow').innerHTML =
     '<span class="stat-chip">총 ' + products.length + '개</span>' +
     '<span class="stat-chip ok">✓ 매칭 ' + matched + '개</span>' +
-    (unmatched ? '<span class="stat-chip warn">✗ 미매칭 ' + unmatched + '개</span>' : '');
+    (unmatched ? '<span class="stat-chip warn">⚠ 미매칭 ' + unmatched + '개</span>' : '');
+
+  var firstUnmatched = {};
+  products.forEach(function(p, i) {
+    if (!p.matched) {
+      var key = p.거래처원본;
+      if (!(key in firstUnmatched)) firstUnmatched[key] = i;
+    }
+  });
 
   products.forEach(function(p, i) {
-    var card = document.createElement('div');
-    card.className = 'product-card' + (p.matched ? '' : ' unmatched');
-    card.id = 'card-' + i;
-
-    var thumbHtml = p.imageDataUrl
-      ? '<div class="card-thumb"><img src="' + p.imageDataUrl + '" alt=""></div>'
-      : '<div class="card-thumb">👗</div>';
-
+    var matchBadge = p.matched
+      ? '<span class="match-badge ok">✓ 매칭</span>'
+      : '<span class="match-badge miss">⚠ 미매칭</span>';
     var missFormHtml = '';
     if (!p.matched) {
-      missFormHtml =
-        '<div class="card-miss-form" id="missform-' + i + '">' +
-          '<div class="miss-form-title">⚠️ DB에 없는 거래처 — 연락처·주소 입력 후 추가</div>' +
+      var isFirst = (firstUnmatched[p.거래처원본] === i);
+      if (isFirst) {
+        missFormHtml = '<div class="card-miss-form" id="missform-' + i + '">' +
+          '<div class="miss-form-title">미등록 거래처 정보 입력</div>' +
           '<div class="miss-form-row">' +
-            '<div class="miss-input-wrap"><label>📍 주소</label>' +
-            '<input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1" value="' + esc(p.주소) + '" oninput="syncSameVendor(' + i + ',\'addr\',this.value)"></div>' +
-            '<div class="miss-input-wrap"><label>📞 연락처</label>' +
-            '<input class="miss-input" id="phone-' + i + '" placeholder="2117-1234" value="' + esc(p.연락처) + '" oninput="syncSameVendor(' + i + ',\'phone\',this.value)"></div>' +
-          '</div>' +
-          '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가</button>' +
-          '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 추가됐어요!</div>' +
-        '</div>';
+          '<div class="miss-input-wrap"><label>연락처</label><input class="miss-input" id="phone-' + i + '" placeholder="전화번호" oninput="syncMissInput(\'' + p.거래처원본 + '\', \'phone\', this.value)"></div>' +
+          '<div class="miss-input-wrap"><label>주소</label><input class="miss-input" id="addr-' + i + '" placeholder="위치/호수" oninput="syncMissInput(\'' + p.거래처원본 + '\', \'addr\', this.value)"></div>' +
+          '</div></div>';
+      } else {
+        missFormHtml = '<div class="card-miss-form" style="background:#FEF3CD; border-color:#F0D060; padding:8px 12px;">' +
+          '<div style="font-size:11px; color:#B8860B;">연락처: <span id="sync-phone-' + i + '">-</span> / 주소: <span id="sync-addr-' + i + '">-</span></div>' +
+          '</div>';
+      }
     }
-
+    var card = document.createElement('div');
+    card.className = 'product-card' + (p.matched ? '' : ' unmatched');
     card.innerHTML =
       '<div class="card-main">' +
-        thumbHtml +
         '<div class="card-info">' +
-          '<input class="card-name-input" id="name-' + i + '" value="' + esc(p.상품명) + '" placeholder="상품명">' +
+          '<input class="card-name-input" id="name-' + i + '" value="' + escHtml(p.상품명) + '">' +
           '<div class="card-vendor-row">' +
-            '<input class="card-vendor-input" id="vendor-' + i + '" value="' + esc(p.거래처) + '" placeholder="거래처" oninput="onVendorChange(' + i + ',this.value)">' +
-            (p.연락처 || p.주소 ? '<div style="font-size:10px;color:var(--gray-400);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + [p.거래처, p.주소, p.연락처].filter(Boolean).join(' / ') + '</div>' : '') +
-            '<span class="match-badge ' + (p.matched ? 'ok' : 'miss') + '" id="badge-' + i + '">' + (p.matched ? '✓ 매칭' : '✗ 미매칭') + '</span>' +
+            '<input class="card-vendor-input" id="vendor-' + i + '" value="' + escHtml(p.거래처) + '" oninput="onVendorChange(' + i + ', this.value)">' +
+            matchBadge +
           '</div>' +
         '</div>' +
         '<button class="card-remove" onclick="removeProduct(' + i + ')">✕</button>' +
-      '</div>' + missFormHtml;
-
+      '</div>' +
+      missFormHtml;
     container.appendChild(card);
   });
 
   document.getElementById('resultCount').textContent = products.length;
-  document.getElementById('totalCount').textContent = products.length;
   document.getElementById('resultsWrap').classList.add('show');
   document.getElementById('saveAllWrap').classList.add('show');
 }
 
-// ── 거래처 변경 ──
 function onVendorChange(i, value) {
   var vendor = findVendor(value);
   products[i].거래처 = vendor ? vendor['업체명'] : value;
   products[i].연락처 = vendor ? (vendor['전화번호']||'') : '';
-  products[i].주소   = vendor ? (vendor['위치']||'') : '';
+  products[i].주소 = vendor ? (vendor['위치']||'') : '';
   products[i].matched = !!vendor;
-  var badge = document.getElementById('badge-' + i);
-  if (badge) { badge.textContent = vendor ? '✓ 매칭' : '✗ 미매칭'; badge.className = 'match-badge ' + (vendor ? 'ok' : 'miss'); }
-  var card = document.getElementById('card-' + i);
-  if (card) card.classList.toggle('unmatched', !vendor);
-  var missForm = document.getElementById('missform-' + i);
-  if (!vendor && !missForm && card) {
-    var div = document.createElement('div');
-    div.className = 'card-miss-form'; div.id = 'missform-' + i;
-    div.innerHTML =
-      '<div class="miss-form-title">⚠️ DB에 없는 거래처 — 연락처·주소 입력 후 추가</div>' +
-      '<div class="miss-form-row">' +
-        '<div class="miss-input-wrap"><label>📞 연락처</label><input class="miss-input" id="phone-' + i + '" placeholder="2117-1234"></div>' +
-        '<div class="miss-input-wrap"><label>📍 주소</label><input class="miss-input" id="addr-' + i + '" placeholder="디오트 3-A-1" oninput="syncSameVendor(' + i + ',\'addr\',this.value)"></div>' +
-      '</div>' +
-      '<button class="btn-save-vendor" id="savevbtn-' + i + '" onclick="saveVendorToDB(' + i + ')">📋 거래처 시트에 추가</button>' +
-      '<div class="vendor-saved-msg" id="vsaved-' + i + '">✅ 추가됐어요!</div>';
-    card.appendChild(div);
-  } else if (vendor && missForm) { missForm.remove(); }
 }
 
-// ── 거래처 저장 ──
-async function saveVendorToDB(i) {
-  var btn    = document.getElementById('savevbtn-' + i);
-  var vendor = document.getElementById('vendor-' + i)?.value || products[i].거래처;
-  var phone  = document.getElementById('phone-'  + i)?.value || '';
-  var addr   = document.getElementById('addr-'   + i)?.value || '';
-  if (!vendor) { showToast('거래처명을 입력해주세요'); return; }
-  btn.disabled = true; btn.textContent = '저장 중...';
-  try {
-    var payload = encodeURIComponent(JSON.stringify({ name: vendor, phone: phone, addr: addr }));
-    await fetch(GAS_VENDOR_URL + '?action=save&data=' + payload, { mode: 'no-cors' });
-    VENDORS.push({ '업체명': vendor, '전화번호': phone, '위치': addr });
-
-    // 같은 거래처명인 다른 카드에도 자동 적용
-    var sameVendorCount = 0;
-    products.forEach(function(p, j) {
-      var pVendor = document.getElementById('vendor-' + j) ? document.getElementById('vendor-' + j).value : p.거래처;
-      // 특수문자/공백 제거 후 비교
-      // 공백/특수문자 제거 후 비교
-      function simplify(s) { return (s||'').toLowerCase().replace(/\s/g,'').replace(/[().\-]/g,''); }
-      if (j !== i && simplify(pVendor) === simplify(vendor) && simplify(vendor).length > 0) {
-        p.연락처 = phone;
-        p.주소 = addr;
-        p.matched = true;
-        // 해당 카드 미매칭 폼 자동 숨김
-        var otherForm = document.getElementById('missform-' + j);
-        if (otherForm) {
-          otherForm.innerHTML = '<div style="font-size:11px; color:var(--green); padding:6px 0;">✅ ' + esc(vendor) + ' 정보 자동 적용됨</div>';
-        }
-        var badge = document.getElementById('badge-' + j);
-        if (badge) { badge.textContent = '✓ 매칭'; badge.className = 'match-badge ok'; }
-        var card = document.getElementById('card-' + j);
-        if (card) card.classList.remove('unmatched');
-        sameVendorCount++;
+function syncMissInput(key, field, value) {
+  products.forEach(function(p, i) {
+    if (p.거래처원본 === key) {
+      if (field === 'phone') {
+        p.연락처 = value;
+        var el = document.getElementById('sync-phone-' + i);
+        if (el) el.textContent = value || '-';
+      } else {
+        p.주소 = value;
+        var el = document.getElementById('sync-addr-' + i);
+        if (el) el.textContent = value || '-';
       }
-    });
-
-    products[i].연락처 = phone; products[i].주소 = addr;
-    btn.style.display = 'none';
-    var saved = document.getElementById('vsaved-' + i);
-    if (saved) saved.style.display = 'block';
-    var msg = '✅ ' + vendor + ' 시트에 추가됐어요!';
-    if (sameVendorCount > 0) msg += ' (' + sameVendorCount + '개 카드 자동 적용)';
-    showToast(msg);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = '📋 거래처 시트에 추가';
-    showToast('❌ 저장 실패');
-  }
-}
-
-function removeProduct(i) {
-  products.splice(i, 1);
-  if (!products.length) {
-    document.getElementById('resultsWrap').classList.remove('show');
-    document.getElementById('saveAllWrap').classList.remove('show');
-    return;
-  }
-  renderCards();
-}
-  if (incomplete.length > 0) {
-    // 경고는 하되 저장은 계속 진행
-    showToast('⚠️ 미매칭 거래처 ' + incomplete.length + '개는 주소·연락처 없이 저장돼요');
-  }
-
-  var btn = document.getElementById('btnSaveAll');
-  btn.disabled = true; btn.textContent = '저장 중...';
-  var today = new Date().toISOString().split('T')[0];
-  var success = 0;
-
-  document.getElementById('loadingMsg').textContent = '저장 중...';
-  document.getElementById('loading').classList.add('show');
-
-  for (var i = 0; i < products.length; i++) {
-    var p = products[i];
-    var name   = document.getElementById('name-'   + i)?.value || p.상품명;
-    var vendor = document.getElementById('vendor-' + i)?.value || p.거래처;
-    var phone  = document.getElementById('phone-'  + i)?.value || p.연락처;
-    var addr   = document.getElementById('addr-'   + i)?.value || p.주소;
-
-    document.getElementById('loadingMsg').textContent = '저장 중... (' + (i+1) + '/' + products.length + ')';
-
-    // 이미지 있으면 POST(이미지+데이터 함께), 없으면 GET
-    try {
-      if (p.imageDataUrl) {
-        var imgBase64 = p.imageDataUrl.split(',')[1];
-        var imgFileName = (vendor + '_' + name).replace(/[^a-zA-Z0-9가-힣]/g, '_').slice(0,20) + '_' + today + '.jpg';
-        var body = JSON.stringify({
-          action: 'add',
-          '상품명': name, '거래처': vendor, '연락처': phone, '주소': addr,
-          '이미지URL': '', '요청일': today,
-          '입고일': '', '반납기한': '', '상태': '요청중',
-          '반납일': '', '출처': '신상마켓', '비고': '',
-          imageBase64: imgBase64, imageFileName: imgFileName
-        });
-        await       success++;
-    } catch(e) { console.error(e); }
-  }
-
-  document.getElementById('loading').classList.remove('show');
-  btn.disabled = false;
-  btn.innerHTML = '📊 구글 시트에 전체 저장 (<span id="totalCount">' + products.length + '</span>개)';
-  showToast('✅ ' + success + '개 저장 완료!');
-  // 엑셀도 자동 다운로드
-  downloadSampleExcel();
-}
-
-
-
-function resetAll() {
-  products = []; currentImageBase64 = ''; currentImageType = ''; textParsed = false;
-  document.getElementById('textInput').value = '';
-      document.getElementById('parsePreview').style.display = 'none';
-  document.getElementById('parsedCount').textContent = '';
-  document.getElementById('uploadArea').classList.remove('has-image');
-  document.getElementById('uploadIcon').textContent = '📸';
-  document.getElementById('uploadTitle').textContent = '이미지 업로드 or Ctrl+V';
-  document.getElementById('uploadSub').textContent = '텍스트 파싱 후 올리면 상품 수대로 자동 크롭돼요';
-  document.getElementById('resultsWrap').classList.remove('show');
-  document.getElementById('saveAllWrap').classList.remove('show');
-  showBtnProcess(false);
-}
-
-
-// 모달 바깥 클릭 시 닫기
-
-
-// 같은 거래처 카드 실시간 동기화
-// 알림 팝업
-function showAlert(title, msg) {
-  var existing = document.getElementById('alertModal');
-  if (existing) existing.remove();
-
-  var modal = document.createElement('div');
-  modal.id = 'alertModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
-  modal.innerHTML =
-    '<div style="background:white;border-radius:16px;padding:24px 20px;width:100%;max-width:400px;">' +
-      '<div style="font-size:16px;font-weight:700;margin-bottom:12px;">' + title + '</div>' +
-      '<div style="font-size:13px;color:#6B6760;line-height:1.8;white-space:pre-line;margin-bottom:20px;">' + msg + '</div>' +
-      '<button onclick="document.getElementById(\'alertModal\').remove()" ' +
-        'style="width:100%;padding:13px;border-radius:10px;border:none;background:#111;color:white;font-size:14px;font-weight:700;font-family:sans-serif;cursor:pointer;">확인</button>' +
-    '</div>';
-  document.body.appendChild(modal);
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-  // 3초 후 자동 제거
-  setTimeout(function() { if (document.getElementById('alertModal')) document.getElementById('alertModal').remove(); }, 5000);
-}
-
-function syncSameVendor(i, field, value) {
-  var vendor = document.getElementById('vendor-' + i) ? document.getElementById('vendor-' + i).value : products[i].거래처;
-  function simplify(s) {
-    return (s||'').toLowerCase().split('').filter(function(c){ return /[a-z0-9가-힣]/.test(c); }).join('');
-  }
-  var vendorKey = simplify(vendor);
-  if (!vendorKey) return;
-
-  products.forEach(function(p, j) {
-    if (j === i) return; // 본인 제외
-    var pVendor = document.getElementById('vendor-' + j) ? document.getElementById('vendor-' + j).value : p.거래처;
-    if (simplify(pVendor) !== vendorKey) return;
-
-    // 같은 거래처면 해당 필드 동기화
-    var targetInput = document.getElementById(field + '-' + j);
-    if (targetInput) {
-      targetInput.value = value;
-      // products 데이터도 업데이트
-      if (field === 'addr') p.주소 = value;
-      if (field === 'phone') p.연락처 = value;
     }
   });
 }
 
-// ── 스마트비즈 샘플차감 엑셀 생성 ──
+function removeProduct(i) {
+  products.splice(i, 1);
+  if (products.length === 0) {
+    document.getElementById('resultsWrap').classList.remove('show');
+    document.getElementById('saveAllWrap').classList.remove('show');
+    textParsed = false;
+  } else {
+    renderCards();
+  }
+}
+
 function downloadSampleExcel() {
   if (!products.length) { showToast('먼저 상품을 파싱해주세요'); return; }
-
   var today = new Date().toISOString().split('T')[0];
-
-  // 시트1: 샘플차감 등록양식
   var rows1 = [['업체명(필수)', '연락처(필수)', '주소(필수)', '내용(필수)']];
   products.forEach(function(p, i) {
     var name   = document.getElementById('name-'   + i) ? document.getElementById('name-'   + i).value : p.상품명;
     var vendor = document.getElementById('vendor-' + i) ? document.getElementById('vendor-' + i).value : p.거래처;
-    var phone  = document.getElementById('phone-'  + i) ? document.getElementById('phone-'  + i).value : (p.연락처 || '');
-    var addr   = document.getElementById('addr-'   + i) ? document.getElementById('addr-'   + i).value : (p.주소   || '');
-    rows1.push([vendor, phone, addr, name]);
+    var phone  = document.getElementById('phone-'  + i) ? document.getElementById('phone-'  + i).value : p.연락처;
+    var addr   = document.getElementById('addr-'   + i) ? document.getElementById('addr-'   + i).value : p.주소;
+    rows1.push([vendor || p.거래처원본, phone, addr, name]);
   });
-
-  var ws1 = XLSX.utils.aoa_to_sheet(rows1);
-  ws1['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 24 }, { wch: 50 }];
-
-  // 헤더 스타일 (굵게)
-  var headerRange = XLSX.utils.decode_range(ws1['!ref']);
-  for (var c = headerRange.s.c; c <= headerRange.e.c; c++) {
-    var cell = ws1[XLSX.utils.encode_cell({ r: 0, c: c })];
-    if (cell) cell.s = { font: { bold: true } };
-  }
-
-  // 시트2: 상품 목록 (참고용)
-  var rows2 = [['거래처', '상품명', '요청일', '상태']];
-  products.forEach(function(p, i) {
-    var name   = document.getElementById('name-'   + i) ? document.getElementById('name-'   + i).value : p.상품명;
-    var vendor = document.getElementById('vendor-' + i) ? document.getElementById('vendor-' + i).value : p.거래처;
-    rows2.push([vendor, name, today, '요청중']);
+  var unmatched = products.filter(function(p) { return !p.matched; });
+  var rows2 = [['업체명', '연락처', '주소', '비고']];
+  var seen = {};
+  unmatched.forEach(function(p) {
+    if (!seen[p.거래처원본]) {
+      seen[p.거래처원본] = true;
+      rows2.push([p.거래처원본, p.연락처||'', p.주소||'', '미등록 거래처']);
+    }
   });
-  var ws2 = XLSX.utils.aoa_to_sheet(rows2);
-  ws2['!cols'] = [{ wch: 22 }, { wch: 45 }, { wch: 14 }, { wch: 10 }];
-
   var wb = XLSX.utils.book_new();
+  var ws1 = XLSX.utils.aoa_to_sheet(rows1);
   XLSX.utils.book_append_sheet(wb, ws1, '샘플차감 등록양식');
-  XLSX.utils.book_append_sheet(wb, ws2, '상품 목록');
-
-  XLSX.writeFile(wb, '스마트비즈_샘플요청_' + today + '.xlsx');
-  showToast('📥 엑셀 다운로드 완료!');
+  if (rows2.length > 1) {
+    var ws2 = XLSX.utils.aoa_to_sheet(rows2);
+    XLSX.utils.book_append_sheet(wb, ws2, '미매칭 거래처');
+  }
+  XLSX.writeFile(wb, '샘플요청_' + today + '.xlsx');
+  unmatched.forEach(function(p) {
+    var payload = encodeURIComponent(JSON.stringify({ name: p.거래처원본, phone: p.연락처||'', addr: p.주소||'' }));
+    fetch(GAS_VENDOR_URL + '?action=save&data=' + payload, { mode: 'no-cors' }).catch(function() {});
+  });
+  showToast('✅ 엑셀 다운로드 완료! 미등록 거래처 ' + (rows2.length-1) + '개 자동 저장');
 }
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function resetAll() {
+  products = [];
+  textParsed = false;
+  document.getElementById('textInput').value = '';
+  document.getElementById('parsePreview').style.display = 'none';
+  document.getElementById('parsedCount').textContent = '';
+  document.getElementById('resultsWrap').classList.remove('show');
+  document.getElementById('saveAllWrap').classList.remove('show');
+}
+
 function showToast(msg) {
   var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(function() { t.classList.remove('show'); }, 3000);
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
 }
 
 window.addEventListener('load', function() {
   loadVendorDB();
-
-  // 텍스트 붙여넣기 감지 → 자동 파싱
-  // 텍스트 자동 파싱 (이미지는 전역 paste에서 처리)
   document.getElementById('textInput').addEventListener('paste', function(e) {
     setTimeout(function() {
       if (document.getElementById('textInput').value.trim()) parseText();
     }, 100);
   });
 });
+
 </script>
+<div class="toast" id="toast"></div>
 </body>
 </html>
