@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>상품 업데이트 보드 | 더제이수</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --ink:#231F20; --sub:#6b6b6b; --line:#e4e2df; --bg:#f7f6f4; --card:#fff;
+    --warn-bg:#fdf3e3; --warn:#9a5b00; --alert-bg:#fbeaea; --alert:#a12c2c; --ok-bg:#eef4ee; --ok:#2f6b3a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--bg);font-size:14px;line-height:1.45}
+  button{font-family:inherit;font-size:13px;cursor:pointer}
+  header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+  h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.3px}
+  .week{display:flex;align-items:center;gap:6px}
+  .week strong{min-width:150px;text-align:center;font-size:15px}
+  .btn{border:1px solid var(--ink);background:#fff;color:var(--ink);padding:7px 12px;border-radius:6px}
+  .btn:hover{background:#f0efed}
+  .btn.dark{background:var(--ink);color:#fff}
+  .btn.dark:hover{background:#000}
+  .btn.ghost{border-color:var(--line)}
+  .btn.sm{padding:4px 9px;font-size:12px}
+  .spacer{flex:1}
+  .demo{width:100%;background:var(--warn-bg);color:var(--warn);padding:8px 12px;border-radius:6px;font-size:13px}
+  .help{color:var(--sub);font-size:12.5px;padding:10px 20px 0}
+  main{display:grid;grid-template-columns:repeat(5,minmax(230px,1fr));gap:12px;padding:12px 20px 40px;overflow-x:auto}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  .col{background:#efeeeb;border-radius:10px;padding:10px;min-height:300px;display:flex;flex-direction:column;gap:10px;border:2px solid transparent}
+  .col.today{background:#e9e6e1}
+  .col.over{border-color:var(--ink)}
+  .colhead{display:flex;align-items:center;gap:6px}
+  .colhead b{font-size:15px}
+  .colhead .cnt{color:var(--sub);font-size:12px}
+  .drop{border:1.5px dashed #b9b5af;border-radius:8px;padding:14px 8px;text-align:center;color:var(--sub);font-size:12.5px;background:rgba(255,255,255,.5);cursor:pointer}
+  .drop:hover{background:#fff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;cursor:grab}
+  .card.dragging{opacity:.4}
+  .thumb{width:100%;height:170px;object-fit:cover;object-position:center 20%;background:#ddd;display:block;cursor:zoom-in}
+  .nophoto{aspect-ratio:4/1;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:12px;background:#f3f2f0}
+  .body{padding:10px;display:flex;flex-direction:column;gap:6px}
+  .ttl{font-weight:700;font-size:14px;word-break:keep-all}
+  .vendor{color:var(--sub);font-weight:500;font-size:12.5px}
+  .kv{display:grid;grid-template-columns:52px 1fr;gap:2px 6px;font-size:12.5px}
+  .kv span:nth-child(odd){color:var(--sub)}
+  .tag{display:inline-block;padding:2px 7px;border-radius:999px;font-size:11.5px;font-weight:600}
+  .tag.need{background:var(--warn-bg);color:var(--warn)}
+  .tag.alert{background:var(--alert-bg);color:var(--alert)}
+  .tag.ok{background:var(--ok-bg);color:var(--ok)}
+  .unlinked{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:8px;font-size:12.5px;text-align:center}
+  .memo{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;font-size:12.5px;resize:vertical;min-height:30px}
+  .acts{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .acts select{font:inherit;font-size:12px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:#fff}
+  .acts label{font-size:12px;display:flex;align-items:center;gap:3px;margin-left:auto}
+  .uploading{padding:14px;text-align:center;color:var(--sub);font-size:12.5px}
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal.on{display:flex}
+  .sheet{background:#fff;border-radius:12px;width:min(720px,100%);max-height:88vh;display:flex;flex-direction:column}
+  .sheet header{position:static;border-bottom:1px solid var(--line);background:#fff;border-radius:12px 12px 0 0}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--line)}
+  .filters input[type=search]{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit}
+  .filters select{padding:7px;border:1px solid var(--line);border-radius:6px;font:inherit}
+  .filters label{display:flex;align-items:center;gap:4px;font-size:12.5px;color:var(--sub)}
+  .list{overflow:auto;padding:8px 12px 16px}
+  .item{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px;border-bottom:1px solid #f0efed;border-radius:6px;cursor:pointer}
+  .item:hover{background:#f7f6f4}
+  .item .nm{font-weight:600}
+  .item .meta{grid-column:1/3;color:var(--sub);font-size:12.5px}
+  .empty{padding:30px;text-align:center;color:var(--sub)}
+  .lightbox img{max-width:92vw;max-height:88vh;border-radius:8px}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:60;max-width:90vw}
+  #toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>상품 업데이트 보드</h1>
+  <div class="week">
+    <button class="btn ghost sm" id="prevW">‹</button>
+    <strong id="weekLabel"></strong>
+    <button class="btn ghost sm" id="nextW">›</button>
+    <button class="btn ghost sm" id="thisW">이번 주</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn ghost" id="reload">새로고침</button>
+  <button class="btn dark" id="copyWeek">이번 주 전체 카톡 복사</button>
+  <div class="demo" id="demoBar" hidden>데모 모드예요. 저장되지 않아요. 파일 위쪽 GAS_URL에 웹앱 주소를 넣으면 실제 샘플 시트와 연결돼요.</div>
+</header>
+<p class="help">① 대표님: 업데이트할 상품 사진을 요일 칸에 끌어다 놓기 ② 직원: 카드의 <b>샘플 연결</b>을 눌러 샘플 시트 상품 고르기 ③ <b>카톡 복사</b>로 채널톡·카톡에 붙여넣기 · 카드는 끌어서 다른 요일로 옮길 수 있어요.</p>
+
+<main id="board"></main>
+
+<!-- 샘플 고르기 -->
+<div class="modal" id="picker">
+  <div class="sheet">
+    <header>
+      <h1 style="font-size:16px">샘플 연결</h1>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" id="unlinkBtn">연결 해제</button>
+      <button class="btn ghost sm" data-close>닫기</button>
+    </header>
+    <div class="filters">
+      <input type="search" id="q" placeholder="상품명이나 거래처로 검색 (예: 브리T, 님프)">
+      <select id="vendorSel"><option value="">거래처 전체</option></select>
+      <label><input type="checkbox" id="incReturned"> 반납완료 포함</label>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<div class="modal lightbox" id="lightbox"><img id="lbImg" alt=""></div>
+<input type="file" id="fileIn" accept="image/*" multiple hidden>
+<div id="toast"></div>
+
+<script>
+/* ===== 설정: GAS 웹앱 주소를 넣으세요 ===== */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzNuv4WIue5-K9XdKHZItw28VqeQGdDRnmWL_TAH3EvFujR9OAZ4xtK0sF4DO3zOjEOng/exec';
+/* ========================================= */
+
+const DAYS = ['일','월','화','수','목','금','토'];
+const DEMO = !GAS_URL;
+let weekStart = startOfWeek(new Date());
+let cards = [];       // 이번 주 카드
+let samples = [];     // 샘플 시트 행
+let groups = new Map();
+let pickFor = null;   // 연결 중인 카드 id
+let dropDate = null;  // 파일 선택 시 대상 날짜
+
+/* ---------- 날짜 ---------- */
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parseYmd(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function startOfWeek(d){
+  const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const dow=x.getDay();
+  if(dow===6) return addDays(x,2);   // 토요일이면 다음 주
+  if(dow===0) return addDays(x,1);   // 일요일이면 다음 주
+  return addDays(x,1-dow);
+}
+function md(s){ if(!s) return ''; const d=parseYmd(s); return (d.getMonth()+1)+'/'+d.getDate()+'('+DAYS[d.getDay()]+')'; }
+function weekDates(){ return [0,1,2,3,4].map(i=>ymd(addDays(weekStart,i))); }
+
+/* ---------- 공통 ---------- */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg,ms=2200){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),ms); }
+
+/* ---------- 상품명 나누기 (괄호 안 / 는 무시) ---------- */
+function splitName(name){
+  const parts=[]; let depth=0, cur='';
+  for(const ch of String(name)){
+    if(ch==='('||ch==='[') depth++;
+    else if((ch===')'||ch===']')&&depth>0) depth--;
+    if(ch==='/'&&depth===0){ parts.push(cur.trim()); cur=''; } else cur+=ch;
+  }
+  parts.push(cur.trim());
+  return parts;
+}
+const keyOf=(vendor,inDate,base)=>vendor+'|'+inDate+'|'+base;
+
+function buildGroups(){
+  groups=new Map();
+  for(const s of samples){
+    const parts=splitName(s.name), base=parts[0];
+    const k=keyOf(s.vendor,s.inDate,base);
+    if(!groups.has(k)) groups.set(k,{key:k,vendor:s.vendor,inDate:s.inDate,base,rows:[],colors:new Set(),sizes:new Set(),mix:'',price:'',due:'',colorSize:'',updateDate:'',statuses:new Set()});
+    const g=groups.get(k);
+    g.rows.push(s); g.statuses.add(s.status);
+    if(parts[1]) g.colors.add(parts[1]);
+    if(parts[2]) g.sizes.add(parts[2]);
+    if(!g.mix && s.mix) g.mix=s.mix;
+    if(!g.price && s.price) g.price=s.price;
+    if(!g.colorSize && s.colorSize) g.colorSize=s.colorSize;
+    if(!g.updateDate && s.updateDate) g.updateDate=s.updateDate;
+    if(s.due && (!g.due || s.due<g.due)) g.due=s.due;
+  }
+}
+function groupInfo(g){
+  let colors='', sizes='';
+  const m=(g.colorSize||'').match(/칼라\s*:\s*([^/]+?)(?:\s*\/\s*|$)/), n=(g.colorSize||'').match(/사이즈\s*:\s*(.+)$/);
+  colors = m ? m[1].trim() : [...g.colors].join(', ');
+  sizes  = n ? n[1].trim() : [...g.sizes].join(', ');
+  const price = g.price ? String(g.price).replace(/[^\d]/g,'') : '';
+  return { colors, sizes, mix:g.mix, price: price ? Number(price).toLocaleString('ko-KR')+'원' : '', due:g.due,
+           returned: !g.statuses.has('보유중') };
+}
+
+/* ---------- API ---------- */
+async function apiGet(params){
+  if(DEMO) return demoGet(params);
+  const url=GAS_URL+'?'+new URLSearchParams(params).toString();
+  const r=await fetch(url); const j=await r.json();
+  if(!j.ok) throw new Error(j.error||'오류'); return j;
+}
+async function apiPost(body){
+  if(DEMO) return demoPost(body);
+  const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+  const j=await r.json(); if(!j.ok) throw new Error(j.error||'오류'); return j;
+}
+
+/* ---------- 불러오기 ---------- */
+async function loadSamples(){
+  try{ samples=(await apiGet({action:'samples'})).samples||[]; buildGroups(); fillVendors(); }
+  catch(e){ toast('샘플 시트를 못 불러왔어요: '+e.message,4000); }
+}
+async function loadBoard(){
+  const d=weekDates();
+  try{ cards=(await apiGet({action:'board',from:d[0],to:d[4]})).cards||[]; }
+  catch(e){ toast('보드를 못 불러왔어요: '+e.message,4000); }
+  render();
+}
+
+/* ---------- 그리기 ---------- */
+function photoSrc(c,big){
+  if(!c.photoId) return '';
+  if(c.photoId.startsWith('data:')) return c.photoId;
+  return 'https://drive.google.com/thumbnail?id='+encodeURIComponent(c.photoId)+'&sz=w'+(big?1600:600);
+}
+function render(){
+  const dates=weekDates(), today=ymd(new Date());
+  $('#weekLabel').textContent=md(dates[0])+' ~ '+md(dates[4]);
+  const opts=dates.map(d=>`<option value="${d}">${md(d)}</option>`).join('');
+  $('#board').innerHTML=dates.map(d=>{
+    const list=cards.filter(c=>c.date===d);
+    return `<section class="col ${d===today?'today':''}" data-date="${d}">
+      <div class="colhead"><b>${md(d)}</b><span class="cnt">${list.length}건</span><span class="spacer"></span>
+        <button class="btn ghost sm" data-copy="${d}" ${list.length?'':'disabled'}>카톡 복사</button></div>
+      <div class="drop" data-pick="${d}">사진을 끌어다 놓거나<br>눌러서 추가</div>
+      ${list.map(c=>cardHtml(c,opts)).join('')}
+    </section>`;
+  }).join('');
+  document.querySelectorAll('.col select[data-move]').forEach(s=>{ s.value=s.dataset.cur; });
+}
+function cardHtml(c,opts){
+  if(c._uploading) return `<div class="card"><div class="uploading">사진 올리는 중…</div></div>`;
+  const g=c.product?groups.get(keyOf(c.vendor,c.inDate,c.product)):null;
+  let info='';
+  if(!c.product){
+    info=`<div class="unlinked">샘플 연결 필요</div>`;
+  }else if(!g){
+    info=`<div class="ttl">${esc(c.product)}</div>
+          <div class="kv"><span>거래처</span><span>${esc(c.vendor)}</span></div>
+          <span class="tag alert">샘플 시트에서 못 찾음</span>`;
+  }else{
+    const i=groupInfo(g);
+    const dueWarn = i.due && i.due < c.date ? `<span class="tag alert">반납기한 ${md(i.due)} — 업데이트 전</span>` : '';
+    info=`<div class="ttl">${esc(c.product)}</div>
+      <div class="kv">
+        <span>거래처</span><span>${esc(c.vendor)}</span>
+        <span>단가</span><span>${esc(i.price)||'-'}</span>
+        <span>컬러</span><span>${esc(i.colors)||'-'}</span>
+        <span>사이즈</span><span>${esc(i.sizes)||'-'}</span>
+        <span>혼용률</span><span>${i.mix?esc(i.mix):'<span class="tag need">📞 확인 필요</span>'}</span>
+      </div>
+      <div>${dueWarn}${i.returned?' <span class="tag alert">샘플 반납됨</span>':''}</div>`;
+  }
+  const img=c.photoId?`<img class="thumb" src="${photoSrc(c)}" data-zoom="${esc(c.id)}" alt="" loading="lazy">`:`<div class="nophoto">사진 없음</div>`;
+  return `<article class="card" draggable="true" data-id="${esc(c.id)}">
+    ${img}
+    <div class="body">
+      ${info}
+      <textarea class="memo" data-memo="${esc(c.id)}" placeholder="메모 (예: 블랙만 업데이트)">${esc(c.memo)}</textarea>
+      <div class="acts">
+        <button class="btn sm ${c.product?'ghost':'dark'}" data-link="${esc(c.id)}">${c.product?'샘플 변경':'샘플 연결'}</button>
+        <select data-move="${esc(c.id)}" data-cur="${esc(c.date)}" title="요일 옮기기">${opts}</select>
+        <button class="btn ghost sm" data-del="${esc(c.id)}">삭제</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ---------- 카톡 문구 ---------- */
+function cardText(c,n){
+  const lines=[];
+  if(!c.product){
+    lines.push(`${n}) [샘플 연결 필요]`);
+  }else{
+    const g=groups.get(keyOf(c.vendor,c.inDate,c.product)); const i=g?groupInfo(g):{};
+    lines.push(`${n}) ${c.product}`);
+    lines.push(`- 거래처: ${c.vendor}`);
+    if(i.price) lines.push(`- 단가: ${i.price}`);
+    lines.push(`- 컬러: ${i.colors||'-'}`);
+    lines.push(`- 사이즈: ${i.sizes||'-'}`);
+    lines.push(`- 혼용률: ${i.mix||'📞 확인 필요'}`);
+  }
+  if(c.memo) lines.push(`- 메모: ${c.memo}`);
+  if(c.photoId && !c.photoId.startsWith('data:')) lines.push(`- 사진: https://drive.google.com/file/d/${c.photoId}/view`);
+  return lines.join('\n');
+}
+function dayText(d){
+  const list=cards.filter(c=>c.date===d);
+  if(!list.length) return '';
+  return `📌 ${md(d)} 업데이트 ${list.length}건\n\n`+list.map((c,i)=>cardText(c,i+1)).join('\n\n');
+}
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  toast('복사했어요. 채널톡·카톡에 붙여넣기 하세요.');
+}
+
+/* ---------- 사진 올리기 ---------- */
+function shrink(file){
+  return new Promise((res,rej)=>{
+    if(!file.type.startsWith('image/')||/heic|heif/i.test(file.type+file.name)){ rej(new Error(file.name+': JPG/PNG 사진만 올릴 수 있어요')); return; }
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const max=1600, r=Math.min(1,max/Math.max(img.width,img.height));
+      const cv=document.createElement('canvas'); cv.width=Math.round(img.width*r); cv.height=Math.round(img.height*r);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); URL.revokeObjectURL(url);
+      res(cv.toDataURL('image/jpeg',.85));
+    };
+    img.onerror=()=>rej(new Error(file.name+': 사진을 열 수 없어요'));
+    img.src=url;
+  });
+}
+async function addPhotos(files,date){
+  for(const f of files){
+    const temp={id:'tmp'+Math.random(),date,_uploading:true}; cards.push(temp); render();
+    try{
+      const dataUrl=await shrink(f);
+      const {photoId}=await apiPost({action:'upload',dataUrl,fileName:date+'_'+f.name.replace(/\.[^.]+$/,'')+'.jpg'});
+      const {card}=await apiPost({action:'add',date,photoId});
+      Object.keys(temp).forEach(k=>delete temp[k]); Object.assign(temp,card);
+    }catch(e){ cards.splice(cards.indexOf(temp),1); toast(e.message,4000); }
+    render();
+  }
+}
+
+/* ---------- 카드 수정 ---------- */
+async function updateCard(id,fields,quiet){
+  const c=cards.find(x=>x.id===id); if(!c) return;
+  const backup={...c}; Object.assign(c,fields);
+  if('product' in fields && !('status' in fields)) c.status=fields.product?'연결됨':'연결 필요';
+  render();
+  try{ await apiPost({action:'update',id,fields}); if(!quiet) toast('저장했어요'); }
+  catch(e){ Object.assign(c,backup); render(); toast('저장 실패: '+e.message,4000); }
+}
+
+/* ---------- 샘플 고르기 ---------- */
+function fillVendors(){
+  const vs=[...new Set(samples.map(s=>s.vendor).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+  $('#vendorSel').innerHTML='<option value="">거래처 전체</option>'+vs.map(v=>`<option>${esc(v)}</option>`).join('');
+}
+function openPicker(id){
+  pickFor=id; const c=cards.find(x=>x.id===id);
+  $('#unlinkBtn').hidden=!c?.product;
+  $('#q').value=''; $('#picker').classList.add('on'); renderList(); setTimeout(()=>$('#q').focus(),50);
+}
+function renderList(){
+  const q=$('#q').value.trim().toLowerCase().replace(/\s+/g,''), v=$('#vendorSel').value, inc=$('#incReturned').checked;
+  const linked=new Map(cards.filter(c=>c.product).map(c=>[keyOf(c.vendor,c.inDate,c.product),c.date]));
+  const arr=[...groups.values()].filter(g=>{
+    if(v && g.vendor!==v) return false;
+    if(!inc && !g.statuses.has('보유중')) return false;
+    if(q && !(g.base+g.vendor).toLowerCase().replace(/\s+/g,'').includes(q)) return false;
+    return true;
+  }).sort((a,b)=>b.inDate.localeCompare(a.inDate)||a.vendor.localeCompare(b.vendor,'ko'));
+  if(!arr.length){ $('#list').innerHTML=`<div class="empty">${samples.length?'맞는 샘플이 없어요':'샘플을 불러오는 중이거나 불러오지 못했어요'}</div>`; return; }
+  $('#list').innerHTML=arr.slice(0,200).map(g=>{
+    const i=groupInfo(g); const sched=linked.get(g.key)||g.updateDate;
+    return `<div class="item" data-key="${esc(g.key)}">
+      <div class="nm">${esc(g.base)}</div>
+      <div>${sched?`<span class="tag ok">📅 ${md(sched)} 예정</span>`:''} ${i.returned?'<span class="tag alert">반납</span>':''}</div>
+      <div class="meta">${esc(g.vendor)} · 입고 ${md(g.inDate)} · 컬러 ${esc(i.colors)||'-'} · ${i.mix?'혼용률 있음':'혼용률 없음'}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.pick){ dropDate=t.dataset.pick; $('#fileIn').click(); }
+  else if(t.dataset.copy){ copy(dayText(t.dataset.copy)); }
+  else if(t.dataset.link){ openPicker(t.dataset.link); }
+  else if(t.dataset.del){
+    if(confirm('이 카드를 지울까요? (드라이브의 사진은 남아 있어요)')){
+      const id=t.dataset.del; const i=cards.findIndex(c=>c.id===id); const removed=cards.splice(i,1)[0]; render();
+      apiPost({action:'remove',id}).then(()=>toast('지웠어요')).catch(err=>{ cards.push(removed); render(); toast('삭제 실패: '+err.message,4000); });
+    }
+  }
+  else if(t.dataset.zoom){ const c=cards.find(x=>x.id===t.dataset.zoom); $('#lbImg').src=photoSrc(c,true); $('#lightbox').classList.add('on'); }
+  else if(t.closest('.item') && pickFor){
+    const g=groups.get(t.closest('.item').dataset.key);
+    $('#picker').classList.remove('on');
+    updateCard(pickFor,{vendor:g.vendor,product:g.base,inDate:g.inDate});
+  }
+  else if(t.hasAttribute('data-close') || t.id==='picker' || t.id==='lightbox' || t.id==='lbImg'){ document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on')); }
+});
+$('#unlinkBtn').onclick=()=>{ $('#picker').classList.remove('on'); updateCard(pickFor,{vendor:'',product:'',inDate:''}); };
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.move){ updateCard(t.dataset.move,{date:t.value}); }
+  else if(t.dataset.memo){ const c=cards.find(x=>x.id===t.dataset.memo); if(c && c.memo!==t.value) updateCard(c.id,{memo:t.value}); }
+});
+$('#fileIn').onchange=e=>{ const f=[...e.target.files]; e.target.value=''; if(f.length) addPhotos(f,dropDate); };
+$('#q').oninput=renderList; $('#vendorSel').onchange=renderList; $('#incReturned').onchange=renderList;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on')); });
+
+// 끌어다 놓기: 사진 파일 또는 카드
+let dragId=null;
+document.addEventListener('dragstart',e=>{ const c=e.target.closest?.('.card'); if(c){ dragId=c.dataset.id; c.classList.add('dragging'); e.dataTransfer.setData('text/plain','card'); } });
+document.addEventListener('dragend',e=>{ dragId=null; document.querySelectorAll('.dragging,.over').forEach(x=>x.classList.remove('dragging','over')); });
+document.addEventListener('dragover',e=>{ const col=e.target.closest?.('.col'); if(col){ e.preventDefault(); document.querySelectorAll('.over').forEach(x=>x!==col&&x.classList.remove('over')); col.classList.add('over'); } });
+document.addEventListener('dragleave',e=>{ const col=e.target.closest?.('.col'); if(col && !col.contains(e.relatedTarget)) col.classList.remove('over'); });
+document.addEventListener('drop',e=>{
+  const col=e.target.closest?.('.col'); if(!col) return; e.preventDefault(); col.classList.remove('over');
+  const date=col.dataset.date;
+  if(dragId){ const c=cards.find(x=>x.id===dragId); if(c && c.date!==date) updateCard(dragId,{date}); dragId=null; return; }
+  const files=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/')||/\.(jpe?g|png|webp|heic)$/i.test(f.name));
+  if(files.length) addPhotos(files,date);
+  else toast('사진 파일을 끌어다 놓아 주세요. 채널톡 사진은 먼저 PC에 저장한 뒤 끌어다 놓으면 돼요.',4000);
+});
+
+$('#prevW').onclick=()=>{ weekStart=addDays(weekStart,-7); loadBoard(); };
+$('#nextW').onclick=()=>{ weekStart=addDays(weekStart,7); loadBoard(); };
+$('#thisW').onclick=()=>{ weekStart=startOfWeek(new Date()); loadBoard(); };
+$('#reload').onclick=async()=>{ await loadSamples(); await loadBoard(); toast('새로 불러왔어요'); };
+$('#copyWeek').onclick=()=>{
+  const t=weekDates().map(dayText).filter(Boolean).join('\n\n──────────\n\n');
+  if(!t){ toast('이번 주에 등록된 상품이 없어요'); return; }
+  copy(`[${md(weekDates()[0])} ~ ${md(weekDates()[4])} 업데이트 일정]\n\n`+t);
+};
+
+/* ---------- 데모 데이터 ---------- */
+let demoCards=[];
+function demoGet(p){
+  if(p.action==='samples') return {ok:true,samples:DEMO_SAMPLES};
+  if(p.action==='board') return {ok:true,cards:demoCards.filter(c=>c.date>=p.from&&c.date<=p.to).map(c=>({...c}))};
+}
+function demoPost(b){
+  if(b.action==='upload') return {ok:true,photoId:b.dataUrl};
+  if(b.action==='add'){ const c={id:'d'+Date.now()+Math.random().toString(36).slice(2,5),date:b.date,photoId:b.photoId||'',vendor:'',product:'',inDate:'',status:'연결 필요',memo:''}; demoCards.push(c); return {ok:true,card:{...c}}; }
+  if(b.action==='update'){ const c=demoCards.find(x=>x.id===b.id); Object.assign(c,b.fields); return {ok:true,card:{...c}}; }
+  if(b.action==='remove'){ demoCards=demoCards.filter(x=>x.id!==b.id); return {ok:true}; }
+}
+const DEMO_SAMPLES=[
+  ['26_FW_브리T/밤색/F','님프','2026-11-17','2026-12-01','보유중','','칼라: 밤색, 아이, 차콜 / 사이즈: F',''],
+  ['26_FW_브리T/아이/F','님프','2026-11-17','2026-12-01','보유중','','칼라: 밤색, 아이, 차콜 / 사이즈: F',''],
+  ['26_FW_케이프NT/그레이/F','님프','2026-11-17','2026-12-01','보유중','','칼라: 그레이, 블랙, 아이 / 사이즈: F',''],
+  ['마고퍼CT/검','언더스탠딩','2026-11-26','2026-12-10','보유중','울 95% 나일론 5% / 배색털 P 100% / 안감 P 100% 충전재3온스','칼라: 검, 밤','229,000'],
+  ['마고퍼CT/밤','언더스탠딩','2026-11-26','2026-12-10','보유중','울 95% 나일론 5% / 배색털 P 100% / 안감 P 100% 충전재3온스','칼라: 검, 밤','229,000'],
+  ['루안SL/블랙/S','쿨피스','2026-11-24','2026-12-08','보유중','폴리 65% 아크릴 17% 레이온 18%','칼라: 블랙, 차콜, 크림 / 사이즈: S, M',''],
+  ['(PT)골덴기모팬츠/베이지/S','룸잉','2026-11-27','2026-12-11','보유중','','칼라: 베이지, 소라 / 사이즈: S, M','33,000'],
+  ['몽드경량패딩/블랙/FREE(L)','오르블루','2026-11-25','2026-12-09','반납완료','','칼라: 브라운, 블랙 / 사이즈: FREE(L), XL',''],
+].map((r,i)=>({row:i+2,name:r[0],vendor:r[1],inDate:r[2],due:r[3],status:r[4],mix:r[5],colorSize:r[6],price:r[7],updateDate:''}));
+function demoSeed(){
+  const d=weekDates();
+  const ph=(t,c)=>'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="${c}"/><text x="200" y="260" font-size="28" text-anchor="middle" fill="#fff" font-family="sans-serif">${t}</text></svg>`);
+  demoCards=[
+    {id:'a1',date:d[0],photoId:ph('브리T','#8b7d6b'),vendor:'님프',product:'26_FW_브리T',inDate:'2026-11-17',status:'연결됨',memo:''},
+    {id:'a2',date:d[0],photoId:ph('마고퍼CT','#3b3b3b'),vendor:'언더스탠딩',product:'마고퍼CT',inDate:'2026-11-26',status:'연결됨',memo:'검정 메인'},
+    {id:'a3',date:d[1],photoId:ph('새 사진','#b4a99a'),vendor:'',product:'',inDate:'',status:'연결 필요',memo:''},
+    {id:'a4',date:d[2],photoId:ph('루안SL','#6f6a64'),vendor:'쿨피스',product:'루안SL',inDate:'2026-11-24',status:'연결됨',memo:''},
+  ];
+}
+
+/* ---------- 시작 ---------- */
+(async()=>{
+  if(DEMO){ $('#demoBar').hidden=false; demoSeed(); }
+  await loadSamples(); await loadBoard();
+  if(!DEMO) setInterval(()=>{ if(!document.querySelector('.modal.on') && document.activeElement?.tagName!=='TEXTAREA') loadBoard(); },60000);
+})();
+</script>
+</body>
+</html>
