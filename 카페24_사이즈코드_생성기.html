@@ -196,6 +196,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 .snackbar.green { background: #16a34a; }
 .snackbar.red { background: #e55; }
 
+/* 업데이트 날짜별 보기 */
+.view-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.view-tab { flex: 1; padding: 9px; font-size: 13px; font-weight: 600; font-family: inherit; border: 1.5px solid #e0e0dd; border-radius: 10px; background: #fafaf8; color: #888; cursor: pointer; }
+.view-tab.active { background: #1e1e1e; border-color: #1e1e1e; color: #fff; }
+.sheet-item.disabled { cursor: default; opacity: 0.55; }
+.sheet-item.disabled:hover { border-color: #e8e8e6; background: #fff; }
+.no-measure { font-size: 11px; font-weight: 600; background: #fff3e0; color: #c25e00; border-radius: 6px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
+.date-group-header.today { color: #1e1e1e; }
+
 /* 로딩 스피너 */
 .spinner { width: 16px; height: 16px; border: 2px solid #a5d6a7; border-top-color: #2e7d32; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -219,10 +228,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 </div>
 
 <div class="import-bar">
-  <span class="import-bar-label">시트에서 불러오기</span>
+  <span class="import-bar-label">불러오기</span>
   <button class="btn-import" id="btn-import" onclick="openSheetModal()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    구글 시트에서 선택
+    📅 일별 상품 업데이트 불러오기
   </button>
   <button class="btn-config-sheet" onclick="openConfigModal()">
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -316,10 +325,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-seri
 <div class="sheet-modal-overlay" id="sheet-modal-overlay" onclick="if(event.target===this)closeSheetModal()">
   <div class="sheet-modal">
     <div class="sheet-modal-header">
-      <div class="sheet-modal-title">구글 시트에서 사이즈 불러오기</div>
+      <div class="sheet-modal-title">📅 일별 상품 업데이트 불러오기</div>
       <button class="sheet-modal-close" onclick="closeSheetModal()">×</button>
     </div>
     <div class="sheet-modal-body">
+      <div class="view-tabs">
+        <button class="view-tab active" data-view="daily" onclick="setSheetView('daily')">업데이트 날짜별</button>
+        <button class="view-tab" data-view="measure" onclick="setSheetView('measure')">측정한 날짜별</button>
+      </div>
       <div class="sheet-search-wrap">
         <input class="sheet-search" id="sheet-search" type="text" placeholder="상품명 또는 거래처로 검색..." oninput="renderSheetList()">
         <select class="sheet-filter-select" id="sheet-filter-type" onchange="renderSheetList()">
@@ -785,6 +798,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview
 // ════════════════════════════════════════════════
 let SHEET_SCRIPT_URL = localStorage.getItem('thejsoo_script_url') || 'https://script.google.com/macros/s/AKfycbxJorWS_vIVR7lYxV8zYaVbpIZT8EYjAftPOcz4T2Hh6fKhxg0P8SAgoHpv30RaVMBBRg/exec';
 let sheetData = [];
+let dailyData = [], dailyError = '', sheetView = 'daily';
+
+function setSheetView(v) {
+  sheetView = v;
+  document.querySelectorAll('.view-tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  renderSheetList();
+}
 
 // ── 설정 모달 ──
 function openConfigModal() {
@@ -813,9 +833,13 @@ async function openSheetModal() {
 
   try {
     const url = SHEET_SCRIPT_URL + '?action=list';
-    const res = await fetch(url);
-    const data = await res.json();
+    dailyError = '';
+    const [data, daily] = await Promise.all([
+      fetch(url).then(r => r.json()),
+      fetchDailyUpdates().catch(e => { dailyError = e.message; return []; })
+    ]);
     sheetData = data.rows || [];
+    dailyData = daily;
 
     // 필터 옵션 채우기
     const typeSet = [...new Set(sheetData.map(r => r.type).filter(Boolean))];
@@ -833,6 +857,7 @@ function closeSheetModal() {
 }
 
 function renderSheetList() {
+  if (sheetView === 'daily') return renderDailyList();
   const query = document.getElementById('sheet-search').value.trim().toLowerCase();
   const typeFilter = document.getElementById('sheet-filter-type').value;
   const wrap = document.getElementById('sheet-list-wrap');
@@ -1060,6 +1085,150 @@ function loadSheetRows(indices) {
 }
 
 function loadSheetRow(idx) { loadSheetRows([idx]); }
+
+// ── 업데이트 날짜별 목록 (상품 업데이트 보드 기준) ──
+function renderDailyList() {
+  const wrap = document.getElementById('sheet-list-wrap');
+  const query = document.getElementById('sheet-search').value.trim().toLowerCase();
+  const typeFilter = document.getElementById('sheet-filter-type').value;
+  if (dailyError) { wrap.innerHTML = `<div class="sheet-empty">❌ 상품 업데이트 보드를 못 불러왔어요<br><small>${dlEsc(dailyError)}</small><br><br>[측정한 날짜별] 탭은 사용할 수 있어요</div>`; return; }
+
+  const EXTRA_TYPES = ['벨트', '스카프/머플러'];
+  const SIZE_ORDER = ['XS','S','M','L','XL','XXL','FREE','44','55','66','77','88'];
+  const sortSizes = a => a.sort((x, y) => {
+    const xi = SIZE_ORDER.indexOf(String(x).toUpperCase()), yi = SIZE_ORDER.indexOf(String(y).toUpperCase());
+    return (xi < 0 ? 99 : xi) - (yi < 0 ? 99 : yi);
+  });
+
+  // 상품마다 실측 행 찾기 (같은 상품을 여러 번 쟀으면 가장 최근 날짜 것만)
+  const items = dailyData.map(card => {
+    const hit = sheetData.map((r, i) => ({ r, i }))
+      .filter(x => dlNorm(x.r.product) === dlNorm(card.product) && !EXTRA_TYPES.includes(x.r.type));
+    const lastDate = hit.reduce((m, x) => (x.r.date || '') > m ? (x.r.date || '') : m, '');
+    const latest = hit.filter(x => (x.r.date || '') === lastDate);
+    const byType = {};
+    latest.forEach(x => { (byType[x.r.type || ''] = byType[x.r.type || ''] || []).push(x); });
+    return { card, byType };
+  }).filter(it => {
+    const text = (it.card.product + ' ' + it.card.vendor).toLowerCase();
+    if (query && !text.includes(query)) return false;
+    if (typeFilter && !it.byType[typeFilter]) return false;
+    return true;
+  });
+
+  if (!items.length) { wrap.innerHTML = `<div class="sheet-empty">${dailyData.length ? '검색 결과가 없습니다' : '상품 업데이트 보드에 등록된 상품이 없어요'}</div>`; return; }
+
+  const grouped = {};
+  items.forEach(it => { (grouped[it.card.date] = grouped[it.card.date] || []).push(it); });
+  const dates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+  const today = dlYmd(new Date());
+  const weekAgo = (() => { const d = new Date(); d.setDate(d.getDate() - 7); return dlYmd(d); })();
+  const recent = dates.filter(d => d >= weekAgo), older = dates.filter(d => d < weekAgo);
+
+  const renderGroups = list => list.map(date => {
+    let h = `<div class="date-group"><div class="date-group-header${date === today ? ' today' : ''}">${dlDayLabel(date)} 업데이트${date === today ? ' · 오늘' : ''} · ${grouped[date].length}개</div>`;
+    grouped[date].forEach(it => {
+      const c = it.card, types = Object.keys(it.byType);
+      if (!types.length) {
+        h += `<div class="sheet-item disabled" title="사이즈 측정 입력 페이지에서 먼저 재 주세요">
+          <div class="sheet-item-icon sheet-item-type-badge">-</div>
+          <div class="sheet-item-info"><div class="sheet-item-product">${dlEsc(c.product)}</div>
+          <div class="sheet-item-meta"><span>${dlEsc(c.vendor)}</span>${c.sizes.length ? `<span>${dlEsc(c.sizes.join(', '))}</span>` : ''}</div></div>
+          <span class="no-measure">실측 없음</span></div>`;
+        return;
+      }
+      types.forEach(t => {
+        const rows = it.byType[t];
+        const sizeNames = sortSizes(rows.map(x => x.r.sizeName).filter(Boolean)).join(', ');
+        h += `<div class="sheet-item" onclick="loadSheetRows([${rows.map(x => x.i).join(',')}])">
+          <div class="sheet-item-icon sheet-item-type-badge">${dlEsc(t || '-')}</div>
+          <div class="sheet-item-info"><div class="sheet-item-product">${dlEsc(c.product)}</div>
+          <div class="sheet-item-meta"><span>${dlEsc(c.vendor)}</span><span style="font-weight:600;color:#1e1e1e;">${dlEsc(sizeNames)}</span></div></div>
+        </div>`;
+      });
+    });
+    return h + `</div>`;
+  }).join('');
+
+  let html = renderGroups(recent);
+  if (older.length) {
+    html += `<div id="older-daily" style="display:none">${renderGroups(older)}</div>
+      <button onclick="document.getElementById('older-daily').style.display='block';this.style.display='none';"
+        style="width:100%;padding:11px;font-size:13px;font-weight:600;font-family:inherit;background:#f7f7f5;color:#555;border:1.5px solid #e0e0dd;border-radius:10px;cursor:pointer;margin-top:6px;">
+        더보기 (${older.length}일치 더 있음)</button>`;
+  }
+  wrap.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════
+//  일별 상품 업데이트 (상품 업데이트 보드 + 샘플관리 시트)
+// ════════════════════════════════════════════════
+const BOARD_GAS_URL = 'https://script.google.com/macros/s/AKfycbzNuv4WIue5-K9XdKHZItw28VqeQGdDRnmWL_TAH3EvFujR9OAZ4xtK0sF4DO3zOjEOng/exec';
+const DAILY_PAST_DAYS = 60, DAILY_FUTURE_DAYS = 30;   // 불러올 기간
+
+function dlYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dlNorm(t){ return String(t||'').replace(/\s+/g,'').toLowerCase(); }
+function dlEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function dlDayLabel(ymd){
+  var d = new Date(ymd+'T00:00:00'); if (isNaN(d)) return ymd;
+  return (d.getMonth()+1)+'/'+d.getDate()+'('+'일월화수목금토'[d.getDay()]+')';
+}
+// 상품명 나누기: 괄호 안의 / 는 나누지 않음
+function dlSplitName(name){
+  var parts=[], depth=0, cur='';
+  for (var ch of String(name||'')) {
+    if (ch==='('||ch==='[') depth++;
+    else if ((ch===')'||ch===']')&&depth>0) depth--;
+    if (ch==='/'&&depth===0) { parts.push(cur.trim()); cur=''; } else cur+=ch;
+  }
+  parts.push(cur.trim());
+  return parts;
+}
+function dlList(v){ return String(v||'').split(/[,，\/]+/).map(function(x){return x.trim();}).filter(Boolean); }
+function dlUniq(a){ var o=[]; a.forEach(function(x){ if(o.indexOf(x)<0) o.push(x); }); return o; }
+// 표기 통일 (상품 업데이트 보드와 같은 규칙): 아이→아이보리, F→Free, s→S
+var DL_COLOR_FIX = {'아이':'아이보리','블':'블랙','흑':'블랙','검정':'블랙','베':'베이지','차':'차콜','그':'그레이','네':'네이비','카':'카키','밤':'브라운','크':'크림','먹':'먹색'};
+function dlFixColor(c){ c=String(c).trim(); return DL_COLOR_FIX[c] || c; }
+function dlFixSize(z){ z=String(z).trim();
+  if (/^(f|free|프리|프리사이즈|fr)$/i.test(z)) return 'Free';
+  if (/^(xs|s|m|l|xl|xxl)$/i.test(z)) return z.toUpperCase();
+  return z; }
+
+// 보드의 날짜별 상품 + 샘플 시트 정보(거래처·단가·컬러·사이즈·혼용률)를 합쳐서 돌려줌
+async function fetchDailyUpdates(){
+  var now = new Date();
+  var from = new Date(now); from.setDate(now.getDate()-DAILY_PAST_DAYS);
+  var to   = new Date(now); to.setDate(now.getDate()+DAILY_FUTURE_DAYS);
+  var url = BOARD_GAS_URL+'?action=init&from='+dlYmd(from)+'&to='+dlYmd(to);
+  var res = await fetch(url); var data = await res.json();
+  if (!data.ok) throw new Error(data.error || '보드 불러오기 실패');
+
+  // 샘플 시트 행을 상품(거래처+입고일+상품명 앞부분)별로 묶기
+  var groups = {};
+  (data.samples||[]).forEach(function(s){
+    var parts = dlSplitName(s.name), base = parts[0];
+    var k = s.vendor+'|'+s.inDate+'|'+base;
+    var g = groups[k] || (groups[k] = { colors:[], sizes:[], colorCol:'', sizeCol:'', mix:'', price:'' });
+    if (parts[1]) g.colors.push(parts[1]);
+    if (parts[2]) g.sizes.push(parts[2]);
+    if (!g.colorCol && s.colors) g.colorCol = s.colors;
+    if (!g.sizeCol && s.sizes) g.sizeCol = s.sizes;
+    if (!g.mix && s.mix) g.mix = s.mix;
+    if (!g.price && s.price) g.price = s.price;
+  });
+
+  return (data.cards||[]).filter(function(c){ return c.product; }).map(function(c){
+    var g = groups[c.vendor+'|'+c.inDate+'|'+c.product] || {};
+    return {
+      date: c.date, vendor: c.vendor||'', product: c.product, inDate: c.inDate||'', memo: c.memo||'',
+      colors: dlUniq((g.colorCol ? dlList(g.colorCol) : (g.colors||[])).map(dlFixColor)),
+      sizes:  dlUniq((g.sizeCol  ? dlList(g.sizeCol)  : (g.sizes||[])).map(dlFixSize)),
+      mix: g.mix||'',
+      price: String(g.price||'').replace(/[^\d]/g,'')
+    };
+  });
+}
+
 
 // ── 스낵바 ──
 let snackTimer;

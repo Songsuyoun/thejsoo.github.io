@@ -57,6 +57,18 @@ td input:focus,td select:focus{background:#FFFDE7;box-shadow:inset 0 0 0 2px #F5
 .bd{font-family:"Noto Sans KR",sans-serif;font-size:13px;font-weight:700;padding:9px 24px;border-radius:6px;cursor:pointer;background:var(--green);color:#fff;border:none;}
 .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:600;align-items:center;justify-content:center;}
 .modal-box{background:#fff;border-radius:12px;padding:28px;box-shadow:0 16px 48px rgba(0,0,0,.2);}
+.dl-date{border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden;}
+.dl-date-h{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#F7F5F2;font-size:13px;font-weight:700;cursor:pointer;}
+.dl-date-h .dl-cnt{font-size:11px;color:var(--muted);font-weight:500;}
+.dl-item{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-top:1px solid #f0eeea;font-size:12px;cursor:pointer;}
+.dl-item:hover{background:#FAFAF8;}
+.dl-item.done{opacity:.5;}
+.dl-item input{margin-top:3px;}
+.dl-nm{font-weight:700;font-size:13px;}
+.dl-meta{color:#666;margin-top:3px;line-height:1.6;}
+.dl-meta b{color:#1A1A1A;font-weight:600;}
+.dl-need{color:#C0392B;}
+.dl-badge{font-size:10px;background:#eee;color:#777;border-radius:3px;padding:1px 6px;margin-left:6px;font-weight:500;}
 .toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--accent);color:#fff;padding:9px 20px;border-radius:6px;font-size:12px;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
@@ -69,6 +81,7 @@ td input:focus,td select:focus{background:#FFFDE7;box-shadow:inset 0 0 0 2px #F5
   <div class="ht">더제이수 카페24 <span style="color:#FF4444;">상품 등록</span> 엑셀 생성기</div>
   <div class="ha">
     <button class="btn bg" onclick="openSupModal()">공급사 관리</button>
+    <button class="btn bp" onclick="openDailyModal()" title="상품 업데이트 보드의 날짜별 상품을 샘플관리 시트 정보와 함께 가져와요">📅 일별 업데이트 가져오기</button>
     <button class="btn bg" onclick="openImportModal()" title="구글 시트 CSV 가져오기">📂 시트 가져오기</button>
     <button class="btn bg" onclick="clearLocal()" title="작성 내용 초기화">🗑 초기화</button>
     <span class="cp">상품 <b id="cnt">0</b>개</span>
@@ -293,6 +306,30 @@ td input:focus,td select:focus{background:#FFFDE7;box-shadow:inset 0 0 0 2px #F5
         style="font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;padding:9px 24px;border-radius:6px;cursor:pointer;background:#ccc;color:#fff;border:none;">
         가져오기
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- 일별 상품 업데이트 가져오기 모달 -->
+<div class="modal-bg" id="dailyModal">
+  <div class="modal-box" style="width:680px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:15px;font-weight:700;">📅 일별 상품 업데이트 가져오기</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">상품 업데이트 보드에 올린 날짜별 상품을 골라서 가져와요 · 공급사 상품명·공급가·공급사·색상·사이즈·소재가 채워져요</div>
+      </div>
+      <button onclick="closeDailyModal()" style="background:transparent;border:none;font-size:24px;cursor:pointer;color:#aaa;">×</button>
+    </div>
+    <input type="text" id="dailySearch" placeholder="상품명 또는 거래처 검색..." oninput="renderDaily()"
+      style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;">
+    <div id="dailyList" style="flex:1;overflow-y:auto;min-height:200px;"></div>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;">
+      <span style="font-size:11px;color:#888;">날짜 제목을 누르면 그날 상품이 전부 선택돼요</span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeDailyModal()" style="font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:9px 20px;border-radius:6px;cursor:pointer;background:transparent;border:1px solid #ddd;color:#888;">취소</button>
+        <button id="dailyImportBtn" onclick="importDaily()" disabled
+          style="font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;padding:9px 24px;border-radius:6px;cursor:pointer;background:#ccc;color:#fff;border:none;">가져오기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -933,7 +970,7 @@ function toast(msg) {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeDesc(); closeImgModal(); closeSupModal(); closeImportModal(); }
+  if (e.key === 'Escape') { closeDesc(); closeImgModal(); closeSupModal(); closeImportModal(); closeDailyModal(); }
 });
 
 // 페이지 로드시 공급사 자동 로드
@@ -1363,6 +1400,185 @@ function doImport() {
   saveToLocal();
   closeImportModal();
   toast('✅ ' + added + '개 상품 가져오기 완료! 카테고리를 선택해주세요.');
+}
+
+// ════════════════════════════════════════════════
+//  일별 상품 업데이트 (상품 업데이트 보드 + 샘플관리 시트)
+// ════════════════════════════════════════════════
+const BOARD_GAS_URL = 'https://script.google.com/macros/s/AKfycbzNuv4WIue5-K9XdKHZItw28VqeQGdDRnmWL_TAH3EvFujR9OAZ4xtK0sF4DO3zOjEOng/exec';
+const DAILY_PAST_DAYS = 60, DAILY_FUTURE_DAYS = 30;   // 불러올 기간
+
+function dlYmd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dlNorm(t){ return String(t||'').replace(/\s+/g,'').toLowerCase(); }
+function dlEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function dlDayLabel(ymd){
+  var d = new Date(ymd+'T00:00:00'); if (isNaN(d)) return ymd;
+  return (d.getMonth()+1)+'/'+d.getDate()+'('+'일월화수목금토'[d.getDay()]+')';
+}
+// 상품명 나누기: 괄호 안의 / 는 나누지 않음
+function dlSplitName(name){
+  var parts=[], depth=0, cur='';
+  for (var ch of String(name||'')) {
+    if (ch==='('||ch==='[') depth++;
+    else if ((ch===')'||ch===']')&&depth>0) depth--;
+    if (ch==='/'&&depth===0) { parts.push(cur.trim()); cur=''; } else cur+=ch;
+  }
+  parts.push(cur.trim());
+  return parts;
+}
+function dlList(v){ return String(v||'').split(/[,，\/]+/).map(function(x){return x.trim();}).filter(Boolean); }
+function dlUniq(a){ var o=[]; a.forEach(function(x){ if(o.indexOf(x)<0) o.push(x); }); return o; }
+// 표기 통일 (상품 업데이트 보드와 같은 규칙): 아이→아이보리, F→Free, s→S
+var DL_COLOR_FIX = {'아이':'아이보리','블':'블랙','흑':'블랙','검정':'블랙','베':'베이지','차':'차콜','그':'그레이','네':'네이비','카':'카키','밤':'브라운','크':'크림','먹':'먹색'};
+function dlFixColor(c){ c=String(c).trim(); return DL_COLOR_FIX[c] || c; }
+function dlFixSize(z){ z=String(z).trim();
+  if (/^(f|free|프리|프리사이즈|fr)$/i.test(z)) return 'Free';
+  if (/^(xs|s|m|l|xl|xxl)$/i.test(z)) return z.toUpperCase();
+  return z; }
+
+// 보드의 날짜별 상품 + 샘플 시트 정보(거래처·단가·컬러·사이즈·혼용률)를 합쳐서 돌려줌
+async function fetchDailyUpdates(){
+  var now = new Date();
+  var from = new Date(now); from.setDate(now.getDate()-DAILY_PAST_DAYS);
+  var to   = new Date(now); to.setDate(now.getDate()+DAILY_FUTURE_DAYS);
+  var url = BOARD_GAS_URL+'?action=init&from='+dlYmd(from)+'&to='+dlYmd(to);
+  var res = await fetch(url); var data = await res.json();
+  if (!data.ok) throw new Error(data.error || '보드 불러오기 실패');
+
+  // 샘플 시트 행을 상품(거래처+입고일+상품명 앞부분)별로 묶기
+  var groups = {};
+  (data.samples||[]).forEach(function(s){
+    var parts = dlSplitName(s.name), base = parts[0];
+    var k = s.vendor+'|'+s.inDate+'|'+base;
+    var g = groups[k] || (groups[k] = { colors:[], sizes:[], colorCol:'', sizeCol:'', mix:'', price:'' });
+    if (parts[1]) g.colors.push(parts[1]);
+    if (parts[2]) g.sizes.push(parts[2]);
+    if (!g.colorCol && s.colors) g.colorCol = s.colors;
+    if (!g.sizeCol && s.sizes) g.sizeCol = s.sizes;
+    if (!g.mix && s.mix) g.mix = s.mix;
+    if (!g.price && s.price) g.price = s.price;
+  });
+
+  return (data.cards||[]).filter(function(c){ return c.product; }).map(function(c){
+    var g = groups[c.vendor+'|'+c.inDate+'|'+c.product] || {};
+    return {
+      date: c.date, vendor: c.vendor||'', product: c.product, inDate: c.inDate||'', memo: c.memo||'',
+      colors: dlUniq((g.colorCol ? dlList(g.colorCol) : (g.colors||[])).map(dlFixColor)),
+      sizes:  dlUniq((g.sizeCol  ? dlList(g.sizeCol)  : (g.sizes||[])).map(dlFixSize)),
+      mix: g.mix||'',
+      price: String(g.price||'').replace(/[^\d]/g,'')
+    };
+  });
+}
+
+var _daily = [], _dailySel = {};
+
+function existingSupNames() {
+  var set = {};
+  document.querySelectorAll('#tbody tr[id^="row"]').forEach(function(tr){
+    var id = tr.id.replace('row','');
+    var sn = document.getElementById('sn'+id), si = document.getElementById('si'+id);
+    if (sn && sn.value.trim()) set[dlNorm(sn.value)+'|'+dlNorm(si ? si.value : '')] = true;
+  });
+  return set;
+}
+function dailyKey(it){ return dlNorm(it.product)+'|'+dlNorm(it.vendor); }
+
+function openDailyModal() {
+  _dailySel = {};
+  document.getElementById('dailySearch').value = '';
+  document.getElementById('dailyModal').style.display = 'flex';
+  document.getElementById('dailyList').innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;">불러오는 중...</div>';
+  updDailyBtn();
+  fetchDailyUpdates().then(function(list){
+    _daily = list.map(function(it, i){ it._i = i; return it; });
+    renderDaily();
+  }).catch(function(e){
+    document.getElementById('dailyList').innerHTML = '<div style="text-align:center;padding:40px;color:#C0392B;">❌ 불러오기 실패<br><small>'+dlEsc(e.message)+'</small></div>';
+  });
+}
+function closeDailyModal() { var m = document.getElementById('dailyModal'); if (m) m.style.display = 'none'; }
+
+function renderDaily() {
+  var q = document.getElementById('dailySearch').value.trim().toLowerCase();
+  var have = existingSupNames();
+  var list = _daily.filter(function(it){ return !q || (it.product+' '+it.vendor).toLowerCase().indexOf(q) >= 0; });
+  var box = document.getElementById('dailyList');
+  if (!list.length) { box.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;">'+(_daily.length?'검색 결과가 없어요':'상품 업데이트 보드에 등록된 상품이 없어요')+'</div>'; return; }
+  var byDate = {};
+  list.forEach(function(it){ (byDate[it.date] = byDate[it.date] || []).push(it); });
+  var today = dlYmd(new Date());
+  var html = Object.keys(byDate).sort(function(a,b){ return b.localeCompare(a); }).map(function(date){
+    var items = byDate[date];
+    var h = '<div class="dl-date"><div class="dl-date-h" onclick="toggleDailyDate(\''+date+'\')">'+
+      dlDayLabel(date)+' 업데이트'+(date===today?' · 오늘':'')+' <span class="dl-cnt">'+items.length+'개</span></div>';
+    items.forEach(function(it){
+      var done = have[dailyKey(it)];
+      var price = it.price ? Number(it.price).toLocaleString()+'원' : '<span class="dl-need">없음</span>';
+      h += '<label class="dl-item'+(done?' done':'')+'">'+
+        '<input type="checkbox" '+(_dailySel[it._i]?'checked':'')+' onchange="selDaily('+it._i+',this.checked)">'+
+        '<div><div class="dl-nm">'+dlEsc(it.product)+(done?'<span class="dl-badge">이미 표에 있음</span>':'')+'</div>'+
+        '<div class="dl-meta">공급사 <b>'+dlEsc(it.vendor||'-')+'</b> · 공급가 <b>'+price+'</b><br>'+
+        '색상 <b>'+(it.colors.length?dlEsc(it.colors.join(', ')):'-')+'</b> · 사이즈 <b>'+(it.sizes.length?dlEsc(it.sizes.join(', ')):'-')+'</b><br>'+
+        '소재 '+(it.mix?'<b>'+dlEsc(it.mix)+'</b>':'<span class="dl-need">확인 필요</span>')+'</div></div></label>';
+    });
+    return h + '</div>';
+  }).join('');
+  box.innerHTML = html;
+}
+function selDaily(i, on) { if (on) _dailySel[i] = true; else delete _dailySel[i]; updDailyBtn(); }
+function toggleDailyDate(date) {
+  var have = existingSupNames();
+  var items = _daily.filter(function(it){ return it.date === date && !have[dailyKey(it)]; });
+  var allOn = items.length && items.every(function(it){ return _dailySel[it._i]; });
+  items.forEach(function(it){ if (allOn) delete _dailySel[it._i]; else _dailySel[it._i] = true; });
+  renderDaily(); updDailyBtn();
+}
+function updDailyBtn() {
+  var n = Object.keys(_dailySel).length, b = document.getElementById('dailyImportBtn');
+  b.disabled = !n; b.style.background = n ? '#2D6A4F' : '#ccc';
+  b.textContent = n ? '선택한 '+n+'개 가져오기' : '가져오기';
+}
+
+function findSupplier(name) {
+  if (!name) return null;
+  var n = dlNorm(name);
+  return SUPPLIERS.find(function(s){ return s.name === name; }) ||
+         SUPPLIERS.find(function(s){ return dlNorm(s.name) === n; }) || null;
+}
+
+function importDaily() {
+  var picked = _daily.filter(function(it){ return _dailySel[it._i]; });
+  if (!picked.length) return;
+  // 상품명·공급사 상품명이 모두 빈 행은 지우고 시작
+  var tb = document.getElementById('tbody');
+  [].slice.call(tb.querySelectorAll('tr[id^="row"]')).forEach(function(tr){
+    var id = tr.id.replace('row','');
+    var nm = document.getElementById('nm'+id), sn = document.getElementById('sn'+id);
+    if (nm && !nm.value.trim() && sn && !sn.value.trim()) tb.removeChild(tr);
+  });
+  var have = existingSupNames(), added = 0, skipped = 0, noSup = [];
+  picked.forEach(function(it){
+    if (have[dailyKey(it)]) { skipped++; return; }
+    addRow();
+    var id = rid;
+    document.getElementById('sn'+id).value = it.product;                 // 공급사 상품명
+    document.getElementById('cat'+id).value = '의류(사입)';               // 판매가 자동계산용
+    if (it.price) document.getElementById('sp'+id).value = it.price;      // 공급가
+    var sup = findSupplier(it.vendor);                                    // 공급사 + 코드
+    if (sup) { document.getElementById('si'+id).value = sup.name; document.getElementById('sc'+id).textContent = sup.code; }
+    else if (it.vendor) { document.getElementById('si'+id).value = it.vendor; if (noSup.indexOf(it.vendor) < 0) noSup.push(it.vendor); }
+    if (it.colors.length) { tags[id+'c'] = it.colors.slice(); renderTags(id, 'c'); }   // 색상 옵션
+    if (it.sizes.length)  { tags[id+'s'] = it.sizes.slice();  renderTags(id, 's'); }   // 사이즈 옵션
+    if (it.mix) document.getElementById('fab'+id).value = it.mix;         // Fabric(소재)
+    upPrice(id);
+    added++;
+  });
+  updCnt(); saveToLocal(); closeDailyModal();
+  var msg = '✅ '+added+'개 가져왔어요. 상품명을 입력해 주세요';
+  if (skipped) msg += ' · 이미 있는 '+skipped+'개 제외';
+  toast(msg);
+  if (noSup.length) setTimeout(function(){ alert('공급사 목록에 없는 거래처예요. 공급사를 직접 골라주세요.\n\n'+noSup.join(', ')); }, 300);
 }
 
 // 30초마다 자동저장
